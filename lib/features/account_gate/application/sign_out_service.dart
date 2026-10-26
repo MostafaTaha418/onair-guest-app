@@ -1,0 +1,82 @@
+import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/push/push_token_source.dart';
+import 'package:on_air/features/account_gate/data/device_repository.dart';
+import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+abstract interface class SignOutCoordinator {
+  Future<void> signOut();
+}
+
+abstract interface class CacheCleaner {
+  Future<void> clearCaches();
+}
+
+abstract interface class PreferenceCleaner {
+  Future<void> clearExcept(Set<String> keysToKeep);
+}
+
+final class AppConfigCacheCleaner implements CacheCleaner {
+  const AppConfigCacheCleaner(this._config);
+
+  final AppConfigSource _config;
+
+  @override
+  Future<void> clearCaches() async => _config.clearCache();
+}
+
+final class SharedPreferencesCleaner implements PreferenceCleaner {
+  const SharedPreferencesCleaner();
+
+  @override
+  Future<void> clearExcept(Set<String> keysToKeep) async {
+    final preferences = await SharedPreferences.getInstance();
+    for (final key in preferences.getKeys().where(
+      (key) => !keysToKeep.contains(key),
+    )) {
+      await preferences.remove(key);
+    }
+  }
+}
+
+final class RepositorySignOutCoordinator implements SignOutCoordinator {
+  const RepositorySignOutCoordinator(this._auth);
+
+  final AuthRepository _auth;
+
+  @override
+  Future<void> signOut() => _auth.signOut();
+}
+
+final class SignOutService implements SignOutCoordinator {
+  const SignOutService({
+    required this.devices,
+    required this.auth,
+    required this.pushTokens,
+    required this.caches,
+    required this.preferences,
+  });
+
+  static const preservedPreferenceKeys = {'themeMode', 'localeCode'};
+
+  final DeviceTokenRepository devices;
+  final AuthRepository auth;
+  final PushTokenSource pushTokens;
+  final CacheCleaner caches;
+  final PreferenceCleaner preferences;
+
+  @override
+  Future<void> signOut() async {
+    try {
+      final token = await pushTokens.currentToken();
+      if (token != null && token.isNotEmpty) {
+        await devices.unregisterDeviceToken(token);
+      }
+    } on Object {
+      // A stale server token is preferable to leaving the account signed in.
+    }
+    await auth.signOut();
+    await caches.clearCaches();
+    await preferences.clearExcept(preservedPreferenceKeys);
+  }
+}

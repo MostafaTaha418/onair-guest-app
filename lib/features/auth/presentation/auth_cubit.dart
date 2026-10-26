@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -10,14 +11,23 @@ final class AuthCubit extends Cubit<AuthState> {
     this._repository, {
     required this._currentTermsVersion,
     DateTime Function()? clock,
+    SignOutCoordinator? signOutCoordinator,
   }) : _clock = clock ?? DateTime.now,
+       _signOutCoordinator =
+           signOutCoordinator ?? RepositorySignOutCoordinator(_repository),
        super(const AuthUnknown()) {
-    _subscription = _repository.authStateChanges.listen(_onExternalAccount);
+    _subscription = _repository.authStateChanges.listen(
+      _onExternalAccount,
+      onError: (Object _, StackTrace _) {
+        if (state is SignedIn) sessionEnded(null);
+      },
+    );
   }
 
   final AuthRepository _repository;
   String _currentTermsVersion;
   final DateTime Function() _clock;
+  final SignOutCoordinator _signOutCoordinator;
   late final StreamSubscription<GuestAccount?> _subscription;
 
   void updateTermsVersion(String version) {
@@ -140,7 +150,7 @@ final class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signOut() async {
     emit(const SigningOut());
-    await _repository.signOut();
+    await _signOutCoordinator.signOut();
     if (!isClosed) emit(const SignedOut());
   }
 

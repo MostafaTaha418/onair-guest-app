@@ -1,12 +1,15 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 
 final class _Repository extends Mock implements AuthRepository {}
+
+final class _SignOutCoordinator extends Mock implements SignOutCoordinator {}
 
 void main() {
   late _Repository repository;
@@ -145,11 +148,16 @@ void main() {
   );
 
   blocTest<AuthCubit, AuthState>(
-    'sign out emits an in-flight state before signed out',
+    'sign out emits signed out only after coordinated cleanup',
     build: () {
+      final coordinator = _SignOutCoordinator();
       when(() => repository.restoreSession()).thenAnswer((_) async => complete);
-      when(() => repository.signOut()).thenAnswer((_) async {});
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      when(coordinator.signOut).thenAnswer((_) async {});
+      return AuthCubit(
+        repository,
+        currentTermsVersion: 'v1',
+        signOutCoordinator: coordinator,
+      );
     },
     act: (cubit) async {
       await cubit.restore();

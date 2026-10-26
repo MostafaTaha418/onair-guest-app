@@ -168,21 +168,21 @@ Supabase (session-ended → back to same screen after sign-in); sign out (nothin
 
 ### Tests for User Story 3
 
-- [ ] T069 [P] [US3] Unit test `test/core/auth/secure_session_storage_test.dart`: session persisted only through secure storage; nothing written to `shared_preferences`
-- [ ] T070 [P] [US3] Unit test `test/features/account_gate/application/sign_out_service_test.dart`: order = unregister device token (with bearer) → Supabase sign-out → clear caches → clear preferences except `themeMode` and `localeCode`; unregister failure does not block sign-out. Extend `auth_cubit_test.dart` to verify signedOut emission and personal-data Cubit reset after cleanup
-- [ ] T071 [P] [US3] Widget test `test/features/account_gate/presentation/session_ended_test.dart`: refresh failure or server-ended session → `errorUnauthenticated` message → login → back to the same route; inactive >30 days (server refuses refresh) behaves the same
+- [X] T069 [P] [US3] Unit test `test/core/auth/secure_session_storage_test.dart`: session persisted only through secure storage; nothing written to `shared_preferences`
+- [X] T070 [P] [US3] Unit test `test/features/account_gate/application/sign_out_service_test.dart`: order = unregister device token (with bearer) → Supabase sign-out → clear caches → clear preferences except `themeMode` and `localeCode`; unregister failure does not block sign-out. Extend `auth_cubit_test.dart` to verify signedOut emission and personal-data Cubit reset after cleanup
+- [X] T071 [P] [US3] Widget test `test/features/account_gate/presentation/session_ended_test.dart`: refresh failure or server-ended session → `errorUnauthenticated` message → login → back to the same route; inactive >30 days (server refuses refresh) behaves the same
 
 ### Implementation for User Story 3
 
-- [ ] T072 [US3] Generate the Node client with `dart run swagger_parser` into `lib/core/api/generated/` (do not edit by hand)
-- [ ] T073 [P] [US3] Implement `PushTokenSource` interface with `NoopPushTokenSource` in `lib/core/push/push_token_source.dart`
-- [ ] T074 [US3] Implement `DeviceRepository` (`registerDeviceToken {token, platform: android|ios, locale: ar|en}`, `unregisterDeviceToken(token)`) on the generated client in `lib/features/account_gate/data/device_repository.dart` (depends on T072)
-- [ ] T075 [US3] Implement `DeviceRegistrationService` (register after sign-in when a token exists; re-register on token refresh) in `lib/features/account_gate/application/device_registration_service.dart`
-- [ ] T076 [US3] Implement `SignOutService` in `lib/features/account_gate/application/sign_out_service.dart`; have `AuthCubit.signOut` call it and emit signedOut after cleanup, then reset app-scoped personal-data Cubits through a root listener (passes T070)
-- [ ] T077 [US3] Implement `SessionListener` mapping Supabase auth events (refresh failure, signed out by server) into `AuthCubit` so it emits `AuthState.sessionEnded(returnTo)` in `lib/features/account_gate/presentation/session_listener.dart` (passes T071)
-- [ ] T078 [US3] Add a sign-out action (Danger tone) to `lib/features/account/presentation/account_placeholder_screen.dart`
-- [ ] T079 [US3] Staging E2E `integration_test/sign_out_test.dart`: after sign-out, secure storage has no session keys and the app shows visitor Home
-- [ ] T080 [US3] Staging E2E `integration_test/isolation_test.dart` per `contracts/supabase-backend.md` §5: A cannot select B's `profiles` row (0 rows), A's `complete_guest_profile` cannot change B, anonymous select returns 0 rows
+- [X] T072 [US3] Generate the Node client with `dart run swagger_parser` into `lib/core/api/generated/` (do not edit by hand)
+- [X] T073 [P] [US3] Implement `PushTokenSource` interface with `NoopPushTokenSource` in `lib/core/push/push_token_source.dart`
+- [X] T074 [US3] Implement `DeviceRepository` (`registerDeviceToken {token, platform: android|ios, locale: ar|en}`, `unregisterDeviceToken(token)`) on the generated client in `lib/features/account_gate/data/device_repository.dart` (depends on T072)
+- [X] T075 [US3] Implement `DeviceRegistrationService` (register after sign-in when a token exists; re-register on token refresh) in `lib/features/account_gate/application/device_registration_service.dart`
+- [X] T076 [US3] Implement `SignOutService` in `lib/features/account_gate/application/sign_out_service.dart`; have `AuthCubit.signOut` call it and emit signedOut after cleanup, then reset app-scoped personal-data Cubits through a root listener (passes T070)
+- [X] T077 [US3] Implement `SessionListener` mapping Supabase auth events (refresh failure, signed out by server) into `AuthCubit` so it emits `AuthState.sessionEnded(returnTo)` in `lib/features/account_gate/presentation/session_listener.dart` (passes T071)
+- [X] T078 [US3] Add a sign-out action (Danger tone) to `lib/features/account/presentation/account_placeholder_screen.dart`
+- [X] T079 [US3] Staging E2E `integration_test/sign_out_test.dart`: after sign-out, secure storage has no session keys and the app shows visitor Home
+- [X] T080 [US3] Staging E2E `integration_test/isolation_test.dart` per `contracts/supabase-backend.md` §5: A cannot select B's `profiles` row (0 rows), A's `complete_guest_profile` cannot change B, anonymous select returns 0 rows
 
 **Checkpoint**: US1–US3 work; G0 exit criterion (sign up, sign in, sign out on Staging + isolation) is provable.
 

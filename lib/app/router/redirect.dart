@@ -31,6 +31,13 @@ String? resolveRedirect(RedirectContext context) {
     return visitorRoutes.contains(context.from) ? context.from : AppRoutes.home;
   }
   final state = context.authState;
+  if (state is SessionEnded) {
+    final returnTo = state.returnTo ?? context.location;
+    return Uri(
+      path: AppRoutes.login,
+      queryParameters: {'from': returnTo},
+    ).toString();
+  }
   if (state is CodeSent || state is RateLimited) {
     return context.location == AppRoutes.otp ? null : AppRoutes.otp;
   }
