@@ -65,5 +65,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notifications": "Notifications",
+  "notAvailable": "Not available yet",
+  "searchEmpty": "Start looking for your next stay.",
+  "bookingsEmpty": "Your bookings will appear here.",
+  "favoritesEmpty": "Your saved places will appear here.",
+  "accountEmpty": "Your account details will appear here."
 }

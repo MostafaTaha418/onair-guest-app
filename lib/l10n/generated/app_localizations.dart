@@ -367,6 +367,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لو البريد مسجّل، هتوصلك رسالة الاستعادة.'**
   String get authRecoverySent;
+
+  /// No description provided for @notifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات'**
+  String get notifications;
+
+  /// No description provided for @notAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متاح حاليًا'**
+  String get notAvailable;
+
+  /// No description provided for @searchEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ البحث عن مكان إقامتك.'**
+  String get searchEmpty;
+
+  /// No description provided for @bookingsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجوزاتك هتظهر هنا.'**
+  String get bookingsEmpty;
+
+  /// No description provided for @favoritesEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأماكن المفضلة هتظهر هنا.'**
+  String get favoritesEmpty;
+
+  /// No description provided for @accountEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات حسابك هتظهر هنا.'**
+  String get accountEmpty;
 }
 
 class _AppLocalizationsDelegate

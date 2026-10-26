@@ -15,7 +15,8 @@ import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class OnAirApp extends StatefulWidget {
-  const OnAirApp({super.key});
+  const OnAirApp({this.connectivityCubit, super.key});
+  final ConnectivityCubit? connectivityCubit;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -33,7 +34,10 @@ final class _OnAirAppState extends State<OnAirApp> {
       currentTermsVersion: '',
     );
     _refresh = AuthRouterRefresh(_authCubit);
-    _router = createAppRouter(refreshListenable: _refresh);
+    _router = createAppRouter(
+      refreshListenable: _refresh,
+      authCubit: _authCubit,
+    );
     unawaited(
       _initialize(
         context.read<AppConfigSource>(),
@@ -67,7 +71,10 @@ final class _OnAirAppState extends State<OnAirApp> {
   Widget build(BuildContext context) => MultiBlocProvider(
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
-      BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
+      if (widget.connectivityCubit case final cubit?)
+        BlocProvider<ConnectivityCubit>.value(value: cubit)
+      else
+        BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
     ],
     child: MaterialApp.router(
       routerConfig: _router,

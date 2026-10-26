@@ -150,4 +150,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authRecoverySent => 'لو البريد مسجّل، هتوصلك رسالة الاستعادة.';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get notAvailable => 'غير متاح حاليًا';
+
+  @override
+  String get searchEmpty => 'ابدأ البحث عن مكان إقامتك.';
+
+  @override
+  String get bookingsEmpty => 'حجوزاتك هتظهر هنا.';
+
+  @override
+  String get favoritesEmpty => 'الأماكن المفضلة هتظهر هنا.';
+
+  @override
+  String get accountEmpty => 'بيانات حسابك هتظهر هنا.';
 }

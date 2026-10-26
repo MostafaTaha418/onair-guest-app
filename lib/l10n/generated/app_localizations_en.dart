@@ -154,4 +154,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authRecoverySent =>
       'If the email is registered, you will receive recovery instructions.';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notAvailable => 'Not available yet';
+
+  @override
+  String get searchEmpty => 'Start looking for your next stay.';
+
+  @override
+  String get bookingsEmpty => 'Your bookings will appear here.';
+
+  @override
+  String get favoritesEmpty => 'Your saved places will appear here.';
+
+  @override
+  String get accountEmpty => 'Your account details will appear here.';
 }

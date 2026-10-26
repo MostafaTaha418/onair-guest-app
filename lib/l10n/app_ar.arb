@@ -65,5 +65,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notifications": "الإشعارات",
+  "notAvailable": "غير متاح حاليًا",
+  "searchEmpty": "ابدأ البحث عن مكان إقامتك.",
+  "bookingsEmpty": "حجوزاتك هتظهر هنا.",
+  "favoritesEmpty": "الأماكن المفضلة هتظهر هنا.",
+  "accountEmpty": "بيانات حسابك هتظهر هنا."
 }

@@ -32,6 +32,7 @@ final class OnAirTextStyles extends ThemeExtension<OnAirTextStyles> {
   TextStyle get seeAll => _style(14, FontWeight.w700);
   TextStyle get homeSearch => _style(16, FontWeight.w400);
   TextStyle get navLabel => _style(10, FontWeight.w700);
+  TextStyle get splashTitle => _style(48, FontWeight.w800, spacing: 1.2);
 
   @override
   OnAirTextStyles copyWith({double? authTitleSize}) =>

@@ -107,19 +107,19 @@ dark; layout direction, fonts, colors, and per-tab scroll position are correct (
 
 ### Tests for User Story 1
 
-- [ ] T043 [P] [US1] Widget test `test/app/shell/app_shell_test.dart`: five tabs in order Home, Search, My Bookings, Favorites, My Account with Home on the right in RTL; active tab highlighted; each tab keeps its scroll position after switching
-- [ ] T044 [P] [US1] Widget test `test/app/app_locale_test.dart`: with device locale `en`, the app renders Arabic RTL
-- [ ] T045 [P] [US1] Golden tests `test/app/goldens/splash_and_shell_golden_test.dart`: splash and shell in light, dark, and 1.3× text, plus a 320-wide screen
+- [X] T043 [P] [US1] Widget test `test/app/shell/app_shell_test.dart`: five tabs in order Home, Search, My Bookings, Favorites, My Account with Home on the right in RTL; active tab highlighted; each tab keeps its scroll position after switching
+- [X] T044 [P] [US1] Widget test `test/app/app_locale_test.dart`: with device locale `en`, the app renders Arabic RTL
+- [X] T045 [P] [US1] Golden tests `test/app/goldens/splash_and_shell_golden_test.dart`: splash and shell in light, dark, and 1.3× text, plus a 320-wide screen
 
 ### Implementation for User Story 1
 
-- [ ] T046 [P] [US1] Implement `OnAirBottomNav` (Surface background, top Nav Border, active item on Badge/Nav Active background, labels 10/700 active and 10/500 inactive, `Semantics` labels, 48×48 targets) in `lib/design_system/components/on_air_bottom_nav.dart`
-- [ ] T047 [US1] Implement `StatefulShellRoute.indexedStack` shell with five branches in `lib/app/shell/app_shell.dart` and register `/home`, `/search`, `/bookings`, `/favorites`, `/account` in `lib/app/router/routes.dart`
-- [ ] T048 [P] [US1] Implement splash (Splash gradient `#004B74 → #006399 → #147DBC`, dark `#002D47 → #006399 → #0A3D62`; "OnAir" 48/800 letter spacing 1.2; waits only for session restore) in `lib/app/splash/splash_screen.dart` and route `/splash`
-- [ ] T049 [P] [US1] Set native launch background to the gradient start color (`#004B74` light, `#002D47` dark) in `android/app/src/main/res/drawable/launch_background.xml`, `android/app/src/main/res/drawable-v21/launch_background.xml`, `android/app/src/main/res/values-night/styles.xml`, and `ios/Runner/Base.lproj/LaunchScreen.storyboard`
-- [ ] T050 [P] [US1] Implement Home placeholder with Header gradient, welcome text, and a notifications bell (`Semantics` label, no badge yet) in `lib/features/home/presentation/home_placeholder_screen.dart`
-- [ ] T051 [P] [US1] Implement Search, My Bookings, Favorites, and My Account placeholders using `EmptyView` in `lib/features/{search,bookings,favorites,account}/presentation/*_placeholder_screen.dart`
-- [ ] T052 [US1] Widget test `test/app/offline_banner_test.dart`: offline shows the banner and disables server actions; back online hides it
+- [X] T046 [P] [US1] Implement `OnAirBottomNav` (Surface background, top Nav Border, active item on Badge/Nav Active background, labels 10/700 active and 10/500 inactive, `Semantics` labels, 48×48 targets) in `lib/design_system/components/on_air_bottom_nav.dart`
+- [X] T047 [US1] Implement `StatefulShellRoute.indexedStack` shell with five branches in `lib/app/shell/app_shell.dart` and register `/home`, `/search`, `/bookings`, `/favorites`, `/account` in `lib/app/router/routes.dart`
+- [X] T048 [P] [US1] Implement splash (Splash gradient `#004B74 → #006399 → #147DBC`, dark `#002D47 → #006399 → #0A3D62`; "OnAir" 48/800 letter spacing 1.2; waits only for session restore) in `lib/app/splash/splash_screen.dart` and route `/splash`
+- [X] T049 [P] [US1] Set native launch background to the gradient start color (`#004B74` light, `#002D47` dark) in `android/app/src/main/res/drawable/launch_background.xml`, `android/app/src/main/res/drawable-v21/launch_background.xml`, `android/app/src/main/res/values-night/styles.xml`, and `ios/Runner/Base.lproj/LaunchScreen.storyboard`
+- [X] T050 [P] [US1] Implement Home placeholder with Header gradient, welcome text, and a notifications bell (`Semantics` label, no badge yet) in `lib/features/home/presentation/home_placeholder_screen.dart`
+- [X] T051 [P] [US1] Implement Search, My Bookings, Favorites, and My Account placeholders using `EmptyView` in `lib/features/{search,bookings,favorites,account}/presentation/*_placeholder_screen.dart`
+- [X] T052 [US1] Widget test `test/app/offline_banner_test.dart`: offline shows the banner and disables server actions; back online hides it
 
 **Checkpoint**: US1 works on its own (visitor shell).
 
