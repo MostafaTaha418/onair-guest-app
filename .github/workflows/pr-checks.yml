@@ -117,6 +117,7 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel_6
+          disk-size: 4G
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: bash tool/ci/android_device_check.sh
