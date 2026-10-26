@@ -1,0 +1,143 @@
+name: PR checks
+
+# Runs on every pull request into develop or main. All jobs must pass before merging
+# (enable them as required checks in branch protection, see docs/ci.md).
+on:
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality (format, analyze, tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Generated code and lockfile are committed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Generated files or pubspec.lock are out of date. Run code generation and commit the result."
+            git status --porcelain
+            git diff --stat
+            exit 1
+          fi
+
+      - name: Format
+        run: |
+          git ls-files '*.dart' \
+            | grep -vE '\.(g|freezed|gr|config)\.dart$|/generated/' \
+            | xargs -r dart format --output=none --set-exit-if-changed
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: No hard-coded colors or font sizes
+        run: |
+          if [ -f tool/check_hardcoded_styles.sh ]; then
+            bash tool/check_hardcoded_styles.sh
+          else
+            echo "tool/check_hardcoded_styles.sh not added yet (G0 T037); skipping."
+          fi
+
+      - name: Unit, widget, and golden tests
+        run: |
+          if [ -d test ] && find test -name '*_test.dart' | grep -q .; then
+            flutter test --reporter expanded
+          else
+            echo "::warning::No tests found under test/."
+          fi
+
+      - name: Upload golden failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-failures
+          path: '**/failures/**'
+          if-no-files-found: ignore
+
+  secrets:
+    name: Secrets scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  android:
+    name: Android (API ${{ matrix.api-level }})
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # 24 = minimum supported (Flutter minSdk), 34 = recent Android.
+        api-level: [24, 34]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Free disk space for Android emulator
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          df -h .
+
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build, install, launch, and test on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disk-size: 4G
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tool/ci/android_device_check.sh
+
+  ios:
+    name: iOS (build + simulator)
+    needs: quality
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Build, install, launch, and test on simulator
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        run: bash tool/ci/ios_device_check.sh
