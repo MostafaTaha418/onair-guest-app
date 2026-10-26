@@ -168,4 +168,79 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountEmpty => 'بيانات حسابك هتظهر هنا.';
+
+  @override
+  String get authLoginTitle => 'أهلًا بيك في OnAir';
+
+  @override
+  String get authRegisterTitle => 'أنشئ حسابك';
+
+  @override
+  String get authPhoneHint => 'مثال: 01012345678';
+
+  @override
+  String get authPhoneInvalid => 'اكتب رقم موبايل مصري صحيح من 11 رقم.';
+
+  @override
+  String get authPhoneTab => 'الموبايل';
+
+  @override
+  String get authEmailTab => 'البريد الإلكتروني';
+
+  @override
+  String get authEmailComingSoon => 'التسجيل بالبريد الإلكتروني هيتاح قريبًا.';
+
+  @override
+  String get authTermsPrefix => 'بالمتابعة أنت توافق على';
+
+  @override
+  String get terms => 'الشروط والأحكام';
+
+  @override
+  String get privacy => 'سياسة الخصوصية';
+
+  @override
+  String get authNoAccount => 'لسه معندكش حساب؟';
+
+  @override
+  String get authHasAccount => 'عندك حساب بالفعل؟';
+
+  @override
+  String get authCreateAccount => 'إنشاء حساب';
+
+  @override
+  String get authCodeTitle => 'اكتب كود التأكيد';
+
+  @override
+  String authCodeDescription(String phone) {
+    return 'بعتنا كود من 6 أرقام إلى $phone';
+  }
+
+  @override
+  String get authResend => 'إعادة إرسال الكود';
+
+  @override
+  String authResendIn(String time) {
+    return 'إعادة الإرسال بعد $time';
+  }
+
+  @override
+  String get authChangePhone => 'تغيير رقم الموبايل';
+
+  @override
+  String get authCompleteProfileTitle => 'كمّل بياناتك';
+
+  @override
+  String get authNameInvalid => 'الاسم لازم يكون من حرفين إلى 80 حرف.';
+
+  @override
+  String get authAcceptTerms => 'أوافق على الشروط والأحكام وسياسة الخصوصية';
+
+  @override
+  String get authTermsRequired => 'لازم توافق على الشروط للمتابعة.';
+
+  @override
+  String authWaitSeconds(int seconds) {
+    return '$seconds ثانية';
+  }
 }

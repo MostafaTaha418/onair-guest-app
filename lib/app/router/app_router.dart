@@ -6,6 +6,10 @@ import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
+import 'package:on_air/features/auth/presentation/login_screen.dart';
+import 'package:on_air/features/auth/presentation/otp_screen.dart';
+import 'package:on_air/features/auth/presentation/register_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
@@ -29,6 +33,26 @@ GoRouter createAppRouter({
       path: AppRoutes.splash,
       name: 'splash',
       builder: (_, _) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.login,
+      name: 'login',
+      builder: (_, _) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.register,
+      name: 'register',
+      builder: (_, _) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.otp,
+      name: 'otp',
+      builder: (_, _) => const OtpScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.completeProfile,
+      name: 'complete-profile',
+      builder: (_, _) => const CompleteProfileScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),

@@ -4,19 +4,27 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 
 final class OnAirOtpField extends StatefulWidget {
-  const OnAirOtpField({required this.onCompleted, super.key});
+  const OnAirOtpField({
+    required this.onCompleted,
+    this.controller,
+    this.enabled = true,
+    super.key,
+  });
   final ValueChanged<String> onCompleted;
+  final TextEditingController? controller;
+  final bool enabled;
 
   @override
   State<OnAirOtpField> createState() => _OnAirOtpFieldState();
 }
 
 final class _OnAirOtpFieldState extends State<OnAirOtpField> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller =
+      widget.controller ?? TextEditingController();
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (widget.controller == null) _controller.dispose();
     super.dispose();
   }
 
@@ -56,6 +64,7 @@ final class _OnAirOtpFieldState extends State<OnAirOtpField> {
               opacity: 0.01,
               child: TextField(
                 controller: _controller,
+                enabled: widget.enabled,
                 keyboardType: TextInputType.number,
                 autofillHints: const [AutofillHints.oneTimeCode],
                 inputFormatters: [

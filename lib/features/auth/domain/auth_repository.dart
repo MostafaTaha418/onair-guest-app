@@ -13,6 +13,15 @@ final class AuthCodeRejected implements Exception {
   final String code;
 }
 
+final class AuthRequestRejected implements Exception {
+  const AuthRequestRejected(this.code);
+  final String code;
+}
+
+final class ProfileTermsChanged implements Exception {
+  const ProfileTermsChanged();
+}
+
 abstract interface class AuthRepository {
   Stream<GuestAccount?> get authStateChanges;
 

@@ -10,7 +10,8 @@ import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
 import 'package:on_air/core/time/cairo_time.dart';
-import 'package:on_air/features/auth/data/foundation_auth_repository.dart';
+import 'package:on_air/features/auth/data/profile_repository.dart';
+import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -51,7 +52,10 @@ Future<void> bootstrap(String flavor) async {
           create: (_) => AppConfigRepository(client),
         ),
         RepositoryProvider<AuthRepository>(
-          create: (_) => FoundationAuthRepository(),
+          create: (_) => SupabaseAuthRepository(
+            SupabasePhoneAuthClient(client.auth),
+            ProfileRepository(client),
+          ),
         ),
       ],
       child: const OnAirApp(),

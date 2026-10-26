@@ -62,7 +62,13 @@ final class AuthCubit extends Cubit<AuthState> {
       _emitAccount(account);
     } on AuthCodeRejected catch (error) {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) emit(RateLimited(current.challenge, error.until));
     }
+  }
+
+  void cancelCodeEntry() {
+    if (state is CodeSent || state is RateLimited) emit(const SignedOut());
   }
 
   Future<void> requestEmailSignup(

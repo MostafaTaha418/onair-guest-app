@@ -9,6 +9,8 @@ final class OnAirTextField extends StatelessWidget {
     this.hint,
     this.errorText,
     this.keyboardType,
+    this.enabled = true,
+    this.textInputAction,
     this.onChanged,
     super.key,
   });
@@ -18,6 +20,8 @@ final class OnAirTextField extends StatelessWidget {
   final String? hint;
   final String? errorText;
   final TextInputType? keyboardType;
+  final bool enabled;
+  final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -33,6 +37,8 @@ final class OnAirTextField extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
+          enabled: enabled,
+          textInputAction: textInputAction,
           onChanged: onChanged,
           style: context.textStyles.input.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(

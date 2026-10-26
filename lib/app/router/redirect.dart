@@ -30,5 +30,34 @@ String? resolveRedirect(RedirectContext context) {
     };
     return visitorRoutes.contains(context.from) ? context.from : AppRoutes.home;
   }
+  final state = context.authState;
+  if (state is CodeSent || state is RateLimited) {
+    return context.location == AppRoutes.otp ? null : AppRoutes.otp;
+  }
+  if (state is SignedOut &&
+      (context.location == AppRoutes.otp ||
+          context.location == AppRoutes.completeProfile)) {
+    return AppRoutes.login;
+  }
+  if (state is SignedIn && !state.isComplete) {
+    if (context.location == AppRoutes.completeProfile) return null;
+    final returnTo = _isAuthRoute(context.location)
+        ? (context.from ?? AppRoutes.home)
+        : context.location;
+    return Uri(
+      path: AppRoutes.completeProfile,
+      queryParameters: {'from': returnTo},
+    ).toString();
+  }
+  if (state is SignedIn && state.isComplete && _isAuthRoute(context.location)) {
+    final from = context.from;
+    return from != null && !_isAuthRoute(from) ? from : AppRoutes.home;
+  }
   return null;
 }
+
+bool _isAuthRoute(String location) =>
+    location == AppRoutes.login ||
+    location == AppRoutes.register ||
+    location == AppRoutes.otp ||
+    location == AppRoutes.completeProfile;

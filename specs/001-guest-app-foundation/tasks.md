@@ -134,25 +134,25 @@ terms, sign out, sign in again (quickstart V6–V9).
 
 ### Tests for User Story 2
 
-- [ ] T053 [P] [US2] Unit test `test/features/auth/domain/egypt_phone_test.dart`: normalizes `01XXXXXXXXX` and `+20…` to E.164; accepts only `^\+201[0125]\d{8}$`; rejects other countries and lengths
-- [ ] T054 [P] [US2] Unit test `test/features/auth/data/supabase_auth_repository_phone_test.dart` (mocked Supabase auth client): `signInWithOtp(phone, shouldCreateUser: true)`; `verifyOTP(type: sms)`; maps auth errors to `OTP_INVALID`, `OTP_EXPIRED`, `RATE_LIMITED` (with retry seconds), `PHONE_COUNTRY_NOT_SUPPORTED`
-- [ ] T055 [P] [US2] Widget test `test/features/auth/presentation/login_phone_test.dart`: invalid format keeps send disabled with an Arabic hint; send disables on tap; non-Egyptian number shows `authPhoneCountryNotSupported` and an email sign-up action; success copy identical for new and existing numbers
-- [ ] T056 [P] [US2] Widget test `test/features/auth/presentation/otp_screen_test.dart`: paste fills six boxes and submits; wrong code shows an announced error under the field; resend countdown uses the server value; rate-limit shows wait time and disables entry; "change number" discards countdown and code
-- [ ] T057 [P] [US2] Widget test `test/features/auth/presentation/complete_profile_test.dart`: name required "2–80 chars after trim"; terms checkbox required; `TERMS_CHANGED` reloads the current terms version and asks again
-- [ ] T058 [P] [US2] Unit test cases in `test/app/router/redirect_test.dart`: signed in with incomplete profile → `/auth/complete-profile?from=…`; complete → no redirect
+- [X] T053 [P] [US2] Unit test `test/features/auth/domain/egypt_phone_test.dart`: normalizes `01XXXXXXXXX` and `+20…` to E.164; accepts only `^\+201[0125]\d{8}$`; rejects other countries and lengths
+- [X] T054 [P] [US2] Unit test `test/features/auth/data/supabase_auth_repository_phone_test.dart` (mocked Supabase auth client): `signInWithOtp(phone, shouldCreateUser: true)`; `verifyOTP(type: sms)`; maps auth errors to `OTP_INVALID`, `OTP_EXPIRED`, `RATE_LIMITED` (with retry seconds), `PHONE_COUNTRY_NOT_SUPPORTED`
+- [X] T055 [P] [US2] Widget test `test/features/auth/presentation/login_phone_test.dart`: invalid format keeps send disabled with an Arabic hint; send disables on tap; non-Egyptian number shows `authPhoneCountryNotSupported` and an email sign-up action; success copy identical for new and existing numbers
+- [X] T056 [P] [US2] Widget test `test/features/auth/presentation/otp_screen_test.dart`: paste fills six boxes and submits; wrong code shows an announced error under the field; resend countdown uses the server value; rate-limit shows wait time and disables entry; "change number" discards countdown and code
+- [X] T057 [P] [US2] Widget test `test/features/auth/presentation/complete_profile_test.dart`: name required "2–80 chars after trim"; terms checkbox required; `TERMS_CHANGED` reloads the current terms version and asks again
+- [X] T058 [P] [US2] Unit test cases in `test/app/router/redirect_test.dart`: signed in with incomplete profile → `/auth/complete-profile?from=…`; complete → no redirect
 
 ### Implementation for User Story 2
 
-- [ ] T059 [P] [US2] Implement `EgyptPhone` value object in `lib/features/auth/domain/egypt_phone.dart` (passes T053)
-- [ ] T060 [US2] Implement phone methods in `lib/features/auth/data/supabase_auth_repository.dart` (passes T054)
-- [ ] T061 [US2] Implement `ProfileRepository` (select own `profiles` row columns `full_name`, `accepted_terms_version`, `accepted_terms_at`; call RPC `complete_guest_profile(full_name, terms_version)`) in `lib/features/auth/data/profile_repository.dart`
-- [ ] T062 [US2] Implement `LoginScreen` with Phone | Email tabs (Email tab shows the phone path only until US4), auth title, gradient button, Terms/Privacy links, register link in `lib/features/auth/presentation/login_screen.dart` (passes T055)
-- [ ] T063 [US2] Implement `OtpScreen` (channel-driven copy, `OnAirOtpField`, Android SMS User Consent via `smart_auth`, resend countdown from server, rate-limit state) in `lib/features/auth/presentation/otp_screen.dart` (passes T056)
-- [ ] T064 [P] [US2] Implement secure-screen channel: Dart `lib/core/platform/secure_screen.dart`; Android `FLAG_SECURE` toggle in `android/app/src/main/kotlin/.../MainActivity.kt`; iOS cover view on inactive in `ios/Runner/SceneDelegate.swift`; enable on OTP screens only
-- [ ] T065 [US2] Implement `RegisterScreen` phone path (phone only, no email/password) in `lib/features/auth/presentation/register_screen.dart`
-- [ ] T066 [US2] Implement `CompleteProfileScreen` (name + terms checkbox using `AppConfig.currentTermsVersion`) in `lib/features/auth/presentation/complete_profile_screen.dart` (passes T057)
-- [ ] T067 [US2] Register `/auth/login`, `/auth/register`, `/auth/otp`, `/auth/complete-profile` in `lib/app/router/routes.dart` and add the profile-incomplete rule to `lib/app/router/redirect.dart` (passes T058)
-- [ ] T068 [US2] Staging E2E `integration_test/phone_sign_in_test.dart`: sign up with a fixed-OTP test number → complete profile → signed in with phone verified → sign out → sign in again
+- [X] T059 [P] [US2] Implement `EgyptPhone` value object in `lib/features/auth/domain/egypt_phone.dart` (passes T053)
+- [X] T060 [US2] Implement phone methods in `lib/features/auth/data/supabase_auth_repository.dart` (passes T054)
+- [X] T061 [US2] Implement `ProfileRepository` (select own `profiles` row columns `full_name`, `accepted_terms_version`, `accepted_terms_at`; call RPC `complete_guest_profile(full_name, terms_version)`) in `lib/features/auth/data/profile_repository.dart`
+- [X] T062 [US2] Implement `LoginScreen` with Phone | Email tabs (Email tab shows the phone path only until US4), auth title, gradient button, Terms/Privacy links, register link in `lib/features/auth/presentation/login_screen.dart` (passes T055)
+- [X] T063 [US2] Implement `OtpScreen` (channel-driven copy, `OnAirOtpField`, Android SMS User Consent via `smart_auth`, resend countdown from server, rate-limit state) in `lib/features/auth/presentation/otp_screen.dart` (passes T056)
+- [X] T064 [P] [US2] Implement secure-screen channel: Dart `lib/core/platform/secure_screen.dart`; Android `FLAG_SECURE` toggle in `android/app/src/main/kotlin/.../MainActivity.kt`; iOS cover view on inactive in `ios/Runner/SceneDelegate.swift`; enable on OTP screens only
+- [X] T065 [US2] Implement `RegisterScreen` phone path (phone only, no email/password) in `lib/features/auth/presentation/register_screen.dart`
+- [X] T066 [US2] Implement `CompleteProfileScreen` (name + terms checkbox using `AppConfig.currentTermsVersion`) in `lib/features/auth/presentation/complete_profile_screen.dart` (passes T057)
+- [X] T067 [US2] Register `/auth/login`, `/auth/register`, `/auth/otp`, `/auth/complete-profile` in `lib/app/router/routes.dart` and add the profile-incomplete rule to `lib/app/router/redirect.dart` (passes T058)
+- [X] T068 [US2] Staging E2E `integration_test/phone_sign_in_test.dart`: sign up with a fixed-OTP test number → complete profile → signed in with phone verified → sign out → sign in again
 
 **Checkpoint**: US1 + US2 work independently.
 

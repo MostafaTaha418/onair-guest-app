@@ -9,6 +9,11 @@ final class FakeAuthRepository implements AuthRepository {
   GuestAccount? account;
   CodeChallenge? challenge;
   AuthRateLimited? rateLimit;
+  Exception? requestPhoneError;
+  Exception? verifyPhoneError;
+  Exception? completeProfileError;
+  Future<void>? requestPhoneBarrier;
+  String? lastRequestedPhone;
 
   @override
   Stream<GuestAccount?> get authStateChanges => _changes.stream;
@@ -22,6 +27,9 @@ final class FakeAuthRepository implements AuthRepository {
   Future<GuestAccount?> restoreSession() async => account;
   @override
   Future<CodeChallenge> requestPhoneCode(String phone) async {
+    lastRequestedPhone = phone;
+    await requestPhoneBarrier;
+    if (requestPhoneError case final error?) throw error;
     if (rateLimit case final limit?) throw limit;
     return challenge ??
         CodeChallenge(
@@ -32,8 +40,11 @@ final class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<GuestAccount> verifyPhoneCode(String phone, String code) async =>
-      account!;
+  Future<GuestAccount> verifyPhoneCode(String phone, String code) async {
+    if (verifyPhoneError case final error?) throw error;
+    return account!;
+  }
+
   @override
   Future<CodeChallenge> signUpEmail(
     String name,
@@ -56,7 +67,11 @@ final class FakeAuthRepository implements AuthRepository {
   Future<GuestAccount> completeProfile(
     String name,
     String termsVersion,
-  ) async => account!;
+  ) async {
+    if (completeProfileError case final error?) throw error;
+    return account!;
+  }
+
   @override
   Future<void> signOut() async {
     publish(null);

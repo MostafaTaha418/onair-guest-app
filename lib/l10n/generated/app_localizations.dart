@@ -403,6 +403,144 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'بيانات حسابك هتظهر هنا.'**
   String get accountEmpty;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلًا بيك في OnAir'**
+  String get authLoginTitle;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ حسابك'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authPhoneHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مثال: 01012345678'**
+  String get authPhoneHint;
+
+  /// No description provided for @authPhoneInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب رقم موبايل مصري صحيح من 11 رقم.'**
+  String get authPhoneInvalid;
+
+  /// No description provided for @authPhoneTab.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموبايل'**
+  String get authPhoneTab;
+
+  /// No description provided for @authEmailTab.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد الإلكتروني'**
+  String get authEmailTab;
+
+  /// No description provided for @authEmailComingSoon.
+  ///
+  /// In ar, this message translates to:
+  /// **'التسجيل بالبريد الإلكتروني هيتاح قريبًا.'**
+  String get authEmailComingSoon;
+
+  /// No description provided for @authTermsPrefix.
+  ///
+  /// In ar, this message translates to:
+  /// **'بالمتابعة أنت توافق على'**
+  String get authTermsPrefix;
+
+  /// No description provided for @terms.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط والأحكام'**
+  String get terms;
+
+  /// No description provided for @privacy.
+  ///
+  /// In ar, this message translates to:
+  /// **'سياسة الخصوصية'**
+  String get privacy;
+
+  /// No description provided for @authNoAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه معندكش حساب؟'**
+  String get authNoAccount;
+
+  /// No description provided for @authHasAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك حساب بالفعل؟'**
+  String get authHasAccount;
+
+  /// No description provided for @authCreateAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء حساب'**
+  String get authCreateAccount;
+
+  /// No description provided for @authCodeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب كود التأكيد'**
+  String get authCodeTitle;
+
+  /// No description provided for @authCodeDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعتنا كود من 6 أرقام إلى {phone}'**
+  String authCodeDescription(String phone);
+
+  /// No description provided for @authResend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة إرسال الكود'**
+  String get authResend;
+
+  /// No description provided for @authResendIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة الإرسال بعد {time}'**
+  String authResendIn(String time);
+
+  /// No description provided for @authChangePhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير رقم الموبايل'**
+  String get authChangePhone;
+
+  /// No description provided for @authCompleteProfileTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كمّل بياناتك'**
+  String get authCompleteProfileTitle;
+
+  /// No description provided for @authNameInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم لازم يكون من حرفين إلى 80 حرف.'**
+  String get authNameInvalid;
+
+  /// No description provided for @authAcceptTerms.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على الشروط والأحكام وسياسة الخصوصية'**
+  String get authAcceptTerms;
+
+  /// No description provided for @authTermsRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'لازم توافق على الشروط للمتابعة.'**
+  String get authTermsRequired;
+
+  /// No description provided for @authWaitSeconds.
+  ///
+  /// In ar, this message translates to:
+  /// **'{seconds} ثانية'**
+  String authWaitSeconds(int seconds);
 }
 
 class _AppLocalizationsDelegate

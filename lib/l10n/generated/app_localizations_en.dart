@@ -172,4 +172,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountEmpty => 'Your account details will appear here.';
+
+  @override
+  String get authLoginTitle => 'Welcome to OnAir';
+
+  @override
+  String get authRegisterTitle => 'Create your account';
+
+  @override
+  String get authPhoneHint => 'Example: 01012345678';
+
+  @override
+  String get authPhoneInvalid =>
+      'Enter a valid 11-digit Egyptian mobile number.';
+
+  @override
+  String get authPhoneTab => 'Phone';
+
+  @override
+  String get authEmailTab => 'Email';
+
+  @override
+  String get authEmailComingSoon => 'Email sign-up is coming soon.';
+
+  @override
+  String get authTermsPrefix => 'By continuing, you agree to the';
+
+  @override
+  String get terms => 'Terms and conditions';
+
+  @override
+  String get privacy => 'Privacy policy';
+
+  @override
+  String get authNoAccount => 'Don\'t have an account?';
+
+  @override
+  String get authHasAccount => 'Already have an account?';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authCodeTitle => 'Enter the verification code';
+
+  @override
+  String authCodeDescription(String phone) {
+    return 'We sent a 6-digit code to $phone';
+  }
+
+  @override
+  String get authResend => 'Resend code';
+
+  @override
+  String authResendIn(String time) {
+    return 'Resend in $time';
+  }
+
+  @override
+  String get authChangePhone => 'Change phone number';
+
+  @override
+  String get authCompleteProfileTitle => 'Complete your profile';
+
+  @override
+  String get authNameInvalid => 'Name must be between 2 and 80 characters.';
+
+  @override
+  String get authAcceptTerms => 'I agree to the terms and privacy policy';
+
+  @override
+  String get authTermsRequired => 'Accept the terms to continue.';
+
+  @override
+  String authWaitSeconds(int seconds) {
+    return '$seconds seconds';
+  }
 }
