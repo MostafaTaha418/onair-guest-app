@@ -99,6 +99,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Free disk space for Android emulator
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          df -h .
+
       - uses: ./.github/actions/setup-flutter
 
       - name: Enable KVM for the emulator
