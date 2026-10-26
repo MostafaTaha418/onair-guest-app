@@ -1,0 +1,146 @@
+openapi: 3.1.0
+info:
+  title: OnAir Node Commands — Guest App G0 (DRAFT)
+  version: 0.1.0-draft
+  description: |
+    Draft contract written by the Guest App developer for the backend owner (Guest Plan §2.3).
+    Only the Node commands G0 needs. Supabase Auth and RLS reads are described in
+    supabase-backend.md. Amounts, statuses, and permissions are never sent by the app.
+
+    Every request carries `Authorization: Bearer <Supabase access token>` (except where noted)
+    and `x-request-id` (UUID v4). Every error response uses the ErrorResponse shape.
+servers:
+  - url: https://{nodeApiBaseUrl}
+    variables:
+      nodeApiBaseUrl:
+        default: api-staging.example.invalid
+        description: Per-flavor value from EnvConfig.nodeApiBaseUrl
+security:
+  - bearerAuth: []
+paths:
+  /v1/devices:
+    post:
+      operationId: registerDeviceToken
+      summary: Register or refresh this device's push token for the signed-in user
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegistration'
+      responses:
+        '204':
+          description: Registered (idempotent per user + token)
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+  /v1/devices/{token}:
+    delete:
+      operationId: unregisterDeviceToken
+      summary: Remove this device's push token for the signed-in user (called at sign-out)
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 4096
+      responses:
+        '204':
+          description: Removed, or was not registered (idempotent)
+        '401':
+          $ref: '#/components/responses/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    RequestId:
+      name: x-request-id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Error:
+      description: Unified error
+      headers:
+        Retry-After:
+          description: Seconds to wait (present on 429)
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    DeviceRegistration:
+      type: object
+      additionalProperties: false
+      required: [token, platform, locale]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 4096
+        platform:
+          type: string
+          enum: [android, ios]
+        locale:
+          type: string
+          enum: [ar, en]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message_key, request_id]
+          properties:
+            code:
+              $ref: '#/components/schemas/ErrorCode'
+            message_key:
+              type: string
+              examples: [auth.rate_limited]
+            request_id:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+              properties:
+                retry_after_seconds:
+                  type: integer
+                  minimum: 0
+    ErrorCode:
+      type: string
+      description: See error-codes.md. Clients map unknown values to INTERNAL.
+      enum:
+        - UNAUTHENTICATED
+        - PHONE_NOT_VERIFIED
+        - EMAIL_NOT_VERIFIED
+        - PHONE_COUNTRY_NOT_SUPPORTED
+        - PROFILE_INCOMPLETE
+        - DATES_UNAVAILABLE
+        - GUESTS_EXCEEDED
+        - QUOTE_EXPIRED
+        - TERMS_CHANGED
+        - PROPERTY_NOT_AVAILABLE
+        - ACTION_NOT_ALLOWED
+        - RATE_LIMITED
+        - OTP_INVALID
+        - OTP_EXPIRED
+        - COLLECTOR_NOT_AUTHORIZED
+        - APP_VERSION_UNSUPPORTED
+        - VALIDATION_FAILED
+        - INTERNAL
