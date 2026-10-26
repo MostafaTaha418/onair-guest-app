@@ -3,6 +3,7 @@
 > **الوثيقة الرئيسية لمتطلبات المنتج والهندسة والتنفيذ**  
 > **النسخة:** 1.0 — بعد اعتماد القرار 120/120  
 > **تاريخ التثبيت:** 21 أكتوبر 2026  
+> **آخر تعديل:** 26 أكتوبر 2026 — تصحيح هيكل المستودعات: مشروع ومستودع مستقل لكل تطبيق، والربط بينها عبر الـ Backend فقط (13.1، 13.3، 17، القرار 117)  
 > **نوع المشروع:** منصة تأجير شقق متكاملة؛ تطبيق مستأجر + تطبيق مالك/مكتب/مساعد + لوحة إدارة داخلية Web  
 > **الهدف من الوثيقة:** مرجع موحد للفريق ولـ GitHub Spec Kit عند كتابة المواصفات والمهام والتطوير والاختبار.
 
@@ -556,7 +557,7 @@ Dashboard متوازنة تجمع: طلبات الحجز الجديدة، الح
 | Guest App | **Flutter / Dart** | تطبيق مستقل |
 | Owner/Office App | **Flutter / Dart** | تطبيق مستقل يشمل مساعديه |
 | Admin Web | **Next.js / React / TypeScript** | واجهة موحدة للأدوار الداخلية |
-| Repository | **Monorepo** | حزم Dart مشتركة بين تطبيقي Flutter، وعقود API مولدة/موحدة مع TypeScript |
+| Repository | **مستودع مستقل لكل تطبيق** | كل تطبيق مشروع منفصل بمستودعه؛ لا كود مشترك بين التطبيقات، والربط الوحيد عبر الـ Backend وعقود API التي ينشرها |
 | Data Platform | **Supabase** | PostgreSQL، هوية وخدمات مناسبة، RLS، بيانات النظام |
 | Visual Media | **Cloudflare** | الصور والوسائط؛ **Cloudflare R2 + CDN** اختيار هندسي مقترح يحقق القرار، وليس تسمية منتج جرى التصويت عليها |
 | Custom Integrations | **Node.js** | عمليات سرية، Webhooks، حالات التحقق، اتصالات خارجية، مهام خلفية |
@@ -586,40 +587,32 @@ flowchart TD
 
 **تفسير:** لا ضرورة لبناء NestJS كامل كشرط للمنصة. يمكن استخدام Supabase DB/Auth وواجهات/دوال خدمة مصممة جيدًا، مع خدمات Node.js مُدارة للمنطق الحساس والتكاملات. أي استخدام مباشر من Flutter/Next.js لعمليات CRUD المسموحة ينبغي أن يخضع لـRLS؛ **جميع الحالات الحرجة للحجز والمال وتغيير الصلاحيات تمر عبر عملية موثوقة ذات تحقق ذرّي**.
 
-### 13.3 Monorepo مقترح [غير ملزم بتسمية المسارات]
+### 13.3 هيكل المستودعات [معدّل 26 أكتوبر 2026 — غير ملزم بتسمية المسارات]
+
+كل تطبيق **مشروع مستقل بمستودع مستقل**، ولا يعتمد أي تطبيق على كود تطبيق آخر:
+
+| المشروع | التقنية | يحتوي |
+|---|---|---|
+| تطبيق المستأجر (Guest App) | Flutter / Dart | الشاشات + Design System + Core (شبكة، جلسة، أخطاء، Money، تواريخ) الخاصة به + Client مولّد من عقود API |
+| تطبيق المالك/المكتب/الموظفين (Owner App) | Flutter / Dart | نفس الفكرة: Design System وCore وClient خاصة به |
+| لوحة الإدارة (Admin Web) | Next.js / React / TypeScript | الواجهة + Types/Client مولّدة من عقود API |
+| الـ Backend | Supabase + Node.js | `migrations` و`policies` (RLS) و`seed`، خدمات Node (Kashier، Resend، FCM/APNs، SMS، المهام الخلفية)، و**عقود API** (OpenAPI/JSON Schema) |
+
+هيكل مقترح داخل كل مستودع تطبيق:
 
 ```text
-onair/
-├── apps/
-│   ├── guest_flutter/
-│   ├── owner_flutter/
-│   └── admin_web/
-├── packages/
-│   ├── flutter_design_system/
-│   ├── flutter_core/
-│   ├── dart_api_client/
-│   └── api_contracts/           # OpenAPI/JSON Schema + types generation
-├── services/
-│   └── integrations_node/       # Kashier, Resend, FCM/APNs, SMS, background jobs
-├── supabase/
-│   ├── migrations/
-│   ├── policies/
-│   └── seed/
-├── docs/
-│   ├── product/
-│   ├── architecture/
-│   ├── api/
-│   ├── flows/
-│   └── decisions/
-├── specs/                       # GitHub Spec Kit feature specs
-├── tests/
-│   ├── e2e/
-│   ├── security/
-│   └── integration/
-└── OnAir Master Plan.md
+<app-repo>/
+├── lib/ أو src/        # كود التطبيق (features + design system + core)
+├── docs/               # Master Plan + خطة التطبيق + القرارات
+├── specs/              # GitHub Spec Kit feature specs الخاصة بالتطبيق
+└── tests/              # unit / widget / integration / security
 ```
 
-**مهم:** لا يمكن مشاركة Dart وTypeScript كملفات مصدر واحدة مباشرة؛ تُشارك **عقود API ومخططات البيانات** ويُولَّد منها Clients/Types عند الحاجة، بينما تتشارك تطبيقات Flutter Dart packages حقيقةً.
+**مهم:**
+- **الـ Backend هو نقطة الربط الوحيدة** بين التطبيقات. أسماء حالات الحجز، أكواد الأخطاء، وأشكال البيانات تأتي من عقود الـ Backend، فتبقى التطبيقات متسقة دون مشاركة كود.
+- كل تطبيق يولّد الـ Client/Types الخاصة به من عقود API المنشورة؛ الكود المولّد لا يُعدَّل يدويًا.
+- أي تغيير في عقد يؤثر على أكثر من تطبيق يُتفق عليه مع مالك الـ Backend قبل اعتماده، مع مراعاة التوافق مع الإصدارات الأقدم المنشورة من التطبيقات.
+- **الاتساق البصري** (12.1) يتحقق بتطبيق نفس مواصفات الـ OnAir Design System في كل مستودع، وليس بحزمة كود مشتركة.
 
 ### 13.4 مبدأ الـBackend وحدود الثقة
 
@@ -776,7 +769,7 @@ onair/
 
 ### المرحلة 1: الأساس التقني — Foundation
 
-**المخرجات:** Monorepo، تطبيقان Flutter أوليان، Admin Next.js أولي، Supabase مشروع Staging وProduction، هيكل الجداول وترحيلاتها، الهوية والدعوات وRBAC/RLS، تخزين Cloudflare، Node integration service، Design System أولي، عقود APIs، CI وفحوص أساسية.
+**المخرجات:** مستودع مستقل لكل تطبيق وللـ Backend، تطبيقان Flutter أوليان، Admin Next.js أولي، Supabase مشروع Staging وProduction، هيكل الجداول وترحيلاتها، الهوية والدعوات وRBAC/RLS، تخزين Cloudflare، Node integration service، Design System أولي، عقود APIs، CI وفحوص أساسية.
 
 **معيار انتهاء:** يتمكن مستأجر ومالك ومكتب وموظف وموظف إدارة من تسجيل الدخول ضمن دور صحيح، ويُثبت اختبار أمني أن بيانات جهة عمل لا تظهر للجهات الأخرى.
 
@@ -941,7 +934,7 @@ onair/
 | `F14` | Notifications & Messaging | In-App، FCM/APNs، SMS، Resend، delivery tracking |
 | `F15` | Favorites & Reviews | Favorites، تقييم الإقامة المكتملة، Moderation |
 | `F16` | Platform Security & Infrastructure | Environments، RLS، Storage، Webhooks، Secrets، Monitoring |
-| `F17` | UI/UX Design System | مشتركات Flutter وWeb، RTL، تفاعل، Accessibility |
+| `F17` | UI/UX Design System | مواصفات موحدة يطبقها كل تطبيق في مستودعه (Flutter وWeb)، RTL، تفاعل، Accessibility |
 | `F18` | Pilot & Rollout | الاختبارات وقياس الجاهزية وخطة التوسع |
 
 ### 20.4 نموذج Prompt لإنشاء Spec
@@ -996,7 +989,7 @@ No new payment policy or direct tenant-owner messaging may be invented.
 | **114** | Admin Settings | مركز أقسام وبحث وتغييرات حساسة وسجل تدقيق |
 | **115** | Visual Identity | OnAir Design System مستقل مع استفادة لاحقة من Figma |
 | **116** | Navigation | Bottom Nav للموبايل، Sidebar للويب، قواعد موحدة وصلاحيات |
-| **117** | Frontend | Flutter تطبيقين + Next.js Admin + Monorepo |
+| **117** | Frontend | Flutter تطبيقين + Next.js Admin، كل تطبيق في مستودع مستقل والربط عبر الـ Backend (تصحيح 26 أكتوبر 2026) |
 | **118** | Backend | Supabase + Cloudflare + Node.js + Kashier + Resend + FCM/APNs |
 | **119** | Security & Hosting | Managed Cloud + Staging/Prod + RLS + Secrets + Webhooks + Backups |
 | **120** | Delivery | Foundation → Core → MVP Pilot → Advanced/Scale |
