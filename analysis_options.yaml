@@ -6,3 +6,11 @@ analyzer:
     - '**/*.freezed.dart'
     - lib/core/api/generated/**
     - lib/l10n/generated/**
+
+linter:
+  rules:
+    # Internal application modules do not expose a public package API.
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    # CrashReporter is intentionally an injectable one-method interface.
+    one_member_abstracts: false

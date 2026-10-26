@@ -1,3 +1,69 @@
 {
-  "@@locale": "en"
+  "@@locale": "en",
+  "appName": "OnAir",
+  "home": "Home",
+  "search": "Search",
+  "bookings": "My bookings",
+  "favorites": "Favorites",
+  "account": "My account",
+  "welcome": "Welcome",
+  "seeAll": "See all",
+  "retry": "Retry",
+  "emptyState": "Nothing to show yet.",
+  "loading": "Loading",
+  "offline": "No internet connection.",
+  "referenceNumber": "Reference: {ref}",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "phoneNumber": "Phone number",
+  "email": "Email",
+  "password": "Password",
+  "verificationCode": "Verification code",
+  "sendCode": "Send code",
+  "confirm": "Confirm",
+  "fullName": "Full name",
+  "errorUnauthenticated": "Your session ended. Sign in again.",
+  "authPhoneCountryNotSupported": "Only Egyptian mobile numbers are supported. You can sign up with email.",
+  "authOtpInvalid": "That code is incorrect. Check the message and try again.",
+  "authOtpExpired": "That code expired. Request a new one.",
+  "authRateLimited": "Too many attempts. Try again after {time}.",
+  "errorValidationFailed": "Check the information you entered.",
+  "authTermsChanged": "The terms changed. Review and accept them to continue.",
+  "authProfileIncomplete": "Complete your profile to continue.",
+  "appUpdateRequired": "Update the app to continue.",
+  "bookingPhoneNotVerified": "Verify your phone before booking.",
+  "bookingEmailNotVerified": "Verify your email before booking.",
+  "bookingDatesUnavailable": "Those dates are unavailable.",
+  "bookingGuestsExceeded": "Too many guests for this property.",
+  "bookingQuoteExpired": "The price changed. Review your summary again.",
+  "propertyNotAvailable": "This property is currently unavailable.",
+  "errorActionNotAllowed": "This action is unavailable right now.",
+  "stayCollectorNotAuthorized": "The collector is not authorized. Contact support.",
+  "errorUnexpected": "Something went wrong. Reference: {ref}",
+  "errorNoConnection": "No internet connection.",
+  "errorCancelled": "The operation was cancelled.",
+  "authInvalidCredentials": "Incorrect email or password.",
+  "authCodeSent": "We sent a verification code.",
+  "authRecoverySent": "If the email is registered, you will receive recovery instructions.",
+  "@referenceNumber": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "@authRateLimited": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@errorUnexpected": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  }
 }

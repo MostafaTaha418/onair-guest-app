@@ -1,3 +1,69 @@
 {
-  "@@locale": "ar"
+  "@@locale": "ar",
+  "appName": "OnAir",
+  "home": "الرئيسية",
+  "search": "بحث",
+  "bookings": "حجوزاتي",
+  "favorites": "المفضلة",
+  "account": "حسابي",
+  "welcome": "أهلًا بيك",
+  "seeAll": "عرض الكل",
+  "retry": "حاول تاني",
+  "emptyState": "مفيش بيانات لعرضها دلوقتي.",
+  "loading": "جاري التحميل",
+  "offline": "مفيش اتصال بالإنترنت.",
+  "referenceNumber": "رقم المرجع: {ref}",
+  "signIn": "تسجيل الدخول",
+  "signOut": "تسجيل الخروج",
+  "phoneNumber": "رقم الموبايل",
+  "email": "البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "verificationCode": "كود التأكيد",
+  "sendCode": "ابعت الكود",
+  "confirm": "تأكيد",
+  "fullName": "الاسم الكامل",
+  "errorUnauthenticated": "انتهت الجلسة. سجّل الدخول مرة أخرى.",
+  "authPhoneCountryNotSupported": "حاليًا ندعم أرقام الموبايل المصرية فقط. تقدر تسجّل بالبريد الإلكتروني.",
+  "authOtpInvalid": "الكود غير صحيح. راجع الرسالة وجرّب تاني.",
+  "authOtpExpired": "الكود انتهت صلاحيته. اطلب كود جديد.",
+  "authRateLimited": "محاولات كتير. جرّب تاني بعد {time}.",
+  "errorValidationFailed": "راجع البيانات المكتوبة.",
+  "authTermsChanged": "الشروط اتحدّثت. راجعها ووافق عليها للمتابعة.",
+  "authProfileIncomplete": "كمّل بياناتك للمتابعة.",
+  "appUpdateRequired": "لازم تحدّث التطبيق للمتابعة.",
+  "bookingPhoneNotVerified": "أكّد رقم موبايلك قبل الحجز.",
+  "bookingEmailNotVerified": "أكّد بريدك قبل الحجز.",
+  "bookingDatesUnavailable": "التواريخ دي مش متاحة.",
+  "bookingGuestsExceeded": "عدد الضيوف أكبر من المسموح.",
+  "bookingQuoteExpired": "السعر اتحدّث. راجع الملخص من جديد.",
+  "propertyNotAvailable": "الشقة دي مش متاحة حاليًا.",
+  "errorActionNotAllowed": "الإجراء ده مش متاح دلوقتي.",
+  "stayCollectorNotAuthorized": "المحصّل غير مفوّض. تواصل مع خدمة العملاء.",
+  "errorUnexpected": "حصلت مشكلة غير متوقعة. رقم المرجع: {ref}",
+  "errorNoConnection": "مفيش اتصال بالإنترنت.",
+  "errorCancelled": "تم إلغاء العملية.",
+  "authInvalidCredentials": "البريد أو كلمة المرور غير صحيحة.",
+  "authCodeSent": "بعتنا لك كود التأكيد.",
+  "authRecoverySent": "لو البريد مسجّل، هتوصلك رسالة الاستعادة.",
+  "@referenceNumber": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "@authRateLimited": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@errorUnexpected": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  }
 }
