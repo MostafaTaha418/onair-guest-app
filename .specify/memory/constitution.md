@@ -83,7 +83,7 @@ can produce.
   `first_unlock_this_device` / Android Keystore). `shared_preferences` MAY hold only
   non-sensitive preferences (language, theme, last search).
 - **Logout** MUST delete the session, unregister the device push token, clear local caches
-  (bookings, notifications), and reset all providers.
+  (bookings, notifications), and reset session and personal-data Cubits.
 - **Network:** HTTPS only (Android cleartext disabled; iOS ATS without exceptions). Every request
   carries a `request_id`. Certificate pinning is deferred until a key-rotation plan exists.
 - **Logs & crash reports** MUST NOT contain PII (phone, email, names) or tokens. Release builds
@@ -158,7 +158,7 @@ more than building them in.
   layer that knows where data comes from.
 - An application/use-case layer is added only when real orchestration exists (e.g., the payment
   journey). Pass-through use cases are forbidden.
-- Approved stack: Riverpod (with code generation) for state, `go_router` for navigation, guards,
+- Approved stack: Cubit through `flutter_bloc` for state, `go_router` for navigation, guards,
   and deep links (`StatefulShellRoute` for bottom nav), `freezed` + `json_serializable` for
   immutable models, `supabase_flutter` for auth and RLS reads, `dio` for Node commands.
 - **Money** MUST be an integer in the smallest unit (piasters) with a currency code, wrapped in
@@ -193,7 +193,7 @@ staging → production) and keeps money and date bugs out of the UI.
   home and bookings use stale-while-revalidate. Queries select only needed columns.
 - Realtime subscriptions are allowed only on payment verification and an open booking's
   details, and MUST close on exit.
-- Widgets use `const` wherever possible, `select` to narrow rebuilds, small widget classes
+- Widgets use `const` wherever possible, `BlocSelector` to narrow rebuilds, small widget classes
   instead of `_buildX()` helpers, and `RepaintBoundary` around animated elements. Countdowns
   rebuild only their text.
 - Internal targets (measured in Profile mode on a mid/low-end Android device, reviewed after the
@@ -291,4 +291,11 @@ criteria are the shared contract with the rest of the team.
   and `docs/UI_UX_DESIGN_SYSTEM.md` for visual tokens. Compliance is reviewed at the end of each
   G-phase.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-10-26
+### Sync Impact Report — Cubit state management (2026-10-26)
+
+- **Change and reason:** The requested Guest App implementation uses Cubit instead of Riverpod. This changes the state-management implementation choice in Principle VII; business rules and backend contracts stay the same.
+- **Affected artifacts:** `docs/OnAir Master Plan.md`, `docs/OnAir Guest App Plan.md`, the G0 plan, research, tasks, `pubspec.yaml`, and `pubspec.lock`.
+- **Migration note:** Phase 1 had no Riverpod classes. Replace the dependency setup now; implement subsequent presentation state as Cubits with constructor-injected repositories, scoped `BlocProvider`, `BlocSelector`, and cancellation in `close()`.
+- **Review:** This amendment still requires the peer review specified above before merge.
+
+**Version**: 2.0.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-10-26

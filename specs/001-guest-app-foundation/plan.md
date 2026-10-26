@@ -25,8 +25,8 @@ Details: [research.md](research.md), [data-model.md](data-model.md), [contracts/
 
 **Language/Version**: Dart 3.12.2, Flutter 3.44.3 (stable). SDK constraint `^3.12.2`.
 
-**Primary Dependencies**: `flutter_riverpod` + `riverpod_annotation` + `riverpod_generator`
-(state), `go_router` (routing, guards, deep links), `supabase_flutter` (auth, RLS reads), `dio`
+**Primary Dependencies**: `flutter_bloc` (Cubit state management; `bloc_test` for transition tests),
+`go_router` (routing, guards, deep links), `supabase_flutter` (auth, RLS reads), `dio`
 (Node commands), `freezed` + `json_serializable` (models), `flutter_secure_storage` (session),
 `shared_preferences` (non-sensitive prefs), `flutter_localizations` + `intl` (i18n),
 `app_links` (verified links), `connectivity_plus` (offline banner only), `package_info_plus`
@@ -38,7 +38,7 @@ Versions: latest stable at implementation start, locked by `pubspec.lock` (Guest
 the session only; `shared_preferences` for language/appearance/last search. No local database in
 G0. Server: Supabase Postgres (owned by the backend repository).
 
-**Testing**: `flutter_test` (unit + widget), `mocktail` (fakes), `alchemist` (golden tests in
+**Testing**: `flutter_test` (unit + widget), `bloc_test` (Cubit transitions), `mocktail` (fakes), `alchemist` (golden tests in
 CI mode), `integration_test` (Staging E2E: phone sign-in, isolation). Lints: `very_good_analysis`.
 
 **Target Platform**: Android 7.0+ (API 24) and iOS 15+. Other platform folders stay in the repo
@@ -70,6 +70,7 @@ profile, forgot password + new password, update required, not available, session
 | V. Design system | `OnAirColors`/`OnAirTextStyles` ThemeExtensions from the design file; Cairo 400–800 bundled; light + dark; provisional spacing/radius in one file; §4.8 contrast fallbacks; lint rule + test that forbids `Color(0x` outside `lib/design_system/`. | PASS |
 | VI. Arabic-first, RTL & a11y | Locale fixed to `ar`, `.arb` for ar + en; directional insets only; `withClampedTextScaling(max 1.3)`; Semantics labels; 48×48 targets; goldens at 1.3×. | PASS |
 | VII. Layered, feature-first | `features/<f>/{data,domain,presentation}`; widgets never touch Supabase/Dio; core/design_system never import features; Money as int piasters; stay dates date-only; unified error model; generated client not hand-edited. | PASS |
+| State management | `flutter_bloc` Cubits own presentation state; repositories enter through constructors; root and route `BlocProvider` scopes control lifetime; `close()` cancels requests and subscriptions. | PASS |
 | VIII. UX states & performance | Shared `LoadingView`/`EmptyView`/`ErrorView`/`OfflineBanner`; in-button loaders; version gate; const + lazy lists; cold-start budget measured. | PASS |
 | IX. Test discipline | Test-first for Money, error mapping, router guards, auth state machine; widget tests per screen state; goldens light/dark/RTL/1.3×; Staging isolation test; contracts drive the mock. | PASS |
 | Repository constraints | Single repo = Guest App; no cross-repo code; backend contracts drafted in `contracts/` for the backend owner. | PASS |
