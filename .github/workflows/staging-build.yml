@@ -1,4 +1,4 @@
-# Staging build on merge to main (User Story 7, tasks.md T108).
+# Staging build on merge to develop (User Story 7, tasks.md T108; branch flow: feature/* -> develop -> main).
 # Builds the obfuscated staging APK, uploads the obfuscation symbols as an artifact,
 # scans the artifact for forbidden key patterns, then distributes it through
 # Firebase App Distribution. Required secrets are documented in docs/ci.md.
@@ -6,7 +6,7 @@ name: staging-build
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
   workflow_dispatch:
 
 permissions:

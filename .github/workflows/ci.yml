@@ -1,16 +1,19 @@
 # Pull-request quality gate (User Story 7, tasks.md T107).
-# Every job must pass before a PR can merge into main; see docs/ci.md for the
-# required branch-protection settings and secrets.
+# Every job must pass before a PR can merge into develop or main (branch flow:
+# feature/* -> develop -> main); see docs/ci.md for the required
+# branch-protection settings and secrets.
 name: ci
 
 on:
   pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -115,3 +118,77 @@ jobs:
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           GITLEAKS_BINARY=/tmp/gitleaks python3 -m unittest discover -s tool/tests -p 'test_gitleaks.py' -v
           /tmp/gitleaks detect -c .gitleaks.toml --redact
+
+  android-device:
+    name: android device (API ${{ matrix.api-level }})
+    # Builds, installs, and launches the app on an emulator; fails if it is not
+    # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
+    needs: format-and-analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [24, 34]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build, install, launch, and test on emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tool/ci/android_device_check.sh
+
+  ios-device:
+    name: ios device (build + simulator)
+    # Unsigned release build for devices, then install and launch on the newest
+    # iPhone simulator.
+    needs: format-and-analyze
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build, install, launch, and test on simulator
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        run: bash tool/ci/ios_device_check.sh

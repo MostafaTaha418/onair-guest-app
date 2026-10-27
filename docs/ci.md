@@ -4,8 +4,8 @@ This repository has two GitHub Actions workflows (User Story 7 / tasks.md T107�
 
 | Workflow | File | Trigger | Purpose |
 |---|---|---|---|
-| `ci` | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | every pull request | Blocks merges on formatting, analysis, stale generated code, failing tests, or leaked secrets |
-| `staging-build` | [`.github/workflows/staging-build.yml`](../.github/workflows/staging-build.yml) | push to `main` (and manual dispatch) | Builds the obfuscated Staging APK and distributes it via Firebase App Distribution |
+| `ci` | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | pull requests into `develop` or `main` (and manual dispatch) | Blocks merges on formatting, analysis, stale generated code, failing tests, leaked secrets, or an app that does not launch on Android/iOS |
+| `staging-build` | [`.github/workflows/staging-build.yml`](../.github/workflows/staging-build.yml) | push to `develop` (and manual dispatch) | Builds the obfuscated Staging APK and distributes it via Firebase App Distribution |
 
 Both workflows pin **Flutter 3.44.3 (stable)**. The secret-scan job pins **gitleaks 8.30.1** with the repository config [`.gitleaks.toml`](../.gitleaks.toml).
 
@@ -16,7 +16,9 @@ when updating these pins; do not replace them with mutable tags.
 
 ## ci.yml — pull-request gate
 
-Four parallel jobs; every one of them must pass:
+Branch flow: `feature/NNN-name` → PR into `develop` → release PR into `main`.
+
+Six jobs (the device jobs start after `format & analyze`); every one of them must pass:
 
 | Check name | What it runs |
 |---|---|
@@ -24,10 +26,14 @@ Four parallel jobs; every one of them must pass:
 | `generated code up to date` | Re-runs all codegen (`build_runner`, `flutter gen-l10n`, `swagger_parser`) and fails if any tracked file changes — generated code must be committed, never edited by hand (Constitution VII) |
 | `unit, widget & golden tests` | `flutter test` (unit + widget + goldens) and Python CI security-helper tests. Uses `windows-2025`, matching the existing reference images, which preserve real Cairo text (`obscureText: false`). The Alchemist `ci` folder name does not make these text-rendering baselines cross-platform. Failed image comparisons are uploaded as artifacts. |
 | `secret scan (gitleaks)` | gitleaks over the full git history with `.gitleaks.toml` |
+| `android device (API 24)` / `android device (API 34)` | Emulator on the minimum (24) and a recent (34) Android: builds a debug APK, installs, launches, and fails if the app is not running 20 s later or crashed (`tool/ci/android_device_check.sh`) |
+| `ios device (build + simulator)` | macOS 15: unsigned release build for devices, then install and launch on the newest available iPhone simulator (`tool/ci/ios_device_check.sh`) |
 
-## staging-build.yml — merge to main
+The device jobs build the Staging flavor (`tool/ci/build_args.sh`). Without the `STAGING_ENV_JSON` secret they use `env/example.json`, which runs in `BACKEND_MODE=mock`, so the launch check needs no backend. With the secret, they also run `integration_test/` against Staging. Hosted macOS runners only ship recent iOS runtimes, so the minimum iOS (15) must still be checked on a real device before release; macOS minutes cost about 10× Linux minutes on private repositories.
 
-1. Writes `env/staging.json` from the `STAGING_ENV_JSON` secret (never committed), then validates all five keys before building. `FLAVOR` must be `staging`, endpoints must use HTTPS, `LINK_DOMAIN` must be a bare hostname, and the client key must be publishable (or a legacy `anon` JWT). Backend credentials and extra keys are rejected. Firebase secrets must also be present; the Android App ID must match the Staging package in the committed `google-services.json`.
+## staging-build.yml — merge to develop
+
+1. Writes `env/staging.json` from the `STAGING_ENV_JSON` secret (never committed), then validates the five required keys (plus optional `BACKEND_MODE`, which must be `remote`) before building. `FLAVOR` must be `staging`, endpoints must use HTTPS, `LINK_DOMAIN` must be a bare hostname, and the client key must be publishable (or a legacy `anon` JWT). Backend credentials and extra keys are rejected. Firebase secrets must also be present; the Android App ID must match the Staging package in the committed `google-services.json`.
 2. Builds: `flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json`.
 3. Uploads `build/symbols` as the `staging-symbols-<sha>` artifact — keep it so obfuscated stack traces can be symbolicated.
 4. Scans the built APK with `tool/scan_build_for_secrets.sh`, which calls the Python standard-library scanner. It reads ZIP entries without extracting paths, decodes JWT claims regardless of Base64 alignment/JSON spacing, checks ASCII/UTF-16 strings and chunk boundaries, and rejects backend Supabase keys, Kashier, Resend, and SMS credentials. No matched credential values are logged.
@@ -38,7 +44,7 @@ ready (research.md R21).
 
 ## Required repository settings
 
-### Branch protection on `main`
+### Branch protection on `develop` and `main`
 
 Private repositories require a GitHub plan that supports branch protection. On
 2026-10-27 this repository returned `403: Upgrade to GitHub Pro or make this repository
@@ -47,7 +53,7 @@ until the account plan supports protection. Keep the repository private; upgradi
 the plan is an owner/billing decision. Do not treat the existence of workflow files
 or completed T106–T109 implementation tasks as proof that merge protection is active.
 
-Settings → Branches → Add branch protection rule for `main`:
+Settings → Branches → Add a branch protection rule for `develop` and another for `main`:
 
 - **Require a pull request before merging** — on.
 - **Require status checks to pass before merging** — require these checks (they appear
@@ -56,8 +62,11 @@ Settings → Branches → Add branch protection rule for `main`:
   - `generated code up to date`
   - `unit, widget & golden tests`
   - `secret scan (gitleaks)`
+  - `android device (API 24)`
+  - `android device (API 34)`
+  - `ios device (build + simulator)`
 - **Require branches to be up to date before merging** — on, so a PR is re-tested when
-  `main` moves.
+  the target branch moves.
 - Recommended: **Do not allow bypassing the above settings**, **Do not allow force
   pushes**, **Do not allow deletions**.
 
@@ -111,7 +120,7 @@ remaining backend prerequisites.
 1. Open GitHub account **Settings → Billing and licensing** (or **Billing & plans**)
    and select a plan supporting protected private repositories. Review the price
    and confirm payment yourself. Then open this repository's **Settings → Branches**
-   and configure `main` with the four required checks listed above, requiring a PR,
+   and configure `develop` and `main` with the seven required checks listed above, requiring a PR,
    an up-to-date branch, and no force pushes/deletions. The check names appear after
    the first PR run. Until then, merge only after manually confirming all checks.
 2. The replacement Supabase project and environment secret are already configured;
@@ -130,9 +139,9 @@ remaining backend prerequisites.
    save. Check the selected Google account: the project was created using
    `onair3team@gmail.com`; another account may show “project does not exist”.
    Testers must accept the email invitation to access distributed builds.
-5. Open a PR and wait for all four `ci` checks. After review and merge to `main`,
-   `staging-build` runs automatically. Alternatively, after the workflow exists on
-   `main`, use **Actions → staging-build → Run workflow**, selecting the intended ref.
+5. Open a PR into `develop` and wait for all seven `ci` checks. After review and merge to
+   `develop`, `staging-build` runs automatically. Alternatively, after the workflow exists on
+   the default branch (`main`), use **Actions → staging-build → Run workflow**, selecting the intended ref.
    Verify `staging-symbols-<sha>`, the release under Firebase App Distribution, and
    installation by a tester. Retain symbols for each distributed build.
 
