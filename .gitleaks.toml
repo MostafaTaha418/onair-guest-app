@@ -51,6 +51,7 @@ tags = ["supabase", "service-role"]
 description = "Governance docs, contracts, and the key-checker code mention the word without containing a key"
 paths = [
   '''(^|/)\.gitleaks\.toml$''',
+  '''(^|/)README\.md$''',
   '''(^|/)tool/scan_build_for_secrets\.sh$''',
   '''(^|/)lib/core/env/env_config\.dart$''',
   '''(^|/)test/core/env/env_config_test\.dart$''',

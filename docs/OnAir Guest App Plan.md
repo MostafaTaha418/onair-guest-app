@@ -1236,17 +1236,24 @@ sequenceDiagram
 
 ### G0 — الأساس (ضمن المرحلة 1: Foundation)
 
-- [ ] تجهيز المستودع الحالي كتطبيق المستأجر: هيكل `lib/` حسب 3.3، وتغيير الـ Application ID / Bundle ID.
-- [ ] Flavors (Staging/Production) + `dart-define-from-file` + Firebase لكل بيئة.
-- [ ] `lib/design_system/`: Tokens (الألوان Light/Dark، الخط Cairo، المسافات المقترحة)، Theme، المكونات الأساسية.
-- [ ] `lib/core/`: Supabase init، تخزين آمن للجلسة، Dio + Interceptors، معالجة الأخطاء، Money، تنسيق التواريخ بتوقيت القاهرة، Logger.
-- [ ] Router + Bottom Nav Shell + Guards + Deep links (App Links/Universal Links).
-- [ ] Auth كامل: هاتف + OTP، بريد + كلمة مرور، تحقق، استعادة، خروج.
-- [ ] الترجمة (`.arb`) و RTL.
-- [ ] CI الأساسي.
-- [ ] كتابة مسودة عقود API التي يحتاجها التطبيق في `contracts/` وتسليمها لمالك الـ Backend + Mock server.
+- [x] تجهيز المستودع الحالي كتطبيق المستأجر: هيكل `lib/` حسب 3.3، وتغيير الـ Application ID / Bundle ID.
+- [x] Flavors (Staging/Production) + `dart-define-from-file` + Firebase لكل بيئة.
+- [x] `lib/design_system/`: Tokens (الألوان Light/Dark، الخط Cairo، المسافات المقترحة)، Theme، المكونات الأساسية.
+- [x] `lib/core/`: Supabase init، تخزين آمن للجلسة، Dio + Interceptors، معالجة الأخطاء، Money، تنسيق التواريخ بتوقيت القاهرة، Logger.
+- [x] Router + Bottom Nav Shell + Guards + Deep links (App Links/Universal Links).
+- [x] Auth كامل: هاتف + OTP، بريد + كلمة مرور، تحقق، استعادة، خروج.
+- [x] الترجمة (`.arb`) و RTL.
+- [x] CI الأساسي.
+- [x] كتابة مسودة عقود API التي يحتاجها التطبيق في `contracts/` وتسليمها لمالك الـ Backend + Mock server.
 
 **معيار الانتهاء:** مستأجر يسجل ويدخل ويخرج على Staging، والثيم الفاتح والداكن يعملان، واختبار يثبت أن المستأجر لا يقرأ بيانات غيره.
+
+> **حالة G0 (2026-10-28):** كامل بنود G0 مُنفّذة في الكود على `feature/001-guest-app-foundation`
+> (اختبارات الوحدة/الودجت/Golden خضراء). معيار الانتهاء النهائي (التسجيل والدخول والخروج على
+> Staging + اختبار العزل الحي) معلّق على تهيئة مشروع Staging Supabase حسب `contracts/supabase-backend.md`.
+> نقاط مفتوحة بلا قرار نهائي: معرّفات التطبيق المؤقتة `com.onair.guest(.staging)` (R14)، نطاق
+> الروابط الموثوقة (R15، قابل للضبط عبر `LINK_DOMAIN`)، وأداة مراقبة الأعطال (R19، حاليًا
+> واجهة `CrashReporter` مع `NoopCrashReporter`).
 
 ### G1 — الاستكشاف (ضمن المرحلة 2: Core — P0)
 

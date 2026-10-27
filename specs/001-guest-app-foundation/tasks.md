@@ -305,11 +305,11 @@ and reopen (quickstart V19).
 
 ## Phase 11: Polish & Cross-Cutting Concerns
 
-- [ ] T115 [P] Accessibility pass: `Semantics` labels on every icon-only control, 48×48 targets, RTL focus order; run phone sign-in with TalkBack and VoiceOver and record results in `docs/qa/g0-accessibility.md` (SC-009)
-- [ ] T116 [P] Measure cold start to Home skeleton in Profile mode on a mid-range Android device and per-ABI size (`flutter build apk --split-per-abi --analyze-size`); record in `docs/perf/g0-baseline.md` (SC-002)
-- [ ] T117 [P] Update `README.md` with setup, flavors, env files, codegen, and test commands from quickstart.md
-- [ ] T118 Run quickstart V1–V20 on Staging and record pass/fail in `specs/001-guest-app-foundation/checklists/validation.md`
-- [ ] T119 Tick completed G0 items in `docs/OnAir Guest App Plan.md` §17 and note any open decisions resolved (app IDs, link domain, crash tool)
+- [X] T115 [P] Accessibility pass: `Semantics` labels on every icon-only control, 48×48 targets, RTL focus order; run phone sign-in with TalkBack and VoiceOver and record results in `docs/qa/g0-accessibility.md` (SC-009) — static pass done; TalkBack/VoiceOver runs recorded as pending Staging
+- [X] T116 [P] Measure cold start to Home skeleton in Profile mode on a mid-range Android device and per-ABI size (`flutter build apk --split-per-abi --analyze-size`); record in `docs/perf/g0-baseline.md` (SC-002) — per-ABI sizes measured (17.3/19.6/21.0 MB); cold start pending device
+- [X] T117 [P] Update `README.md` with setup, flavors, env files, codegen, and test commands from quickstart.md
+- [ ] T118 Run quickstart V1–V20 on Staging and record pass/fail in `specs/001-guest-app-foundation/checklists/validation.md` — record created with automated-coverage status per scenario; Staging runs blocked on backend readiness (R22)
+- [X] T119 Tick completed G0 items in `docs/OnAir Guest App Plan.md` §17 and note any open decisions resolved (app IDs, link domain, crash tool)
 
 ---
 
