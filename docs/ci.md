@@ -22,7 +22,7 @@ Four parallel jobs; every one of them must pass:
 |---|---|
 | `format & analyze` | `flutter pub get`, `dart format --set-exit-if-changed .`, `flutter analyze` (very_good_analysis, zero warnings), `tool/check_hardcoded_styles.sh` (no hard-coded colors/font sizes outside the design system) |
 | `generated code up to date` | Re-runs all codegen (`build_runner`, `flutter gen-l10n`, `swagger_parser`) and fails if any tracked file changes — generated code must be committed, never edited by hand (Constitution VII) |
-| `unit, widget & golden tests` | `flutter test` (unit + widget + goldens; goldens run in alchemist CI mode, so they are platform-independent) |
+| `unit, widget & golden tests` | `flutter test` (unit + widget + goldens) and Python CI security-helper tests. Uses `windows-2025`, matching the existing reference images, which preserve real Cairo text (`obscureText: false`). The Alchemist `ci` folder name does not make these text-rendering baselines cross-platform. Failed image comparisons are uploaded as artifacts. |
 | `secret scan (gitleaks)` | gitleaks over the full git history with `.gitleaks.toml` |
 
 ## staging-build.yml — merge to main
@@ -148,6 +148,15 @@ Official references: [GitHub protected branches](https://docs.github.com/en/repo
 [Firebase service-account authentication](https://firebase.google.com/docs/app-distribution/authenticate-service-account?platform=android),
 [Firebase CLI distribution](https://firebase.google.com/docs/app-distribution/android/distribute-cli),
 and [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys).
+
+### Golden-image baseline environment
+
+Generate and review baseline changes on Windows using the pinned Flutter version:
+`flutter test --update-goldens --tags golden`, then run `flutter test` without the
+update flag. Commit reviewed PNG changes with the UI change. Keep `obscureText: false`
+to retain readable Arabic/Cairo typography checks; do not hide text or add pixel
+tolerances just to make a cross-platform renderer pass. Other quality jobs still run
+on Ubuntu. The workflow never updates baselines automatically.
 
 ## Local parity
 

@@ -71,7 +71,9 @@ jobs:
 
   tests:
     name: unit, widget & golden tests
-    runs-on: ubuntu-latest
+    # Baselines contain real Cairo text (obscureText: false), generated on Windows.
+    # Keep the same renderer platform rather than hiding text or relaxing diffs.
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -86,7 +88,15 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       - name: Test CI security helpers
-        run: python3 -m unittest discover -s tool/tests -v
+        run: python -m unittest discover -s tool/tests -v
+
+      - name: Upload golden failure images
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: golden-failures-${{ github.sha }}
+          path: test/**/failures/**
+          if-no-files-found: ignore
 
   secrets:
     name: secret scan (gitleaks)
