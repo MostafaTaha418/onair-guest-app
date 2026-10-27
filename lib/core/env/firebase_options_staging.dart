@@ -50,18 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCDTWv6hkSOV1a8zynV95Cxj_Fqmpw8Awo',
-    appId: '1:1093743526436:android:cbd768d954e65acc784eb1',
-    messagingSenderId: '1093743526436',
-    projectId: 'onair-guest-staging',
-    storageBucket: 'onair-guest-staging.firebasestorage.app',
+    apiKey: 'AIzaSyDgaZgcevy0evjGF3sB9LFsk2einlarQw0',
+    appId: '1:33057694373:android:a05e2847732b4eb5df634c',
+    messagingSenderId: '33057694373',
+    projectId: 'onair-staging-5579e',
+    storageBucket: 'onair-staging-5579e.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDmrQoKEWjtKr2mhyIrnJkqkhRpdl7HSNE',
-    appId: '1:1093743526436:ios:60e904ecc3e1bf68784eb1',
-    messagingSenderId: '1093743526436',
-    projectId: 'onair-guest-staging',
-    storageBucket: 'onair-guest-staging.firebasestorage.app',
+    apiKey: 'AIzaSyBzc4bAkAYidTvOdplYpR8V7sirik31BsI',
+    appId: '1:33057694373:ios:199eba9b26e29c6adf634c',
+    messagingSenderId: '33057694373',
+    projectId: 'onair-staging-5579e',
+    storageBucket: 'onair-staging-5579e.firebasestorage.app',
     iosBundleId: 'com.onair.guest.staging',
   );
 }

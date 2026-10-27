@@ -1,0 +1,61 @@
+{
+  "verified_at": "2026-10-28",
+  "owner_account": "onair3team@gmail.com",
+  "supabase": {
+    "staging": {
+      "organization_id": "anoxwmapgayhjxuyvnzg",
+      "project_name": "On Air",
+      "project_ref": "popadthwlumlkizmauak",
+      "url": "https://popadthwlumlkizmauak.supabase.co",
+      "region": "eu-central-1",
+      "environment_file": "env/staging.json",
+      "github_secret": "STAGING_ENV_JSON",
+      "command_api_url": "https://popadthwlumlkizmauak.supabase.co/functions/v1/guest-api",
+      "command_api_deployed": false,
+      "email_otp_length": 6,
+      "email_otp_expiration_seconds": 600
+    },
+    "production": null
+  },
+  "firebase": {
+    "staging": {
+      "project_id": "onair-staging-5579e",
+      "project_number": "33057694373",
+      "android_app_id": "1:33057694373:android:a05e2847732b4eb5df634c",
+      "ios_app_id": "1:33057694373:ios:199eba9b26e29c6adf634c",
+      "application_id": "com.onair.guest.staging",
+      "distribution_group": "onair-staging",
+      "distribution_service_account": "github-staging-distribution@onair-staging-5579e.iam.gserviceaccount.com"
+    },
+    "production": {
+      "project_id": "onair-production-3team",
+      "project_number": "1060101512327",
+      "android_app_id": "1:1060101512327:android:b364290c7b2ae78a502c22",
+      "ios_app_id": "1:1060101512327:ios:d6f99dd54bb7c9f6502c22",
+      "application_id": "com.onair.guest"
+    },
+    "cli_account": "onair3team@gmail.com"
+  },
+  "cloudflare": {
+    "account_id": "50555d9fb23d0c265fd1ae43d4d1a4d1",
+    "zone_id": "23c8f92e0089ab256b00e69ccec4e8af",
+    "domain": "on-air.website",
+    "r2_buckets": ["onair-images", "onair-contracts-private"],
+    "api_token_required_by_flutter": false
+  },
+  "resend": {
+    "domain": "on-air.website",
+    "domain_id": "057eda11-c0b6-400e-b888-fd513fc87e6d",
+    "domain_verified": true,
+    "region": "eu-west-1",
+    "smtp_host": "smtp.resend.com",
+    "smtp_port": 465,
+    "smtp_username": "resend",
+    "sender_email": "no-reply@on-air.website",
+    "sender_name": "OnAir",
+    "key_name": "onair-staging-auth",
+    "key_permission": "sending_access",
+    "github_secret": "RESEND_API_KEY_STAGING",
+    "supabase_smtp_enabled": true
+  }
+}

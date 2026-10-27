@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyDmrQoKEWjtKr2mhyIrnJkqkhRpdl7HSNE</string>
+	<string>AIzaSyBzc4bAkAYidTvOdplYpR8V7sirik31BsI</string>
 	<key>GCM_SENDER_ID</key>
-	<string>1093743526436</string>
+	<string>33057694373</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.onair.guest.staging</string>
 	<key>PROJECT_ID</key>
-	<string>onair-guest-staging</string>
+	<string>onair-staging-5579e</string>
 	<key>STORAGE_BUCKET</key>
-	<string>onair-guest-staging.firebasestorage.app</string>
+	<string>onair-staging-5579e.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1093743526436:ios:60e904ecc3e1bf68784eb1</string>
+	<string>1:33057694373:ios:199eba9b26e29c6adf634c</string>
 </dict>
 </plist>

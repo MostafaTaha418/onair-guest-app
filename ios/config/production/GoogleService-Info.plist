@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyAyzpYaZnJ-oeC4gIIiM5YJ70ZHLPHY6GM</string>
+	<string>AIzaSyBfTMo5f6zCp8oaEcajyQ3OlLlA3GTrdQc</string>
 	<key>GCM_SENDER_ID</key>
-	<string>463823071401</string>
+	<string>1060101512327</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.onair.guest</string>
 	<key>PROJECT_ID</key>
-	<string>onair-guest-production</string>
+	<string>onair-production-3team</string>
 	<key>STORAGE_BUCKET</key>
-	<string>onair-guest-production.firebasestorage.app</string>
+	<string>onair-production-3team.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:463823071401:ios:8039995ed81a2897e6a1b8</string>
+	<string>1:1060101512327:ios:d6f99dd54bb7c9f6502c22</string>
 </dict>
 </plist>

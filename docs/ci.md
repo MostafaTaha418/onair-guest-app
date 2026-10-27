@@ -27,7 +27,7 @@ Four parallel jobs; every one of them must pass:
 
 ## staging-build.yml — merge to main
 
-1. Writes `env/staging.json` from the `STAGING_ENV_JSON` secret (never committed), then validates all five keys before building. `FLAVOR` must be `staging`, endpoints must use HTTPS, `LINK_DOMAIN` must be a bare hostname, and the client key must be publishable (or a legacy `anon` JWT). Backend credentials and extra keys are rejected. Firebase secrets must also be present, with the exact Staging Android App ID.
+1. Writes `env/staging.json` from the `STAGING_ENV_JSON` secret (never committed), then validates all five keys before building. `FLAVOR` must be `staging`, endpoints must use HTTPS, `LINK_DOMAIN` must be a bare hostname, and the client key must be publishable (or a legacy `anon` JWT). Backend credentials and extra keys are rejected. Firebase secrets must also be present; the Android App ID must match the Staging package in the committed `google-services.json`.
 2. Builds: `flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json`.
 3. Uploads `build/symbols` as the `staging-symbols-<sha>` artifact — keep it so obfuscated stack traces can be symbolicated.
 4. Scans the built APK with `tool/scan_build_for_secrets.sh`, which calls the Python standard-library scanner. It reads ZIP entries without extracting paths, decodes JWT claims regardless of Base64 alignment/JSON spacing, checks ASCII/UTF-16 strings and chunk boundaries, and rejects backend Supabase keys, Kashier, Resend, and SMS credentials. No matched credential values are logged.
@@ -71,36 +71,40 @@ Settings → Secrets and variables → Actions → Repository secrets:
 | `FIREBASE_APP_ID_STAGING` | Android app ID of the Staging Firebase project | Firebase console → Project settings → General → Apps → Android (`1:…:android:…`) |
 | `FIREBASE_SERVICE_CREDENTIALS` | Service-account key used to upload releases | Google Cloud console → IAM → Service accounts → the App Distribution service account → Keys → JSON; grant it the **Firebase App Distribution Admin** role |
 | `FIREBASE_STAGING_TESTERS` | Tester group alias that receives the build | Firebase console → App Distribution → Testers & Groups → create a group and use its alias |
+| `RESEND_API_KEY_STAGING` | Server-only backup for the dedicated sending key; **not consumed by these Flutter workflows** | Already saved in GitHub Secrets and Supabase SMTP; never add it to `STAGING_ENV_JSON`, Dart defines, or an APK |
 
-### Verified setup status (2026-10-27)
+### Verified setup status (2026-10-28)
+
+The service owner is now **onair3team@gmail.com**. The public service references are
+recorded in [`config/service-targets.json`](../config/service-targets.json); see
+[`service-connections.md`](service-connections.md) for the account migration and
+remaining backend prerequisites.
 
 - GitHub Actions is enabled. Default workflow token permissions were set to read;
   workflows cannot approve pull-request reviews.
 - `FIREBASE_APP_ID_STAGING` is configured for
-  `1:1093743526436:android:cbd768d954e65acc784eb1` in `onair-guest-staging`.
+  `1:33057694373:android:a05e2847732b4eb5df634c` in `onair-staging-5579e`.
 - `FIREBASE_STAGING_TESTERS` is configured as `onair-staging`; the group
   **OnAir Staging** was created successfully. A human must choose/add tester emails.
 - `FIREBASE_SERVICE_CREDENTIALS` is configured using the dedicated account
-  `github-staging-distribution@onair-guest-staging.iam.gserviceaccount.com`, with
+  `github-staging-distribution@onair-staging-5579e.iam.gserviceaccount.com`, with
   `roles/firebaseappdistro.admin`. Its private key was transferred directly to
   GitHub's encrypted secret without writing it to disk or printing it.
-- `STAGING_ENV_JSON` is still pending: the owner will replace the old Supabase
-  project and supply the new public configuration. Do not keep using the old
-  project's values or substitute `https://api.on-air.website` as an API endpoint.
-  The deployment will use Supabase Auth, Database, and Edge Functions, without a
-  separate Node host. `NODE_API_BASE_URL` is the current legacy config name for
-  the command API and can point to the deployed Edge Function base URL, such as
-  `https://<new-ref>.supabase.co/functions/v1/guest-api`. That function must be
-  implemented/deployed before the URL is usable.
+- `STAGING_ENV_JSON` is configured from the ignored local `env/staging.json` with
+  the new Supabase project `popadthwlumlkizmauak` and its publishable client key.
+  `NODE_API_BASE_URL` is the legacy config name for the command API. Its configured
+  target is `https://popadthwlumlkizmauak.supabase.co/functions/v1/guest-api`;
+  **the function has not been deployed**, so this URL does not yet serve the contract.
+- Supabase custom SMTP uses Resend (`smtp.resend.com:465`) with
+  `no-reply@on-air.website`. The sending-only, domain-restricted key is stored in
+  Supabase SMTP and `RESEND_API_KEY_STAGING`; no provider key is in application code.
+  Signup/recovery templates display OTP tokens; email OTP is six digits with a
+  ten-minute expiry (approved by the owner).
 - Branch protection is blocked by the current GitHub plan, not by admin permissions.
-- End-to-end CI distribution is pending the real Staging environment. Successful
-  source checks alone do not prove that the backend or delivery works.
-- Read-only diagnostics with the supplied publishable key reached Supabase Auth
-  (`/auth/v1/settings`: HTTP 200). The Data API returned `PGRST205` for both
-  `public.profiles` and `public.app_config` using `limit=0`; these required tables
-  are not currently available to the client through the API. No user rows were read.
-  Also, `api.on-air.website` did not resolve in DNS. Backend readiness must be fixed
-  before validating live sign-in/profile completion/device registration.
+- Source CI and build configuration do not prove backend readiness or successful
+  delivery. The new Supabase database has no application migrations, and the
+  command API is undeployed. Live profile completion/device registration require
+  the shared Backend implementation first. No schema changes were made here.
 
 ### Owner steps for pending setup
 
@@ -110,33 +114,21 @@ Settings → Secrets and variables → Actions → Repository secrets:
    and configure `main` with the four required checks listed above, requiring a PR,
    an up-to-date branch, and no force pushes/deletions. The check names appear after
    the first PR run. Until then, merge only after manually confirming all checks.
-2. Create the replacement Staging Supabase project, retain its database password
-   securely, and obtain **Project URL**, **Project Ref**, and the **Publishable key**
-   from **Connect** / **Settings → API Keys**. Share only those public values with
-   the app developer. Deploy the command API as a Supabase Edge Function from the
-   shared Backend repository. Its URL must implement the contract in
-   `contracts/node-api.openapi.yaml`; changing only a DNS record does not deploy an API.
-   Apply schema changes through the team's migration/PR process, not this Guest repo.
-3. Open **Repository Settings → Secrets and variables → Actions → New repository
-   secret**, name it `STAGING_ENV_JSON`, and enter exactly:
-
-   ```json
-   {
-     "FLAVOR": "staging",
-     "SUPABASE_URL": "https://YOUR_STAGING_REF.supabase.co",
-     "SUPABASE_ANON_KEY": "YOUR_STAGING_PUBLISHABLE_KEY",
-     "NODE_API_BASE_URL": "https://YOUR_STAGING_REF.supabase.co/functions/v1/guest-api",
-     "LINK_DOMAIN": "on-air.website"
-   }
-   ```
-
-   Replace all placeholders with real values. Keep server/provider keys out of this
-   JSON. Optionally validate the same local file using
-   `python3 tool/validate_staging_env.py env/staging.json` (`python` on Windows).
-4. Open Firebase project **onair-guest-staging → App Distribution → Testers & Groups**.
+2. The replacement Supabase project and environment secret are already configured;
+   no need to retrieve their keys again. Agree on the shared Backend repository,
+   then implement the schema/RLS/seed through migration files, test locally with
+   Docker, and review a PR before Staging deployment. Deploy `guest-api` from that
+   repository with the contract in `contracts/node-api.openapi.yaml`. A configured
+   URL alone does not deploy an API. Production needs a separate Supabase project.
+3. If the Staging public environment changes later, update the ignored local
+   `env/staging.json`, validate with
+   `python3 tool/validate_staging_env.py env/staging.json` (`python` on Windows),
+   then replace `STAGING_ENV_JSON` in **Repository Settings → Secrets and variables
+   → Actions** with that exact JSON. Keep server/provider keys out of it.
+4. Open Firebase project **onair-staging-5579e → App Distribution → Testers & Groups**.
    Open group **OnAir Staging** (`onair-staging`), add the intended tester emails, and
    save. Check the selected Google account: the project was created using
-   `elhawysasa697@gmail.com`; another account may show “project does not exist”.
+   `onair3team@gmail.com`; another account may show “project does not exist”.
    Testers must accept the email invitation to access distributed builds.
 5. Open a PR and wait for all four `ci` checks. After review and merge to `main`,
    `staging-build` runs automatically. Alternatively, after the workflow exists on

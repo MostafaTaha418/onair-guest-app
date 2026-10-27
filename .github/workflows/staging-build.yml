@@ -46,7 +46,7 @@ jobs:
           mkdir -p env
           printf '%s\n' "$STAGING_ENV" > env/staging.json
           python3 tool/validate_staging_env.py env/staging.json
-          test "$FIREBASE_APP_ID" = '1:1093743526436:android:cbd768d954e65acc784eb1' || { echo '::error::Missing or incorrect Staging Firebase App ID'; exit 1; }
+          python3 -c 'import json, os; c=json.load(open("android/app/src/staging/google-services.json")); expected=next(x["client_info"]["mobilesdk_app_id"] for x in c["client"] if x["client_info"]["android_client_info"]["package_name"] == "com.onair.guest.staging"); assert os.environ.get("FIREBASE_APP_ID") == expected, "Missing or incorrect Staging Firebase App ID"'
           test -n "$FIREBASE_CREDENTIALS" && test -n "$FIREBASE_GROUPS" || { echo '::error::Missing Firebase credentials or tester groups'; exit 1; }
 
       - run: flutter pub get
