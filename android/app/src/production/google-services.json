@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "463823071401",
+    "project_id": "onair-guest-production",
+    "storage_bucket": "onair-guest-production.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:463823071401:android:c28626e2285b6522e6a1b8",
+        "android_client_info": {
+          "package_name": "com.onair.guest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzFatRjltbW1VLPPjmJg-k8hIVDLOeLDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

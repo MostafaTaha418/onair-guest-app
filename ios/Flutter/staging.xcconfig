@@ -1,0 +1,7 @@
+#include "Generated.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = com.onair.guest.staging
+APP_DISPLAY_NAME = OnAir (Staging)
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Staging
+ONAIR_LINK_DOMAIN = on-air.website
+FIREBASE_CONFIG_PATH = config/staging/GoogleService-Info.plist

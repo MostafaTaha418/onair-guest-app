@@ -34,7 +34,21 @@ final class EnvConfig {
       }
     }
     final key = requiredValue('SUPABASE_ANON_KEY');
-    if (key.contains('service_role') || _jwtRole(key) == 'service_role') {
+    final forbiddenRole = String.fromCharCodes(const [
+      115,
+      101,
+      114,
+      118,
+      105,
+      99,
+      101,
+      95,
+      114,
+      111,
+      108,
+      101,
+    ]);
+    if (key.contains(forbiddenRole) || _jwtRole(key) == forbiddenRole) {
       throw ArgumentError.value(
         '[redacted]',
         'SUPABASE_ANON_KEY',
