@@ -5,6 +5,7 @@ import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
+import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
 import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
@@ -25,7 +26,7 @@ GoRouter createAppRouter({
   refreshListenable: refreshListenable,
   redirect: (_, state) => resolveRedirect(
     RedirectContext(
-      location: state.uri.path,
+      location: state.uri.toString(),
       authState: authCubit.state,
       from: state.uri.queryParameters['from'],
     ),
@@ -65,6 +66,51 @@ GoRouter createAppRouter({
       path: AppRoutes.newPassword,
       name: 'new-password',
       builder: (_, _) => const NewPasswordScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.notAvailable,
+      name: 'not-available',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.propertyPattern,
+      name: 'linked-property',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.searchResults,
+      name: 'linked-search-results',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.bookingDetailsPattern,
+      name: 'linked-booking',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.remainingPaymentPattern,
+      name: 'linked-remaining-payment',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.damageClaimPattern,
+      name: 'linked-damage-claim',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.bookingReviewPattern,
+      name: 'linked-booking-review',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.supportCasePattern,
+      name: 'linked-support-case',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.paymentReturn,
+      name: 'linked-payment-return',
+      builder: (_, _) => const NotAvailableScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),

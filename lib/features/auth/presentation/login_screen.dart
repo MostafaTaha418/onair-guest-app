@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
@@ -114,6 +115,16 @@ final class _LoginScreenState extends State<LoginScreen> {
     final countryUnsupported = _requestError == 'PHONE_COUNTRY_NOT_SUPPORTED';
     final invalidCredentials = _requestError == 'INVALID_CREDENTIALS';
     return Scaffold(
+      appBar: widget.registration
+          ? null
+          : AppBar(
+              leading: IconButton(
+                key: const ValueKey('close-login-button'),
+                tooltip: l10n.authClose,
+                onPressed: _cancelSignIn,
+                icon: const Icon(Icons.close),
+              ),
+            ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(Dimens.screenSide),
@@ -147,6 +158,16 @@ final class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void _cancelSignIn() {
+    final router = GoRouter.of(context);
+    if (router.canPop()) {
+      router.pop();
+      return;
+    }
+    final origin = GoRouterState.of(context).uri.queryParameters['cancelTo'];
+    router.go(resolveAuthCancelDestination(origin));
   }
 
   List<Widget> _emailFields(

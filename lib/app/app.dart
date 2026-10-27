@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/app_router.dart';
 import 'package:on_air/app/router/auth_router_refresh.dart';
+import 'package:on_air/app/router/incoming_links.dart';
+import 'package:on_air/app/router/link_parser.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
@@ -25,6 +27,8 @@ final class OnAirApp extends StatefulWidget {
     this.sessionEventSource,
     this.personalDataResetter,
     this.deviceRegistrationService,
+    this.uriLinkSource,
+    this.linkDomain,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -32,6 +36,8 @@ final class OnAirApp extends StatefulWidget {
   final SessionEventSource? sessionEventSource;
   final PersonalDataResetter? personalDataResetter;
   final DeviceRegistrationService? deviceRegistrationService;
+  final UriLinkSource? uriLinkSource;
+  final String? linkDomain;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -42,6 +48,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final GoRouter _router;
   late final SessionEventSource _sessionEventSource;
   late final PersonalDataResetter _personalDataResetter;
+  IncomingLinks? _incomingLinks;
 
   @override
   void initState() {
@@ -74,6 +81,16 @@ final class _OnAirAppState extends State<OnAirApp> {
     AppLogger logger,
   ) async {
     await _authCubit.restore();
+    final source = widget.uriLinkSource;
+    final domain = widget.linkDomain;
+    if (source != null && domain != null && mounted) {
+      _incomingLinks = IncomingLinks(
+        source,
+        LinkParser(domain),
+        _router,
+        _authCubit,
+      )..start();
+    }
     try {
       final config = await configRepository.load();
       _authCubit.updateTermsVersion(config.currentTermsVersion);
@@ -84,6 +101,7 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   @override
   void dispose() {
+    unawaited(_incomingLinks?.close());
     _router.dispose();
     _refresh.dispose();
     unawaited(widget.deviceRegistrationService?.close());

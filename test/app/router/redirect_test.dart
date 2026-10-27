@@ -36,4 +36,55 @@ void main() {
       isNull,
     );
   });
+
+  test('members-only route sends a visitor to login with a safe return', () {
+    expect(
+      resolveRedirect(
+        const RedirectContext(
+          location: AppRoutes.bookings,
+          authState: SignedOut(),
+        ),
+      ),
+      '/auth/login?from=%2Fbookings',
+    );
+  });
+
+  test('signed-in auth route accepts only registered relative from paths', () {
+    for (final unsafe in [
+      'https://evil.example/bookings',
+      '//evil.example/bookings',
+      '/unknown',
+      AppRoutes.login,
+    ]) {
+      expect(
+        resolveRedirect(
+          RedirectContext(
+            location: AppRoutes.login,
+            authState: SignedIn(complete, isComplete: true),
+            from: unsafe,
+          ),
+        ),
+        AppRoutes.home,
+      );
+    }
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.login,
+          authState: SignedIn(complete, isComplete: true),
+          from: AppRoutes.bookings,
+        ),
+      ),
+      AppRoutes.bookings,
+    );
+  });
+
+  test('sign-in cancel returns to a safe public origin as a visitor', () {
+    expect(resolveAuthCancelDestination(AppRoutes.search), AppRoutes.search);
+    expect(resolveAuthCancelDestination(AppRoutes.bookings), AppRoutes.home);
+    expect(
+      resolveAuthCancelDestination('https://evil.example'),
+      AppRoutes.home,
+    );
+  });
 }

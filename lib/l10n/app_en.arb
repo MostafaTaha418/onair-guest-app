@@ -113,5 +113,6 @@
   "authVerifyNow": "Verify now",
   "authEmailStatus": "Email status",
   "authSignUpWithEmail": "Create account with email",
-  "authSignInWithEmail": "Sign in with email"
+  "authSignInWithEmail": "Sign in with email",
+  "authClose": "Close"
 }

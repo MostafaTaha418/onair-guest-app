@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/app/app.dart';
+import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/core/api/generated/rest_client.dart';
 import 'package:on_air/core/auth/secure_session_storage.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
@@ -25,6 +26,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> bootstrap(String flavor) async {
   WidgetsFlutterBinding.ensureInitialized();
   final environment = EnvConfig.fromEnvironment();
+  final uriLinkSource = AppLinksUriSource();
   if (environment.flavor != flavor) {
     throw StateError('Entrypoint flavor does not match FLAVOR');
   }
@@ -88,6 +90,8 @@ Future<void> bootstrap(String flavor) async {
         sessionEventSource: sessionEventSource,
         personalDataResetter: const NoopPersonalDataResetter(),
         deviceRegistrationService: deviceRegistrationService,
+        uriLinkSource: uriLinkSource,
+        linkDomain: environment.linkDomain,
       ),
     ),
   );

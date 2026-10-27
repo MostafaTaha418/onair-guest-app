@@ -7,72 +7,84 @@ final class RedirectContext {
     required this.authState,
     this.from,
   });
+
   final String location;
   final AuthState authState;
   final String? from;
 }
 
 String? resolveRedirect(RedirectContext context) {
+  final path = Uri.tryParse(context.location)?.path ?? context.location;
   if (context.authState is AuthUnknown) {
-    if (context.location == AppRoutes.splash) return null;
+    if (path == AppRoutes.splash) return null;
+    final returnTo = _safeReturnLocation(context.location) ?? AppRoutes.home;
     return Uri(
       path: AppRoutes.splash,
-      queryParameters: {'from': context.location},
-    ).toString();
-  }
-  if (context.location == AppRoutes.splash) {
-    const visitorRoutes = {
-      AppRoutes.home,
-      AppRoutes.search,
-      AppRoutes.bookings,
-      AppRoutes.favorites,
-      AppRoutes.account,
-    };
-    return visitorRoutes.contains(context.from) ? context.from : AppRoutes.home;
-  }
-  final state = context.authState;
-  if (state is SessionEnded) {
-    final returnTo = state.returnTo ?? context.location;
-    return Uri(
-      path: AppRoutes.login,
       queryParameters: {'from': returnTo},
     ).toString();
   }
+  if (path == AppRoutes.splash) {
+    return _safeReturnLocation(context.from) ?? AppRoutes.home;
+  }
+  final state = context.authState;
+  if (state is SessionEnded) {
+    final returnTo =
+        _safeReturnLocation(state.returnTo) ??
+        _safeReturnLocation(context.location) ??
+        AppRoutes.home;
+    return _loginFor(returnTo);
+  }
   if (state is CodeSent || state is RateLimited) {
-    return context.location == AppRoutes.otp ? null : AppRoutes.otp;
+    return path == AppRoutes.otp ? null : AppRoutes.otp;
   }
   if (state is RecoveryVerified) {
-    return context.location == AppRoutes.newPassword
-        ? null
-        : AppRoutes.newPassword;
+    return path == AppRoutes.newPassword ? null : AppRoutes.newPassword;
+  }
+  if (state is SignedOut && AppRoutes.requiresAccount(context.location)) {
+    return _loginFor(context.location);
   }
   if (state is SignedOut &&
-      (context.location == AppRoutes.otp ||
-          context.location == AppRoutes.completeProfile ||
-          context.location == AppRoutes.newPassword)) {
+      (path == AppRoutes.otp ||
+          path == AppRoutes.completeProfile ||
+          path == AppRoutes.newPassword)) {
     return AppRoutes.login;
   }
   if (state is SignedIn && !state.isComplete) {
-    if (context.location == AppRoutes.completeProfile) return null;
-    final returnTo = _isAuthRoute(context.location)
-        ? (context.from ?? AppRoutes.home)
-        : context.location;
+    if (path == AppRoutes.completeProfile) return null;
+    final returnTo = AppRoutes.isAuthLocation(context.location)
+        ? (_safeReturnLocation(context.from) ?? AppRoutes.home)
+        : (_safeReturnLocation(context.location) ?? AppRoutes.home);
     return Uri(
       path: AppRoutes.completeProfile,
       queryParameters: {'from': returnTo},
     ).toString();
   }
-  if (state is SignedIn && state.isComplete && _isAuthRoute(context.location)) {
-    final from = context.from;
-    return from != null && !_isAuthRoute(from) ? from : AppRoutes.home;
+  if (state is SignedIn &&
+      state.isComplete &&
+      AppRoutes.isAuthLocation(context.location)) {
+    return _safeReturnLocation(context.from) ?? AppRoutes.home;
   }
   return null;
 }
 
-bool _isAuthRoute(String location) =>
-    location == AppRoutes.login ||
-    location == AppRoutes.register ||
-    location == AppRoutes.otp ||
-    location == AppRoutes.completeProfile ||
-    location == AppRoutes.forgotPassword ||
-    location == AppRoutes.newPassword;
+String resolveAuthCancelDestination(String? origin) {
+  final safe = _safeReturnLocation(origin);
+  if (safe == null ||
+      AppRoutes.requiresAccount(safe) ||
+      AppRoutes.isAuthLocation(safe)) {
+    return AppRoutes.home;
+  }
+  return safe;
+}
+
+String _loginFor(String location) => Uri(
+  path: AppRoutes.login,
+  queryParameters: {'from': _safeReturnLocation(location) ?? AppRoutes.home},
+).toString();
+
+String? _safeReturnLocation(String? location) {
+  if (!AppRoutes.isRegisteredLocation(location)) return null;
+  if (AppRoutes.isAuthLocation(location!)) return null;
+  if (Uri.parse(location).path == AppRoutes.splash) return null;
+  return location;
+}

@@ -291,4 +291,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authSignInWithEmail => 'تسجيل الدخول بالبريد';
+
+  @override
+  String get authClose => 'إغلاق';
 }

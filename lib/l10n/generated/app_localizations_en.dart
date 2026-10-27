@@ -298,4 +298,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authSignInWithEmail => 'Sign in with email';
+
+  @override
+  String get authClose => 'Close';
 }

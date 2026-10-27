@@ -9,7 +9,7 @@ void main() {
   testWidgets('five tabs are RTL, highlight selection, and keep Home scroll', (
     tester,
   ) async {
-    await pumpVisitorApp(tester);
+    await pumpSignedInApp(tester);
     const tabs = ['home', 'search', 'bookings', 'favorites', 'account'];
     for (final name in tabs) {
       expect(find.byKey(ValueKey('nav-$name')), findsOneWidget);
@@ -59,6 +59,30 @@ void main() {
     expect(
       tester.state<ScrollableState>(homeScrollable).position.pixels,
       before,
+    );
+  });
+
+  testWidgets('visitor can cancel members-only sign-in back to the origin', (
+    tester,
+  ) async {
+    await pumpVisitorApp(tester);
+
+    await tester.tap(find.byKey(const ValueKey('nav-search')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('nav-bookings')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('close-login-button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('close-login-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('nav-search')), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(find.byKey(const ValueKey('nav-search')))
+          .flagsCollection
+          .isSelected,
+      Tristate.isTrue,
     );
   });
 }

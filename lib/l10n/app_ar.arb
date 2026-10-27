@@ -113,5 +113,6 @@
   "authVerifyNow": "أكد الآن",
   "authEmailStatus": "حالة البريد الإلكتروني",
   "authSignUpWithEmail": "إنشاء الحساب بالبريد",
-  "authSignInWithEmail": "تسجيل الدخول بالبريد"
+  "authSignInWithEmail": "تسجيل الدخول بالبريد",
+  "authClose": "إغلاق"
 }

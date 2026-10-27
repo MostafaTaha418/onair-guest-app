@@ -224,16 +224,16 @@ malformed link → `/not-available` (quickstart V15–V16).
 
 ### Tests for User Story 5
 
-- [ ] T091 [P] [US5] Add cases to `test/app/router/redirect_test.dart`: members-only route without session → `/auth/login?from=<location>`; `from` accepted only when it is a relative registered path (reject `https://…`, `//…`, unknown paths); signed in on `/auth/*` → `from` or `/home`; sign-in cancel returns to origin as visitor
-- [ ] T092 [P] [US5] Unit test `test/app/router/link_parser_test.dart`: host must equal `EnvConfig.linkDomain`; path IDs must be UUID v4; query parameters never change state; unknown or malformed → `/not-available`; members-only link while signed out → login then link
+- [X] T091 [P] [US5] Add cases to `test/app/router/redirect_test.dart`: members-only route without session → `/auth/login?from=<location>`; `from` accepted only when it is a relative registered path (reject `https://…`, `//…`, unknown paths); signed in on `/auth/*` → `from` or `/home`; sign-in cancel returns to origin as visitor
+- [X] T092 [P] [US5] Unit test `test/app/router/link_parser_test.dart`: host must equal `EnvConfig.linkDomain`; path IDs must be UUID v4; query parameters never change state; unknown or malformed → `/not-available`; members-only link while signed out → login then link
 
 ### Implementation for User Story 5
 
-- [ ] T093 [US5] Implement members-only and auth-route rules plus `from` validation in `lib/app/router/redirect.dart` (passes T091)
-- [ ] T094 [P] [US5] Implement `LinkParser` in `lib/app/router/link_parser.dart` and the `app_links` listener in `lib/app/router/incoming_links.dart` (passes T092)
-- [ ] T095 [P] [US5] Implement `NotAvailableScreen` (neutral copy, never says whether the item exists) in `lib/features/app_update/presentation/not_available_screen.dart` and route `/not-available`
-- [ ] T096 [US5] Register later-phase link patterns (`/property/:id`, `/search/results`, `/bookings/:id`, `/bookings/:id/remaining-payment`, `/bookings/:id/damage-claim/:claimId`, `/bookings/:id/review`, `/support/:caseId`, `/payment/return`) resolving to `/not-available` in `lib/app/router/routes.dart`
-- [ ] T097 [US5] Add a close/cancel action to `lib/features/auth/presentation/login_screen.dart` that returns to the origin as a visitor
+- [X] T093 [US5] Implement members-only and auth-route rules plus `from` validation in `lib/app/router/redirect.dart` (passes T091)
+- [X] T094 [P] [US5] Implement `LinkParser` in `lib/app/router/link_parser.dart` and the `app_links` listener in `lib/app/router/incoming_links.dart` (passes T092)
+- [X] T095 [P] [US5] Implement `NotAvailableScreen` (neutral copy, never says whether the item exists) in `lib/features/app_update/presentation/not_available_screen.dart` and route `/not-available`
+- [X] T096 [US5] Register later-phase link patterns (`/property/:id`, `/search/results`, `/bookings/:id`, `/bookings/:id/remaining-payment`, `/bookings/:id/damage-claim/:claimId`, `/bookings/:id/review`, `/support/:caseId`, `/payment/return`) resolving to `/not-available` in `lib/app/router/routes.dart`
+- [X] T097 [US5] Add a close/cancel action to `lib/features/auth/presentation/login_screen.dart` that returns to the origin as a visitor
 
 **Checkpoint**: Navigation rules complete.
 

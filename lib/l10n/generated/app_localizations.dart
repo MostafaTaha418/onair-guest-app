@@ -637,6 +637,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تسجيل الدخول بالبريد'**
   String get authSignInWithEmail;
+
+  /// No description provided for @authClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق'**
+  String get authClose;
 }
 
 class _AppLocalizationsDelegate
