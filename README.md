@@ -39,6 +39,11 @@ the design system never import features. Generated code (`**/*.g.dart`, `**/*.fr
    `env/*.json` files are git-ignored and must never contain a `service_role` key or any
    provider secret.
 
+   `BACKEND_MODE` chooses the backend (Guest Plan §2.6): `mock` (the default in
+   `env/example.json`) runs on in-memory data with no Supabase, Node, or Firebase connection;
+   every code is `123456` and only Egyptian numbers are accepted, like the real contract.
+   Set `BACKEND_MODE` to `remote` (or remove it) to use Staging. Production rejects `mock`.
+
    ```bash
    cp env/example.json env/staging.json
    ```

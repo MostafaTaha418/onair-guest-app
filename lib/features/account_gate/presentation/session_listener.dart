@@ -104,7 +104,11 @@ final class _SessionListenerState extends State<SessionListener> {
         (current is SignedIn && previous is! SignedIn),
     listener: (context, state) async {
       if (state is SignedIn) {
-        await widget.deviceRegistrationService?.registerAfterSignIn();
+        try {
+          await widget.deviceRegistrationService?.registerAfterSignIn();
+        } on Object {
+          // Best effort: retried on the next sign-in or token refresh.
+        }
         return;
       }
       await widget.personalDataResetter.resetPersonalData();

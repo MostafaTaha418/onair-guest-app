@@ -1,5 +1,12 @@
 import 'dart:convert';
 
+/// Which backend the repositories talk to (Guest Plan §2.6).
+///
+/// `mock` uses in-memory implementations that follow the same contracts, so
+/// screens can be built before the backend is ready. Never allowed in
+/// production builds.
+enum BackendMode { remote, mock }
+
 final class EnvConfig {
   EnvConfig._({
     required this.flavor,
@@ -7,6 +14,7 @@ final class EnvConfig {
     required this.supabaseAnonKey,
     required this.nodeApiBaseUrl,
     required this.linkDomain,
+    required this.backendMode,
   });
 
   factory EnvConfig.fromMap(Map<String, String> values) {
@@ -64,12 +72,26 @@ final class EnvConfig {
     if (domain.contains('/') || domain.contains(':') || domain.contains(' ')) {
       throw ArgumentError.value(domain, 'LINK_DOMAIN');
     }
+    final modeValue = values['BACKEND_MODE']?.trim() ?? '';
+    final backendMode = switch (modeValue) {
+      '' || 'remote' => BackendMode.remote,
+      'mock' => BackendMode.mock,
+      _ => throw ArgumentError.value(modeValue, 'BACKEND_MODE'),
+    };
+    if (backendMode == BackendMode.mock && flavor == 'production') {
+      throw ArgumentError.value(
+        modeValue,
+        'BACKEND_MODE',
+        'Mock backend is not allowed in production',
+      );
+    }
     return EnvConfig._(
       flavor: flavor,
       supabaseUrl: supabaseUrl,
       supabaseAnonKey: key,
       nodeApiBaseUrl: nodeApiBaseUrl,
       linkDomain: domain,
+      backendMode: backendMode,
     );
   }
 
@@ -79,6 +101,7 @@ final class EnvConfig {
     'SUPABASE_ANON_KEY': const String.fromEnvironment('SUPABASE_ANON_KEY'),
     'NODE_API_BASE_URL': const String.fromEnvironment('NODE_API_BASE_URL'),
     'LINK_DOMAIN': const String.fromEnvironment('LINK_DOMAIN'),
+    'BACKEND_MODE': const String.fromEnvironment('BACKEND_MODE'),
   });
 
   final String flavor;
@@ -86,6 +109,7 @@ final class EnvConfig {
   final String supabaseAnonKey;
   final String nodeApiBaseUrl;
   final String linkDomain;
+  final BackendMode backendMode;
 
   static String? _jwtRole(String key) {
     final parts = key.split('.');

@@ -102,6 +102,12 @@ class EnvironmentTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate(invalid)
 
+    def test_backend_mode_is_optional_and_must_be_remote(self):
+        validate({**valid_env(), "BACKEND_MODE": "remote"})
+        for value in ("mock", "", "fake"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                validate({**valid_env(), "BACKEND_MODE": value})
+
     def test_rejects_wrong_flavor_urls_keys_and_domains(self):
         cases = [
             ("FLAVOR", "production"), ("FLAVOR", ""),

@@ -11,15 +11,21 @@ from secret_checks import jwt_payload, secret_labels
 REQUIRED_KEYS = {
     "FLAVOR", "SUPABASE_URL", "SUPABASE_ANON_KEY", "NODE_API_BASE_URL", "LINK_DOMAIN"
 }
+# Optional. A distributed Staging build must talk to the real backend, so the
+# in-memory mock (Guest Plan 2.6) is rejected here.
+OPTIONAL_KEYS = {"BACKEND_MODE"}
 
 
 def validate(values):
-    if not isinstance(values, dict) or set(values) != REQUIRED_KEYS:
-        raise ValueError("Environment must contain exactly the five documented keys.")
+    if (not isinstance(values, dict) or not REQUIRED_KEYS <= set(values)
+            or not set(values) <= REQUIRED_KEYS | OPTIONAL_KEYS):
+        raise ValueError("Environment must contain the five documented keys (plus optional BACKEND_MODE).")
     if any(not isinstance(v, str) or not v.strip() or v != v.strip() for v in values.values()):
         raise ValueError("Environment values must be nonempty trimmed strings.")
     if values["FLAVOR"] != "staging":
         raise ValueError("FLAVOR must be staging.")
+    if values.get("BACKEND_MODE", "remote") != "remote":
+        raise ValueError("BACKEND_MODE must be remote for a distributed build.")
     for name in ("SUPABASE_URL", "NODE_API_BASE_URL"):
         url = urlsplit(values[name])
         if (url.scheme != "https" or not url.hostname or url.username or url.password

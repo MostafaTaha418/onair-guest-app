@@ -23,6 +23,10 @@ Fill `env/staging.json` with the **public** Staging values only: `SUPABASE_URL`,
 `SUPABASE_ANON_KEY`, `NODE_API_BASE_URL`, `LINK_DOMAIN`. Never put a `service_role` key or any
 provider secret in it.
 
+Until Staging is ready, keep `"BACKEND_MODE": "mock"` (Guest Plan §2.6): the app runs on
+in-memory repositories that follow the same contracts, and every code is `123456`. Use
+`"remote"` (or omit the key) for Staging; production builds reject `mock`.
+
 ```bash
 flutter pub get
 ```

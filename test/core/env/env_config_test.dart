@@ -59,4 +59,27 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('backend mode defaults to remote and accepts mock on staging', () {
+    expect(EnvConfig.fromMap(values(anon)).backendMode, BackendMode.remote);
+    expect(
+      EnvConfig.fromMap(values(anon)..['BACKEND_MODE'] = 'mock').backendMode,
+      BackendMode.mock,
+    );
+  });
+
+  test('mock backend is rejected in production and unknown modes fail', () {
+    expect(
+      () => EnvConfig.fromMap(
+        values(anon)
+          ..['FLAVOR'] = 'production'
+          ..['BACKEND_MODE'] = 'mock',
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => EnvConfig.fromMap(values(anon)..['BACKEND_MODE'] = 'fake'),
+      throwsArgumentError,
+    );
+  });
 }
