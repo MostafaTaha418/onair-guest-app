@@ -41,9 +41,15 @@ String? resolveRedirect(RedirectContext context) {
   if (state is CodeSent || state is RateLimited) {
     return context.location == AppRoutes.otp ? null : AppRoutes.otp;
   }
+  if (state is RecoveryVerified) {
+    return context.location == AppRoutes.newPassword
+        ? null
+        : AppRoutes.newPassword;
+  }
   if (state is SignedOut &&
       (context.location == AppRoutes.otp ||
-          context.location == AppRoutes.completeProfile)) {
+          context.location == AppRoutes.completeProfile ||
+          context.location == AppRoutes.newPassword)) {
     return AppRoutes.login;
   }
   if (state is SignedIn && !state.isComplete) {
@@ -67,4 +73,6 @@ bool _isAuthRoute(String location) =>
     location == AppRoutes.login ||
     location == AppRoutes.register ||
     location == AppRoutes.otp ||
-    location == AppRoutes.completeProfile;
+    location == AppRoutes.completeProfile ||
+    location == AppRoutes.forgotPassword ||
+    location == AppRoutes.newPassword;

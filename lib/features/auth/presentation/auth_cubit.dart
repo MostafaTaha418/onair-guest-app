@@ -29,6 +29,7 @@ final class AuthCubit extends Cubit<AuthState> {
   final DateTime Function() _clock;
   final SignOutCoordinator _signOutCoordinator;
   late final StreamSubscription<GuestAccount?> _subscription;
+  String? _pendingEmailSignupName;
 
   void updateTermsVersion(String version) {
     _currentTermsVersion = version;
@@ -86,19 +87,67 @@ final class AuthCubit extends Cubit<AuthState> {
     String email,
     String password,
   ) async {
-    final challenge = await _repository.signUpEmail(name, email, password);
-    if (!isClosed) emit(CodeSent(challenge));
+    _pendingEmailSignupName = name.trim();
+    try {
+      final challenge = await _repository.signUpEmail(name, email, password);
+      if (!isClosed) emit(CodeSent(challenge));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) {
+        emit(
+          RateLimited(
+            CodeChallenge(
+              channel: VerificationChannel.emailSignup,
+              target: email.trim().toLowerCase(),
+              resendAt: error.until,
+            ),
+            error.until,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> verifyEmailCode(String code) async {
     final current = state;
     if (current is! CodeSent) return;
     try {
-      _emitAccount(
-        await _repository.verifyEmailCode(current.challenge.target, code),
+      var account = await _repository.verifyEmailCode(
+        current.challenge.target,
+        code,
       );
+      final name = _pendingEmailSignupName;
+      if (name != null && name.isNotEmpty) {
+        account = await _repository.completeProfile(
+          name,
+          _currentTermsVersion,
+        );
+        _pendingEmailSignupName = null;
+      }
+      _emitAccount(account);
     } on AuthCodeRejected catch (error) {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) emit(RateLimited(current.challenge, error.until));
+    }
+  }
+
+  Future<void> requestEmailVerification(String email) async {
+    try {
+      final challenge = await _repository.requestEmailVerification(email);
+      if (!isClosed) emit(CodeSent(challenge));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) {
+        emit(
+          RateLimited(
+            CodeChallenge(
+              channel: VerificationChannel.emailSignup,
+              target: email.trim().toLowerCase(),
+              resendAt: error.until,
+            ),
+            error.until,
+          ),
+        );
+      }
     }
   }
 
@@ -107,8 +156,23 @@ final class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> requestRecovery(String email) async {
-    final challenge = await _repository.requestRecovery(email);
-    if (!isClosed) emit(CodeSent(challenge));
+    try {
+      final challenge = await _repository.requestRecovery(email);
+      if (!isClosed) emit(CodeSent(challenge));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) {
+        emit(
+          RateLimited(
+            CodeChallenge(
+              channel: VerificationChannel.emailRecovery,
+              target: email.trim().toLowerCase(),
+              resendAt: error.until,
+            ),
+            error.until,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> verifyRecovery(String code) async {
@@ -117,8 +181,14 @@ final class AuthCubit extends Cubit<AuthState> {
         current.challenge.channel != VerificationChannel.emailRecovery) {
       return;
     }
-    await _repository.verifyRecovery(current.challenge.target, code);
-    if (!isClosed) emit(RecoveryVerified(current.challenge.target));
+    try {
+      await _repository.verifyRecovery(current.challenge.target, code);
+      if (!isClosed) emit(RecoveryVerified(current.challenge.target));
+    } on AuthCodeRejected catch (error) {
+      if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
+    } on AuthRateLimited catch (error) {
+      if (!isClosed) emit(RateLimited(current.challenge, error.until));
+    }
   }
 
   Future<void> setNewPassword(String password) async {

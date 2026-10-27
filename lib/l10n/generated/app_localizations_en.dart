@@ -248,4 +248,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String authWaitSeconds(int seconds) {
     return '$seconds seconds';
   }
+
+  @override
+  String get authEmailInvalid => 'Enter a valid email address.';
+
+  @override
+  String get authPasswordRule =>
+      'At least 8 characters with a letter and a number';
+
+  @override
+  String get authPasswordWeak => 'Weak';
+
+  @override
+  String get authPasswordMedium => 'Medium';
+
+  @override
+  String get authPasswordStrong => 'Strong';
+
+  @override
+  String get authForgotPassword => 'Forgot password?';
+
+  @override
+  String get authRecoveryTitle => 'Recover your password';
+
+  @override
+  String get authRecoveryDescription =>
+      'Enter your email and we will send a recovery code.';
+
+  @override
+  String get authNewPasswordTitle => 'New password';
+
+  @override
+  String get authNewPassword => 'Save password';
+
+  @override
+  String get authChangeEmail => 'Change email';
+
+  @override
+  String get authEmailNotVerified => 'Not verified';
+
+  @override
+  String get authVerifyNow => 'Verify now';
+
+  @override
+  String get authEmailStatus => 'Email status';
+
+  @override
+  String get authSignUpWithEmail => 'Create account with email';
+
+  @override
+  String get authSignInWithEmail => 'Sign in with email';
 }

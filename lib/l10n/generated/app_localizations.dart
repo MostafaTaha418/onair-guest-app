@@ -541,6 +541,102 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'{seconds} ثانية'**
   String authWaitSeconds(int seconds);
+
+  /// No description provided for @authEmailInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب بريد إلكتروني صحيح.'**
+  String get authEmailInvalid;
+
+  /// No description provided for @authPasswordRule.
+  ///
+  /// In ar, this message translates to:
+  /// **'8 أحرف على الأقل، بينهم حرف ورقم'**
+  String get authPasswordRule;
+
+  /// No description provided for @authPasswordWeak.
+  ///
+  /// In ar, this message translates to:
+  /// **'ضعيفة'**
+  String get authPasswordWeak;
+
+  /// No description provided for @authPasswordMedium.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسطة'**
+  String get authPasswordMedium;
+
+  /// No description provided for @authPasswordStrong.
+  ///
+  /// In ar, this message translates to:
+  /// **'قوية'**
+  String get authPasswordStrong;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسيت كلمة المرور؟'**
+  String get authForgotPassword;
+
+  /// No description provided for @authRecoveryTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعادة كلمة المرور'**
+  String get authRecoveryTitle;
+
+  /// No description provided for @authRecoveryDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب بريدك وسنبعت لك كود الاستعادة.'**
+  String get authRecoveryDescription;
+
+  /// No description provided for @authNewPasswordTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة مرور جديدة'**
+  String get authNewPasswordTitle;
+
+  /// No description provided for @authNewPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ كلمة المرور'**
+  String get authNewPassword;
+
+  /// No description provided for @authChangeEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير البريد الإلكتروني'**
+  String get authChangeEmail;
+
+  /// No description provided for @authEmailNotVerified.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مؤكد'**
+  String get authEmailNotVerified;
+
+  /// No description provided for @authVerifyNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكد الآن'**
+  String get authVerifyNow;
+
+  /// No description provided for @authEmailStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة البريد الإلكتروني'**
+  String get authEmailStatus;
+
+  /// No description provided for @authSignUpWithEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء الحساب بالبريد'**
+  String get authSignUpWithEmail;
+
+  /// No description provided for @authSignInWithEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول بالبريد'**
+  String get authSignInWithEmail;
 }
 
 class _AppLocalizationsDelegate

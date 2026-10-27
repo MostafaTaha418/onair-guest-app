@@ -21,6 +21,9 @@ final class FoundationAuthRepository implements AuthRepository {
     String password,
   ) async => _notReady();
   @override
+  Future<CodeChallenge> requestEmailVerification(String email) async =>
+      _notReady();
+  @override
   Future<GuestAccount> verifyEmailCode(String email, String code) async =>
       _notReady();
   @override

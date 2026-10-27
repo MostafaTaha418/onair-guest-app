@@ -29,6 +29,7 @@ abstract interface class AuthRepository {
   Future<CodeChallenge> requestPhoneCode(String phone);
   Future<GuestAccount> verifyPhoneCode(String phone, String code);
   Future<CodeChallenge> signUpEmail(String name, String email, String password);
+  Future<CodeChallenge> requestEmailVerification(String email);
   Future<GuestAccount> verifyEmailCode(String email, String code);
   Future<GuestAccount> signInEmail(String email, String password);
   Future<CodeChallenge> requestRecovery(String email);

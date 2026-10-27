@@ -7,7 +7,9 @@ import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
+import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
 import 'package:on_air/features/auth/presentation/login_screen.dart';
+import 'package:on_air/features/auth/presentation/new_password_screen.dart';
 import 'package:on_air/features/auth/presentation/otp_screen.dart';
 import 'package:on_air/features/auth/presentation/register_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
@@ -53,6 +55,16 @@ GoRouter createAppRouter({
       path: AppRoutes.completeProfile,
       name: 'complete-profile',
       builder: (_, _) => const CompleteProfileScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.forgotPassword,
+      name: 'forgot-password',
+      builder: (_, _) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.newPassword,
+      name: 'new-password',
+      builder: (_, _) => const NewPasswordScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),

@@ -25,6 +25,7 @@ final class OnAirTextStyles extends ThemeExtension<OnAirTextStyles> {
   TextStyle get input => _style(15, FontWeight.w500);
   TextStyle get placeholder => _style(15, FontWeight.w400);
   TextStyle get forgotLink => _style(11, FontWeight.w700, spacing: 0.5);
+  TextStyle get passwordHint => _style(12, FontWeight.w400, height: 1.4);
   TextStyle get authButton => _style(15, FontWeight.w600);
   TextStyle get homeWelcome => _style(15, FontWeight.w700, height: 1.15);
   TextStyle get homeUserName => _style(18, FontWeight.w500, height: 1.15);

@@ -97,5 +97,21 @@
   "authAcceptTerms": "أوافق على الشروط والأحكام وسياسة الخصوصية",
   "authTermsRequired": "لازم توافق على الشروط للمتابعة.",
   "authWaitSeconds": "{seconds} ثانية",
-  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}}
+  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}},
+  "authEmailInvalid": "اكتب بريد إلكتروني صحيح.",
+  "authPasswordRule": "8 أحرف على الأقل، بينهم حرف ورقم",
+  "authPasswordWeak": "ضعيفة",
+  "authPasswordMedium": "متوسطة",
+  "authPasswordStrong": "قوية",
+  "authForgotPassword": "نسيت كلمة المرور؟",
+  "authRecoveryTitle": "استعادة كلمة المرور",
+  "authRecoveryDescription": "اكتب بريدك وسنبعت لك كود الاستعادة.",
+  "authNewPasswordTitle": "كلمة مرور جديدة",
+  "authNewPassword": "حفظ كلمة المرور",
+  "authChangeEmail": "تغيير البريد الإلكتروني",
+  "authEmailNotVerified": "غير مؤكد",
+  "authVerifyNow": "أكد الآن",
+  "authEmailStatus": "حالة البريد الإلكتروني",
+  "authSignUpWithEmail": "إنشاء الحساب بالبريد",
+  "authSignInWithEmail": "تسجيل الدخول بالبريد"
 }

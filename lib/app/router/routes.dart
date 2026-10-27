@@ -9,4 +9,6 @@ abstract final class AppRoutes {
   static const register = '/auth/register';
   static const otp = '/auth/otp';
   static const completeProfile = '/auth/complete-profile';
+  static const forgotPassword = '/auth/forgot-password';
+  static const newPassword = '/auth/new-password';
 }

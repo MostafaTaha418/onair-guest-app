@@ -36,6 +36,16 @@ abstract interface class PhoneAuthClient {
   Stream<PhoneAuthUser?> get userChanges;
   Future<void> requestOtp(String phone);
   Future<PhoneAuthUser> verifySmsOtp(String phone, String token);
+  Future<void> signUpWithEmail(String name, String email, String password);
+  Future<void> resendSignupEmail(String email);
+  Future<PhoneAuthUser> verifySignupEmailOtp(String email, String token);
+  Future<PhoneAuthUser> signInWithEmailPassword(
+    String email,
+    String password,
+  );
+  Future<void> requestPasswordRecovery(String email);
+  Future<void> verifyRecoveryEmailOtp(String email, String token);
+  Future<PhoneAuthUser> updatePassword(String password);
   Future<void> signOut();
 }
 
@@ -70,6 +80,77 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
     );
     final user = response.user;
     if (user == null) throw const AuthException('OTP returned no user');
+    return PhoneAuthUser.fromSupabase(user);
+  }
+
+  @override
+  Future<void> signUpWithEmail(
+    String name,
+    String email,
+    String password,
+  ) async {
+    await _client.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': name.trim()},
+    );
+  }
+
+  @override
+  Future<void> resendSignupEmail(String email) async {
+    await _client.resend(email: email, type: OtpType.signup);
+  }
+
+  @override
+  Future<PhoneAuthUser> verifySignupEmailOtp(
+    String email,
+    String token,
+  ) async {
+    final response = await _client.verifyOTP(
+      email: email,
+      token: token,
+      type: OtpType.signup,
+    );
+    return _requiredUser(response.user);
+  }
+
+  @override
+  Future<PhoneAuthUser> signInWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    final response = await _client.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return _requiredUser(response.user);
+  }
+
+  @override
+  Future<void> requestPasswordRecovery(String email) =>
+      _client.resetPasswordForEmail(email);
+
+  @override
+  Future<void> verifyRecoveryEmailOtp(String email, String token) async {
+    await _client.verifyOTP(
+      email: email,
+      token: token,
+      type: OtpType.recovery,
+    );
+  }
+
+  @override
+  Future<PhoneAuthUser> updatePassword(String password) async {
+    final response = await _client.updateUser(
+      UserAttributes(password: password),
+    );
+    return _requiredUser(response.user);
+  }
+
+  PhoneAuthUser _requiredUser(User? user) {
+    if (user == null) {
+      throw const AuthException('Auth response returned no user');
+    }
     return PhoneAuthUser.fromSupabase(user);
   }
 
@@ -206,24 +287,98 @@ final class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() => _auth.signOut();
 
-  Never _notReady() => throw UnsupportedError('Email auth is added in US4');
-
   @override
   Future<CodeChallenge> signUpEmail(
     String name,
     String email,
     String password,
-  ) async => _notReady();
+  ) async {
+    try {
+      await _auth.signUpWithEmail(name, _normalizeEmail(email), password);
+      return _emailChallenge(VerificationChannel.emailSignup, email);
+    } on AuthException catch (error) {
+      throw _mapEmailRequestError(error);
+    }
+  }
+
   @override
-  Future<GuestAccount> verifyEmailCode(String email, String code) async =>
-      _notReady();
+  Future<CodeChallenge> requestEmailVerification(String email) async {
+    try {
+      await _auth.resendSignupEmail(_normalizeEmail(email));
+      return _emailChallenge(VerificationChannel.emailSignup, email);
+    } on AuthException catch (error) {
+      throw _mapEmailRequestError(error);
+    }
+  }
+
   @override
-  Future<GuestAccount> signInEmail(String email, String password) async =>
-      _notReady();
+  Future<GuestAccount> verifyEmailCode(String email, String code) async {
+    try {
+      final user = await _auth.verifySignupEmailOtp(
+        _normalizeEmail(email),
+        code,
+      );
+      return (await _accountFor(user))!;
+    } on AuthException catch (error) {
+      throw _mapVerifyError(error);
+    }
+  }
+
   @override
-  Future<CodeChallenge> requestRecovery(String email) async => _notReady();
+  Future<GuestAccount> signInEmail(String email, String password) async {
+    try {
+      final user = await _auth.signInWithEmailPassword(
+        _normalizeEmail(email),
+        password,
+      );
+      return (await _accountFor(user))!;
+    } on AuthException catch (error) {
+      if (_isRateLimited(error)) throw AuthRateLimited(_retryDeadline(error));
+      throw const AuthRequestRejected('INVALID_CREDENTIALS');
+    }
+  }
+
   @override
-  Future<void> verifyRecovery(String email, String code) async => _notReady();
+  Future<CodeChallenge> requestRecovery(String email) async {
+    final normalized = _normalizeEmail(email);
+    try {
+      await _auth.requestPasswordRecovery(normalized);
+    } on AuthException catch (error) {
+      // Account discovery is deliberately prevented. Only throttling is shown.
+      if (_isRateLimited(error)) throw AuthRateLimited(_retryDeadline(error));
+    }
+    return _emailChallenge(VerificationChannel.emailRecovery, normalized);
+  }
+
   @override
-  Future<GuestAccount> setNewPassword(String password) async => _notReady();
+  Future<void> verifyRecovery(String email, String code) async {
+    try {
+      await _auth.verifyRecoveryEmailOtp(_normalizeEmail(email), code);
+    } on AuthException catch (error) {
+      throw _mapVerifyError(error);
+    }
+  }
+
+  @override
+  Future<GuestAccount> setNewPassword(String password) async {
+    try {
+      return (await _accountFor(await _auth.updatePassword(password)))!;
+    } on AuthException catch (error) {
+      throw AuthRequestRejected(error.code ?? 'INTERNAL');
+    }
+  }
+
+  CodeChallenge _emailChallenge(VerificationChannel channel, String email) =>
+      CodeChallenge(
+        channel: channel,
+        target: _normalizeEmail(email),
+        resendAt: _clock().toUtc(),
+      );
+
+  String _normalizeEmail(String email) => email.trim().toLowerCase();
+
+  Exception _mapEmailRequestError(AuthException error) {
+    if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
+    return AuthRequestRejected(error.code ?? 'INTERNAL');
+  }
 }

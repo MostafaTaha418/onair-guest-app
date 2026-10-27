@@ -197,19 +197,19 @@ recover the password with the emailed code, sign in with the new password (quick
 
 ### Tests for User Story 4
 
-- [ ] T081 [P] [US4] Unit test `test/features/auth/domain/password_rule_test.dart`: minimum 8 characters with at least one letter and one digit; strength levels weak/medium/strong
-- [ ] T082 [P] [US4] Unit test `test/features/auth/data/supabase_auth_repository_email_test.dart`: `signUp(email, password, data: {full_name})`; `verifyOTP` with the email confirmation type; `resetPasswordForEmail`; `verifyOTP(type: recovery)`; `updateUser(password)`; wrong credentials → `authInvalidCredentials`; recovery for unknown email → same success as known
-- [ ] T083 [P] [US4] Widget tests `test/features/auth/presentation/email_flows_test.dart`: email tab sign-in; email register has no phone field; forgot-password shows `authRecoverySent` for any email; new-password enforces the rule; code screen shows "change email" for email channels
+- [X] T081 [P] [US4] Unit test `test/features/auth/domain/password_rule_test.dart`: minimum 8 characters with at least one letter and one digit; strength levels weak/medium/strong
+- [X] T082 [P] [US4] Unit test `test/features/auth/data/supabase_auth_repository_email_test.dart`: `signUp(email, password, data: {full_name})`; `verifyOTP` with the email confirmation type; `resetPasswordForEmail`; `verifyOTP(type: recovery)`; `updateUser(password)`; wrong credentials → `authInvalidCredentials`; recovery for unknown email → same success as known
+- [X] T083 [P] [US4] Widget tests `test/features/auth/presentation/email_flows_test.dart`: email tab sign-in; email register has no phone field; forgot-password shows `authRecoverySent` for any email; new-password enforces the rule; code screen shows "change email" for email channels
 
 ### Implementation for User Story 4
 
-- [ ] T084 [P] [US4] Implement `PasswordRule` in `lib/features/auth/domain/password_rule.dart` and `PasswordStrengthHint` (12/400, height 1.4) in `lib/features/auth/presentation/widgets/password_strength_hint.dart` (passes T081)
-- [ ] T085 [US4] Implement email methods in `lib/features/auth/data/supabase_auth_repository.dart` (passes T082)
-- [ ] T086 [US4] Add the Email tab (email, password, "forgot?" 11/700) to `lib/features/auth/presentation/login_screen.dart`
-- [ ] T087 [US4] Add the email path (name, email, password, terms; no phone) to `lib/features/auth/presentation/register_screen.dart`
-- [ ] T088 [US4] Support `emailSignup` and `emailRecovery` channels in `lib/features/auth/presentation/otp_screen.dart`
-- [ ] T089 [P] [US4] Implement `ForgotPasswordScreen` and `NewPasswordScreen` in `lib/features/auth/presentation/forgot_password_screen.dart` and `new_password_screen.dart`; register `/auth/forgot-password` and `/auth/new-password` in `lib/app/router/routes.dart` (passes T083)
-- [ ] T090 [US4] Show email verification status ("غير مؤكد" + verify-now → code screen) on `lib/features/account/presentation/account_placeholder_screen.dart`
+- [X] T084 [P] [US4] Implement `PasswordRule` in `lib/features/auth/domain/password_rule.dart` and `PasswordStrengthHint` (12/400, height 1.4) in `lib/features/auth/presentation/widgets/password_strength_hint.dart` (passes T081)
+- [X] T085 [US4] Implement email methods in `lib/features/auth/data/supabase_auth_repository.dart` (passes T082)
+- [X] T086 [US4] Add the Email tab (email, password, "forgot?" 11/700) to `lib/features/auth/presentation/login_screen.dart`
+- [X] T087 [US4] Add the email path (name, email, password, terms; no phone) to `lib/features/auth/presentation/register_screen.dart`
+- [X] T088 [US4] Support `emailSignup` and `emailRecovery` channels in `lib/features/auth/presentation/otp_screen.dart`
+- [X] T089 [P] [US4] Implement `ForgotPasswordScreen` and `NewPasswordScreen` in `lib/features/auth/presentation/forgot_password_screen.dart` and `new_password_screen.dart`; register `/auth/forgot-password` and `/auth/new-password` in `lib/app/router/routes.dart` (passes T083)
+- [X] T090 [US4] Show email verification status ("غير مؤكد" + verify-now → code screen) on `lib/features/account/presentation/account_placeholder_screen.dart`
 
 **Checkpoint**: Both sign-in methods work.
 

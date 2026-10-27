@@ -20,26 +20,53 @@ final class AccountPlaceholderScreen extends StatelessWidget {
         action: state is SignedIn || state is SigningOut
             ? Padding(
                 padding: const EdgeInsets.only(top: Dimens.space24),
-                child: OutlinedButton.icon(
-                  key: const ValueKey('sign-out-button'),
-                  onPressed: state is SigningOut
-                      ? null
-                      : () async {
-                          await context.read<AuthCubit>().signOut();
-                          if (context.mounted) context.go(AppRoutes.home);
-                        },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.colors['destructive'],
-                    side: BorderSide(color: context.colors['destructive']),
-                    minimumSize: const Size(0, 48),
-                  ),
-                  icon: state is SigningOut
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.logout),
-                  label: Text(AppLocalizations.of(context).signOut),
+                child: Column(
+                  children: [
+                    if (state case SignedIn(
+                      :final account,
+                    ) when account.email != null && !account.emailVerified) ...[
+                      Text(
+                        '${AppLocalizations.of(context).authEmailStatus}: '
+                        '${AppLocalizations.of(context).authEmailNotVerified}',
+                        key: const ValueKey('email-unverified-status'),
+                      ),
+                      TextButton(
+                        key: const ValueKey('verify-email-now'),
+                        onPressed: () => context
+                            .read<AuthCubit>()
+                            .requestEmailVerification(account.email!),
+                        child: Text(
+                          AppLocalizations.of(context).authVerifyNow,
+                        ),
+                      ),
+                      const SizedBox(height: Dimens.space12),
+                    ],
+                    OutlinedButton.icon(
+                      key: const ValueKey('sign-out-button'),
+                      onPressed: state is SigningOut
+                          ? null
+                          : () async {
+                              await context.read<AuthCubit>().signOut();
+                              if (context.mounted) {
+                                context.go(AppRoutes.home);
+                              }
+                            },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.colors['destructive'],
+                        side: BorderSide(
+                          color: context.colors['destructive'],
+                        ),
+                        minimumSize: const Size(0, 48),
+                      ),
+                      icon: state is SigningOut
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.logout),
+                      label: Text(AppLocalizations.of(context).signOut),
+                    ),
+                  ],
                 ),
               )
             : null,

@@ -14,6 +14,12 @@ final class FakeAuthRepository implements AuthRepository {
   Exception? completeProfileError;
   Future<void>? requestPhoneBarrier;
   String? lastRequestedPhone;
+  String? lastEmail;
+  String? lastPassword;
+  String? lastName;
+  String? lastRecoveryEmail;
+  Exception? signInEmailError;
+  Exception? requestRecoveryError;
 
   @override
   Stream<GuestAccount?> get authStateChanges => _changes.stream;
@@ -50,15 +56,52 @@ final class FakeAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-  ) async => challenge!;
+  ) async {
+    lastName = name;
+    lastEmail = email;
+    lastPassword = password;
+    return challenge ??
+        CodeChallenge(
+          channel: VerificationChannel.emailSignup,
+          target: email,
+          resendAt: DateTime.utc(2026),
+        );
+  }
+
+  @override
+  Future<CodeChallenge> requestEmailVerification(String email) async {
+    lastEmail = email;
+    return challenge ??
+        CodeChallenge(
+          channel: VerificationChannel.emailSignup,
+          target: email,
+          resendAt: DateTime.utc(2026),
+        );
+  }
+
   @override
   Future<GuestAccount> verifyEmailCode(String email, String code) async =>
       account!;
   @override
-  Future<GuestAccount> signInEmail(String email, String password) async =>
-      account!;
+  Future<GuestAccount> signInEmail(String email, String password) async {
+    lastEmail = email;
+    lastPassword = password;
+    if (signInEmailError case final error?) throw error;
+    return account!;
+  }
+
   @override
-  Future<CodeChallenge> requestRecovery(String email) async => challenge!;
+  Future<CodeChallenge> requestRecovery(String email) async {
+    lastRecoveryEmail = email;
+    if (requestRecoveryError case final error?) throw error;
+    return challenge ??
+        CodeChallenge(
+          channel: VerificationChannel.emailRecovery,
+          target: email,
+          resendAt: DateTime.utc(2026),
+        );
+  }
+
   @override
   Future<void> verifyRecovery(String email, String code) async {}
   @override

@@ -66,7 +66,15 @@ final class _OtpScreenState extends State<OtpScreen> {
         context.read<AuthCubit>().resumeCodeEntry();
       }
     });
-    unawaited(_listenForSms());
+    final state = context.read<AuthCubit>().state;
+    final challenge = switch (state) {
+      CodeSent(:final challenge) => challenge,
+      RateLimited(:final challenge) => challenge,
+      _ => null,
+    };
+    if (challenge?.channel == VerificationChannel.sms) {
+      unawaited(_listenForSms());
+    }
   }
 
   Future<void> _listenForSms() async {
@@ -89,19 +97,46 @@ final class _OtpScreenState extends State<OtpScreen> {
   Future<void> _verify(String code) async {
     if (_submitting) return;
     setState(() => _submitting = true);
-    await context.read<AuthCubit>().verifyPhoneCode(code);
+    final cubit = context.read<AuthCubit>();
+    final channel = switch (cubit.state) {
+      CodeSent(:final challenge) => challenge.channel,
+      RateLimited(:final challenge) => challenge.channel,
+      _ => null,
+    };
+    switch (channel) {
+      case VerificationChannel.sms:
+        await cubit.verifyPhoneCode(code);
+      case VerificationChannel.emailSignup:
+        await cubit.verifyEmailCode(code);
+      case VerificationChannel.emailRecovery:
+        await cubit.verifyRecovery(code);
+      case null:
+        break;
+    }
     if (mounted) setState(() => _submitting = false);
   }
 
   Future<void> _resend(CodeChallenge challenge) async {
     _controller.clear();
-    await context.read<AuthCubit>().requestPhoneCode(challenge.target);
+    final cubit = context.read<AuthCubit>();
+    switch (challenge.channel) {
+      case VerificationChannel.sms:
+        await cubit.requestPhoneCode(challenge.target);
+      case VerificationChannel.emailSignup:
+        await cubit.requestEmailVerification(challenge.target);
+      case VerificationChannel.emailRecovery:
+        await cubit.requestRecovery(challenge.target);
+    }
   }
 
-  void _changePhone() {
+  void _changeTarget(VerificationChannel channel) {
     _controller.clear();
     context.read<AuthCubit>().cancelCodeEntry();
-    GoRouter.maybeOf(context)?.go(AppRoutes.login);
+    GoRouter.maybeOf(context)?.go(
+      channel == VerificationChannel.emailRecovery
+          ? AppRoutes.forgotPassword
+          : AppRoutes.login,
+    );
   }
 
   @override
@@ -183,9 +218,17 @@ final class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               TextButton(
-                key: const ValueKey('change-phone-button'),
-                onPressed: _changePhone,
-                child: Text(l10n.authChangePhone),
+                key: ValueKey(
+                  challenge.channel == VerificationChannel.sms
+                      ? 'change-phone-button'
+                      : 'change-email-button',
+                ),
+                onPressed: () => _changeTarget(challenge.channel),
+                child: Text(
+                  challenge.channel == VerificationChannel.sms
+                      ? l10n.authChangePhone
+                      : l10n.authChangeEmail,
+                ),
               ),
             ],
           ),

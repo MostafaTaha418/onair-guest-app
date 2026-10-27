@@ -243,4 +243,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String authWaitSeconds(int seconds) {
     return '$seconds ثانية';
   }
+
+  @override
+  String get authEmailInvalid => 'اكتب بريد إلكتروني صحيح.';
+
+  @override
+  String get authPasswordRule => '8 أحرف على الأقل، بينهم حرف ورقم';
+
+  @override
+  String get authPasswordWeak => 'ضعيفة';
+
+  @override
+  String get authPasswordMedium => 'متوسطة';
+
+  @override
+  String get authPasswordStrong => 'قوية';
+
+  @override
+  String get authForgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get authRecoveryTitle => 'استعادة كلمة المرور';
+
+  @override
+  String get authRecoveryDescription => 'اكتب بريدك وسنبعت لك كود الاستعادة.';
+
+  @override
+  String get authNewPasswordTitle => 'كلمة مرور جديدة';
+
+  @override
+  String get authNewPassword => 'حفظ كلمة المرور';
+
+  @override
+  String get authChangeEmail => 'تغيير البريد الإلكتروني';
+
+  @override
+  String get authEmailNotVerified => 'غير مؤكد';
+
+  @override
+  String get authVerifyNow => 'أكد الآن';
+
+  @override
+  String get authEmailStatus => 'حالة البريد الإلكتروني';
+
+  @override
+  String get authSignUpWithEmail => 'إنشاء الحساب بالبريد';
+
+  @override
+  String get authSignInWithEmail => 'تسجيل الدخول بالبريد';
 }

@@ -11,6 +11,9 @@ final class OnAirTextField extends StatelessWidget {
     this.keyboardType,
     this.enabled = true,
     this.textInputAction,
+    this.obscureText = false,
+    this.autofillHints,
+    this.onSubmitted,
     this.onChanged,
     super.key,
   });
@@ -22,7 +25,10 @@ final class OnAirTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool enabled;
   final TextInputAction? textInputAction;
+  final bool obscureText;
+  final Iterable<String>? autofillHints;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +45,10 @@ final class OnAirTextField extends StatelessWidget {
           keyboardType: keyboardType,
           enabled: enabled,
           textInputAction: textInputAction,
+          obscureText: obscureText,
+          autofillHints: autofillHints,
           onChanged: onChanged,
+          onSubmitted: onSubmitted,
           style: context.textStyles.input.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(
             labelText: label,

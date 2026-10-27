@@ -97,5 +97,21 @@
   "authAcceptTerms": "I agree to the terms and privacy policy",
   "authTermsRequired": "Accept the terms to continue.",
   "authWaitSeconds": "{seconds} seconds",
-  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}}
+  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}},
+  "authEmailInvalid": "Enter a valid email address.",
+  "authPasswordRule": "At least 8 characters with a letter and a number",
+  "authPasswordWeak": "Weak",
+  "authPasswordMedium": "Medium",
+  "authPasswordStrong": "Strong",
+  "authForgotPassword": "Forgot password?",
+  "authRecoveryTitle": "Recover your password",
+  "authRecoveryDescription": "Enter your email and we will send a recovery code.",
+  "authNewPasswordTitle": "New password",
+  "authNewPassword": "Save password",
+  "authChangeEmail": "Change email",
+  "authEmailNotVerified": "Not verified",
+  "authVerifyNow": "Verify now",
+  "authEmailStatus": "Email status",
+  "authSignUpWithEmail": "Create account with email",
+  "authSignInWithEmail": "Sign in with email"
 }
