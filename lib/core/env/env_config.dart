@@ -48,11 +48,16 @@ final class EnvConfig {
       108,
       101,
     ]);
-    if (key.contains(forbiddenRole) || _jwtRole(key) == forbiddenRole) {
+    if (key.startsWith(
+          'sb_'
+          'secret_',
+        ) ||
+        key.contains(forbiddenRole) ||
+        _jwtRole(key) == forbiddenRole) {
       throw ArgumentError.value(
         '[redacted]',
         'SUPABASE_ANON_KEY',
-        'Service role forbidden',
+        'Privileged backend key forbidden',
       );
     }
     final domain = requiredValue('LINK_DOMAIN');

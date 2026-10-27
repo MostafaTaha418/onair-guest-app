@@ -38,4 +38,25 @@ void main() {
   test('rejects a service-role key', () {
     expect(() => EnvConfig.fromMap(values(service)), throwsArgumentError);
   });
+
+  test('accepts publishable keys and rejects backend secret keys', () {
+    expect(
+      EnvConfig.fromMap(
+        values(
+          'sb_'
+          'publishable_testPublicKey123',
+        ),
+      ).flavor,
+      'staging',
+    );
+    expect(
+      () => EnvConfig.fromMap(
+        values(
+          'sb_'
+          'secret_testBackendKey123',
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
 }

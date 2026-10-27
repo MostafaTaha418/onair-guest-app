@@ -275,7 +275,9 @@ merge blocked; fix → checks pass (quickstart V18).
 - [X] T108 [US7] Create `.github/workflows/staging-build.yml` (on push to `main`): write `env/staging.json` from secrets, `flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json`, upload symbols artifact, run `tool/scan_build_for_secrets.sh`, distribute with Firebase App Distribution
 - [X] T109 [US7] Document required repository settings (branch protection on `main` requiring `ci.yml`; secrets list) in `docs/ci.md`
 
-**Checkpoint**: Quality gate active.
+**Checkpoint**: Quality-gate implementation complete. Operational activation still needs
+the GitHub plan upgrade for protected private branches, real Staging environment
+configuration, and a successful remote run/distribution; see `docs/ci.md`.
 
 ---
 

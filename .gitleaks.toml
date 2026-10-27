@@ -3,10 +3,9 @@
 # Extends the default gitleaks rules with the secret classes the constitution forbids
 # in source, assets, and builds (Constitution IV): Supabase service_role keys, Kashier
 # keys, Resend keys, and SMS provider keys. tool/scan_build_for_secrets.sh enforces the
-# same patterns on built artifacts.
+# same credential classes on built artifacts using shared Python checks.
 #
-# The base64 fragments below use [x] character-class breaks so this file never matches
-# its own rules.
+# The Base64 fragments use character-class breaks to avoid matching this rule file.
 
 title = "OnAir Guest App secret scan"
 
@@ -16,20 +15,28 @@ useDefault = true
 # --- Supabase service_role -----------------------------------------------------
 # A leaked Supabase key is a JWT whose payload has role = service_role. The payload is
 # base64url-encoded, so match the encoded fragments wherever the JWT is embedded. This
-# rule has no path allowlist except for the build scanner itself: a real key must fail
-# the scan everywhere else, docs included.
+# rule checks all current files, docs included. The only exception is the old scanner
+# pattern text in two exact historical commits below.
 [[rules]]
 id = "supabase-service-role-jwt"
 description = "Supabase service_role JWT (base64 payload fragment)"
-regex = '''(?:eyJy[b]2xlIjoic2VydmljZV9yb2xlIi|InJv[b]GUiOiJzZXJ2aWNlX3JvbGUi|cm9sZ[I]6InNlcnZpY2Vfcm9sZSI)'''
-keywords = ["eyJyb2xl", "injvbgu", "cm9szi"]
+regex = '''(?:c2Vy[d]mljZV9yb2xl|Nlcn[Z]pY2Vfcm9sZ|zZXJ[2]aWNlX3JvbG)'''
 tags = ["supabase", "service-role"]
 
-# tool/scan_build_for_secrets.sh defines these encoded fragments as its own search
-# patterns; a complete JWT pasted there is still caught by the default Supabase rule.
 [[rules.allowlists]]
-description = "The build scanner defines the encoded fragments as patterns"
+description = "Historical scanner search patterns, limited to the two original commits"
+condition = "AND"
 paths = ['''(^|/)tool/scan_build_for_secrets\.sh$''']
+commits = [
+  "358e50652f598d60b8ec2baa5f80a22841222eb8",
+  "eac383513b39de63555d194d10c09e704eeeafe9",
+]
+
+[[rules]]
+id = "supabase-secret-key"
+description = "Supabase backend-only secret key"
+regex = '''sb_se[c]ret_[A-Za-z0-9_-]{12,}'''
+tags = ["supabase"]
 
 # Plain-text occurrences of the word. Real keys always appear as the JWT form above;
 # this rule catches unencoded configuration values.
@@ -47,6 +54,7 @@ paths = [
   '''(^|/)tool/scan_build_for_secrets\.sh$''',
   '''(^|/)lib/core/env/env_config\.dart$''',
   '''(^|/)test/core/env/env_config_test\.dart$''',
+  '''(^|/)tool/secret_checks\.py$''',
   '''(^|/)(docs|specs|contracts|\.specify)/''',
 ]
 
