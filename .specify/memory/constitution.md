@@ -291,11 +291,4 @@ criteria are the shared contract with the rest of the team.
   and `docs/UI_UX_DESIGN_SYSTEM.md` for visual tokens. Compliance is reviewed at the end of each
   G-phase.
 
-### Sync Impact Report — Cubit state management (2026-10-26)
-
-- **Change and reason:** The requested Guest App implementation uses Cubit instead of Riverpod. This changes the state-management implementation choice in Principle VII; business rules and backend contracts stay the same.
-- **Affected artifacts:** `docs/OnAir Master Plan.md`, `docs/OnAir Guest App Plan.md`, the G0 plan, research, tasks, `pubspec.yaml`, and `pubspec.lock`.
-- **Migration note:** Phase 1 had no Riverpod classes. Replace the dependency setup now; implement subsequent presentation state as Cubits with constructor-injected repositories, scoped `BlocProvider`, `BlocSelector`, and cancellation in `close()`.
-- **Review:** This amendment still requires the peer review specified above before merge.
-
-**Version**: 2.0.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-10-26
+**Version**: 2.0.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-10-27
