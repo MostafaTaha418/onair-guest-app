@@ -202,9 +202,13 @@ python3 -m unittest discover -s tool/tests -v
 
 ## Notes
 
-- The Staging APK is currently signed with the template's debug key
-  (`android/app/build.gradle.kts` release `signingConfig`). Production signing keys will
-  live only in CI secrets when the store track is set up (constitution: signed
-  production builds are built from CI only).
+- Release signing (`android/app/build.gradle.kts`) uses the upload key from the
+  git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`,
+  `keyPassword`) or the CI variables `ONAIR_UPLOAD_KEYSTORE`,
+  `ONAIR_UPLOAD_KEYSTORE_PASSWORD`, `ONAIR_UPLOAD_KEY_ALIAS`, `ONAIR_UPLOAD_KEY_PASSWORD`.
+  Without it, only Staging falls back to the debug key (internal Firebase distribution);
+  a Production `assemble`/`bundle` release fails the build instead of shipping a debug
+  signature. Production keys live only in CI secrets (constitution: signed production
+  builds are built from CI only).
 - `env/staging.json` and `env/production.json` are git-ignored; only `env/example.json`
   is committed.
