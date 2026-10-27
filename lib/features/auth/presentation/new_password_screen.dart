@@ -6,6 +6,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/password_rule.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/auth_error_message.dart';
 import 'package:on_air/features/auth/presentation/widgets/password_strength_hint.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -33,8 +34,17 @@ final class _NewPasswordScreenState extends State<NewPasswordScreen> {
       return;
     }
     setState(() => _loading = true);
-    await context.read<AuthCubit>().setNewPassword(_password.text);
-    if (mounted) setState(() => _loading = false);
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await context.read<AuthCubit>().setNewPassword(_password.text);
+    } on Object catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(authErrorMessage(error, l10n))),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override

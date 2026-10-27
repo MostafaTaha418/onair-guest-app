@@ -9,6 +9,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/auth_error_message.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class CompleteProfileScreen extends StatefulWidget {
@@ -65,6 +66,17 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         _termsChanged = true;
       });
       await _loadTerms(refresh: true);
+    } on Object catch (error) {
+      // No connection or an unexpected server error (FR-039).
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              authErrorMessage(error, AppLocalizations.of(context)),
+            ),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

@@ -8,9 +8,11 @@ import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/password_rule.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/auth_error_message.dart';
 import 'package:on_air/features/auth/presentation/widgets/password_strength_hint.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -34,6 +36,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   bool _emailTab = false;
   bool _acceptedTerms = false;
   String? _requestError;
+  String? _generalError;
 
   bool get _validPhone => EgyptPhone.tryParse(_phone.text) != null;
   bool get _validEmail => RegExp(
@@ -93,20 +96,56 @@ final class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _loading = true;
       _requestError = null;
+      _generalError = null;
     });
     try {
       await request();
-      if (mounted && (widget.registration || !_emailTab)) {
+      // Only confirm when a code was really sent (not when rate-limited).
+      if (mounted && context.read<AuthCubit>().state is CodeSent) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).authCodeSent)),
         );
       }
     } on AuthRequestRejected catch (error) {
-      if (mounted) setState(() => _requestError = error.code);
+      if (!mounted) return;
+      setState(() {
+        _requestError = error.code;
+        if (!_inlineCodes.contains(error.code)) {
+          _generalError = authErrorMessage(error, AppLocalizations.of(context));
+        }
+      });
+    } on Object catch (error) {
+      // Rate limit, no connection, or anything unexpected (FR-029, FR-039).
+      if (mounted) {
+        setState(
+          () => _generalError = authErrorMessage(
+            error,
+            AppLocalizations.of(context),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  /// Codes that already have their own message next to the related field.
+  static const _inlineCodes = {
+    'PHONE_COUNTRY_NOT_SUPPORTED',
+    'INVALID_CREDENTIALS',
+  };
+
+  Widget _generalErrorText() => Padding(
+    padding: const EdgeInsetsDirectional.only(top: Dimens.space12),
+    child: Semantics(
+      liveRegion: true,
+      child: Text(
+        _generalError!,
+        key: const ValueKey('auth-request-error'),
+        style: TextStyle(color: context.colors.errorText),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -255,6 +294,7 @@ final class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(color: context.colors.errorText),
         ),
       ),
+    if (_generalError != null) _generalErrorText(),
     const SizedBox(height: Dimens.space20),
     OnAirPrimaryButton(
       key: const ValueKey('email-submit-button'),
@@ -299,6 +339,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: Text(l10n.authEmailTab),
       ),
     ],
+    if (_generalError != null) _generalErrorText(),
     const SizedBox(height: Dimens.space20),
     OnAirPrimaryButton(
       key: const ValueKey('send-code-button'),

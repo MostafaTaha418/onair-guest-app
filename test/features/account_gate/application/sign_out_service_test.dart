@@ -101,4 +101,19 @@ void main() {
 
     expect(events, ['unregister', 'signOut', 'caches', 'preferences']);
   });
+
+  test('offline server sign-out still clears caches and preferences', () async {
+    when(() => auth.signOut()).thenThrow(Exception('offline'));
+    final service = SignOutService(
+      devices: _DeviceRepository(events),
+      auth: auth,
+      pushTokens: _PushTokens('fcm-token'),
+      caches: _CacheCleaner(events),
+      preferences: _PreferenceCleaner(events),
+    );
+
+    await service.signOut();
+
+    expect(events, ['unregister', 'caches', 'preferences']);
+  });
 }

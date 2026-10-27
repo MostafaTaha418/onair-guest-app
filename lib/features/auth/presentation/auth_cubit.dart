@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 
 final class AuthCubit extends Cubit<AuthState> {
@@ -16,13 +17,18 @@ final class AuthCubit extends Cubit<AuthState> {
        _signOutCoordinator =
            signOutCoordinator ?? RepositorySignOutCoordinator(_repository),
        super(const AuthUnknown()) {
+    // A failed profile reload (e.g. a network blip during token refresh) is
+    // not a lost session: keep the current state. Real session ends arrive as
+    // a null account or through the SessionListener's sign-out events.
     _subscription = _repository.authStateChanges.listen(
       _onExternalAccount,
-      onError: (Object _, StackTrace _) {
-        if (state is SignedIn) sessionEnded(null);
-      },
+      onError: (Object _, StackTrace _) {},
     );
   }
+
+  /// Error codes for the code screen when verification could not complete.
+  static const networkError = 'NETWORK';
+  static const unexpectedError = 'UNEXPECTED';
 
   final AuthRepository _repository;
   String _currentTermsVersion;
@@ -38,7 +44,14 @@ final class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> restore() async {
-    final account = await _repository.restoreSession();
+    GuestAccount? account;
+    try {
+      account = await _repository.restoreSession();
+    } on Object {
+      // Offline start with a stored session: leave the splash as a visitor.
+      // The session stays stored; the next auth event signs the guest back in.
+      account = null;
+    }
     if (isClosed) return;
     emit(
       account == null
@@ -55,10 +68,19 @@ final class AuthCubit extends Cubit<AuthState> {
       final challenge = await _repository.requestPhoneCode(phone);
       if (!isClosed) emit(CodeSent(challenge));
     } on AuthRateLimited catch (error) {
+      if (isClosed) return;
+      // FR-029: show the server wait time even on the first request.
       final current = state;
-      if (!isClosed && current is CodeSent) {
-        emit(RateLimited(current.challenge, error.until));
-      }
+      final challenge = current is CodeSent
+          ? current.challenge
+          : current is RateLimited
+          ? current.challenge
+          : CodeChallenge(
+              channel: VerificationChannel.sms,
+              target: EgyptPhone.tryParse(phone)?.e164 ?? phone.trim(),
+              resendAt: error.until,
+            );
+      emit(RateLimited(challenge, error.until));
     }
   }
 
@@ -75,6 +97,12 @@ final class AuthCubit extends Cubit<AuthState> {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
     } on AuthRateLimited catch (error) {
       if (!isClosed) emit(RateLimited(current.challenge, error.until));
+    } on AuthNetworkFailure {
+      if (!isClosed) emit(CodeSent(current.challenge, errorCode: networkError));
+    } on Object {
+      if (!isClosed) {
+        emit(CodeSent(current.challenge, errorCode: unexpectedError));
+      }
     }
   }
 
@@ -128,6 +156,12 @@ final class AuthCubit extends Cubit<AuthState> {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
     } on AuthRateLimited catch (error) {
       if (!isClosed) emit(RateLimited(current.challenge, error.until));
+    } on AuthNetworkFailure {
+      if (!isClosed) emit(CodeSent(current.challenge, errorCode: networkError));
+    } on Object {
+      if (!isClosed) {
+        emit(CodeSent(current.challenge, errorCode: unexpectedError));
+      }
     }
   }
 
@@ -152,7 +186,12 @@ final class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signInEmail(String email, String password) async {
-    _emitAccount(await _repository.signInEmail(email, password));
+    try {
+      _emitAccount(await _repository.signInEmail(email, password));
+    } on AuthVerificationRequired catch (required) {
+      // Unconfirmed email (FR-027): continue on the code screen.
+      if (!isClosed) emit(CodeSent(required.challenge));
+    }
   }
 
   Future<void> requestRecovery(String email) async {
@@ -188,6 +227,12 @@ final class AuthCubit extends Cubit<AuthState> {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
     } on AuthRateLimited catch (error) {
       if (!isClosed) emit(RateLimited(current.challenge, error.until));
+    } on AuthNetworkFailure {
+      if (!isClosed) emit(CodeSent(current.challenge, errorCode: networkError));
+    } on Object {
+      if (!isClosed) {
+        emit(CodeSent(current.challenge, errorCode: unexpectedError));
+      }
     }
   }
 
@@ -216,12 +261,19 @@ final class AuthCubit extends Cubit<AuthState> {
     if (!isClosed) emit(SessionEnded(returnTo));
   }
 
-  void acknowledgeSessionEnded() => emit(const SignedOut());
+  void acknowledgeSessionEnded() {
+    if (!isClosed) emit(const SignedOut());
+  }
 
+  /// Always ends in SignedOut, even when part of the cleanup fails: the local
+  /// session is removed first, so staying in SigningOut would trap the guest.
   Future<void> signOut() async {
     emit(const SigningOut());
-    await _signOutCoordinator.signOut();
-    if (!isClosed) emit(const SignedOut());
+    try {
+      await _signOutCoordinator.signOut();
+    } finally {
+      if (!isClosed) emit(const SignedOut());
+    }
   }
 
   void _onExternalAccount(GuestAccount? account) {

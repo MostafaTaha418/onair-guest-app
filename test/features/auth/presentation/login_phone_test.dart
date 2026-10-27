@@ -115,4 +115,26 @@ void main() {
       expect(find.textContaining('حساب موجود'), findsNothing);
     }
   });
+
+  testWidgets('no connection shows a message instead of "code sent"', (
+    tester,
+  ) async {
+    auth.requestPhoneError = const AuthNetworkFailure();
+    await tester.pumpOnAirApp(
+      const LoginScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('phone-field')),
+      '01012345678',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('send-code-button')));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(LoginScreen)));
+    expect(find.text(l10n.errorNoConnection), findsOneWidget);
+    expect(find.text(l10n.authCodeSent), findsNothing);
+  });
 }

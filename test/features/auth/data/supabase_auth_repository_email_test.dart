@@ -171,5 +171,58 @@ void main() {
       expect(challenge.target, 'missing@example.com');
       expect(challenge.resendAt, now);
     });
+
+    test(
+      'unconfirmed email resends the signup code instead of failing',
+      () async {
+        when(() => auth.signInWithEmailPassword(any(), any())).thenThrow(
+          const AuthException(
+            'Email not confirmed',
+            statusCode: '400',
+            code: 'email_not_confirmed',
+          ),
+        );
+        when(() => auth.resendSignupEmail(any())).thenAnswer((_) async {});
+
+        await expectLater(
+          repository.signInEmail('Guest@Example.com ', 'password1'),
+          throwsA(
+            isA<AuthVerificationRequired>()
+                .having(
+                  (e) => e.challenge.channel,
+                  'channel',
+                  VerificationChannel.emailSignup,
+                )
+                .having(
+                  (e) => e.challenge.target,
+                  'target',
+                  'guest@example.com',
+                ),
+          ),
+        );
+        verify(() => auth.resendSignupEmail('guest@example.com')).called(1);
+      },
+    );
+
+    test(
+      'no connection is reported as a network failure, not bad input',
+      () async {
+        when(
+          () => auth.signInWithEmailPassword(any(), any()),
+        ).thenThrow(AuthRetryableFetchException());
+        when(
+          () => auth.requestPasswordRecovery(any()),
+        ).thenThrow(AuthRetryableFetchException());
+
+        await expectLater(
+          repository.signInEmail('guest@example.com', 'password1'),
+          throwsA(isA<AuthNetworkFailure>()),
+        );
+        await expectLater(
+          repository.requestRecovery('guest@example.com'),
+          throwsA(isA<AuthNetworkFailure>()),
+        );
+      },
+    );
   });
 }

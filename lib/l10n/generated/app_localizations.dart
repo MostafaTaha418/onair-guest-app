@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'مفيش اتصال بالإنترنت.'**
   String get errorNoConnection;
 
+  /// No description provided for @errorUnexpectedNoRef.
+  ///
+  /// In ar, this message translates to:
+  /// **'حصلت مشكلة غير متوقعة. جرّب تاني.'**
+  String get errorUnexpectedNoRef;
+
   /// No description provided for @errorCancelled.
   ///
   /// In ar, this message translates to:

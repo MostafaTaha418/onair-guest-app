@@ -245,4 +245,98 @@ void main() {
       isA<SignedIn>(),
     ],
   );
+  group('review fixes', () {
+    blocTest<AuthCubit, AuthState>(
+      'first phone request that is rate-limited shows the server wait time',
+      build: () {
+        when(
+          () => repository.requestPhoneCode(any()),
+        ).thenThrow(AuthRateLimited(DateTime.utc(2026, 10, 28, 12)));
+        return AuthCubit(repository, currentTermsVersion: 'v1')
+          ..emit(const SignedOut());
+      },
+      act: (cubit) => cubit.requestPhoneCode('01012345678'),
+      expect: () => [
+        isA<RateLimited>()
+            .having((s) => s.until, 'until', DateTime.utc(2026, 10, 28, 12))
+            .having(
+              (s) => s.challenge.channel,
+              'channel',
+              VerificationChannel.sms,
+            )
+            .having((s) => s.challenge.target, 'target', '+201012345678'),
+      ],
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'unconfirmed email sign-in continues on the code screen',
+      build: () {
+        when(() => repository.signInEmail(any(), any())).thenThrow(
+          AuthVerificationRequired(
+            CodeChallenge(
+              channel: VerificationChannel.emailSignup,
+              target: 'guest@example.com',
+              resendAt: DateTime.utc(2026),
+            ),
+          ),
+        );
+        return AuthCubit(repository, currentTermsVersion: 'v1')
+          ..emit(const SignedOut());
+      },
+      act: (cubit) => cubit.signInEmail('guest@example.com', 'password1'),
+      expect: () => [
+        isA<CodeSent>().having(
+          (s) => s.challenge.channel,
+          'channel',
+          VerificationChannel.emailSignup,
+        ),
+      ],
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'a failed profile reload keeps the guest signed in',
+      build: () {
+        when(
+          () => repository.authStateChanges,
+        ).thenAnswer((_) => Stream.error(Exception('network')));
+        return AuthCubit(repository, currentTermsVersion: 'v1')
+          ..emit(SignedIn(complete, isComplete: true));
+      },
+      wait: const Duration(milliseconds: 10),
+      expect: () => <AuthState>[],
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'restore failure leaves the splash as a visitor instead of hanging',
+      build: () {
+        when(
+          () => repository.restoreSession(),
+        ).thenThrow(Exception('profile unavailable'));
+        return AuthCubit(repository, currentTermsVersion: 'v1');
+      },
+      act: (cubit) => cubit.restore(),
+      expect: () => [isA<SignedOut>()],
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'sign-out always ends signed out, even if cleanup throws',
+      build: () {
+        final coordinator = _SignOutCoordinator();
+        when(coordinator.signOut).thenThrow(Exception('offline'));
+        return AuthCubit(
+          repository,
+          currentTermsVersion: 'v1',
+          signOutCoordinator: coordinator,
+        )..emit(SignedIn(complete, isComplete: true));
+      },
+      act: (cubit) async {
+        try {
+          await cubit.signOut();
+        } on Exception {
+          // The error still surfaces; the state must not be stuck.
+        }
+      },
+      expect: () => [isA<SigningOut>(), isA<SignedOut>()],
+    );
+  });
 }

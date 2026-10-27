@@ -41,6 +41,7 @@
   "stayCollectorNotAuthorized": "المحصّل غير مفوّض. تواصل مع خدمة العملاء.",
   "errorUnexpected": "حصلت مشكلة غير متوقعة. رقم المرجع: {ref}",
   "errorNoConnection": "مفيش اتصال بالإنترنت.",
+  "errorUnexpectedNoRef": "حصلت مشكلة غير متوقعة. جرّب تاني.",
   "errorCancelled": "تم إلغاء العملية.",
   "authInvalidCredentials": "البريد أو كلمة المرور غير صحيحة.",
   "authCodeSent": "بعتنا لك كود التأكيد.",

@@ -10,6 +10,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/auth_error_message.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:smart_auth/smart_auth.dart';
 
@@ -119,13 +120,21 @@ final class _OtpScreenState extends State<OtpScreen> {
   Future<void> _resend(CodeChallenge challenge) async {
     _controller.clear();
     final cubit = context.read<AuthCubit>();
-    switch (challenge.channel) {
-      case VerificationChannel.sms:
-        await cubit.requestPhoneCode(challenge.target);
-      case VerificationChannel.emailSignup:
-        await cubit.requestEmailVerification(challenge.target);
-      case VerificationChannel.emailRecovery:
-        await cubit.requestRecovery(challenge.target);
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      switch (challenge.channel) {
+        case VerificationChannel.sms:
+          await cubit.requestPhoneCode(challenge.target);
+        case VerificationChannel.emailSignup:
+          await cubit.requestEmailVerification(challenge.target);
+        case VerificationChannel.emailRecovery:
+          await cubit.requestRecovery(challenge.target);
+      }
+    } on Object catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(authErrorMessage(error, l10n))),
+      );
     }
   }
 
@@ -166,6 +175,8 @@ final class _OtpScreenState extends State<OtpScreen> {
         final error = switch (errorCode) {
           'OTP_EXPIRED' => l10n.authOtpExpired,
           'OTP_INVALID' => l10n.authOtpInvalid,
+          AuthCubit.networkError => l10n.errorNoConnection,
+          AuthCubit.unexpectedError => l10n.errorUnexpectedNoRef,
           _ => null,
         };
         return Scaffold(

@@ -75,8 +75,15 @@ final class SignOutService implements SignOutCoordinator {
     } on Object {
       // A stale server token is preferable to leaving the account signed in.
     }
-    await auth.signOut();
-    await caches.clearCaches();
-    await preferences.clearExcept(preservedPreferenceKeys);
+    try {
+      // GoTrue removes the local session before calling the server, so a
+      // failure here (e.g. offline) only means the server call did not land.
+      await auth.signOut();
+    } on Object {
+      // Continue: personal data must still be cleared (FR-034, SC-008).
+    } finally {
+      await caches.clearCaches();
+      await preferences.clearExcept(preservedPreferenceKeys);
+    }
   }
 }

@@ -143,6 +143,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNoConnection => 'No internet connection.';
 
   @override
+  String get errorUnexpectedNoRef =>
+      'Something unexpected happened. Please try again.';
+
+  @override
   String get errorCancelled => 'The operation was cancelled.';
 
   @override

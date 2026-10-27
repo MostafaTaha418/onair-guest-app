@@ -208,6 +208,7 @@ final class SupabaseAuthRepository implements AuthRepository {
   }
 
   Exception _mapRequestError(AuthException error) {
+    if (_isNetwork(error)) return const AuthNetworkFailure();
     if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
     if (error.code == 'phone_provider_disabled' ||
         error.code == 'phone_country_not_supported' ||
@@ -218,6 +219,7 @@ final class SupabaseAuthRepository implements AuthRepository {
   }
 
   Exception _mapVerifyError(AuthException error) {
+    if (_isNetwork(error)) return const AuthNetworkFailure();
     if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
     final code = error.code?.toLowerCase() ?? '';
     final message = error.message.toLowerCase();
@@ -226,6 +228,9 @@ final class SupabaseAuthRepository implements AuthRepository {
     }
     return const AuthCodeRejected('OTP_INVALID');
   }
+
+  /// GoTrue wraps connection failures and timeouts in this subclass.
+  bool _isNetwork(AuthException error) => error is AuthRetryableFetchException;
 
   bool _isRateLimited(AuthException error) =>
       error.statusCode == '429' ||
@@ -333,8 +338,32 @@ final class SupabaseAuthRepository implements AuthRepository {
       );
       return (await _accountFor(user))!;
     } on AuthException catch (error) {
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
       if (_isRateLimited(error)) throw AuthRateLimited(_retryDeadline(error));
+      if (error.code == 'email_not_confirmed') {
+        // FR-027: an unconfirmed email must not lock the guest out. GoTrue only
+        // reports this after the password matched, so no account is revealed.
+        throw AuthVerificationRequired(await _resendSignupCode(email));
+      }
       throw const AuthRequestRejected('INVALID_CREDENTIALS');
+    }
+  }
+
+  /// Requests a fresh signup code. A throttled resend still continues to the
+  /// code screen (the previous code may be valid) with the server deadline.
+  Future<CodeChallenge> _resendSignupCode(String email) async {
+    try {
+      await _auth.resendSignupEmail(_normalizeEmail(email));
+      return _emailChallenge(VerificationChannel.emailSignup, email);
+    } on AuthException catch (error) {
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
+      return CodeChallenge(
+        channel: VerificationChannel.emailSignup,
+        target: _normalizeEmail(email),
+        resendAt: _isRateLimited(error)
+            ? _retryDeadline(error)
+            : _clock().toUtc(),
+      );
     }
   }
 
@@ -344,6 +373,7 @@ final class SupabaseAuthRepository implements AuthRepository {
     try {
       await _auth.requestPasswordRecovery(normalized);
     } on AuthException catch (error) {
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
       // Account discovery is deliberately prevented. Only throttling is shown.
       if (_isRateLimited(error)) throw AuthRateLimited(_retryDeadline(error));
     }
@@ -364,6 +394,7 @@ final class SupabaseAuthRepository implements AuthRepository {
     try {
       return (await _accountFor(await _auth.updatePassword(password)))!;
     } on AuthException catch (error) {
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
       throw AuthRequestRejected(error.code ?? 'INTERNAL');
     }
   }
@@ -378,6 +409,7 @@ final class SupabaseAuthRepository implements AuthRepository {
   String _normalizeEmail(String email) => email.trim().toLowerCase();
 
   Exception _mapEmailRequestError(AuthException error) {
+    if (_isNetwork(error)) return const AuthNetworkFailure();
     if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
     return AuthRequestRejected(error.code ?? 'INTERNAL');
   }

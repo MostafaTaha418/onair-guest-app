@@ -140,6 +140,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorNoConnection => 'مفيش اتصال بالإنترنت.';
 
   @override
+  String get errorUnexpectedNoRef => 'حصلت مشكلة غير متوقعة. جرّب تاني.';
+
+  @override
   String get errorCancelled => 'تم إلغاء العملية.';
 
   @override

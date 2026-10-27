@@ -22,6 +22,19 @@ final class ProfileTermsChanged implements Exception {
   const ProfileTermsChanged();
 }
 
+/// Correct email + password, but the email is not confirmed yet. A new
+/// verification code was requested; the guest continues on the code screen.
+final class AuthVerificationRequired implements Exception {
+  const AuthVerificationRequired(this.challenge);
+  final CodeChallenge challenge;
+}
+
+/// The auth server could not be reached (no connection, timeout). Never
+/// mapped to "wrong code" or "wrong password".
+final class AuthNetworkFailure implements Exception {
+  const AuthNetworkFailure();
+}
+
 abstract interface class AuthRepository {
   Stream<GuestAccount?> get authStateChanges;
 

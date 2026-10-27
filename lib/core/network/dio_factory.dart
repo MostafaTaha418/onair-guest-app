@@ -96,8 +96,7 @@ final class ErrorInterceptor extends Interceptor {
       return;
     }
     final response = err.response;
-    final data = response?.data;
-    final body = data is Map<String, dynamic> ? data : <String, dynamic>{};
+    final body = _errorBody(response?.data);
     final mapped = switch (err.type) {
       DioExceptionType.cancel => const ApiError(
         code: ErrorCode.cancelled,
@@ -116,5 +115,17 @@ final class ErrorInterceptor extends Interceptor {
       ),
     };
     handler.next(err.copyWith(error: mapped));
+  }
+
+  /// Returns the inner object of the unified ErrorResponse
+  /// (`{"error": {"code", "message_key", "request_id", "details"}}`,
+  /// contracts/node-api.openapi.yaml). Anything else yields an empty map, so
+  /// the code falls back to INTERNAL.
+  static Map<String, dynamic> _errorBody(Object? data) {
+    if (data is Map<String, dynamic>) {
+      final error = data['error'];
+      if (error is Map<String, dynamic>) return error;
+    }
+    return const <String, dynamic>{};
   }
 }

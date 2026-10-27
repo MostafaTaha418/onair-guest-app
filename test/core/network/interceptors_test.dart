@@ -20,9 +20,10 @@ final class _Tokens implements SessionTokenSource {
 }
 
 final class _Adapter implements HttpClientAdapter {
-  _Adapter(this.statuses);
+  _Adapter(this.statuses, {this.errorBody});
 
   final List<int> statuses;
+  final String? errorBody;
   final List<RequestOptions> requests = [];
 
   @override
@@ -33,8 +34,14 @@ final class _Adapter implements HttpClientAdapter {
   ) async {
     requests.add(options);
     final status = statuses.removeAt(0);
+    // Unified ErrorResponse from contracts/node-api.openapi.yaml.
     return ResponseBody.fromString(
-      status == 200 ? '{}' : '{"code":"UNAUTHENTICATED"}',
+      status == 200
+          ? '{}'
+          : errorBody ??
+                '{"error":{"code":"UNAUTHENTICATED",'
+                    '"message_key":"error.unauthenticated",'
+                    '"request_id":"req_401"}}',
       status,
       headers: {
         'content-type': ['application/json'],
@@ -91,6 +98,62 @@ void main() {
       ),
     );
     expect(tokens.refreshes, 1);
+  });
+
+  test(
+    'reads code, request id, and retry from the nested error body',
+    () async {
+      final adapter = _Adapter(
+        [429],
+        errorBody:
+            '{"error":{"code":"RATE_LIMITED","message_key":"auth.rate_limited",'
+            '"request_id":"req_123","details":{"retry_after_seconds":30}}}',
+      );
+      final dio = createNodeDio(
+        baseUrl: 'https://api.example.invalid',
+        tokens: _Tokens(),
+      )..httpClientAdapter = adapter;
+      await expectLater(
+        dio.get<Map<String, dynamic>>('/ping'),
+        throwsA(
+          isA<DioException>().having(
+            (e) => e.error! as ApiError,
+            'error',
+            isA<ApiError>()
+                .having((e) => e.code, 'code', ErrorCode.rateLimited)
+                .having((e) => e.requestId, 'requestId', 'req_123')
+                .having(
+                  (e) => e.retryAfter,
+                  'retryAfter',
+                  const Duration(seconds: 30),
+                ),
+          ),
+        ),
+      );
+    },
+  );
+
+  test('maps a business error code from the nested body', () async {
+    final adapter = _Adapter(
+      [409],
+      errorBody:
+          '{"error":{"code":"QUOTE_EXPIRED","message_key":"booking.quote_expired",'
+          '"request_id":"req_409"}}',
+    );
+    final dio = createNodeDio(
+      baseUrl: 'https://api.example.invalid',
+      tokens: _Tokens(),
+    )..httpClientAdapter = adapter;
+    await expectLater(
+      dio.get<Map<String, dynamic>>('/ping'),
+      throwsA(
+        isA<DioException>().having(
+          (e) => (e.error! as ApiError).code,
+          'code',
+          ErrorCode.quoteExpired,
+        ),
+      ),
+    );
   });
 
   test('server error body becomes ApiError', () async {

@@ -41,6 +41,7 @@
   "stayCollectorNotAuthorized": "The collector is not authorized. Contact support.",
   "errorUnexpected": "Something went wrong. Reference: {ref}",
   "errorNoConnection": "No internet connection.",
+  "errorUnexpectedNoRef": "Something unexpected happened. Please try again.",
   "errorCancelled": "The operation was cancelled.",
   "authInvalidCredentials": "Incorrect email or password.",
   "authCodeSent": "We sent a verification code.",

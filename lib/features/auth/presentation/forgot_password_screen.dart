@@ -5,6 +5,7 @@ import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/auth/presentation/auth_error_message.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class ForgotPasswordScreen extends StatefulWidget {
@@ -35,13 +36,18 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
     setState(() => _loading = true);
-    await context.read<AuthCubit>().requestRecovery(_email.text);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).authRecoverySent)),
-      );
-      setState(() => _loading = false);
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    String message;
+    try {
+      await context.read<AuthCubit>().requestRecovery(_email.text);
+      message = l10n.authRecoverySent;
+    } on Object catch (error) {
+      message = authErrorMessage(error, l10n);
     }
+    if (!mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+    setState(() => _loading = false);
   }
 
   @override
