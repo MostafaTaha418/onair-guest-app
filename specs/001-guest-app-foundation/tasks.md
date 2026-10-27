@@ -270,10 +270,10 @@ merge blocked; fix → checks pass (quickstart V18).
 
 ### Implementation for User Story 7
 
-- [ ] T106 [P] [US7] Create `.gitleaks.toml` extending defaults with rules for Supabase `service_role` JWTs, the literal `service_role`, Kashier keys, Resend keys (`re_…`), and SMS provider keys; allowlist `contracts/` docs that mention the word without a key
-- [ ] T107 [US7] Create `.github/workflows/ci.yml` (on pull_request): Flutter 3.44.3, `flutter pub get`, `dart format --set-exit-if-changed .`, `flutter analyze`, `tool/check_hardcoded_styles.sh`, `dart run build_runner build --delete-conflicting-outputs` + `flutter gen-l10n` + `dart run swagger_parser` then `git diff --exit-code`, `flutter test` (unit + widget + goldens), gitleaks
-- [ ] T108 [US7] Create `.github/workflows/staging-build.yml` (on push to `main`): write `env/staging.json` from secrets, `flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json`, upload symbols artifact, run `tool/scan_build_for_secrets.sh`, distribute with Firebase App Distribution
-- [ ] T109 [US7] Document required repository settings (branch protection on `main` requiring `ci.yml`; secrets list) in `docs/ci.md`
+- [X] T106 [P] [US7] Create `.gitleaks.toml` extending defaults with rules for Supabase `service_role` JWTs, the literal `service_role`, Kashier keys, Resend keys (`re_…`), and SMS provider keys; allowlist `contracts/` docs that mention the word without a key
+- [X] T107 [US7] Create `.github/workflows/ci.yml` (on pull_request): Flutter 3.44.3, `flutter pub get`, `dart format --set-exit-if-changed .`, `flutter analyze`, `tool/check_hardcoded_styles.sh`, `dart run build_runner build --delete-conflicting-outputs` + `flutter gen-l10n` + `dart run swagger_parser` then `git diff --exit-code`, `flutter test` (unit + widget + goldens), gitleaks
+- [X] T108 [US7] Create `.github/workflows/staging-build.yml` (on push to `main`): write `env/staging.json` from secrets, `flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json`, upload symbols artifact, run `tool/scan_build_for_secrets.sh`, distribute with Firebase App Distribution
+- [X] T109 [US7] Document required repository settings (branch protection on `main` requiring `ci.yml`; secrets list) in `docs/ci.md`
 
 **Checkpoint**: Quality gate active.
 

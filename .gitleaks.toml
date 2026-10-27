@@ -1,0 +1,100 @@
+# Gitleaks configuration for the OnAir Guest App.
+#
+# Extends the default gitleaks rules with the secret classes the constitution forbids
+# in source, assets, and builds (Constitution IV): Supabase service_role keys, Kashier
+# keys, Resend keys, and SMS provider keys. tool/scan_build_for_secrets.sh enforces the
+# same patterns on built artifacts.
+#
+# The base64 fragments below use [x] character-class breaks so this file never matches
+# its own rules.
+
+title = "OnAir Guest App secret scan"
+
+[extend]
+useDefault = true
+
+# --- Supabase service_role -----------------------------------------------------
+# A leaked Supabase key is a JWT whose payload has role = service_role. The payload is
+# base64url-encoded, so match the encoded fragments wherever the JWT is embedded. This
+# rule has no path allowlist except for the build scanner itself: a real key must fail
+# the scan everywhere else, docs included.
+[[rules]]
+id = "supabase-service-role-jwt"
+description = "Supabase service_role JWT (base64 payload fragment)"
+regex = '''(?:eyJy[b]2xlIjoic2VydmljZV9yb2xlIi|InJv[b]GUiOiJzZXJ2aWNlX3JvbGUi|cm9sZ[I]6InNlcnZpY2Vfcm9sZSI)'''
+keywords = ["eyJyb2xl", "injvbgu", "cm9szi"]
+tags = ["supabase", "service-role"]
+
+# tool/scan_build_for_secrets.sh defines these encoded fragments as its own search
+# patterns; a complete JWT pasted there is still caught by the default Supabase rule.
+[[rules.allowlists]]
+description = "The build scanner defines the encoded fragments as patterns"
+paths = ['''(^|/)tool/scan_build_for_secrets\.sh$''']
+
+# Plain-text occurrences of the word. Real keys always appear as the JWT form above;
+# this rule catches unencoded configuration values.
+[[rules]]
+id = "supabase-service-role-literal"
+description = "Supabase service_role plaintext word"
+regex = '''(?i)service[\s_-]?role'''
+keywords = ["service"]
+tags = ["supabase", "service-role"]
+
+[[rules.allowlists]]
+description = "Governance docs, contracts, and the key-checker code mention the word without containing a key"
+paths = [
+  '''(^|/)\.gitleaks\.toml$''',
+  '''(^|/)tool/scan_build_for_secrets\.sh$''',
+  '''(^|/)lib/core/env/env_config\.dart$''',
+  '''(^|/)test/core/env/env_config_test\.dart$''',
+  '''(^|/)(docs|specs|contracts|\.specify)/''',
+]
+
+# --- Kashier ---------------------------------------------------------------------
+[[rules]]
+id = "kashier-credential"
+description = "Kashier key assignment"
+regex = '''(?i)kashier[\s_-]{0,3}(?:api|secret|payment|merchant)?[\s_-]{0,3}(?:key|secret|token)[\s'"]{0,3}[:=][\s'"]{0,3}[A-Za-z0-9_+/.=-]{12,}'''
+keywords = ["kashier"]
+tags = ["kashier"]
+
+# --- Resend ----------------------------------------------------------------------
+# Go RE2 has no lookaround, so guard the prefix with a character class instead.
+[[rules]]
+id = "resend-api-key"
+description = "Resend API key"
+regex = '''(?:^|[^A-Za-z0-9])re_[A-Za-z0-9]{24,}(?:[^A-Za-z0-9]|$)'''
+keywords = ["re_"]
+tags = ["resend"]
+
+# --- SMS providers ---------------------------------------------------------------
+[[rules]]
+id = "sms-provider-credential"
+description = "SMS provider key assignment"
+regex = '''(?i)(?:sms|twilio|messagebird)[\s_-]{0,3}(?:api|auth|account|secret)?[\s_-]{0,3}(?:sid|key|secret|token)[\s'"]{0,3}[:=][\s'"]{0,3}[A-Za-z0-9_+/.=-]{12,}'''
+keywords = ["sms", "twilio", "messagebird"]
+tags = ["sms"]
+
+# --- Global allowlists -------------------------------------------------------------
+# Placeholder and example values (env templates, docs, test fixtures) are not secrets.
+[[allowlists]]
+description = "Placeholder and example values are not secrets"
+regexTarget = "match"
+regexes = [
+  '''(?i)replace[-_]?with''',
+  '''(?i)\b(?:example|sample|placeholder|dummy|fixture)\b''',
+  '''(?i)your[-_ ]?(?:key|token|secret|api)''',
+  '''(?i)x{8,}''',
+]
+
+# Firebase API keys are public client configuration (Constitution IV allows "public
+# Firebase config"); they are restricted per service in the Firebase console. Scope the
+# default GCP and generic key rules away from the FlutterFire config files only.
+[[allowlists]]
+description = "Firebase public client configuration is not a secret (Constitution IV)"
+targetRules = ["gcp-api-key", "generic-api-key"]
+paths = [
+  '''(^|/)google-services\.json$''',
+  '''(^|/)GoogleService-Info\.plist$''',
+  '''(^|/)firebase_options_[a-z]+\.dart$''',
+]

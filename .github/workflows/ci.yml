@@ -1,0 +1,91 @@
+# Pull-request quality gate (User Story 7, tasks.md T107).
+# Every job must pass before a PR can merge into main; see docs/ci.md for the
+# required branch-protection settings and secrets.
+name: ci
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-and-analyze:
+    name: format & analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - name: Install ripgrep (hard-coded style check dependency)
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ripgrep
+          fi
+
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed .
+      - run: flutter analyze
+      - run: bash tool/check_hardcoded_styles.sh
+
+  codegen-up-to-date:
+    name: generated code up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter gen-l10n
+      - run: dart run swagger_parser
+
+      - name: Fail if generated files are stale
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::Generated code is out of date. Run 'dart run build_runner build --delete-conflicting-outputs', 'flutter gen-l10n' and 'dart run swagger_parser', then commit the results."
+            exit 1
+          fi
+
+  tests:
+    name: unit, widget & golden tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter test
+
+  secrets:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        run: |
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect -c .gitleaks.toml --redact

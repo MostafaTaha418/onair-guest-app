@@ -34,8 +34,10 @@ trap cleanup EXIT
 unzip -o -qq "$artifact" -d "$scan_dir"
 
 # Only report file names. Never print a matched credential into CI logs.
+# The [x] breaks inside the base64 fragments stop this file from matching the
+# .gitleaks.toml fragment rules while matching real keys identically under grep -E.
 declare -A forbidden_patterns=(
-  [supabase-service-role]='service_role|InJvbGUiOiJzZXJ2aWNlX3JvbGUi|cm9sZSI6InNlcnZpY2Vfcm9sZSI'
+  [supabase-service-role]='service_role|InJv[b]GUiOiJzZXJ2aWNlX3JvbGUi|cm9sZ[I]6InNlcnZpY2Vfcm9sZSI'
   [kashier-secret]='[Kk][Aa][Ss][Hh][Ii][Ee][Rr][_-]?(api|secret|payment)?[_-]?[Kk][Ee][Yy][[:space:]]*[:=][[:space:]]*[A-Za-z0-9_-]{12,}'
   [resend-secret]='(^|[^A-Za-z0-9])re_[A-Za-z0-9]{24,}([^A-Za-z0-9]|$)'
   [sms-provider-secret]='([Ss][Mm][Ss]|[Tt][Ww][Ii][Ll][Ii][Oo]|[Mm][Ee][Ss][Ss][Aa][Gg][Ee][Bb][Ii][Rr][Dd])[_-]?(api|auth|secret)?[_-]?[Kk][Ee][Yy][[:space:]]*[:=][[:space:]]*[A-Za-z0-9_-]{12,}'
