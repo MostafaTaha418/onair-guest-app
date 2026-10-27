@@ -4,6 +4,7 @@ import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -15,8 +16,13 @@ import '../helpers/fake_auth_repository.dart';
 Future<void> pumpVisitorApp(
   WidgetTester tester, {
   ConnectivityCubit? connectivityCubit,
+  VersionGate? versionGate,
 }) async {
-  await _pumpApp(tester, connectivityCubit: connectivityCubit);
+  await _pumpApp(
+    tester,
+    connectivityCubit: connectivityCubit,
+    versionGate: versionGate,
+  );
 }
 
 Future<void> pumpSignedInApp(WidgetTester tester) async {
@@ -51,6 +57,7 @@ Future<void> _pumpApp(
   GuestAccount? account,
   UriLinkSource? uriLinkSource,
   String? linkDomain,
+  VersionGate? versionGate,
 }) async {
   final auth = FakeAuthRepository()..account = account;
   addTearDown(auth.dispose);
@@ -73,6 +80,7 @@ Future<void> _pumpApp(
         connectivityCubit: connectivityCubit,
         uriLinkSource: uriLinkSource,
         linkDomain: linkDomain,
+        versionGate: versionGate,
       ),
     ),
   );

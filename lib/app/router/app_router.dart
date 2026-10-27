@@ -6,6 +6,7 @@ import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
+import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
 import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
@@ -18,9 +19,13 @@ import 'package:on_air/features/favorites/presentation/favorites_placeholder_scr
 import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
 import 'package:on_air/features/search/presentation/search_placeholder_screen.dart';
 
+bool _defaultUpdateRequired() => false;
+
 GoRouter createAppRouter({
   required Listenable refreshListenable,
   required AuthCubit authCubit,
+  bool Function() updateRequired = _defaultUpdateRequired,
+  void Function()? openStore,
 }) => GoRouter(
   initialLocation: AppRoutes.splash,
   refreshListenable: refreshListenable,
@@ -29,6 +34,7 @@ GoRouter createAppRouter({
       location: state.uri.toString(),
       authState: authCubit.state,
       from: state.uri.queryParameters['from'],
+      updateRequired: updateRequired(),
     ),
   ),
   routes: [
@@ -71,6 +77,11 @@ GoRouter createAppRouter({
       path: AppRoutes.notAvailable,
       name: 'not-available',
       builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.updateRequired,
+      name: 'update-required',
+      builder: (_, _) => UpdateRequiredScreen(onOpenStore: openStore),
     ),
     GoRoute(
       path: AppRoutes.propertyPattern,

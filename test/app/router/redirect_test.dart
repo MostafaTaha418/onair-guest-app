@@ -87,4 +87,76 @@ void main() {
       AppRoutes.home,
     );
   });
+
+  test('an active version gate sends every route to update-required', () {
+    final contexts = [
+      (
+        AppRoutes.splash,
+        const AuthUnknown(),
+      ),
+      (AppRoutes.home, const SignedOut()),
+      (AppRoutes.bookings, const SignedOut()),
+      (AppRoutes.login, const SignedOut()),
+      (AppRoutes.home, SignedIn(complete, isComplete: true)),
+      (AppRoutes.completeProfile, SignedIn(incomplete, isComplete: false)),
+    ];
+    for (final (location, authState) in contexts) {
+      expect(
+        resolveRedirect(
+          RedirectContext(
+            location: location,
+            authState: authState,
+            updateRequired: true,
+          ),
+        ),
+        AppRoutes.updateRequired,
+        reason: '$location must be blocked by the version gate',
+      );
+    }
+  });
+
+  test('update-required route stays put while the gate is active', () {
+    expect(
+      resolveRedirect(
+        const RedirectContext(
+          location: AppRoutes.updateRequired,
+          authState: SignedOut(),
+          updateRequired: true,
+        ),
+      ),
+      isNull,
+    );
+  });
+
+  test('a failed config fetch keeps the gate off, so nothing redirects', () {
+    // updateRequired defaults to false when the gate could not reach the
+    // server: the app must continue normally and check again next time.
+    expect(
+      resolveRedirect(
+        const RedirectContext(location: AppRoutes.home, authState: SignedOut()),
+      ),
+      isNull,
+    );
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.home,
+          authState: SignedIn(complete, isComplete: true),
+        ),
+      ),
+      isNull,
+    );
+  });
+
+  test('a lifted gate returns a stale update screen to home', () {
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.updateRequired,
+          authState: SignedIn(complete, isComplete: true),
+        ),
+      ),
+      AppRoutes.home,
+    );
+  });
 }

@@ -301,4 +301,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authClose => 'Close';
+
+  @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredStoreButton => 'Update the app';
 }

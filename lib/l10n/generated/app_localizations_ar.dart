@@ -294,4 +294,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authClose => 'إغلاق';
+
+  @override
+  String get updateRequiredTitle => 'تحديث مطلوب';
+
+  @override
+  String get updateRequiredStoreButton => 'حدّث التطبيق';
 }

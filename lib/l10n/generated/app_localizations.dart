@@ -643,6 +643,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إغلاق'**
   String get authClose;
+
+  /// Title of the blocking update-required screen.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث مطلوب'**
+  String get updateRequiredTitle;
+
+  /// Button on the update-required screen that opens the store listing.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّث التطبيق'**
+  String get updateRequiredStoreButton;
 }
 
 class _AppLocalizationsDelegate

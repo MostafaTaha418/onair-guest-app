@@ -114,5 +114,13 @@
   "authEmailStatus": "حالة البريد الإلكتروني",
   "authSignUpWithEmail": "إنشاء الحساب بالبريد",
   "authSignInWithEmail": "تسجيل الدخول بالبريد",
-  "authClose": "إغلاق"
+  "authClose": "إغلاق",
+  "updateRequiredTitle": "تحديث مطلوب",
+  "@updateRequiredTitle": {
+    "description": "Title of the blocking update-required screen."
+  },
+  "updateRequiredStoreButton": "حدّث التطبيق",
+  "@updateRequiredStoreButton": {
+    "description": "Button on the update-required screen that opens the store listing."
+  }
 }

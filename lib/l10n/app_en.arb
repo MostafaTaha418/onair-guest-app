@@ -114,5 +114,7 @@
   "authEmailStatus": "Email status",
   "authSignUpWithEmail": "Create account with email",
   "authSignInWithEmail": "Sign in with email",
-  "authClose": "Close"
+  "authClose": "Close",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredStoreButton": "Update the app"
 }

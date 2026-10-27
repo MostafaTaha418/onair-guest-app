@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const forgotPassword = '/auth/forgot-password';
   static const newPassword = '/auth/new-password';
   static const notAvailable = '/not-available';
+  static const updateRequired = '/update-required';
 
   static const propertyPattern = '/property/:id';
   static const searchResults = '/search/results';
@@ -61,6 +62,7 @@ abstract final class AppRoutes {
       forgotPassword,
       newPassword,
       notAvailable,
+      updateRequired,
       searchResults,
       paymentReturn,
     };

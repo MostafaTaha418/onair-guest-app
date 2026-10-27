@@ -290,14 +290,14 @@ and reopen (quickstart V19).
 
 ### Tests for User Story 8
 
-- [ ] T110 [P] [US8] Add cases to `test/app/router/redirect_test.dart`: build below platform minimum → `/update-required` from any route; config fetch failure → no redirect
-- [ ] T111 [P] [US8] Widget + golden test `test/features/app_update/update_required_screen_test.dart`: store button present, back navigation blocked, light/dark
+- [X] T110 [P] [US8] Add cases to `test/app/router/redirect_test.dart`: build below platform minimum → `/update-required` from any route; config fetch failure → no redirect
+- [X] T111 [P] [US8] Widget + golden test `test/features/app_update/update_required_screen_test.dart`: store button present, back navigation blocked, light/dark
 
 ### Implementation for User Story 8
 
-- [ ] T112 [US8] Implement `VersionGate` (build number from `package_info_plus` vs `minSupportedBuildAndroid`/`minSupportedBuildIos`; re-check on resume with `AppLifecycleListener`) in `lib/core/config/version_gate.dart`
-- [ ] T113 [US8] Implement `UpdateRequiredScreen` (store link per platform, `PopScope(canPop: false)`) in `lib/features/app_update/presentation/update_required_screen.dart` and route `/update-required`
-- [ ] T114 [US8] Add the version-gate rule as the first rule in `lib/app/router/redirect.dart` (passes T110)
+- [X] T112 [US8] Implement `VersionGate` (build number from `package_info_plus` vs `minSupportedBuildAndroid`/`minSupportedBuildIos`; re-check on resume with `AppLifecycleListener`) in `lib/core/config/version_gate.dart`
+- [X] T113 [US8] Implement `UpdateRequiredScreen` (store link per platform, `PopScope(canPop: false)`) in `lib/features/app_update/presentation/update_required_screen.dart` and route `/update-required`
+- [X] T114 [US8] Add the version-gate rule as the first rule in `lib/app/router/redirect.dart` (passes T110)
 
 **Checkpoint**: All eight stories done.
 
