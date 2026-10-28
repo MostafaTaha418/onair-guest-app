@@ -1,0 +1,205 @@
+# Pull-request quality gate (User Story 7, tasks.md T107).
+# Every job must pass before a PR can merge into develop or main (branch flow:
+# feature/* -> develop -> main); see docs/ci.md for the required
+# branch-protection settings and secrets.
+name: ci
+
+on:
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-and-analyze:
+    name: format & analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - name: Install ripgrep (hard-coded style check dependency)
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ripgrep
+          fi
+
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed .
+      - run: flutter analyze
+      - run: bash tool/check_hardcoded_styles.sh
+
+  codegen-up-to-date:
+    name: generated code up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run swagger_parser
+      - run: dart format lib/core/api/generated
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter gen-l10n
+      - run: dart format lib/core/api/generated lib/l10n/generated
+
+      - name: Fail if generated files are stale
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::Generated code is out of date. Run the codegen commands in docs/ci.md in order, then commit the results."
+            exit 1
+          fi
+
+  tests:
+    name: unit, widget & golden tests
+    # Baselines contain real Cairo text (obscureText: false), generated on Windows.
+    # Keep the same renderer platform rather than hiding text or relaxing diffs.
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter test
+      - name: Test CI security helpers
+        run: python -m unittest discover -s tool/tests -v
+
+      - name: Upload golden failure images
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: golden-failures-${{ github.sha }}
+          path: test/**/failures/**
+          if-no-files-found: ignore
+
+  secrets:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run gitleaks
+        run: |
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tar.gz' | sha256sum --check --strict
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          GITLEAKS_BINARY=/tmp/gitleaks python3 -m unittest discover -s tool/tests -p 'test_gitleaks.py' -v
+          /tmp/gitleaks detect -c .gitleaks.toml --redact
+
+  android-device:
+    name: android device (API ${{ matrix.api-level }})
+    # Builds, installs, and launches the app on an emulator; fails if it is not
+    # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
+    needs: format-and-analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [24, 34]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Free disk space for Android builds and emulator
+        run: bash tool/ci/free_runner_disk.sh
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build, install, launch, and test on emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tool/ci/android_device_check.sh
+
+  ios-device:
+    name: ios device (build + simulator)
+    # Unsigned release build for devices, then install and launch on the newest
+    # iPhone simulator.
+    needs: format-and-analyze
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      # Firebase's Swift package requires Xcode 26.2+; macos-15 defaults to 16.4.
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Verify Xcode and Swift toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build, install, launch, and test on simulator
+        env:
+          STAGING_ENV_JSON: ${{ secrets.STAGING_ENV_JSON }}
+        run: bash tool/ci/ios_device_check.sh

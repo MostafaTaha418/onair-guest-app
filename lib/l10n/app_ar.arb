@@ -1,0 +1,127 @@
+{
+  "@@locale": "ar",
+  "appName": "OnAir",
+  "home": "الرئيسية",
+  "search": "بحث",
+  "bookings": "حجوزاتي",
+  "favorites": "المفضلة",
+  "account": "حسابي",
+  "welcome": "أهلًا بيك",
+  "seeAll": "عرض الكل",
+  "retry": "حاول تاني",
+  "emptyState": "مفيش بيانات لعرضها دلوقتي.",
+  "loading": "جاري التحميل",
+  "offline": "مفيش اتصال بالإنترنت.",
+  "referenceNumber": "رقم المرجع: {ref}",
+  "signIn": "تسجيل الدخول",
+  "signOut": "تسجيل الخروج",
+  "phoneNumber": "رقم الموبايل",
+  "email": "البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "verificationCode": "كود التأكيد",
+  "sendCode": "ابعت الكود",
+  "confirm": "تأكيد",
+  "fullName": "الاسم الكامل",
+  "errorUnauthenticated": "انتهت الجلسة. سجّل الدخول مرة أخرى.",
+  "authPhoneCountryNotSupported": "حاليًا ندعم أرقام الموبايل المصرية فقط. تقدر تسجّل بالبريد الإلكتروني.",
+  "authOtpInvalid": "الكود غير صحيح. راجع الرسالة وجرّب تاني.",
+  "authOtpExpired": "الكود انتهت صلاحيته. اطلب كود جديد.",
+  "authRateLimited": "محاولات كتير. جرّب تاني بعد {time}.",
+  "errorValidationFailed": "راجع البيانات المكتوبة.",
+  "authTermsChanged": "الشروط اتحدّثت. راجعها ووافق عليها للمتابعة.",
+  "authProfileIncomplete": "كمّل بياناتك للمتابعة.",
+  "appUpdateRequired": "لازم تحدّث التطبيق للمتابعة.",
+  "bookingPhoneNotVerified": "أكّد رقم موبايلك قبل الحجز.",
+  "bookingEmailNotVerified": "أكّد بريدك قبل الحجز.",
+  "bookingDatesUnavailable": "التواريخ دي مش متاحة.",
+  "bookingGuestsExceeded": "عدد الضيوف أكبر من المسموح.",
+  "bookingQuoteExpired": "السعر اتحدّث. راجع الملخص من جديد.",
+  "propertyNotAvailable": "الشقة دي مش متاحة حاليًا.",
+  "errorActionNotAllowed": "الإجراء ده مش متاح دلوقتي.",
+  "stayCollectorNotAuthorized": "المحصّل غير مفوّض. تواصل مع خدمة العملاء.",
+  "errorUnexpected": "حصلت مشكلة غير متوقعة. رقم المرجع: {ref}",
+  "errorNoConnection": "مفيش اتصال بالإنترنت.",
+  "errorUnexpectedNoRef": "حصلت مشكلة غير متوقعة. جرّب تاني.",
+  "errorCancelled": "تم إلغاء العملية.",
+  "authInvalidCredentials": "البريد أو كلمة المرور غير صحيحة.",
+  "authCodeSent": "بعتنا لك كود التأكيد.",
+  "authRecoverySent": "لو البريد مسجّل، هتوصلك رسالة الاستعادة.",
+  "@referenceNumber": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "@authRateLimited": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@errorUnexpected": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "notifications": "الإشعارات",
+  "notAvailable": "غير متاح حاليًا",
+  "searchEmpty": "ابدأ البحث عن مكان إقامتك.",
+  "bookingsEmpty": "حجوزاتك هتظهر هنا.",
+  "favoritesEmpty": "الأماكن المفضلة هتظهر هنا.",
+  "accountEmpty": "بيانات حسابك هتظهر هنا.",
+  "authLoginTitle": "أهلًا بيك في OnAir",
+  "authRegisterTitle": "أنشئ حسابك",
+  "authPhoneHint": "مثال: 01012345678",
+  "authPhoneInvalid": "اكتب رقم موبايل مصري صحيح من 11 رقم.",
+  "authPhoneTab": "الموبايل",
+  "authEmailTab": "البريد الإلكتروني",
+  "authEmailComingSoon": "التسجيل بالبريد الإلكتروني هيتاح قريبًا.",
+  "authTermsPrefix": "بالمتابعة أنت توافق على",
+  "terms": "الشروط والأحكام",
+  "privacy": "سياسة الخصوصية",
+  "authNoAccount": "لسه معندكش حساب؟",
+  "authHasAccount": "عندك حساب بالفعل؟",
+  "authCreateAccount": "إنشاء حساب",
+  "authCodeTitle": "اكتب كود التأكيد",
+  "authCodeDescription": "بعتنا كود من 6 أرقام إلى {phone}",
+  "@authCodeDescription": {"placeholders": {"phone": {"type": "String"}}},
+  "authResend": "إعادة إرسال الكود",
+  "authResendIn": "إعادة الإرسال بعد {time}",
+  "@authResendIn": {"placeholders": {"time": {"type": "String"}}},
+  "authChangePhone": "تغيير رقم الموبايل",
+  "authCompleteProfileTitle": "كمّل بياناتك",
+  "authNameInvalid": "الاسم لازم يكون من حرفين إلى 80 حرف.",
+  "authAcceptTerms": "أوافق على الشروط والأحكام وسياسة الخصوصية",
+  "authTermsRequired": "لازم توافق على الشروط للمتابعة.",
+  "authWaitSeconds": "{seconds} ثانية",
+  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}},
+  "authEmailInvalid": "اكتب بريد إلكتروني صحيح.",
+  "authPasswordRule": "8 أحرف على الأقل، بينهم حرف ورقم",
+  "authPasswordWeak": "ضعيفة",
+  "authPasswordMedium": "متوسطة",
+  "authPasswordStrong": "قوية",
+  "authForgotPassword": "نسيت كلمة المرور؟",
+  "authRecoveryTitle": "استعادة كلمة المرور",
+  "authRecoveryDescription": "اكتب بريدك وسنبعت لك كود الاستعادة.",
+  "authNewPasswordTitle": "كلمة مرور جديدة",
+  "authNewPassword": "حفظ كلمة المرور",
+  "authChangeEmail": "تغيير البريد الإلكتروني",
+  "authEmailNotVerified": "غير مؤكد",
+  "authVerifyNow": "أكد الآن",
+  "authEmailStatus": "حالة البريد الإلكتروني",
+  "authSignUpWithEmail": "إنشاء الحساب بالبريد",
+  "authSignInWithEmail": "تسجيل الدخول بالبريد",
+  "authClose": "إغلاق",
+  "updateRequiredTitle": "تحديث مطلوب",
+  "@updateRequiredTitle": {
+    "description": "Title of the blocking update-required screen."
+  },
+  "updateRequiredStoreButton": "حدّث التطبيق",
+  "@updateRequiredStoreButton": {
+    "description": "Button on the update-required screen that opens the store listing."
+  }
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs on a macOS runner (see .github/workflows/pr-checks.yml).
+# Runs on a macOS runner (see .github/workflows/ci.yml).
 #
 # 1. Release build for real devices without code signing (proves the app
 #    compiles ahead-of-time and the native project is valid).

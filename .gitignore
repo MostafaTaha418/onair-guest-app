@@ -2,6 +2,7 @@
 *.class
 *.log
 *.pyc
+__pycache__/
 *.swp
 .DS_Store
 .atom/
@@ -43,3 +44,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.kotlin/
+
+# Local public configuration values; only the example is committed.
+/env/*.json
+!/env/example.json
+
+# Editor and temporary files.
+*.tmp
+Thumbs.db
+.vscode/
+
+# Local development tools
+.tools/

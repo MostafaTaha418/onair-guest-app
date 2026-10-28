@@ -1,0 +1,76 @@
+# Staging build on merge to develop (User Story 7, tasks.md T108; branch flow: feature/* -> develop -> main).
+# Builds the obfuscated staging APK, uploads the obfuscation symbols as an artifact,
+# scans the artifact for forbidden key patterns, then distributes it through
+# Firebase App Distribution. Required secrets are documented in docs/ci.md.
+name: staging-build
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-distribution
+  cancel-in-progress: false
+
+jobs:
+  build-and-distribute:
+    name: Staging APK → Firebase App Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Free disk space for Android release build
+        run: bash tool/ci/free_runner_disk.sh
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.3
+          channel: stable
+          cache: true
+
+      - name: Write env/staging.json from secrets
+        env:
+          STAGING_ENV: ${{ secrets.STAGING_ENV_JSON }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID_STAGING }}
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_SERVICE_CREDENTIALS }}
+          FIREBASE_GROUPS: ${{ secrets.FIREBASE_STAGING_TESTERS }}
+        run: |
+          mkdir -p env
+          printf '%s\n' "$STAGING_ENV" > env/staging.json
+          python3 tool/validate_staging_env.py env/staging.json
+          python3 -c 'import json, os; c=json.load(open("android/app/src/staging/google-services.json")); expected=next(x["client_info"]["mobilesdk_app_id"] for x in c["client"] if x["client_info"]["android_client_info"]["package_name"] == "com.onair.guest.staging"); assert os.environ.get("FIREBASE_APP_ID") == expected, "Missing or incorrect Staging Firebase App ID"'
+          test -n "$FIREBASE_CREDENTIALS" && test -n "$FIREBASE_GROUPS" || { echo '::error::Missing Firebase credentials or tester groups'; exit 1; }
+
+      - run: flutter pub get
+
+      - name: Build staging APK
+        run: flutter build apk --flavor staging -t lib/main_staging.dart --obfuscate --split-debug-info=build/symbols --dart-define-from-file=env/staging.json
+
+      - name: Upload obfuscation symbols
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: staging-symbols-${{ github.sha }}
+          path: build/symbols
+          if-no-files-found: error
+
+      - name: Scan the APK for secrets
+        run: bash tool/scan_build_for_secrets.sh build/app/outputs/flutter-apk/app-staging-release.apk
+
+      - name: Distribute to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@bd494989dd4bec0343f78adee87fe66e48279ad6 # v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID_STAGING }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_CREDENTIALS }}
+          groups: ${{ secrets.FIREBASE_STAGING_TESTERS }}
+          file: build/app/outputs/flutter-apk/app-staging-release.apk

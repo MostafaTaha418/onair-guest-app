@@ -1,0 +1,7 @@
+swagger_parser:
+  schema_path: contracts/node-api.openapi.yaml
+  output_directory: lib/core/api/generated
+  language: dart
+  json_serializer: freezed
+  use_freezed3: true
+  freezed_json_serialization: true

@@ -11,11 +11,16 @@ block G0 implementation; they have a safe default and a named owner.
 
 ### R1. State management
 
-- **Decision**: Riverpod with code generation (`riverpod_annotation` + `riverpod_generator`),
-  `autoDispose` by default, `select` for narrow rebuilds.
-- **Rationale**: Guest Plan §3.2 choice; testable via provider overrides; auto-cancel fits
-  "cancel requests when the screen is disposed" (Constitution VIII).
-- **Alternatives**: Bloc (more boilerplate, no clear gain here); Provider (weaker DI/testing).
+- **Decision**: Cubit through `flutter_bloc`, with immutable states. Repositories are injected
+  through constructors; `BlocProvider` owns route-scoped Cubits and root `BlocProvider`s own session-
+  scoped Cubits. `BlocSelector` narrows rebuilds, while `close()` cancels requests and streams.
+- **Rationale**: Guest Plan §3.2 now chooses Cubit. `bloc_test` verifies state transitions;
+  explicit lifetime and cancellation meet Constitution VIII.
+- **Alternatives**: Riverpod with generated providers was the previous plan and is superseded
+  for this app; plain Provider does not supply the chosen Cubit state model.
+- **Migration**: Phase 1 had dependency configuration only, with no Riverpod classes to rewrite.
+  Replace the three Riverpod packages in `pubspec.yaml` and implement future state classes as
+  Cubits. No backend contract or business rule changes.
 
 ### R2. Routing, guards, and return-to-origin
 

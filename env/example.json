@@ -1,0 +1,8 @@
+{
+  "FLAVOR": "staging",
+  "SUPABASE_URL": "https://example.supabase.co",
+  "SUPABASE_ANON_KEY": "replace-with-public-anon-key",
+  "NODE_API_BASE_URL": "https://api.example.invalid",
+  "LINK_DOMAIN": "example.invalid",
+  "BACKEND_MODE": "mock"
+}

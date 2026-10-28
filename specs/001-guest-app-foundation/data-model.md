@@ -66,6 +66,7 @@ sign-out; the server also drops tokens of ended sessions.
 | `supabaseAnonKey` | string | Public anon key only; startup asserts it is not a `service_role` JWT |
 | `nodeApiBaseUrl` | HTTPS URL | Startup rejects non-HTTPS |
 | `linkDomain` | host | For verified-link parsing |
+| `backendMode` | `remote` \| `mock` | Optional `BACKEND_MODE`, default `remote`; `mock` uses in-memory repositories (Guest Plan §2.6) and is rejected for `production` |
 
 ### Session (secure storage)
 

@@ -1,0 +1,23 @@
+import 'package:timezone/data/latest.dart' as timezone_data;
+import 'package:timezone/timezone.dart' as tz;
+
+abstract final class CairoTime {
+  static tz.Location? _location;
+
+  static void initialize() {
+    timezone_data.initializeTimeZones();
+    _location = tz.getLocation('Africa/Cairo');
+  }
+
+  static tz.TZDateTime fromUtcIso(String value) {
+    final location = _location;
+    if (location == null) {
+      throw StateError('CairoTime.initialize must be called first');
+    }
+    final utc = DateTime.parse(value);
+    if (!utc.isUtc) {
+      throw const FormatException('Timestamp must carry a UTC offset');
+    }
+    return tz.TZDateTime.from(utc, location);
+  }
+}

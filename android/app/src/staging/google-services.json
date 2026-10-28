@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "33057694373",
+    "project_id": "onair-staging-5579e",
+    "storage_bucket": "onair-staging-5579e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33057694373:android:a05e2847732b4eb5df634c",
+        "android_client_info": {
+          "package_name": "com.onair.guest.staging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgaZgcevy0evjGF3sB9LFsk2einlarQw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
