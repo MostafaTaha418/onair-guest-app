@@ -1,16 +1,24 @@
 # Contract: Supabase Discovery RPCs for G1 (DRAFT)
 
-**Audience**: backend owner (shared `onair-backend`, Guest Plan §2.3 and
-`docs/shared-backend/SHARED_BACKEND_PLAN.md`). **Status**: draft for review.
+**Audience**: backend implementer (`onair-backend`). **Status**: aligned with
+[`docs/OnAir Backend Master Plan.md`](../docs/OnAir%20Backend%20Master%20Plan.md) (28 Oct 2026),
+which is the single source of names (§6 properties, §7 bookings, §12.2 `guest_*` functions). If
+this file disagrees with it, the plan wins.
+
+> **Changed on 28 Oct 2026:** `booking_date_locks` and `property_blocks` are now one table,
+> `property_calendar_locks` (`kind` = `hold` | `booking` | `owner_block`). The deposit columns
+> are `booking_policies.deposit_percent_bp` and `deposit_fixed_minor`. The registry references
+> are replaced by the Backend Master Plan.
 
 **Sources**:
 - Master Plan decisions 97–99, §7.1–§7.2, §13.4, AC-003, AC-010, AC-012, AC-013, AC-047
+- Backend Master Plan §6, §7.7, §12.2
 - Guest Plan §6.3–§6.5, §10.1, §12
 - Decision [D-001](../docs/decisions/D-001-public-property-address.md)
 - spec FR-001–FR-038
 
-**Owner code**: `guest` (registry §5.1). Every function below is a `public` function with the
-`guest_` prefix.
+**Prefix**: `guest_` (Backend Master Plan §12). Every function below is a `public` function.
+The Guest App calls only `guest_*` and `common_*`.
 
 ## 0. Common rules (all functions)
 
@@ -102,8 +110,8 @@ Returns all Home sections in one call. A failing section is reported, not raised
 
 **Availability (AC-012, MUST)**: when dates are given, exclude any apartment with **any**
 night in `[p_check_in, p_check_out)` overlapping either of:
-- an active `booking_date_locks` row (`released_at is null`, hold or confirmed);
-- a `property_blocks` range.
+- an active `property_calendar_locks` row (`released_at is null`) of any `kind`: `hold`,
+  `booking`, or `owner_block`.
 
 Use the same `daterange '[)'` semantics as the exclusion constraint.
 
@@ -137,8 +145,10 @@ cursor, `p_limit` out of range, guests < 1).
   - `deposit_percent_bp` is set when the type is `percent`.
   - `deposit_amount_minor` is set when the type is `fixed`.
   - Both are null when the type is `full`.
-  - **To confirm:** the unit of `booking_policies.deposit_value` for percent.
-- **`terms_version`:** identifies the exact rules + policy text shown. The same value must be
+  - Source columns: `booking_policies.deposit_percent_bp` (basis points) and
+    `booking_policies.deposit_fixed_minor`.
+- **`terms_version`:** the `terms_hash` from `private.resolve_booking_terms`. It identifies the
+  exact rules + policy text shown. G2 functions receive it as `p_terms_hash`. The same value must be
   accepted later by `guest_quote_booking` / `guest_start_booking` (G2). If it differs there,
   they raise `TERMS_CHANGED`.
 - **Errors:** `NOT_FOUND` for unknown **and** for not-published IDs, with an identical
@@ -206,23 +216,24 @@ cursor, `p_limit` out of range, guests < 1).
 | `RATE_LIMITED` | Optional gateway throttling | Message with remaining time; retry disabled |
 | `INTERNAL` | Anything else | Unexpected-error message with reference number |
 
-`NOT_FOUND` is a shared registry code (registry §6) and is new to the app's error contract. It
+`NOT_FOUND` is a shared code (Backend Master Plan §11) and is new to the app's error contract. It
 maps to `propertyNotAvailable`.
 
-## 9. Registry additions requested
+## 9. Functions in the Backend Master Plan (§12.2)
 
-| Function | owner | phase | Notes |
+| Function | prefix | phase | Notes |
 |---|---|---|---|
-| `guest_search_properties` | guest | P0 | Already planned; signature above |
-| `guest_get_property` | guest | P0 | Already planned; includes `address_text` (D-001) |
-| `guest_home_feed` | guest | P0 | **New** |
-| `guest_get_property_unavailable_dates` | guest | P0 | **New** |
-| `guest_list_property_reviews` | guest | P0 | **New**. Reads `property_reviews` (approved) + `profiles.full_name` (shortened) |
-| `guest_search_locations` | guest | P0 | **New** |
-| `guest_get_reference_data` | guest | P0 | **New**. Reads `amenities`, the property-type list, and the price bounds |
+| `guest_search_properties` | guest | P0 | Signature above |
+| `guest_get_property` | guest | P0 | Includes `address_text` (D-001) |
+| `guest_home_feed` | guest | P0 | |
+| `guest_get_property_unavailable_dates` | guest | P0 | Reads `property_calendar_locks` |
+| `guest_list_property_reviews` | guest | P0 | Reads `property_reviews` (approved) + `profiles.full_name` (shortened) |
+| `guest_search_locations` | guest | P0 | Reads `locations.search_text` |
+| `guest_get_reference_data` | guest | P0 | Reads `amenities`, `property_types`, and the price bounds |
 
-Because they read `core` tables (`properties`, `property_versions`, `booking_date_locks`), the
-PR needs the core-review rule from the registry.
+They read shared tables (`properties`, `property_versions`, `property_media`, `markup_policies`,
+`booking_policies`, `property_calendar_locks`), so any change to their shape is agreed by all
+three apps first and recorded in the Backend Master Plan in the same PR.
 
 ## 10. Security tests (MUST, automated on Staging)
 
@@ -238,7 +249,8 @@ Run by `integration_test/discovery_rules_test.dart` against the seed in §11.
 3. **No forbidden fields.** No response contains: base price, markup, coordinates, owner
    phone/email/name, full reviewer names, or pending/rejected reviews.
 4. **Anon has no direct table access.** `anon` cannot `select` from `properties`,
-   `property_versions`, `property_reviews`, `booking_date_locks`, or `property_blocks`.
+   `property_versions`, `property_media`, `property_reviews`, `markup_policies`, `booking_policies`,
+   or `property_calendar_locks`.
 5. **The calendar reveals nothing else.** `guest_get_property_unavailable_dates` returns dates
    only, and the same dates whether the caller is anon or signed in.
 

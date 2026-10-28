@@ -15,7 +15,11 @@ abstract final class AppRoutes {
   static const updateRequired = '/update-required';
 
   static const propertyPattern = '/property/:id';
+  static const propertyGalleryPattern = '/property/:id/gallery';
+  static const propertyReviewsPattern = '/property/:id/reviews';
   static const searchResults = '/search/results';
+  static const bookingEntryPattern = '/book/:propertyId/dates';
+  static const supportNew = '/support/new';
   static const bookingDetailsPattern = '/bookings/:id';
   static const remainingPaymentPattern = '/bookings/:id/remaining-payment';
   static const damageClaimPattern = '/bookings/:id/damage-claim/:claimId';
@@ -28,6 +32,9 @@ abstract final class AppRoutes {
     caseSensitive: false,
   );
   static final _property = RegExp(r'^/property/([^/]+)$');
+  static final _propertyGallery = RegExp(r'^/property/([^/]+)/gallery$');
+  static final _propertyReviews = RegExp(r'^/property/([^/]+)/reviews$');
+  static final _bookingEntry = RegExp(r'^/book/([^/]+)/dates$');
   static final _bookingDetails = RegExp(r'^/bookings/([^/]+)$');
   static final _remainingPayment = RegExp(
     r'^/bookings/([^/]+)/remaining-payment$',
@@ -64,6 +71,7 @@ abstract final class AppRoutes {
       notAvailable,
       updateRequired,
       searchResults,
+      supportNew,
       paymentReturn,
     };
     return staticPaths.contains(uri.path) || _validDynamicPath(uri.path);
@@ -83,12 +91,14 @@ abstract final class AppRoutes {
   static bool requiresAccount(String location) {
     final path = Uri.tryParse(location)?.path;
     if (path == bookings || path == favorites || path == account) return true;
+    if (path == supportNew) return true;
     return path != null &&
         (_validMatch(_bookingDetails, path) ||
             _validMatch(_remainingPayment, path) ||
             _validMatch(_damageClaim, path, idCount: 2) ||
             _validMatch(_bookingReview, path) ||
             _validMatch(_supportCase, path) ||
+            _validMatch(_bookingEntry, path) ||
             path == paymentReturn);
   }
 
@@ -104,11 +114,21 @@ abstract final class AppRoutes {
 
   static bool _validDynamicPath(String path) =>
       _validMatch(_property, path) ||
+      _validMatch(_propertyGallery, path) ||
+      _validMatch(_propertyReviews, path) ||
+      _validMatch(_bookingEntry, path) ||
       _validMatch(_bookingDetails, path) ||
       _validMatch(_remainingPayment, path) ||
       _validMatch(_damageClaim, path, idCount: 2) ||
       _validMatch(_bookingReview, path) ||
       _validMatch(_supportCase, path);
+
+  // -- Builders for in-app navigation ---------------------------------------
+
+  static String property(String id) => '/property/$id';
+  static String propertyGallery(String id) => '/property/$id/gallery';
+  static String propertyReviews(String id) => '/property/$id/reviews';
+  static String bookingEntry(String propertyId) => '/book/$propertyId/dates';
 
   static bool _validMatch(RegExp pattern, String path, {int idCount = 1}) {
     final match = pattern.firstMatch(path);

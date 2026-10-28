@@ -2,6 +2,11 @@
 
 Source: Guest Plan §5.1–§5.3, spec FR-016–FR-021, FR-033, FR-041.
 
+> **Changed on 28 Oct 2026 (Backend Master Plan B3–B5):** no SMS and no phone sign-in. Sign-in
+> is email + password only. Sign-up collects the phone, the WhatsApp choice, and the name and
+> terms. One code on the email confirms the email and the phone. `/auth/complete-profile` is
+> removed. A new route lets the user confirm a pending phone before booking.
+
 ## Routes in G0
 
 | Route | Screen | Needs account | Verified link | G0 content |
@@ -9,10 +14,9 @@ Source: Guest Plan §5.1–§5.3, spec FR-016–FR-021, FR-033, FR-041.
 | `/splash` | Splash | no | — | Real |
 | `/update-required` | Update required (blocking) | no | — | Real |
 | `/not-available` | Neutral "not available" | no | — | Real |
-| `/auth/login` | Sign in (phone \| email tabs) | — | — | Real |
-| `/auth/register` | Create account | — | — | Real |
-| `/auth/otp` | Code entry (sms / email signup / recovery) | — | — | Real |
-| `/auth/complete-profile` | Name + terms | signed in | — | Real |
+| `/auth/login` | Sign in (email + password only) | — | — | Real |
+| `/auth/register` | Create account: name, email, password, Egyptian phone, "has WhatsApp?", optional WhatsApp number, terms | — | — | Real |
+| `/auth/otp` | Email code entry (signup = email + phone, recovery, phone change, account deletion) | — | — | Real |
 | `/auth/forgot-password` | Request recovery code | — | — | Real |
 | `/auth/new-password` | Set new password after recovery code | recovery session | — | Real |
 | `/home` | Home tab | no | — | Placeholder + bell |
@@ -29,9 +33,12 @@ their feature ships.
 
 1. `AppConfig` says build is unsupported → `/update-required` (nothing else reachable).
 2. Route needs an account and there is no session → `/auth/login?from=<location>`.
-3. Signed in and profile incomplete → `/auth/complete-profile?from=<location>`.
-4. Signed in and on an `/auth/*` route (other than complete-profile / new-password) →
-   `from` or `/home`.
+3. Signed in and on an `/auth/*` route (other than new-password) → `from` or `/home`.
+
+The booking flow (G2) adds a check on `/book/:propertyId/*`: if `common_get_my_context()`
+reports the email or the phone as not confirmed, go to `/book/:propertyId/verify-phone`. That
+screen sends a code to the email and returns to the booking. The server still rejects the
+payment with `EMAIL_NOT_VERIFIED` / `PHONE_NOT_VERIFIED`.
 
 `from` is accepted only if it is a relative internal path that matches a registered route;
 anything else is dropped (no open redirect).

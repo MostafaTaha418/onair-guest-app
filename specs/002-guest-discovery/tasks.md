@@ -123,7 +123,7 @@ shared UI components, routes, and wiring. Every user story depends on this phase
 
 ### Tests first (write them, run them, see them fail, then implement)
 
-- [ ] T006 [P] Write `test/core/time/date_only_extras_test.dart` for the new `DateOnly` helpers and the date formatter:
+- [X] T006 [P] Write `test/core/time/date_only_extras_test.dart` for the new `DateOnly` helpers and the date formatter:
   - **`DateOnly` helpers:**
     - `DateOnly(2026,2,28).addDays(1) == DateOnly(2026,3,1)`;
     - `addDays(-1)` crosses months and years;
@@ -133,29 +133,29 @@ shared UI components, routes, and wiring. Every user story depends on this phase
   - **`CairoTime.today(now: DateTime.utc(2026,10,27,22,30))`** returns `DateOnly(2026,10,28)` (Cairo is UTC+2/+3). Call `CairoTime.initialize()` in `setUpAll`.
   - **`DateOnlyFormatter.dayMonth(DateOnly(2026,11,20))`** returns a string containing `20` written in **Western digits** and the Arabic month name «نوفمبر». `DateOnlyFormatter.monthYear(DateOnly(2026,11,1))` contains «نوفمبر» and `2026`.
   - **Setup:** in `setUpAll`, call `await initializeDateFormatting('ar')` (from `package:intl/date_symbol_data_local.dart`); without it, `DateFormat` with `'ar'` throws in plain unit tests. Do the same in every other test that formats dates, including T034 and the screen tests.
-- [ ] T007 [P] Write `test/core/time/stay_range_test.dart` for `StayRange` (data-model "StayRange"):
+- [X] T007 [P] Write `test/core/time/stay_range_test.dart` for `StayRange` (data-model "StayRange"):
   - `StayRange.tryCreate(checkIn, checkOut, today)` returns `null` when checkOut ≤ checkIn or checkIn is before `today`.
   - It returns an object when checkIn == today.
   - `nights` equals `checkIn.daysUntil(checkOut)`.
   - `nightsIterable()` yields `checkIn … checkOut−1` (the last night is the day before checkOut).
   - `isSelectable(unavailable)` is `false` if any night is in the set, and `true` when only the **checkOut day** is in the set.
   - Value equality.
-- [ ] T008 [P] Write `test/core/images/image_variants_test.dart`. `ImageVariants.pick(variants, logicalWidth: 160, devicePixelRatio: 2)` with widths `[320, 720, 1440]`:
+- [X] T008 [P] Write `test/core/images/image_variants_test.dart`. `ImageVariants.pick(variants, logicalWidth: 160, devicePixelRatio: 2)` with widths `[320, 720, 1440]`:
   - returns 320 (needs 320);
   - with dpr 3 (needs 480) returns 720;
   - with logicalWidth 1000 and dpr 3 returns 1440 (the widest when none is big enough);
   - an empty list returns `null`;
   - unsorted input still works.
-- [ ] T009 [P] Write `test/core/cache/json_file_cache_test.dart` for `JsonFileCache`, using a temp directory passed through the constructor (`JsonFileCache(directory: Directory.systemTemp.createTempSync(), fileName: 'x.json', schema: 1)`):
+- [X] T009 [P] Write `test/core/cache/json_file_cache_test.dart` for `JsonFileCache`, using a temp directory passed through the constructor (`JsonFileCache(directory: Directory.systemTemp.createTempSync(), fileName: 'x.json', schema: 1)`):
   - `read()` returns `null` when the file is missing;
   - `write(map)` then `read()` returns an equal map;
   - a file written with `schema: 1` read by a cache with `schema: 2` returns `null` and deletes the file;
   - a corrupt file (not JSON) returns `null` without throwing;
   - `clear()` deletes the file.
-- [ ] T010 [P] Extend `test/core/errors/error_mapper_test.dart`:
+- [X] T010 [P] Extend `test/core/errors/error_mapper_test.dart`:
   - `ErrorMapper.fromCode('NOT_FOUND')` gives `code == ErrorCode.notFound` and `messageKey == 'propertyNotAvailable'`;
   - an unknown code still maps to `ErrorCode.internal`.
-- [ ] T011 [P] Write `test/core/errors/error_message_test.dart` for `apiErrorMessage(ApiError, AppLocalizations)`:
+- [X] T011 [P] Write `test/core/errors/error_message_test.dart` for `apiErrorMessage(ApiError, AppLocalizations)`:
   - `network` → `l10n.errorNoConnection`;
   - `notFound` and `propertyNotAvailable` → `l10n.propertyNotAvailable`;
   - `validationFailed` → `l10n.errorValidationFailed`;
@@ -163,14 +163,14 @@ shared UI components, routes, and wiring. Every user story depends on this phase
   - any other code → `l10n.errorUnexpectedNoRef`.
 
   Get `AppLocalizations` with `lookupAppLocalizations(const Locale('ar'))`.
-- [ ] T012 [P] Write `test/features/listings/listings_json_test.dart`. It loads every fixture file from `lib/features/listings/data/fixtures/` (as plain files with `dart:io`) and parses them with the model `fromJson` factories from T018–T024. Assert:
+- [X] T012 [P] Write `test/features/listings/listings_json_test.dart`. It loads every fixture file from `lib/features/listings/data/fixtures/` (as plain files with `dart:io`) and parses them with the model `fromJson` factories from T018–T024. Assert:
   - `ListingCard.nightlyPrice` is a `Money`;
   - `stay` is `null` when absent;
   - `ratingAvg` is `null` when `review_count` is 0;
   - `PropertyDetails.addressText` may be `null`;
   - `PolicySummary.depositType` parses `percent | fixed | full`;
   - `HomeFeed` parses a failed section `{"status":"failed","error_code":"INTERNAL"}` as `FeedSection.failed`.
-- [ ] T013 [P] Write `test/features/listings/mock_listings_repository_test.dart` against `MockListingsRepository` (loaded from the fixtures):
+- [X] T013 [P] Write `test/features/listings/mock_listings_repository_test.dart` against `MockListingsRepository` (loaded from the fixtures):
   - **(a) Hidden apartments:** a search with no criteria never returns the apartments marked unpublished in Appendix B.
   - **(b) AC-012:** a search for the dates of `prop-busy` that include its booked night, its held night, or its blocked night does not return `prop-busy`; the free range next to them does.
   - **(c) `NOT_FOUND`:** `property('<unpublished id>')` and `property('<random uuid>')` both throw `AppFailure` with `ErrorCode.notFound`.
@@ -181,13 +181,13 @@ shared UI components, routes, and wiring. Every user story depends on this phase
   - **(h) Locations:** `searchLocations('التجمع')` and `searchLocations('التجمّع')` return the same area; a 1-character query returns an empty list.
   - **(i) Calendar:** `unavailableNights(prop-busy, from, to)` returns exactly the booked + held + blocked nights inside the window.
   - **(j) Reviews:** `reviews(id)` returns only approved reviews, newest first, with `reviewerShortName` and no full name.
-- [ ] T014 [P] Write `test/features/listings/supabase_listings_repository_test.dart`. Construct `SupabaseListingsRepository(rpc: fakeRpc)`, where `fakeRpc` is a function that records `(functionName, params)` and returns fixture JSON. Assert:
+- [X] T014 [P] Write `test/features/listings/supabase_listings_repository_test.dart`. Construct `SupabaseListingsRepository(rpc: fakeRpc)`, where `fakeRpc` is a function that records `(functionName, params)` and returns fixture JSON. Assert:
   - every method calls the exact function name and parameter names from `contracts/supabase-discovery.md` (for example `searchProperties` → `guest_search_properties` with `p_location_id`, `p_check_in` as `YYYY-MM-DD`, `p_limit: 20`);
   - `countProperties` sends `p_limit: 0` and returns `total_count`;
   - a thrown `PostgrestException(message: 'NOT_FOUND')` becomes `AppFailure` with `ErrorCode.notFound`;
   - a `SocketException` or `http.ClientException` becomes `ErrorCode.network`;
   - any other exception becomes `ErrorCode.internal`.
-- [ ] T015 [P] Write `test/features/listings/reference_data_cache_test.dart` for `ReferenceDataCache` (T027), using a fake repository and a temp-dir `JsonFileCache`:
+- [X] T015 [P] Write `test/features/listings/reference_data_cache_test.dart` for `ReferenceDataCache` (T027), using a fake repository and a temp-dir `JsonFileCache`:
   - `load()` with an empty cache calls the repository once and saves the result;
   - a second `load()` returns the cached data without calling the repository;
   - `refreshIfVersionChanged('v2')` refetches only when the cached version is not `v2`;
@@ -196,44 +196,44 @@ shared UI components, routes, and wiring. Every user story depends on this phase
 
 ### Core implementation
 
-- [ ] T016 Implement the `DateOnly` helpers and formatting (makes T006 pass):
+- [X] T016 Implement the `DateOnly` helpers and formatting (makes T006 pass):
   - **In `lib/core/time/date_only.dart`:** `DateOnly addDays(int days)` (via `DateTime.utc`), `int daysUntil(DateOnly other)`, `bool isBefore(DateOnly)`, `bool isAfter(DateOnly)`, `implements Comparable<DateOnly>`, and `factory DateOnly.fromDateTime(DateTime)`.
   - **In `lib/core/time/cairo_time.dart`:** `static DateOnly today({DateTime? now})`, which converts `now ?? DateTime.now()` to Cairo with `tz.TZDateTime.from` and keeps year/month/day.
   - **Create `lib/core/time/date_only_formatter.dart`:** `abstract final class DateOnlyFormatter` with `dayMonth(DateOnly)` → `'${d.day} ${monthName}'` and `monthYear(DateOnly)` → `'$monthName ${d.year}'`. Get the month name from `DateFormat.MMMM('ar').format(DateTime.utc(y, m, 1))`. Write the numbers with `toString()` so they are always Western digits (G0 decision).
-- [ ] T017 Implement `StayRange` (after T016, because it uses `addDays` and `daysUntil`) in `lib/core/time/stay_range.dart` exactly as data-model "StayRange" (makes T007 pass). Rules:
+- [X] T017 Implement `StayRange` (after T016, because it uses `addDays` and `daysUntil`) in `lib/core/time/stay_range.dart` exactly as data-model "StayRange" (makes T007 pass). Rules:
   - `checkOut` must be after `checkIn`; `checkIn` must not be before `today`;
   - `nights` is for display and validation only;
   - the unnamed constructor asserts validity;
   - `static StayRange? tryCreate(DateOnly? checkIn, DateOnly? checkOut, DateOnly today)` never throws;
   - `bool isSelectable(Set<DateOnly> unavailableNights)` checks only the nights, not the checkOut day.
-- [ ] T018 [P] Implement the image types in two files (makes T008 pass). Core must never import `features/`, so `ImageVariant` lives in core:
+- [X] T018 [P] Implement the image types in two files (makes T008 pass). Core must never import `features/`, so `ImageVariant` lives in core:
   - **`lib/core/images/image_variants.dart`:** `ImageVariant {int width; Uri url}` with `fromJson` (keys `width`, `url`), and `abstract final class ImageVariants` with `static ImageVariant? pick({required List<ImageVariant> variants, required double logicalWidth, required double devicePixelRatio})`.
   - **`lib/features/listings/domain/listing_image.dart`:** `ListingImage {List<ImageVariant> variants; String? blurhash}` with `fromJson` (keys `variants`, `blurhash`), sorting `variants` by width ascending. It imports `ImageVariant` from core.
-- [ ] T019 [P] Implement `JsonFileCache` in `lib/core/cache/json_file_cache.dart` (makes T009 pass):
+- [X] T019 [P] Implement `JsonFileCache` in `lib/core/cache/json_file_cache.dart` (makes T009 pass):
   - **Constructor:** `JsonFileCache({required Directory directory, required String fileName, required int schema})`, plus `static Future<JsonFileCache> appSupport({required String fileName, required int schema})`, which uses `getApplicationSupportDirectory()` from `path_provider`.
   - **File format:** `{"schema": <int>, "data": <map>}`.
   - **Methods:** `Future<Map<String, dynamic>?> read()`, `Future<void> write(Map<String, dynamic> data)` (write to `<file>.tmp`, then rename, so a crash never leaves half a file), and `Future<void> clear()`.
   - **Failures:** read and write failures are swallowed and return `null` / do nothing. No PII is ever written by this class's callers.
-- [ ] T020 Add `notFound` to `enum ErrorCode` in `lib/core/errors/api_error.dart` and the entry `'NOT_FOUND': (ErrorCode.notFound, 'propertyNotAvailable')` to `ErrorMapper._keys` in `lib/core/errors/error_mapper.dart` (makes T010 pass). Then create `lib/core/errors/error_message.dart` with `String apiErrorMessage(ApiError error, AppLocalizations l10n)` as specified in T011 (makes T011 pass). Run the whole test suite, because existing `switch`es over `ErrorCode` may need the new case.
+- [X] T020 Add `notFound` to `enum ErrorCode` in `lib/core/errors/api_error.dart` and the entry `'NOT_FOUND': (ErrorCode.notFound, 'propertyNotAvailable')` to `ErrorMapper._keys` in `lib/core/errors/error_mapper.dart` (makes T010 pass). Then create `lib/core/errors/error_message.dart` with `String apiErrorMessage(ApiError error, AppLocalizations l10n)` as specified in T011 (makes T011 pass). Run the whole test suite, because existing `switch`es over `ErrorCode` may need the new case.
 
 ### Listings models (all in `lib/features/listings/domain/`, hand-written, `fromJson` with snake_case keys from `contracts/supabase-discovery.md`)
 
 Start these after T017 (`StayRange`) and T018 (`ImageVariant`, `ListingImage`) are done; then
 T021–T024 can run in parallel.
 
-- [ ] T021 [P] Create `listing_card.dart`: `CardStay {int nights; Money stayTotal}` and `ListingCard {String id; String title; String propertyType; String areaName; String cityName; ListingImage? cover; Money nightlyPrice; double? ratingAvg; int reviewCount; CardStay? stay}`.
+- [X] T021 [P] Create `listing_card.dart`: `CardStay {int nights; Money stayTotal}` and `ListingCard {String id; String title; String propertyType; String areaName; String cityName; ListingImage? cover; Money nightlyPrice; double? ratingAvg; int reviewCount; CardStay? stay}`.
   - **Money:** build it from `nightly_price_minor` and `stay.stay_total_minor` as `Money(int, currency: json['currency'] ?? 'EGP')`.
   - **Rating:** force `ratingAvg` to `null` when `review_count == 0`, even if the JSON has a number.
-- [ ] T022 [P] Create `location_suggestion.dart` (`LocationLevel` enum `governorate|city|area`; `LocationSuggestion {String id; LocationLevel level; String name; String? parentLabel; int listingCount}`). Create `reference_data.dart`:
+- [X] T022 [P] Create `location_suggestion.dart` (`LocationLevel` enum `governorate|city|area`; `LocationSuggestion {String id; LocationLevel level; String name; String? parentLabel; int listingCount}`). Create `reference_data.dart`:
   - `Amenity {String key; String label; String? icon}`;
   - `PropertyTypeOption {String key; String label}`;
   - `ReferenceData {String version; List<Amenity> amenities; List<PropertyTypeOption> propertyTypes; Money priceMin; Money priceMax; Money priceStep}`, where `priceStep` defaults to `Money(5000)` when `price_step_minor` is missing (research R7);
   - `toJson()` on `ReferenceData` (needed for the disk cache).
-- [ ] T023 [P] Create `results_page.dart`:
+- [X] T023 [P] Create `results_page.dart`:
   - `enum SearchSort { priceAsc('price_asc'), priceDesc('price_desc'), newest('newest') }` with a `wire` string field;
   - `PropertySearchParams {String? locationId; StayRange? stay; int? guests; Money? priceMin; Money? priceMax; int? minBedrooms; int? minBathrooms; Set<String> amenityKeys; Set<String> propertyTypes; SearchSort? sort}`;
   - `ResultsPage {List<ListingCard> items; String? nextCursor; int totalCount}` with `fromJson`.
-- [ ] T024 [P] Create `property_details.dart`:
+- [X] T024 [P] Create `property_details.dart`:
   - `StayRules {String checkInTime; String checkOutTime; bool visitorsAllowed; int? maxVisitors; String? houseRules}`;
   - `enum DepositType {percent, fixed, full}`;
   - `PolicySummary {DepositType depositType; int? depositPercentBp; Money? depositAmount; int freeCancellationHours}`;
@@ -246,7 +246,7 @@ T021–T024 can run in parallel.
   - `HomeFeed {String referenceVersion; FeedSection<List<AreaTile>> areas; FeedSection<List<ListingCard>> suggested; FeedSection<List<ListingCard>> newest; FeedSection<UpcomingBookingCard?> upcomingBooking; DateTime fetchedAt}`;
   - `Map<String, dynamic> toPublicJson()`, which writes **only** `reference_version`, `areas`, `suggested`, `newest`, and `fetched_at` and **never** `upcoming_booking`;
   - `factory HomeFeed.fromPublicJson(...)`, which sets `upcomingBooking` to `FeedSectionReady(null)`.
-- [ ] T025 Create the repository interface `lib/features/listings/domain/listings_repository.dart` with exactly these methods, documented with `///` and all throwing `AppFailure` on error:
+- [X] T025 Create the repository interface `lib/features/listings/domain/listings_repository.dart` with exactly these methods, documented with `///` and all throwing `AppFailure` on error:
   - `Future<HomeFeed> homeFeed()`;
   - `Future<ResultsPage> searchProperties(PropertySearchParams params, {String? cursor, int limit = 20})`;
   - `Future<int> countProperties(PropertySearchParams params)`;
@@ -258,8 +258,8 @@ T021–T024 can run in parallel.
 
 ### Repository implementations
 
-- [ ] T026 Create the mock fixtures in `lib/features/listings/data/fixtures/` exactly as **Appendix B**, as JSON files whose shapes match the RPC responses in `contracts/supabase-discovery.md`. Use UUID v4 strings for every ID. Keep the readable names (`prop-busy`, …) only as a `"_fixture_name"` field, which the models ignore. Declare `lib/features/listings/data/fixtures/` under `flutter: assets:` in `pubspec.yaml`.
-- [ ] T027 Implement `MockListingsRepository implements ListingsRepository` in `lib/features/listings/data/mock_listings_repository.dart` (makes T013 pass):
+- [X] T026 Create the mock fixtures in `lib/features/listings/data/fixtures/` exactly as **Appendix B**, as JSON files whose shapes match the RPC responses in `contracts/supabase-discovery.md`. Use UUID v4 strings for every ID. Keep the readable names (`prop-busy`, …) only as a `"_fixture_name"` field, which the models ignore. Declare `lib/features/listings/data/fixtures/` under `flutter: assets:` in `pubspec.yaml`.
+- [X] T027 Implement `MockListingsRepository implements ListingsRepository` in `lib/features/listings/data/mock_listings_repository.dart` (makes T013 pass):
   - **Loading:** fixtures are loaded once through `rootBundle.loadString`. Add a constructor parameter `Future<String> Function(String path)? loader` so tests can read files directly.
   - **Published only:** never return or open apartments whose fixture `"_published"` is `false`.
   - **Availability:** apply the rule in research R2 (exclude an apartment if any night of the stay is in its `booked`, `held`, or `blocked` nights).
@@ -276,7 +276,7 @@ T021–T024 can run in parallel.
   - keeping the loaded value in memory too.
 
   This makes T015 pass. The cache stores `{"reference": referenceData.toJson()}`. Use the same file as Home (`discovery_cache.json`, schema 1) under the key `reference`, and read-modify-write so the `home` key is kept.
-- [ ] T028 Implement `SupabaseListingsRepository implements ListingsRepository` in `lib/features/listings/data/supabase_listings_repository.dart` (makes T014 pass):
+- [X] T028 Implement `SupabaseListingsRepository implements ListingsRepository` in `lib/features/listings/data/supabase_listings_repository.dart` (makes T014 pass):
   - **Constructor:** `SupabaseListingsRepository({required Future<dynamic> Function(String fn, Map<String, dynamic> params) rpc})`. In production, `bootstrap` passes `(fn, params) => client.rpc<dynamic>(fn, params: params)`.
   - **Parameters:** map `PropertySearchParams` to the `p_*` parameters in `contracts/supabase-discovery.md` §2. Leave out null values. Send dates with `DateOnly.toString()`, amounts as `amountMinor`, and sets as lists.
   - **Errors:** wrap every call in one private `_guard` that converts:
@@ -285,14 +285,14 @@ T021–T024 can run in parallel.
     - anything else → `ErrorMapper.fromCode('INTERNAL')`.
 
     Throw the result as `AppFailure`. Never log request parameters.
-- [ ] T029 Create the test fake `test/helpers/fake_listings_repository.dart`: `FakeListingsRepository implements ListingsRepository`. Each method returns a value set by the test, or throws a set `AppFailure`; for example `searchResponses` is a queue of `FutureOr<ResultsPage>`, and `propertyResponse` is a `Completer` so tests can control timing. It records each call in `List<String> calls` with its arguments.
+- [X] T029 Create the test fake `test/helpers/fake_listings_repository.dart`: `FakeListingsRepository implements ListingsRepository`. Each method returns a value set by the test, or throws a set `AppFailure`; for example `searchResponses` is a queue of `FutureOr<ResultsPage>`, and `propertyResponse` is a `Completer` so tests can control timing. It records each call in `List<String> calls` with its arguments.
 
 ### Shared design-system components (each with its own widget test; components take primitives only and never import `features/`)
 
 Start these after T016 (`DateOnlyFormatter`) and T018 (`ImageVariant`); then T030–T034 can run
 in parallel.
 
-- [ ] T030 [P] Create `OnAirNetworkImage` in `lib/design_system/components/on_air_network_image.dart` with its test `test/design_system/components/on_air_network_image_test.dart`:
+- [X] T030 [P] Create `OnAirNetworkImage` in `lib/design_system/components/on_air_network_image.dart` with its test `test/design_system/components/on_air_network_image_test.dart`:
   - **Parameters:** `required List<ImageVariant> variants`, `BoxFit fit = BoxFit.cover`, `BorderRadius? borderRadius`, `String? heroTag`, `String? semanticLabel`.
   - **Picking:** use `LayoutBuilder` to get the width, then pick the URL with `ImageVariants.pick(..., devicePixelRatio: MediaQuery.devicePixelRatioOf(context))`.
   - **Rendering:** render with `CachedNetworkImage` and `memCacheWidth: (width * dpr).round()`.
@@ -301,9 +301,9 @@ in parallel.
   - **No variants:** show the placeholder only.
   - **Hero:** wrap in `Hero(tag: heroTag)` when `heroTag` is not null.
   - **Test:** empty variants show the placeholder; the hero tag is applied.
-- [ ] T031 [P] Create `lib/design_system/components/skeletons.dart` with `SkeletonBox({double? width, required double height, double radius = Dimens.radiusCard})`, which pulses between `detailCard` and `borderDetail` colors over 1.2 s. Wrap it in `RepaintBoundary`. When `MediaQuery.disableAnimationsOf(context)` is true, do not animate. Add `PropertyCardSkeleton`, which matches `PropertyCard`'s size. Test in `test/design_system/components/skeletons_test.dart`: with animations disabled, no ticker is active.
-- [ ] T032 [P] Create `RatingBadge({required String ratingText, required String semanticsLabel})` in `lib/design_system/components/rating_badge.dart`: an `Icons.star_rounded` star in `context.colors['star']` plus the text, wrapped in `Semantics(label: semanticsLabel, excludeSemantics: true)`. Callers do not build it when there is no rating. Create `PriceText({required String price, String? caption})` in `lib/design_system/components/price_text.dart`: `price` uses `context.textStyles.price`, and the optional `caption` (for example the stay total) is `bodySmall` in `textSecondary`. Test both in `test/design_system/components/rating_price_test.dart`.
-- [ ] T033 [P] Create `PropertyCard` in `lib/design_system/components/property_card.dart`, with its test `test/design_system/components/property_card_test.dart`:
+- [X] T031 [P] Create `lib/design_system/components/skeletons.dart` with `SkeletonBox({double? width, required double height, double radius = Dimens.radiusCard})`, which pulses between `detailCard` and `borderDetail` colors over 1.2 s. Wrap it in `RepaintBoundary`. When `MediaQuery.disableAnimationsOf(context)` is true, do not animate. Add `PropertyCardSkeleton`, which matches `PropertyCard`'s size. Test in `test/design_system/components/skeletons_test.dart`: with animations disabled, no ticker is active.
+- [X] T032 [P] Create `RatingBadge({required String ratingText, required String semanticsLabel})` in `lib/design_system/components/rating_badge.dart`: an `Icons.star_rounded` star in `context.colors['star']` plus the text, wrapped in `Semantics(label: semanticsLabel, excludeSemantics: true)`. Callers do not build it when there is no rating. Create `PriceText({required String price, String? caption})` in `lib/design_system/components/price_text.dart`: `price` uses `context.textStyles.price`, and the optional `caption` (for example the stay total) is `bodySmall` in `textSecondary`. Test both in `test/design_system/components/rating_price_test.dart`.
+- [X] T033 [P] Create `PropertyCard` in `lib/design_system/components/property_card.dart`, with its test `test/design_system/components/property_card_test.dart`:
   - **Parameters:** `required String title`, `required String subtitle` (area • city), `required List<ImageVariant> imageVariants`, `required String priceText`, `String? stayTotalText`, `String? ratingText`, `String? ratingSemantics`, `String? heroTag`, `required VoidCallback onTap`, `double width = double.infinity`.
   - **Layout:**
     - a 16:10 image (`OnAirNetworkImage`, `Dimens.radiusCard` top corners);
@@ -313,7 +313,7 @@ in parallel.
   - **Container:** surface color, a 1 px `subtleBorder` border, `Dimens.radiusCard`, whole card tappable with `InkWell`. No favorite heart (G5).
   - **Semantics:** one merged label: title, subtitle, price.
   - **Test:** the rating is hidden when `ratingText` is null, and `onTap` fires.
-- [ ] T034 [P] Create `RangeCalendar` in `lib/design_system/components/range_calendar.dart`, with its test `test/design_system/components/range_calendar_test.dart`:
+- [X] T034 [P] Create `RangeCalendar` in `lib/design_system/components/range_calendar.dart`, with its test `test/design_system/components/range_calendar_test.dart`:
   - **Parameters:** `required DateOnly today`, `required DateOnly initialMonth`, `DateOnly? selectedCheckIn`, `DateOnly? selectedCheckOut`, `Set<DateOnly> unavailableNights = const {}`, `Set<int> loadingMonthKeys = const {}` (key = `year*12+month`), `required void Function(DateOnly day) onDayTap`, `void Function(DateOnly firstDayOfMonth)? onMonthShown`, `DateOnly? lastSelectableDay`.
   - **Header:** one month at a time with previous/next `IconButton`s that have tooltips (`l10n.calendarPrevMonth` / `calendarNextMonth`), and the title from `DateOnlyFormatter.monthYear`.
   - **Grid:** 7 columns, weeks start on **Saturday** (Egypt), weekday initials from `DateFormat.E('ar')`, built with `Directionality`-aware `GridView.count` (no `left`/`right`).
@@ -330,7 +330,7 @@ in parallel.
   - **Day semantics:** e.g. «20 نوفمبر، مش متاح» (`l10n.calendarUnavailableDay(date)`).
   - **Behaviour:** the component **does not decide** selection; it only reports taps through `onDayTap`. Callers decide. It calls `onMonthShown` when a new month is displayed.
   - **Test:** Saturday is the first column; a past day does not call `onDayTap`; changing month calls `onMonthShown`.
-- [ ] T035 Create `test/design_system/goldens/discovery_components_golden_test.dart` (tag `golden`). It covers:
+- [X] T035 Create `test/design_system/goldens/discovery_components_golden_test.dart` (tag `golden`). It covers:
   - `PropertyCard` (with and without rating, with stay total);
   - `PropertyCardSkeleton`;
   - `RangeCalendar` (a month with 3 unavailable nights and a selected range).
@@ -339,19 +339,19 @@ in parallel.
 
 ### Routes, placeholders, and wiring
 
-- [ ] T036 Update `lib/app/router/routes.dart` and its tests in `test/app/router/redirect_test.dart`:
+- [X] T036 Update `lib/app/router/routes.dart` and its tests in `test/app/router/redirect_test.dart`:
   - **Constants to add:** `propertyGalleryPattern = '/property/:id/gallery'`, `propertyReviewsPattern = '/property/:id/reviews'`, `bookingEntryPattern = '/book/:propertyId/dates'`, `supportNew = '/support/new'`.
   - **Helpers to add:** `static String property(String id) => '/property/$id'` (and the same for gallery, reviews, and bookingEntry).
   - **Regexes to add:** `_propertyGallery`, `_propertyReviews`, `_bookingEntry`. Add them to `_validDynamicPath`, and add `supportNew` to the static paths in `isRegisteredLocation`.
   - **`requiresAccount`:** must return `true` for `_bookingEntry` and `supportNew`, and stay `false` for `/property/...` and `/search/results`.
   - **`isLinkablePath`:** do **not** add the new routes.
   - **Tests:** non-UUID IDs are rejected; `/book/<uuid>/dates` requires an account; `/property/<uuid>/gallery` does not.
-- [ ] T037 Create two localized placeholder screens:
+- [X] T037 Create two localized placeholder screens:
   - **`BookingEntryPlaceholderScreen({required String propertyId, required Map<String, String> query})`** in `lib/features/booking/presentation/booking_entry_placeholder_screen.dart`. It shows `l10n.bookingEntryTitle` in the `AppBar` and `l10n.bookingEntryComingSoon`. When present in `query`, it also shows `checkIn`/`checkOut` (formatted with `DateOnlyFormatter.dayMonth`) and `guests`. It never shows the raw `terms` value; it only shows `l10n.bookingEntryTermsCarried` when `terms` exists. It has a back button.
   - **`SupportEntryPlaceholderScreen({String? propertyId})`** in `lib/features/support/presentation/support_entry_placeholder_screen.dart`, showing `l10n.supportEntryTitle` and `l10n.supportEntryComingSoon`.
 
   Register both as top-level `GoRoute`s in `lib/app/router/app_router.dart`, building them from `state.pathParameters` and `state.uri.queryParameters`. Add a widget test for each in `test/features/booking/booking_entry_placeholder_test.dart` and `test/features/support/support_entry_placeholder_test.dart`.
-- [ ] T038 Wire the repositories in `lib/bootstrap.dart`:
+- [X] T038 Wire the repositories in `lib/bootstrap.dart`:
   - **`_Backend` record:** add `ListingsRepository listings`.
   - **`_remoteBackend`:** `SupabaseListingsRepository(rpc: (fn, params) => client.rpc<dynamic>(fn, params: params))`.
   - **`_mockBackend`:** `MockListingsRepository()`.

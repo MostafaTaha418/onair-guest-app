@@ -83,8 +83,9 @@ redirect → from                         back to /property/P?checkIn=A&checkOut
 - **Signed-in guest:** "Book now" pushes `/book/P/dates?…&terms=<shown>` directly.
 - **"Contact OnAir":** identical flow with `resume=contact`, ending at
   `/support/new?property=P`. No terms check.
-- **Profile not complete after sign-up:** G0 sends the guest to `/auth/complete-profile`
-  with the same `from`, so the protocol continues after that step.
+- **Sign-up from the resume flow:** the guest confirms the email code (which also confirms the
+  phone) and returns to the same `from`. `/auth/complete-profile` no longer exists (28 Oct 2026):
+  the name, phone, WhatsApp choice, and terms are sent with `signUp`.
 - **Process death during sign-up:** the `from` location is part of the route, so the return
   survives.
 

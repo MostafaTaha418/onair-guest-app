@@ -14,10 +14,12 @@ import 'package:on_air/features/auth/presentation/login_screen.dart';
 import 'package:on_air/features/auth/presentation/new_password_screen.dart';
 import 'package:on_air/features/auth/presentation/otp_screen.dart';
 import 'package:on_air/features/auth/presentation/register_screen.dart';
+import 'package:on_air/features/booking/presentation/booking_entry_placeholder_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
 import 'package:on_air/features/search/presentation/search_placeholder_screen.dart';
+import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 
 bool _defaultUpdateRequired() => false;
 
@@ -87,6 +89,21 @@ GoRouter createAppRouter({
       path: AppRoutes.propertyPattern,
       name: 'linked-property',
       builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.bookingEntryPattern,
+      name: 'booking-entry',
+      builder: (context, state) => BookingEntryPlaceholderScreen(
+        propertyId: state.pathParameters['propertyId']!,
+        query: state.uri.queryParameters,
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.supportNew,
+      name: 'support-new',
+      builder: (_, state) => SupportEntryPlaceholderScreen(
+        propertyId: state.uri.queryParameters['property'],
+      ),
     ),
     GoRoute(
       path: AppRoutes.searchResults,
