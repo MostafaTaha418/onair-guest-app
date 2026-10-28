@@ -35,10 +35,13 @@ final class JsonFileCache {
 
   /// The stored data, or null when the file is missing, corrupt, or written
   /// by a different schema version (the file is discarded then).
+  ///
+  /// The document is small, so the file work is synchronous: callers stay on
+  /// a single microtask, which also keeps widget tests deterministic.
   Future<Map<String, dynamic>?> read() async {
     try {
       if (!_file.existsSync()) return null;
-      final document = jsonDecode(await _file.readAsString());
+      final document = jsonDecode(_file.readAsStringSync());
       if (document is! Map<String, dynamic>) return null;
       if (document['schema'] != schema) {
         await clear();
@@ -55,13 +58,13 @@ final class JsonFileCache {
   /// leaves half a file. Failures are swallowed.
   Future<void> write(Map<String, dynamic> data) async {
     try {
-      await directory.create(recursive: true);
-      final temporary = File('${_file.path}.tmp');
-      await temporary.writeAsString(
-        jsonEncode({'schema': schema, 'data': data}),
-        flush: true,
-      );
-      await temporary.rename(_file.path);
+      directory.createSync(recursive: true);
+      File('${_file.path}.tmp')
+        ..writeAsStringSync(
+          jsonEncode({'schema': schema, 'data': data}),
+          flush: true,
+        )
+        ..renameSync(_file.path);
     } on Object {
       // The cache is disposable; keep the app running without it.
     }
@@ -70,7 +73,7 @@ final class JsonFileCache {
   Future<void> clear() async {
     try {
       if (_file.existsSync()) {
-        await _file.delete();
+        _file.deleteSync();
       }
     } on Object {
       // Nothing to recover; the next write recreates the file.

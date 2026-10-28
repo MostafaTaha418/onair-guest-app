@@ -14,6 +14,8 @@ import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
@@ -76,6 +78,7 @@ Future<void> _pumpApp(
       currentTermsVersion: 'v1',
     ),
   );
+  SharedPreferences.setMockInitialValues({});
   final listings = listingsRepository ?? FakeListingsRepository();
   final cacheDirectory = Directory.systemTemp.createTempSync(
     'on_air_test_cache',
@@ -97,6 +100,7 @@ Future<void> _pumpApp(
         RepositoryProvider<ReferenceDataCache>.value(
           value: ReferenceDataCache(listings, cache),
         ),
+        RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

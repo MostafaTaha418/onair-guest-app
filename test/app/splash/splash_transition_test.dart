@@ -10,6 +10,10 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
+
+import '../../helpers/fake_listings_repository.dart';
 
 final class _Auth extends Mock implements AuthRepository {}
 
@@ -32,6 +36,10 @@ void main() {
           RepositoryProvider<AuthRepository>.value(value: auth),
           RepositoryProvider<AppConfigSource>.value(value: config),
           RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(
+            value: FakeListingsRepository(),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         ],
         child: const OnAirApp(),
       ),

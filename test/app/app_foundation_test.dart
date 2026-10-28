@@ -8,9 +8,12 @@ import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
 
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_listings_repository.dart';
 
 void main() {
   testWidgets('app starts in Arabic RTL with a visitor route', (tester) async {
@@ -30,6 +33,10 @@ void main() {
           RepositoryProvider<AuthRepository>.value(value: repository),
           RepositoryProvider<AppConfigSource>.value(value: config),
           RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(
+            value: FakeListingsRepository(),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         ],
         child: const OnAirApp(),
       ),
@@ -75,6 +82,10 @@ void main() {
           RepositoryProvider<AuthRepository>.value(value: repository),
           RepositoryProvider<AppConfigSource>.value(value: config),
           RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(
+            value: FakeListingsRepository(),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         ],
         child: OnAirApp(versionGate: gate),
       ),

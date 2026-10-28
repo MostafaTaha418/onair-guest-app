@@ -117,8 +117,8 @@ ReferenceData _emptyReference() => ReferenceData(
   version: 'test',
   amenities: const [],
   propertyTypes: const [],
-  priceMin: Money(0),
-  priceMax: Money(0),
+  priceMin: Money(50000),
+  priceMax: Money(1500000),
   priceStep: Money(5000),
 );
 

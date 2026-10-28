@@ -34,6 +34,7 @@ import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/data/supabase_listings_repository.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> bootstrap(String flavor) async {
@@ -82,6 +83,7 @@ Future<void> bootstrap(String flavor) async {
     schema: 1,
   );
   final referenceData = ReferenceDataCache(backend.listings, discoveryCache);
+  final lastSearchStore = LastSearchStore();
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -94,6 +96,7 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<ListingsRepository>.value(value: backend.listings),
         RepositoryProvider<JsonFileCache>.value(value: discoveryCache),
         RepositoryProvider<ReferenceDataCache>.value(value: referenceData),
+        RepositoryProvider<LastSearchStore>.value(value: lastSearchStore),
       ],
       child: OnAirApp(
         signOutCoordinator: signOutCoordinator,

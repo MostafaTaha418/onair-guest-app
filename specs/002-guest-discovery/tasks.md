@@ -377,7 +377,7 @@ an apartment keeps the list and scroll position.
 
 ### Tests for User Story 1 (write first, must fail)
 
-- [ ] T039 [P] [US1] Write `test/features/search/search_criteria_test.dart` for `SearchCriteria` (data-model "SearchCriteria"; quote the rules exactly). It covers:
+- [X] T039 [P] [US1] Write `test/features/search/search_criteria_test.dart` for `SearchCriteria` (data-model "SearchCriteria"; quote the rules exactly). It covers:
   - **Key mapping:** `loc` UUID v4 only; `in`/`out` as `YYYY-MM-DD`; `g` 1–50; `pmin`/`pmax` ≥ 0 piasters, swapped when min > max; `bed`/`bath` 0–20; `am` and `type` as comma lists of `[a-z0-9_]{1,40}`, at most 30 items; `sort` one of `price_asc|price_desc|newest`.
   - **Bad values:** an invalid value drops only its own field.
   - **Bad dates:** past or inverted dates drop **both** dates and set `datesDropped = true`.
@@ -387,24 +387,24 @@ an apartment keeps the list and scroll position.
   - **Empty criteria:** `SearchCriteria.empty` has no fields and is valid.
   - **Chips:** `activeFilterChips` lists price, bedrooms, bathrooms, each amenity, and each type (not location, dates, or guests); `withoutChip(chip)` removes exactly one.
   - **Params:** `toParams()` returns the matching `PropertySearchParams`.
-- [ ] T040 [P] [US1] Write `test/features/search/last_search_store_test.dart`, using `SharedPreferences.setMockInitialValues({})`:
+- [X] T040 [P] [US1] Write `test/features/search/last_search_store_test.dart`, using `SharedPreferences.setMockInitialValues({})`:
   - `save(criteria)` writes key `last_search_v1` as the canonical query plus the label (stored as JSON `{"q": "...", "label": "..."}`);
   - `load()` returns equal criteria and label;
   - corrupt stored data returns `null`.
 
   Also extend the existing sign-out test file `test/features/account_gate/sign_out_service_test.dart` to assert that `last_search_v1` is **kept** after sign-out.
-- [ ] T041 [P] [US1] Write `test/features/search/location_suggest_cubit_test.dart` with `bloc_test` and fake async (`fakeAsync` or `clock`):
+- [X] T041 [P] [US1] Write `test/features/search/location_suggest_cubit_test.dart` with `bloc_test` and fake async (`fakeAsync` or `clock`):
   - typing "ال" then "التج" within 350 ms makes only **one** repository call, with "التج";
   - an older response arriving after a newer one is ignored (control order with the `Completer`s in `FakeListingsRepository`);
   - fewer than 2 characters gives `LocationSuggestIdle` without calling the repository;
   - a failure gives `LocationSuggestFailed`;
   - `close()` cancels the pending debounce.
-- [ ] T042 [P] [US1] Write `test/features/search/filters_count_cubit_test.dart`:
+- [X] T042 [P] [US1] Write `test/features/search/filters_count_cubit_test.dart`:
   - a change triggers `countProperties` after 400 ms;
   - quick consecutive changes give one call;
   - a stale count is ignored;
   - the states are `FiltersCounting` → `FiltersCount(n)` or `FiltersCountFailed`.
-- [ ] T043 [P] [US1] Write `test/features/search/search_cubit_test.dart` covering:
+- [X] T043 [P] [US1] Write `test/features/search/search_cubit_test.dart` covering:
   - **`search(criteria)`:** emits `loading` then `ready` with the first page (or `empty` when `totalCount == 0`), and saves the criteria with `LastSearchStore`;
   - **`loadMore()`:** appends the next page; it is ignored while already loading, when `nextCursor == null`, or while offline;
   - **Bad cursor:** a `validationFailed` error during `loadMore` resets to page 1;
@@ -415,47 +415,47 @@ an apartment keeps the list and scroll position.
 
 ### Implementation for User Story 1
 
-- [ ] T044 [US1] Implement `SearchCriteria` in `lib/features/search/domain/search_criteria.dart` to make T039 pass:
+- [X] T044 [US1] Implement `SearchCriteria` in `lib/features/search/domain/search_criteria.dart` to make T039 pass:
   - **Fields:** as data-model "SearchCriteria", plus `bool datesDropped`.
   - **Methods:** `static SearchCriteria fromQuery(Map<String, String> query, {required DateOnly today})`, `Map<String, String> toQuery()`, `PropertySearchParams toParams()`, `List<FilterChipData> get activeFilterChips`, `SearchCriteria withoutChip(FilterChipData chip)`, and `copyWith(...)`.
   - **`FilterChipData`:** `{FilterChipKind kind; String? key}`, where `kind` is `price|bedrooms|bathrooms|amenity|type`.
   - **No UI text:** keep all text out of this class.
-- [ ] T045 [US1] Implement `LastSearchStore` in `lib/features/search/domain/last_search_store.dart` (makes T040 pass):
+- [X] T045 [US1] Implement `LastSearchStore` in `lib/features/search/domain/last_search_store.dart` (makes T040 pass):
   - **Methods:** `Future<void> save(SearchCriteria c, String? label)` and `Future<({SearchCriteria criteria, String? label})?> load({required DateOnly today})`.
   - **Storage:** use `SharedPreferences.getInstance()` with the key `last_search_v1`.
   - **Keep at sign-out:** add `'last_search_v1'` to `SignOutService.preservedPreferenceKeys` in `lib/features/account_gate/application/sign_out_service.dart`. It holds no personal data; see the spec Assumptions.
   - **Provide it:** with `RepositoryProvider<LastSearchStore>` in `lib/bootstrap.dart` and in the test helpers.
-- [ ] T046 [US1] Implement `LocationSuggestCubit` and its sealed states in `lib/features/search/presentation/location_suggest_cubit.dart` (makes T041 pass). States: `LocationSuggestIdle`, `LocationSuggestLoading(String query)`, `LocationSuggestReady(String query, List<LocationSuggestion> items)`, `LocationSuggestFailed(String query)`.
+- [X] T046 [US1] Implement `LocationSuggestCubit` and its sealed states in `lib/features/search/presentation/location_suggest_cubit.dart` (makes T041 pass). States: `LocationSuggestIdle`, `LocationSuggestLoading(String query)`, `LocationSuggestReady(String query, List<LocationSuggestion> items)`, `LocationSuggestFailed(String query)`.
   - **`onQueryChanged(String text)`:**
     1. Trim the text.
     2. Restart a 350 ms `Timer`.
     3. When it fires, increment `_sequence`, call `repo.searchLocations`, and emit the result only if its sequence number is still the latest and the Cubit is not closed.
   - **`close()`:** cancel the timer.
-- [ ] T047 [US1] Implement `FiltersCountCubit` in `lib/features/search/presentation/filters_count_cubit.dart` (makes T042 pass). It has the same debounce-and-sequence pattern as T046, with 400 ms and `repo.countProperties(criteria.toParams())`.
-- [ ] T048 [US1] Implement `SearchCubit` in `lib/features/search/presentation/search_cubit.dart` (makes T043 pass):
+- [X] T047 [US1] Implement `FiltersCountCubit` in `lib/features/search/presentation/filters_count_cubit.dart` (makes T042 pass). It has the same debounce-and-sequence pattern as T046, with 400 ms and `repo.countProperties(criteria.toParams())`.
+- [X] T048 [US1] Implement `SearchCubit` in `lib/features/search/presentation/search_cubit.dart` (makes T043 pass):
   - **Constructor dependencies:** `ListingsRepository`, `LastSearchStore`, `ConnectivityCubit`, and `DateOnly Function() today` (default `CairoTime.today`).
   - **State:** one immutable `SearchState` with `criteria`, `String? locationLabel`, `ResultsStatus status` (`idle|loading|ready|empty|failed|offline`), `List<ListingCard> items`, `String? nextCursor`, `int totalCount`, `bool loadingMore`, `ApiError? error`, `bool datesDropped`, `double scrollOffset`, and `copyWith`.
   - **Lifetime:** the Cubit lives as long as the Search tab branch (T057), so results survive tab switches.
   - **Initial state:** on creation, load the last search with `LastSearchStore.load` into `criteria` and `locationLabel`, without searching automatically.
-- [ ] T049 [P] [US1] Create `CounterStepper({required int value, required int min, required int max, required ValueChanged<int> onChanged, required String label, required String decrementTooltip, required String incrementTooltip})` in `lib/design_system/components/counter_stepper.dart`:
+- [X] T049 [P] [US1] Create `CounterStepper({required int value, required int min, required int max, required ValueChanged<int> onChanged, required String label, required String decrementTooltip, required String incrementTooltip})` in `lib/design_system/components/counter_stepper.dart`:
   - minus/plus `IconButton`s (48×48) with tooltips, disabled at the limits;
   - the value in `titleMedium`;
   - `Semantics(value: '$value', label: label)`.
 
   Test in `test/design_system/components/counter_stepper_test.dart`.
-- [ ] T050 [P] [US1] Create `FilterChipBar({required List<({String label, String removeTooltip, VoidCallback onRemove})> chips})` in `lib/design_system/components/filter_chip_bar.dart`:
+- [X] T050 [P] [US1] Create `FilterChipBar({required List<({String label, String removeTooltip, VoidCallback onRemove})> chips})` in `lib/design_system/components/filter_chip_bar.dart`:
   - a horizontal `ListView` with `Dimens.space8` gaps and directional padding;
   - each chip is an `InputChip` with a delete icon; `deleteButtonTooltipMessage` = `removeTooltip`;
   - it renders nothing when `chips` is empty.
 
   Test in `test/design_system/components/filter_chip_bar_test.dart`.
-- [ ] T051 [US1] Create the location field in `lib/features/search/presentation/widgets/location_field.dart`:
+- [X] T051 [US1] Create the location field in `lib/features/search/presentation/widgets/location_field.dart`:
   - **Field:** an `OnAirTextField` (existing component) with hint `l10n.searchLocationHint`.
   - **Suggestions:** listed below the field from `LocationSuggestCubit`. Each row shows `name`, `parentLabel`, and `l10n.areaListingCount(listingCount)`.
   - **Short query:** with fewer than 2 characters, show the guest's last-search location (if any) and «كل الأماكن» (`l10n.searchAnyLocation`), which clears the location.
   - **Selecting:** a row calls back `(String? id, String? label)`.
   - **Offline:** suggestions are disabled and the field shows `l10n.offline` as helper text.
-- [ ] T052 [US1] Create the date sheet `lib/features/search/presentation/widgets/date_range_sheet.dart`:
+- [X] T052 [US1] Create the date sheet `lib/features/search/presentation/widgets/date_range_sheet.dart`:
   - **What it is:** a modal bottom sheet (`Dimens.radiusSheet` top corners) holding the `RangeCalendar` from T034, with `today = CairoTime.today()` and no unavailable nights.
   - **Selection logic (in this widget's `State`):**
     - the first tap sets checkIn;
@@ -463,11 +463,11 @@ an apartment keeps the list and scroll position.
     - a tap on or before checkIn restarts with that day as checkIn.
   - **Buttons:** «مسح» (`calendarClear`) clears; «تمام» (`calendarConfirm`) is enabled only when `StayRange.tryCreate` succeeds and pops with the `StayRange`.
   - **Nights label:** show `l10n.calendarNightsSelected(nights)`.
-- [ ] T053 [US1] Replace the Search tab with `SearchScreen` in `lib/features/search/presentation/search_screen.dart`:
+- [X] T053 [US1] Replace the Search tab with `SearchScreen` in `lib/features/search/presentation/search_screen.dart`:
   - **Fields, top to bottom:** `LocationField` (T051); a dates row that opens `DateRangeSheet` and shows `DateOnlyFormatter.dayMonth(checkIn) – dayMonth(checkOut)` or `l10n.searchDatesHint`; guests with `CounterStepper` (min 1, max 50, empty by default, shown as `l10n.searchGuestsAny` until changed); a «الفلاتر» button showing the number of active chips.
   - **Search button:** «ابحث» uses `OnAirPrimaryButton`. It is always enabled, because every field is optional (Clarification 1), and disabled while offline. On tap it calls `searchCubit.search(...)` and `context.go(Uri(path: AppRoutes.searchResults, queryParameters: criteria.toQuery()).toString())`.
   - **Old placeholder:** delete `lib/features/search/presentation/search_placeholder_screen.dart` and update any G0 test that referenced it.
-- [ ] T054 [US1] Create `FiltersSheet` in `lib/features/search/presentation/filters_sheet.dart`. It is a draggable modal bottom sheet that edits a local copy of `SearchCriteria`:
+- [X] T054 [US1] Create `FiltersSheet` in `lib/features/search/presentation/filters_sheet.dart`. It is a draggable modal bottom sheet that edits a local copy of `SearchCriteria`:
   - **Price:** a `RangeSlider` between `ReferenceData.priceMin` and `priceMax`, with `divisions = ((max-min)/step).round()` and labels from `MoneyFormatter`.
   - **Bedrooms and bathrooms:** `CounterStepper`s, 0–20, where 0 means «أي عدد».
   - **Amenities:** `FilterChip`s from `ReferenceData.amenities`, multi-select.
@@ -475,7 +475,7 @@ an apartment keeps the list and scroll position.
   - **Sort:** `ChoiceChip`s for `sortPriceAsc|sortPriceDesc|sortNewest`.
   - **Bottom bar:** «مسح الكل» resets the local copy. The primary button shows `l10n.searchShowResults(count)` from `FiltersCountCubit` (a small spinner while counting, `l10n.searchShowResultsUnknown` on failure). It pops with the edited criteria.
   - **Reference data:** load it with `context.read<ReferenceDataCache>().load()`. If that fails, show `ErrorView` with retry inside the sheet; the rest of Search keeps working.
-- [ ] T055 [US1] Create `ResultsScreen` in `lib/features/search/presentation/results_screen.dart`:
+- [X] T055 [US1] Create `ResultsScreen` in `lib/features/search/presentation/results_screen.dart`:
   - **Scroll view:** a `CustomScrollView` holding:
     - a summary bar (location label or «كل الأماكن», dates, guests) that taps back to `/search`;
     - a `SliverToBoxAdapter` with `FilterChipBar` from `activeFilterChips`, using labels such as `l10n.bedroomsAtLeast(n)` and `l10n.filterChipRemove(label)`;
@@ -499,17 +499,17 @@ an apartment keeps the list and scroll position.
 
   - **Scroll position:** save it with `rememberScroll` on `dispose`, and restore it with a `ScrollController(initialScrollOffset: state.scrollOffset)`.
   - **Card tap:** for now, `context.push(AppRoutes.property(card.id))`. US2 (T072) adds the dates, guests, and hero image.
-- [ ] T056 [US1] Wire the routes in `lib/app/router/app_router.dart`:
+- [X] T056 [US1] Wire the routes in `lib/app/router/app_router.dart`:
   - **Search branch:** wrap the branch's `/search` route in a `ShellRoute`, or provide `SearchCubit` above the `StatefulShellBranch` navigator, so **one** `SearchCubit` instance serves both `/search` and `/search/results`. Create it with `BlocProvider(create: (ctx) => SearchCubit(...), lazy: false)` at the branch level, so switching tabs keeps it.
   - **Results route:** add `GoRoute(path: 'results', ...)` as a child of `/search`, with the builder calling `context.read<SearchCubit>().openFromQuery(state.uri.queryParameters)` once per new query. Use a stateful wrapper widget that compares the previous query and opens again only when it changed.
   - **Old route:** delete the old top-level `linked-search-results` route that pointed at `NotAvailableScreen`.
   - **Done when:** `test/app/router/redirect_test.dart` and `test/app/shell/*` still pass.
-- [ ] T057 [US1] Write `test/features/search/search_screen_test.dart`:
+- [X] T057 [US1] Write `test/features/search/search_screen_test.dart`:
   - with no input, «ابحث» is enabled and navigates to `/search/results` with an empty query;
   - typing shows suggestions from the fake repository, and tapping one fills the field;
   - the date sheet does not allow a past day, and «تمام» is disabled until a valid range is picked;
   - offline disables «ابحث».
-- [ ] T058 [US1] Write `test/features/search/results_screen_test.dart`:
+- [X] T058 [US1] Write `test/features/search/results_screen_test.dart`:
   - loading shows skeletons;
   - ready shows cards with the price, and the stay total only when dates are set;
   - empty shows the empty message;
@@ -518,13 +518,13 @@ an apartment keeps the list and scroll position.
   - removing a chip searches again;
   - scrolling near the end calls `loadMore` once;
   - `datesDropped` shows the banner.
-- [ ] T059 [US1] Write `test/features/search/filters_sheet_test.dart`:
+- [X] T059 [US1] Write `test/features/search/filters_sheet_test.dart`:
   - the count label updates after the debounce;
   - «مسح الكل» resets every filter;
   - confirming returns the edited criteria;
   - a reference-data failure shows retry inside the sheet.
-- [ ] T060 [US1] Add `test/features/search/goldens/search_goldens_test.dart` (tag `golden`) covering `SearchScreen` (empty form), `ResultsScreen` (ready with chips + dates hint), and `FiltersSheet`, in Light/Dark × RTL × 1.0/1.3. Generate and commit the PNGs.
-- [ ] T061 [US1] Create `integration_test/discovery_rules_test.dart`:
+- [X] T060 [US1] Add `test/features/search/goldens/search_goldens_test.dart` (tag `golden`) covering `SearchScreen` (empty form), `ResultsScreen` (ready with chips + dates hint), and `FiltersSheet`, in Light/Dark × RTL × 1.0/1.3. Generate and commit the PNGs.
+- [X] T061 [US1] Create `integration_test/discovery_rules_test.dart`:
   - **Mode:** skip all tests with a printed reason when `EnvConfig.fromEnvironment().backendMode == BackendMode.mock`.
   - **Remote mode:** use `SupabaseListingsRepository` against Staging and the seed in `contracts/supabase-discovery.md` §11. Seed IDs are read from a git-ignored `env/staging_seed.json`; document its keys at the top of the test.
   - **AC-012:** a search over dates including the booked, held, or blocked night of the busy apartment never returns it; the free range does.

@@ -20,6 +20,9 @@ import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,6 +56,8 @@ final class OnAirApp extends StatefulWidget {
 
 final class _OnAirAppState extends State<OnAirApp> {
   late final AuthCubit _authCubit;
+  late final ConnectivityCubit _connectivityCubit;
+  late final SearchCubit _searchCubit;
   late final AuthRouterRefresh _refresh;
   late final GoRouter _router;
   late final SessionEventSource _sessionEventSource;
@@ -71,6 +76,12 @@ final class _OnAirAppState extends State<OnAirApp> {
       currentTermsVersion: '',
       signOutCoordinator: widget.signOutCoordinator,
     );
+    _connectivityCubit = widget.connectivityCubit ?? ConnectivityCubit();
+    _searchCubit = SearchCubit(
+      repo: context.read<ListingsRepository>(),
+      lastSearch: context.read<LastSearchStore>(),
+      connectivity: _connectivityCubit,
+    );
     _sessionEventSource =
         widget.sessionEventSource ?? const NoopSessionEventSource();
     _personalDataResetter =
@@ -83,6 +94,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     _router = createAppRouter(
       refreshListenable: Listenable.merge([_refresh, _versionGate]),
       authCubit: _authCubit,
+      searchCubit: _searchCubit,
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
@@ -142,6 +154,10 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(source.close());
     }
     unawaited(_authCubit.close());
+    unawaited(_searchCubit.close());
+    if (widget.connectivityCubit == null) {
+      unawaited(_connectivityCubit.close());
+    }
     super.dispose();
   }
 
@@ -149,10 +165,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   Widget build(BuildContext context) => MultiBlocProvider(
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
-      if (widget.connectivityCubit case final cubit?)
-        BlocProvider<ConnectivityCubit>.value(value: cubit)
-      else
-        BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
+      BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
     ],
     child: MaterialApp.router(
       routerConfig: _router,

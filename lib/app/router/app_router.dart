@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
@@ -18,7 +21,9 @@ import 'package:on_air/features/booking/presentation/booking_entry_placeholder_s
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
-import 'package:on_air/features/search/presentation/search_placeholder_screen.dart';
+import 'package:on_air/features/search/presentation/results_screen.dart';
+import 'package:on_air/features/search/presentation/search_cubit.dart';
+import 'package:on_air/features/search/presentation/search_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 
 bool _defaultUpdateRequired() => false;
@@ -26,6 +31,7 @@ bool _defaultUpdateRequired() => false;
 GoRouter createAppRouter({
   required Listenable refreshListenable,
   required AuthCubit authCubit,
+  required SearchCubit searchCubit,
   bool Function() updateRequired = _defaultUpdateRequired,
   void Function()? openStore,
 }) => GoRouter(
@@ -106,11 +112,6 @@ GoRouter createAppRouter({
       ),
     ),
     GoRoute(
-      path: AppRoutes.searchResults,
-      name: 'linked-search-results',
-      builder: (_, _) => const NotAvailableScreen(),
-    ),
-    GoRoute(
       path: AppRoutes.bookingDetailsPattern,
       name: 'linked-booking',
       builder: (_, _) => const NotAvailableScreen(),
@@ -141,7 +142,10 @@ GoRouter createAppRouter({
       builder: (_, _) => const NotAvailableScreen(),
     ),
     StatefulShellRoute.indexedStack(
-      builder: (_, _, shell) => AppShell(navigationShell: shell),
+      builder: (context, _, shell) => BlocProvider<SearchCubit>.value(
+        value: searchCubit,
+        child: AppShell(navigationShell: shell),
+      ),
       branches: [
         StatefulShellBranch(
           routes: [
@@ -157,7 +161,15 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.search,
               name: 'search',
-              builder: (_, _) => const SearchPlaceholderScreen(),
+              builder: (_, _) => const SearchScreen(),
+              routes: [
+                GoRoute(
+                  path: 'results',
+                  name: 'search-results',
+                  builder: (_, state) =>
+                      _ResultsQueryOpener(query: state.uri.queryParameters),
+                ),
+              ],
             ),
           ],
         ),
@@ -192,3 +204,42 @@ GoRouter createAppRouter({
     ),
   ],
 );
+
+/// Opens the results query once per new location, so re-entering the route
+/// with the same query never searches twice (research R9).
+final class _ResultsQueryOpener extends StatefulWidget {
+  const _ResultsQueryOpener({required this.query});
+
+  final Map<String, String> query;
+
+  @override
+  State<_ResultsQueryOpener> createState() => _ResultsQueryOpenerState();
+}
+
+final class _ResultsQueryOpenerState extends State<_ResultsQueryOpener> {
+  String? _openedQuery;
+
+  @override
+  void initState() {
+    super.initState();
+    _open();
+  }
+
+  @override
+  void didUpdateWidget(_ResultsQueryOpener oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _open();
+  }
+
+  void _open() {
+    final canonical = Uri(
+      queryParameters: widget.query.isEmpty ? null : widget.query,
+    ).query;
+    if (canonical == _openedQuery) return;
+    _openedQuery = canonical;
+    unawaited(context.read<SearchCubit>().openFromQuery(widget.query));
+  }
+
+  @override
+  Widget build(BuildContext context) => const ResultsScreen();
+}
