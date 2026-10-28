@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs on a booted Android emulator (see .github/workflows/pr-checks.yml).
+# Runs on a booted Android emulator (see .github/workflows/ci.yml).
 #
 # 1. Builds a debug APK, installs it, launches it, and fails if the app is not
 #    running 20 s later or crashed (FATAL EXCEPTION for our package).
