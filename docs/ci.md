@@ -36,6 +36,10 @@ Xcode/Swift versions before building. The runner's default Xcode 16.4 cannot
 resolve the current Firebase Swift package. Keep the pin compatible with
 [Firebase's supported toolchain](https://firebase.google.com/support/release-notes/ios)
 and the [macOS runner image](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md).
+Both flavor Debug configurations retain Flutter's `ONLY_ACTIVE_ARCH = YES` at
+project level so Runner, RunnerTests, and Swift package headers agree on the
+selected simulator architecture when integration tests build. Release builds
+retain their standard architecture settings.
 
 ## staging-build.yml — merge to develop
 
