@@ -20,6 +20,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide ErrorCode;
 /// ```json
 /// {
 ///   "unpublishedPropertyIds": ["<uuid>", "..."],
+///   "publishedPropertyId": "<uuid>",
 ///   "busyPropertyId": "<uuid>",
 ///   "freePropertyId": "<uuid>"
 /// }
@@ -55,6 +56,7 @@ void main() {
   ];
   final busyId = seed['busyPropertyId'] as String?;
   final freeId = seed['freePropertyId'] as String?;
+  final publishedId = seed['publishedPropertyId'] as String?;
 
   TestWidgetsFlutterBinding.ensureInitialized();
   CairoTime.initialize();
@@ -122,4 +124,50 @@ void main() {
     },
     skip: busyId == null ? 'env/staging_seed.json has no busy property' : null,
   );
+
+  test(
+    'guest_get_property returns no forbidden fields (AC-003, AC-047)',
+    () async {
+      final raw = await Supabase.instance.client.rpc<dynamic>(
+        'guest_get_property',
+        params: {'p_property_id': publishedId, 'p_locale': 'ar'},
+      );
+      expectNoForbiddenKeys(Map<String, dynamic>.from(raw as Map));
+    },
+    skip: publishedId == null
+        ? 'env/staging_seed.json has no published property ID'
+        : null,
+  );
+}
+
+/// No base price, markup, coordinates, or owner contact anywhere in the
+/// response tree (contracts/supabase-discovery.md §0, §10.3).
+void expectNoForbiddenKeys(Map<String, dynamic> json) {
+  const forbidden = {
+    'base_nightly_price_minor',
+    'markup',
+    'latitude',
+    'longitude',
+    'owner',
+    'phone',
+    'email',
+  };
+  for (final key in json.keys) {
+    expect(
+      forbidden.contains(key),
+      isFalse,
+      reason: 'the response must never contain the key "$key"',
+    );
+    final value = json[key];
+    if (value is Map) {
+      expectNoForbiddenKeys(Map<String, dynamic>.from(value));
+    }
+    if (value is List) {
+      for (final item in value) {
+        if (item is Map) {
+          expectNoForbiddenKeys(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+  }
 }

@@ -547,14 +547,14 @@ values.
 
 ### Tests for User Story 2 (write first, must fail)
 
-- [ ] T062 [P] [US2] Write `test/features/property/policy_text_test.dart` for `policyLines(PolicySummary p)`, which returns an ordered `List<PolicyLine>` where `PolicyLine` is a sealed type:
+- [X] T062 [P] [US2] Write `test/features/property/policy_text_test.dart` for `policyLines(PolicySummary p)`, which returns an ordered `List<PolicyLine>` where `PolicyLine` is a sealed type:
   - `percent` with `depositPercentBp: 2500` → first `DepositPercentLine(percentText: '25')` (bp/100; show one decimal only if not whole, e.g. 1250 → '12.5');
   - `fixed` → `DepositFixedLine(Money)`;
   - `full` → `DepositFullLine()`;
   - then always `FreeCancellationLine(hours: p.freeCancellationHours)`, `AfterDeadlineLine()`, and `FullyPaidLateLine()` (Master Plan §7.2).
 
   The function computes **no** money.
-- [ ] T063 [P] [US2] Write `test/features/property/property_cubit_test.dart`:
+- [X] T063 [P] [US2] Write `test/features/property/property_cubit_test.dart`:
   - `load(id)` → `PropertyLoading` → `PropertyReady(details)`;
   - `NOT_FOUND` → `PropertyNotAvailable`;
   - a network error while offline → `PropertyOffline`;
@@ -562,32 +562,32 @@ values.
   - `setStay(StayRange)` updates `stay` in the ready state;
   - an initial stay and guests passed to the constructor are kept;
   - retry calls the repository again.
-- [ ] T064 [P] [US2] Write `test/features/property/availability_cubit_test.dart`:
+- [X] T064 [P] [US2] Write `test/features/property/availability_cubit_test.dart`:
   - `showMonth(firstDay)` loads a 3-month window `[firstDay, firstDay+3 months)` once (no repeat calls for already-loaded months) and marks those month keys as loading while it runs;
   - day taps follow the rules in data-model "Availability";
   - a range crossing an unavailable night emits `rangeRejected: true` and restarts with the tapped day as checkIn;
   - a valid range emits `range(StayRange)`;
   - a failed window keeps the months greyed and exposes `retryMonth`.
-- [ ] T065 [P] [US2] Write `test/features/property/reviews_cubit_test.dart`:
+- [X] T065 [P] [US2] Write `test/features/property/reviews_cubit_test.dart`:
   - first page → ready, or empty when there are no items;
   - `loadMore` appends and stops when `nextCursor == null`;
   - errors → failed with retry.
 
 ### Implementation for User Story 2
 
-- [ ] T066 [US2] Implement `policyLines` and the `PolicyLine` types in `lib/features/property/domain/policy_text.dart` (makes T062 pass). Then add `String policyLineText(PolicyLine line, AppLocalizations l10n)` in `lib/features/property/presentation/widgets/policy_line_text.dart`, mapping each line to `policyDepositPercent`, `policyDepositFixed`, `policyDepositFull`, `policyFreeCancellation`, `policyAfterDeadline`, or `policyFullyPaidLate` (Appendix A).
-- [ ] T067 [US2] Implement `PropertyCubit` and its states in `lib/features/property/presentation/property_cubit.dart` (makes T063 pass):
+- [X] T066 [US2] Implement `policyLines` and the `PolicyLine` types in `lib/features/property/domain/policy_text.dart` (makes T062 pass). Then add `String policyLineText(PolicyLine line, AppLocalizations l10n)` in `lib/features/property/presentation/widgets/policy_line_text.dart`, mapping each line to `policyDepositPercent`, `policyDepositFixed`, `policyDepositFull`, `policyFreeCancellation`, `policyAfterDeadline`, or `policyFullyPaidLate` (Appendix A).
+- [X] T067 [US2] Implement `PropertyCubit` and its states in `lib/features/property/presentation/property_cubit.dart` (makes T063 pass):
   - **Constructor:** `PropertyCubit({required ListingsRepository repo, required ConnectivityCubit connectivity, required String propertyId, StayRange? initialStay, int? initialGuests})`.
   - **States:** `PropertyLoading`, `PropertyReady {PropertyDetails details; StayRange? stay; int? guests; bool termsUpdatedNotice}`, `PropertyNotAvailable`, `PropertyFailed(ApiError)`, `PropertyOffline`.
   - **`termsUpdatedNotice`:** defaults to `false`; US4 uses it.
-- [ ] T068 [US2] Implement `AvailabilityCubit` in `lib/features/property/presentation/availability_cubit.dart` (makes T064 pass), using `StayRange.isSelectable`, `CairoTime.today`, and `repo.unavailableNights`. Expose `onStayConfirmed`, a callback passed from the screen that calls `PropertyCubit.setStay`.
-- [ ] T069 [US2] Implement `ReviewsCubit` in `lib/features/property/presentation/reviews_cubit.dart` (makes T065 pass).
-- [ ] T070 [P] [US2] Create two components:
+- [X] T068 [US2] Implement `AvailabilityCubit` in `lib/features/property/presentation/availability_cubit.dart` (makes T064 pass), using `StayRange.isSelectable`, `CairoTime.today`, and `repo.unavailableNights`. Expose `onStayConfirmed`, a callback passed from the screen that calls `PropertyCubit.setStay`.
+- [X] T069 [US2] Implement `ReviewsCubit` in `lib/features/property/presentation/reviews_cubit.dart` (makes T065 pass).
+- [X] T070 [P] [US2] Create two components:
   - **`ExpandableText({required String text, required String moreLabel, required String lessLabel, int collapsedLines = 4})`** in `lib/design_system/components/expandable_text.dart`. It shows the toggle only when the text overflows; measure with `TextPainter` in a `LayoutBuilder`.
   - **`BottomActionBar({required Widget leading, required Widget action})`** in `lib/design_system/components/bottom_action_bar.dart`. It has a surface color, a top border in `navBorder`, and `SafeArea(top: false)`, with `leading` expanded at the start and `action` at the end.
 
   Tests in `test/design_system/components/expandable_text_test.dart` and `bottom_action_bar_test.dart`.
-- [ ] T071 [US2] Create the details section widgets in `lib/features/property/presentation/widgets/`, each a small `StatelessWidget` class (not a `_buildX()` method):
+- [X] T071 [US2] Create the details section widgets in `lib/features/property/presentation/widgets/`, each a small `StatelessWidget` class (not a `_buildX()` method):
   - **`property_gallery_header.dart`:**
     - a `PageView` of `OnAirNetworkImage`s at 4:3, with a position indicator «1 / 8» (`l10n.galleryPhotoPosition(current, total)`);
     - the first image uses `heroTag` (`'listing-$id'`) and the `heroVariants` passed from the card when available;
@@ -602,7 +602,7 @@ values.
   - **`property_policy_section.dart`:** a bullet list from `policyLines` + `policyLineText`.
   - **`property_availability_section.dart`:** creates its own `AvailabilityCubit` in `initState`, so it loads only when built. Because it sits inside a lazily built `SliverList`, that happens only when the guest scrolls near it (FR-026). It shows the `RangeCalendar`, the `rangeRejected` message `l10n.calendarRangeInvalid`, and a «تمام» button that confirms the selection into `PropertyCubit.setStay`.
   - **`property_reviews_section.dart`:** uses the `reviews` gradient background (`context.colors.gradient('reviews')`) and shows the latest 3 `ApprovedReview`s (stars, comment, `reviewerShortName`, date via `DateOnlyFormatter.dayMonth`) and «عرض كل التقييمات», which pushes `/property/:id/reviews`. With no reviews: `l10n.reviewsNone`.
-- [ ] T072 [US2] Create `PropertyScreen` in `lib/features/property/presentation/property_screen.dart`:
+- [X] T072 [US2] Create `PropertyScreen` in `lib/features/property/presentation/property_screen.dart`:
   - **Body:** a `CustomScrollView` with the header, then a `SliverList` with a `SliverChildBuilderDelegate` in this order: title, specs, description (`ExpandableText`), amenities, address, rules, policy, availability, reviews, and a «عندك سؤال؟ تواصل مع OnAir» `TextButton` (`l10n.propertyContactOnAir`).
   - **Bottom bar:** `BottomActionBar`:
     - **leading:** `PriceText(price: l10n.nightlyPrice(formatted))`, with the selected dates `dayMonth – dayMonth` as the caption when `stay != null`;
@@ -621,19 +621,19 @@ values.
 
   - **No owner contact:** there must be no owner phone, email, or chat anywhere.
   - **Results card tap:** update the tap in `lib/features/search/presentation/results_screen.dart` to push `AppRoutes.property(id)` with query `checkIn`, `checkOut` (from `criteria.stay`) and `guests`, and `extra: card.cover?.variants`.
-- [ ] T073 [US2] Create `GalleryScreen` in `lib/features/property/presentation/gallery_screen.dart`:
+- [X] T073 [US2] Create `GalleryScreen` in `lib/features/property/presentation/gallery_screen.dart`:
   - a full-screen black-free background using `context.colors['background']` in light and `surface` in dark;
   - a `PageView` starting at `?index=`, each page an `InteractiveViewer(minScale: 1, maxScale: 4)` around `OnAirNetworkImage(fit: BoxFit.contain)`;
   - a close `IconButton` with tooltip `l10n.galleryClose`, and a position label with semantics;
   - after each page change, precache **only the next** image with `precacheImage(CachedNetworkImageProvider(url), context)`;
   - images from the cached `PropertyCubit` state when available, otherwise load the details again.
-- [ ] T074 [US2] Create `ReviewsScreen` in `lib/features/property/presentation/reviews_screen.dart`: a list driven by `ReviewsCubit`, with pagination at 600 px from the end, all states (loading skeletons, empty `reviewsNone`, error, offline), and each review as in T071.
-- [ ] T075 [US2] Wire the routes in `lib/app/router/app_router.dart`:
+- [X] T074 [US2] Create `ReviewsScreen` in `lib/features/property/presentation/reviews_screen.dart`: a list driven by `ReviewsCubit`, with pagination at 600 px from the end, all states (loading skeletons, empty `reviewsNone`, error, offline), and each review as in T071.
+- [X] T075 [US2] Wire the routes in `lib/app/router/app_router.dart`:
   - **Replace `linked-property`** (which pointed at `NotAvailableScreen`) with `GoRoute(path: AppRoutes.propertyPattern)`, building `BlocProvider(create: (_) => PropertyCubit(..., propertyId: id, initialStay: StayRange.tryCreate(DateOnly.tryParse(q['checkIn']), DateOnly.tryParse(q['checkOut']), CairoTime.today()), initialGuests: int.tryParse(q['guests'] ?? ''))..load(), child: PropertyScreen(heroVariants: state.extra as List<ImageVariant>?))`.
   - **`DateOnly.tryParse`:** add it to `date_only.dart` as a `static DateOnly? tryParse(String?)` that returns null on bad input.
   - **Child routes:** add `gallery` and `reviews` as child routes of the property route.
   - **IDs:** every ID is already validated by `routes.dart`; invalid IDs never reach the builder.
-- [ ] T076 [US2] Write `test/features/property/property_screen_test.dart`:
+- [X] T076 [US2] Write `test/features/property/property_screen_test.dart`:
   - the ready state shows every section title;
   - the price is a single amount and no other money row exists (AC-010);
   - the address row is hidden when `addressText` is null;
@@ -643,13 +643,13 @@ values.
   - `NOT_FOUND` shows the not-available content;
   - picking a valid range on the calendar updates the bottom-bar caption;
   - an invalid range shows `calendarRangeInvalid`.
-- [ ] T077 [US2] Write `test/features/property/gallery_and_reviews_test.dart`:
+- [X] T077 [US2] Write `test/features/property/gallery_and_reviews_test.dart`:
   - the gallery opens at the given index;
   - the close button has a tooltip;
   - reviews paginate;
   - the empty reviews state works.
-- [ ] T078 [US2] Add `test/features/property/goldens/property_goldens_test.dart` (tag `golden`) for `PropertyScreen` (ready, deposit-percent fixture, with reviews) and the loading state, in Light/Dark × RTL × 1.0/1.3. Generate and commit.
-- [ ] T079 [US2] Extend `integration_test/discovery_rules_test.dart` (remote only):
+- [X] T078 [US2] Add `test/features/property/goldens/property_goldens_test.dart` (tag `golden`) for `PropertyScreen` (ready, deposit-percent fixture, with reviews) and the loading state, in Light/Dark × RTL × 1.0/1.3. Generate and commit.
+- [X] T079 [US2] Extend `integration_test/discovery_rules_test.dart` (remote only):
   - `guest_get_property` for each unpublished seed ID and for a random UUID throws `AppFailure` with `ErrorCode.notFound` in all cases (AC-003);
   - the raw JSON from `guest_get_property` for a published apartment has none of the keys `base_nightly_price_minor`, `markup`, `latitude`, `longitude`, `owner`, `phone`, `email`. Call the RPC directly through `Supabase.instance.client.rpc` for this check.
 

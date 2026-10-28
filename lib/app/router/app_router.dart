@@ -7,6 +7,11 @@ import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
+import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/images/image_variants.dart';
+import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
@@ -21,6 +26,11 @@ import 'package:on_air/features/booking/presentation/booking_entry_placeholder_s
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/property/presentation/gallery_screen.dart';
+import 'package:on_air/features/property/presentation/property_cubit.dart';
+import 'package:on_air/features/property/presentation/property_screen.dart';
+import 'package:on_air/features/property/presentation/reviews_screen.dart';
 import 'package:on_air/features/search/presentation/results_screen.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/search_screen.dart';
@@ -93,8 +103,49 @@ GoRouter createAppRouter({
     ),
     GoRoute(
       path: AppRoutes.propertyPattern,
-      name: 'linked-property',
-      builder: (_, _) => const NotAvailableScreen(),
+      name: 'property',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        final query = state.uri.queryParameters;
+        return BlocProvider<PropertyCubit>(
+          create: (context) {
+            final cubit = PropertyCubit(
+              repo: context.read<ListingsRepository>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              propertyId: id,
+              initialStay: StayRange.tryCreate(
+                DateOnly.tryParse(query['checkIn']),
+                DateOnly.tryParse(query['checkOut']),
+                CairoTime.today(),
+              ),
+              initialGuests: int.tryParse(query['guests'] ?? ''),
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: PropertyScreen(
+            propertyId: id,
+            heroVariants: state.extra as List<ImageVariant>?,
+          ),
+        );
+      },
+      routes: [
+        GoRoute(
+          path: 'gallery',
+          name: 'property-gallery',
+          builder: (context, state) => GalleryScreen(
+            propertyId: state.pathParameters['id']!,
+            initialIndex:
+                int.tryParse(state.uri.queryParameters['index'] ?? '') ?? 0,
+          ),
+        ),
+        GoRoute(
+          path: 'reviews',
+          name: 'property-reviews',
+          builder: (context, state) =>
+              ReviewsScreen(propertyId: state.pathParameters['id']!),
+        ),
+      ],
     ),
     GoRoute(
       path: AppRoutes.bookingEntryPattern,

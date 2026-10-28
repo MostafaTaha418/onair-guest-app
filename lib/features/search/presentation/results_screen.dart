@@ -184,6 +184,7 @@ final class _ResultsScreenState extends State<ResultsScreen> {
                   );
                 }
                 final card = state.items[index];
+                final stay = state.criteria.stay;
                 return Padding(
                   padding: const EdgeInsetsDirectional.only(
                     bottom: Dimens.space16,
@@ -209,7 +210,24 @@ final class _ResultsScreenState extends State<ResultsScreen> {
                             card.reviewCount,
                           ),
                     heroTag: 'listing-${card.id}',
-                    onTap: () => context.push(AppRoutes.property(card.id)),
+                    onTap: () {
+                      final guests = state.criteria.guests;
+                      unawaited(
+                        context.push(
+                          Uri(
+                            path: AppRoutes.property(card.id),
+                            queryParameters: {
+                              if (stay != null)
+                                'checkIn': stay.checkIn.toString(),
+                              if (stay != null)
+                                'checkOut': stay.checkOut.toString(),
+                              if (guests != null) 'guests': '$guests',
+                            },
+                          ).toString(),
+                          extra: card.cover?.variants,
+                        ),
+                      );
+                    },
                   ),
                 );
               },
