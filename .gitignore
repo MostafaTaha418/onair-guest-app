@@ -60,3 +60,7 @@ Thumbs.db
 # Local development tools
 .tools/
 **/node_modules/
+
+# Backend code belongs in onair-backend.
+/supabase/
+/services/
