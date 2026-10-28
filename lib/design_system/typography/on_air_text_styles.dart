@@ -30,6 +30,10 @@ final class OnAirTextStyles extends ThemeExtension<OnAirTextStyles> {
   TextStyle get homeWelcome => _style(15, FontWeight.w700, height: 1.15);
   TextStyle get homeUserName => _style(18, FontWeight.w500, height: 1.15);
   TextStyle get sectionTitle => _style(18, FontWeight.w800);
+  TextStyle get areaCardTitle => _style(17, FontWeight.w800);
+  TextStyle get areaBadge => _style(11, FontWeight.w700);
+  TextStyle get propertyTitle => _style(15, FontWeight.w800);
+  TextStyle get price => _style(14, FontWeight.w800);
   TextStyle get seeAll => _style(14, FontWeight.w700);
   TextStyle get homeSearch => _style(16, FontWeight.w400);
   TextStyle get navLabel => _style(10, FontWeight.w700);
