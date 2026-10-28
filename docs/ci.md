@@ -41,6 +41,12 @@ project level so Runner, RunnerTests, and Swift package headers agree on the
 selected simulator architecture when integration tests build. Release builds
 retain their standard architecture settings.
 
+Android device jobs and the Staging APK build run `tool/ci/free_runner_disk.sh`
+before installing Flutter and building. It removes unrelated preinstalled .NET,
+Haskell, PowerShell and CodeQL SDKs to leave room for Gradle/NDK/emulator files,
+and refuses to run outside GitHub-hosted Linux runners. Disk usage is logged
+before and after cleanup.
+
 ## staging-build.yml — merge to develop
 
 1. Writes `env/staging.json` from the `STAGING_ENV_JSON` secret (never committed), then validates the five required keys (plus optional `BACKEND_MODE`, which must be `remote`) before building. `FLAVOR` must be `staging`, endpoints must use HTTPS, `LINK_DOMAIN` must be a bare hostname, and the client key must be publishable (or a legacy `anon` JWT). Backend credentials and extra keys are rejected. Firebase secrets must also be present; the Android App ID must match the Staging package in the committed `google-services.json`.
