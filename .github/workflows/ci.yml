@@ -175,10 +175,18 @@ jobs:
     needs: format-and-analyze
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      # Firebase's Swift package requires Xcode 26.2+; macos-15 defaults to 16.4.
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
+      - name: Verify Xcode and Swift toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift --version
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:

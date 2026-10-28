@@ -27,9 +27,15 @@ Six jobs (the device jobs start after `format & analyze`); every one of them mus
 | `unit, widget & golden tests` | `flutter test` (unit + widget + goldens) and Python CI security-helper tests. Uses `windows-2025`, matching the existing reference images, which preserve real Cairo text (`obscureText: false`). The Alchemist `ci` folder name does not make these text-rendering baselines cross-platform. Failed image comparisons are uploaded as artifacts. |
 | `secret scan (gitleaks)` | gitleaks over the full git history with `.gitleaks.toml` |
 | `android device (API 24)` / `android device (API 34)` | Emulator on the minimum (24) and a recent (34) Android: builds a debug APK, installs, launches, and fails if the app is not running 20 s later or crashed (`tool/ci/android_device_check.sh`) |
-| `ios device (build + simulator)` | macOS 15: unsigned release build for devices, then install and launch on the newest available iPhone simulator (`tool/ci/ios_device_check.sh`) |
+| `ios device (build + simulator)` | macOS 15 with Xcode 26.2: unsigned release build for devices, then install and launch on the newest available iPhone simulator (`tool/ci/ios_device_check.sh`) |
 
 The device jobs build the Staging flavor (`tool/ci/build_args.sh`). Without the `STAGING_ENV_JSON` secret they use `env/example.json`, which runs in `BACKEND_MODE=mock`, so the launch check needs no backend. With the secret, they also run `integration_test/` against Staging. Hosted macOS runners only ship recent iOS runtimes, so the minimum iOS (15) must still be checked on a real device before release; macOS minutes cost about 10× Linux minutes on private repositories.
+
+The iOS job sets `DEVELOPER_DIR` to the installed Xcode 26.2 toolchain and prints
+Xcode/Swift versions before building. The runner's default Xcode 16.4 cannot
+resolve the current Firebase Swift package. Keep the pin compatible with
+[Firebase's supported toolchain](https://firebase.google.com/support/release-notes/ios)
+and the [macOS runner image](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md).
 
 ## staging-build.yml — merge to develop
 
