@@ -755,13 +755,13 @@ app shows them again instead of continuing.
 
 ### Tests for User Story 4 (write first, must fail)
 
-- [ ] T090 [P] [US4] Write `test/features/property/resume_intent_test.dart` for `ResumeIntent.fromQuery(Map<String,String> q, {required DateOnly today})` (data-model "Navigation intent"; quote the rules):
+- [X] T090 [P] [US4] Write `test/features/property/resume_intent_test.dart` for `ResumeIntent.fromQuery(Map<String,String> q, {required DateOnly today})` (data-model "Navigation intent"; quote the rules):
   - `resume` must be `book` or `contact`, otherwise the result is `null`;
   - `book` requires `terms` (1–128 characters), otherwise `null`;
   - `checkIn`/`checkOut` parse through `StayRange.tryCreate`;
   - `guests` is 1–50;
   - `ResumeIntent.stripFrom(Uri location)` returns the same URI without `resume` and `terms`, keeping `checkIn`, `checkOut`, and `guests`.
-- [ ] T091 [P] [US4] Write `test/app/router/discovery_resume_test.dart`, using `resolveRedirect` and `resolveAuthCancelDestination` from `lib/app/router/redirect.dart`:
+- [X] T091 [P] [US4] Write `test/app/router/discovery_resume_test.dart`, using `resolveRedirect` and `resolveAuthCancelDestination` from `lib/app/router/redirect.dart`:
   - `from=/property/<uuid>?checkIn=…&resume=book&terms=t1` is accepted as a safe return location;
   - a signed-out cancel to `/property/<uuid>?…` returns that location (not `/home`);
   - `from=/book/<uuid>/dates` while signed out redirects to login.
@@ -770,8 +770,8 @@ app shows them again instead of continuing.
 
 ### Implementation for User Story 4
 
-- [ ] T092 [US4] Implement `ResumeIntent` and `enum ResumeAction {book, contact}` in `lib/features/property/domain/resume_intent.dart` (makes T090 pass).
-- [ ] T093 [US4] Update `PropertyScreen` (`lib/features/property/presentation/property_screen.dart`) and `PropertyCubit` for the visitor flow:
+- [X] T092 [US4] Implement `ResumeIntent` and `enum ResumeAction {book, contact}` in `lib/features/property/domain/resume_intent.dart` (makes T090 pass).
+- [X] T093 [US4] Update `PropertyScreen` (`lib/features/property/presentation/property_screen.dart`) and `PropertyCubit` for the visitor flow:
   - **(1) Visitor taps "Book now":** build `from = Uri(path: AppRoutes.property(id), queryParameters: {...currentDatesAndGuests, 'resume': 'book', 'terms': details.termsVersion})` and `context.push(Uri(path: AppRoutes.login, queryParameters: {'from': from.toString(), 'cancelTo': <same URI without resume and terms>}).toString())`.
   - **(2) Visitor taps "Contact OnAir":** the same, with `resume=contact` and no `terms`.
   - **(3) Arriving with a resume:** when the screen is built with a `ResumeIntent` (parse it in the route builder from T075 and pass it to `PropertyCubit` as `pendingResume`), then after `load()` succeeds:
@@ -781,13 +781,13 @@ app shows them again instead of continuing.
   - **(4) Notice:** when `termsUpdatedNotice` is true, show a `MaterialBanner` with `l10n.propertyTermsUpdated` above the content, and scroll to the rules section. The guest must tap "Book now" again.
   - **(5) Not available:** if the load gives `PropertyNotAvailable`, ignore the intent.
   - **Implementation note:** run the navigation in a `BlocListener` (never inside `build`).
-- [ ] T094 [US4] Write `test/features/property/property_resume_test.dart`:
+- [X] T094 [US4] Write `test/features/property/property_resume_test.dart`:
   - a visitor "Book now" pushes login with the correct `from` and `cancelTo`;
   - a screen opened with `resume=book&terms=t1` and details `termsVersion == 't1'` pushes the booking entry, and the location no longer contains `resume`;
   - with `termsVersion == 't2'`, it does not navigate and shows `propertyTermsUpdated`;
   - `resume=contact` pushes `/support/new?property=<id>`;
   - `NOT_FOUND` ignores the intent.
-- [ ] T095 [US4] Create `integration_test/discovery_journey_test.dart`. It runs in **mock** mode by default and also in remote mode when `env/staging.json` sets `BACKEND_MODE=remote` and test credentials exist in the git-ignored `env/staging_seed.json`. The journey:
+- [X] T095 [US4] Create `integration_test/discovery_journey_test.dart`. It runs in **mock** mode by default and also in remote mode when `env/staging.json` sets `BACKEND_MODE=remote` and test credentials exist in the git-ignored `env/staging_seed.json`. The journey:
   1. Start as a visitor.
   2. Open Search, pick guests 2, choose dates, and search.
   3. Open the first result.

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,7 @@ import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
+import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
 import 'package:on_air/features/property/presentation/widgets/property_address_section.dart';
 import 'package:on_air/features/property/presentation/widgets/property_amenities_section.dart';
@@ -60,10 +62,94 @@ final class PropertyScreen extends StatefulWidget {
 final class _PropertyScreenState extends State<PropertyScreen> {
   Map<String, String> _typeLabels = const {};
 
+  /// The rules section target for the terms-updated notice (AC-013).
+  final GlobalKey _rulesKey = const GlobalObjectKey('property-rules');
+  final ScrollController _scrollController = ScrollController();
+  bool _noticeBannerShown = false;
+
   @override
   void initState() {
     super.initState();
     unawaited(_loadTypeLabels());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// The carried-over sign-in intent (research R10): strip the resume keys
+  /// from the location so Back never re-triggers it, then continue the
+  /// action — booking entry only when the terms still match (AC-013).
+  void _consumeResume(BuildContext context, PropertyReady state) {
+    final intent = state.pendingResume!;
+    context.read<PropertyCubit>().consumeResume();
+    unawaited(
+      GoRouter.of(context).replace(
+        ResumeIntent.stripFrom(GoRouterState.of(context).uri).toString(),
+      ),
+    );
+    switch (intent.action) {
+      case ResumeAction.book:
+        if (state.details.termsVersion == intent.termsVersion) {
+          unawaited(
+            context.push(
+              _bookingEntryUri(
+                state.details,
+                state.stay,
+                state.guests,
+              ).toString(),
+            ),
+          );
+        }
+      case ResumeAction.contact:
+        unawaited(
+          context.push(
+            Uri(
+              path: AppRoutes.supportNew,
+              queryParameters: {'property': state.details.id},
+            ).toString(),
+          ),
+        );
+    }
+  }
+
+  void _showTermsNotice(BuildContext context) {
+    _noticeBannerShown = true;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentMaterialBanner()
+      ..showMaterialBanner(
+        MaterialBanner(
+          content: Text(l10n.propertyTermsUpdated),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
+              child: Text(l10n.calendarConfirm),
+            ),
+          ],
+        ),
+      );
+    _scrollToRules();
+  }
+
+  /// Walks the lazy list towards the rules section; the post-frame re-check
+  /// keeps it timer-free (widget tests run under fake async).
+  void _scrollToRules() {
+    final rulesContext = _rulesKey.currentContext;
+    if (rulesContext != null) {
+      unawaited(Scrollable.ensureVisible(rulesContext));
+      return;
+    }
+    if (!_scrollController.hasClients) return;
+    final maxExtent = _scrollController.position.maxScrollExtent;
+    if (_scrollController.offset >= maxExtent) return;
+    _scrollController.jumpTo(
+      math.min(_scrollController.offset + 600, maxExtent),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToRules());
   }
 
   Future<void> _loadTypeLabels() async {
@@ -84,7 +170,13 @@ final class _PropertyScreenState extends State<PropertyScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<PropertyCubit, PropertyState>(
       listener: (context, state) {
-        // US4 adds the resume handling here.
+        if (state is! PropertyReady) return;
+        if (state.pendingResume != null) {
+          _consumeResume(context, state);
+        }
+        if (state.termsUpdatedNotice && !_noticeBannerShown) {
+          _showTermsNotice(context);
+        }
       },
       builder: (context, state) => switch (state) {
         PropertyNotAvailable() => const NotAvailableScreen(),
@@ -103,14 +195,21 @@ final class _PropertyScreenState extends State<PropertyScreen> {
         PropertyOffline() => const Scaffold(
           body: _OfflineBody(),
         ),
-        PropertyReady(:final details, :final stay, :final guests) => _ReadyBody(
-          propertyId: widget.propertyId,
-          heroVariants: widget.heroVariants,
-          details: details,
-          stay: stay,
-          guests: guests,
-          typeLabels: _typeLabels,
-        ),
+        PropertyReady(
+          :final details,
+          :final stay,
+          :final guests,
+        ) =>
+          _ReadyBody(
+            propertyId: widget.propertyId,
+            heroVariants: widget.heroVariants,
+            details: details,
+            stay: stay,
+            guests: guests,
+            typeLabels: _typeLabels,
+            scrollController: _scrollController,
+            rulesKey: _rulesKey,
+          ),
       },
     );
   }
@@ -189,6 +288,8 @@ final class _ReadyBody extends StatelessWidget {
     required this.stay,
     required this.guests,
     required this.typeLabels,
+    required this.scrollController,
+    required this.rulesKey,
   });
 
   final String propertyId;
@@ -197,12 +298,15 @@ final class _ReadyBody extends StatelessWidget {
   final StayRange? stay;
   final int? guests;
   final Map<String, String> typeLabels;
+  final ScrollController scrollController;
+  final Key rulesKey;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: CustomScrollView(
+        controller: scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: PropertyGalleryHeader(
@@ -229,7 +333,10 @@ final class _ReadyBody extends StatelessWidget {
                 const SizedBox(height: Dimens.space24),
                 PropertyAddressSection(details: details),
                 const SizedBox(height: Dimens.space24),
-                PropertyRulesSection(details: details),
+                KeyedSubtree(
+                  key: rulesKey,
+                  child: PropertyRulesSection(details: details),
+                ),
                 const SizedBox(height: Dimens.space24),
                 PropertyPolicySection(details: details),
                 const SizedBox(height: Dimens.space24),
@@ -270,22 +377,57 @@ final class _ReadyBody extends StatelessWidget {
       );
       return;
     }
-    _pushLogin(context);
+    pushVisitorLogin(context, details, stay, guests, ResumeAction.contact);
   }
 }
 
-/// US4 replaces this with the resume protocol (research R10).
-void _pushLogin(BuildContext context) {
-  final current = GoRouterState.of(context).uri.toString();
+/// The visitor flow (research R10): sign-in carries the current dates and
+/// guests plus the resume action — and, for booking, the terms the guest
+/// actually saw. Cancelling returns to the same apartment without the
+/// resume keys.
+void pushVisitorLogin(
+  BuildContext context,
+  PropertyDetails details,
+  StayRange? stay,
+  int? guests,
+  ResumeAction action,
+) {
+  final query = <String, String>{
+    if (stay != null) 'checkIn': stay.checkIn.toString(),
+    if (stay != null) 'checkOut': stay.checkOut.toString(),
+    if (guests != null) 'guests': '$guests',
+    'resume': action.name,
+    if (action == ResumeAction.book) 'terms': details.termsVersion,
+  };
+  final from = Uri(
+    path: AppRoutes.property(details.id),
+    queryParameters: query,
+  );
+  final cancelTo = ResumeIntent.stripFrom(from);
   unawaited(
     context.push(
       Uri(
         path: AppRoutes.login,
-        queryParameters: {'from': current, 'cancelTo': current},
+        queryParameters: {
+          'from': from.toString(),
+          'cancelTo': cancelTo.toString(),
+        },
       ).toString(),
     ),
   );
 }
+
+/// The booking entry carries the shown stay, guests, and terms (AC-013).
+Uri _bookingEntryUri(PropertyDetails details, StayRange? stay, int? guests) =>
+    Uri(
+      path: AppRoutes.bookingEntry(details.id),
+      queryParameters: {
+        if (stay != null) 'checkIn': stay.checkIn.toString(),
+        if (stay != null) 'checkOut': stay.checkOut.toString(),
+        if (guests != null) 'guests': '$guests',
+        'terms': details.termsVersion,
+      },
+    );
 
 final class _DescriptionSection extends StatelessWidget {
   const _DescriptionSection({required this.details});
@@ -351,20 +493,12 @@ final class _BottomBar extends StatelessWidget {
   void _onBookNow(BuildContext context) {
     final auth = context.read<AuthCubit>().state;
     if (auth is! SignedIn) {
-      _pushLogin(context);
+      pushVisitorLogin(context, details, stay, guests, ResumeAction.book);
       return;
     }
     unawaited(
       context.push(
-        Uri(
-          path: AppRoutes.bookingEntry(details.id),
-          queryParameters: {
-            if (stay != null) 'checkIn': stay!.checkIn.toString(),
-            if (stay != null) 'checkOut': stay!.checkOut.toString(),
-            if (guests != null) 'guests': '$guests',
-            'terms': details.termsVersion,
-          },
-        ).toString(),
+        _bookingEntryUri(details, stay, guests).toString(),
       ),
     );
   }

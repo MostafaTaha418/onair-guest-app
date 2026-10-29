@@ -30,6 +30,7 @@ import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
 import 'package:on_air/features/property/presentation/property_screen.dart';
@@ -122,6 +123,10 @@ GoRouter createAppRouter({
                 CairoTime.today(),
               ),
               initialGuests: int.tryParse(query['guests'] ?? ''),
+              pendingResume: ResumeIntent.fromQuery(
+                query,
+                today: CairoTime.today(),
+              ),
             );
             unawaited(cubit.load());
             return cubit;

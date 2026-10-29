@@ -358,7 +358,10 @@ final class HomeScreen extends StatelessWidget {
               card.ratingAvg!.toStringAsFixed(1),
               card.reviewCount,
             ),
-      heroTag: 'listing-${card.id}',
+      // No Hero on Home cards: the shell's indexed stack keeps every branch
+      // alive, so the same apartment can carry the tag twice across the
+      // route subtree. The instant photo on details still comes through
+      // `extra` (SC-006); the Hero flight stays between results and details.
       onTap: () => unawaited(
         context.push(AppRoutes.property(card.id), extra: card.cover?.variants),
       ),

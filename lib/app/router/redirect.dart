@@ -49,7 +49,18 @@ String? resolveRedirect(RedirectContext context) {
     return _loginFor(returnTo);
   }
   if (state is CodeSent || state is RateLimited) {
-    return path == AppRoutes.otp ? null : AppRoutes.otp;
+    if (path == AppRoutes.otp) return null;
+    // The refresh pass can evaluate an app route rather than the pushed
+    // login screen; never hijack those — the login screen carries `from`
+    // to the code screen itself (SC-007, research R10).
+    if (!AppRoutes.isAuthLocation(context.location)) return null;
+    // When the pass does see the login screen, carry the safe return
+    // target along so the `from` chain survives into the code screen.
+    final returnTo = _safeReturnLocation(context.from);
+    return Uri(
+      path: AppRoutes.otp,
+      queryParameters: returnTo == null ? null : {'from': returnTo},
+    ).toString();
   }
   if (state is RecoveryVerified) {
     return path == AppRoutes.newPassword ? null : AppRoutes.newPassword;
