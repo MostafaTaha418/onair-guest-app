@@ -12,6 +12,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -32,6 +33,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../helpers/fake_auth_repository.dart';
 import '../../helpers/fake_connectivity.dart';
 import '../../helpers/fake_listings_repository.dart';
+import '../../helpers/fake_share_service.dart';
 
 void main() {
   late FakeListingsRepository listings;
@@ -113,6 +115,7 @@ void main() {
     required bool signedIn,
     Map<String, String> query = const {},
     double height = 3000,
+    FakeShareService? shareService,
   }) async {
     tester.view.physicalSize = Size(400, height);
     tester.view.devicePixelRatio = 1.0;
@@ -194,6 +197,12 @@ void main() {
           RepositoryProvider<JsonFileCache>.value(value: cache),
           RepositoryProvider<ReferenceDataCache>.value(
             value: ReferenceDataCache(listings, cache),
+          ),
+          RepositoryProvider<ShareService>.value(
+            value: shareService ?? FakeShareService(),
+          ),
+          RepositoryProvider<ShareLinks>.value(
+            value: const ShareLinks(linkDomain: 'on-air.website'),
           ),
         ],
         child: MultiBlocProvider(
@@ -353,5 +362,34 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('support-stub'), findsOneWidget);
+  });
+
+  testWidgets('share shares the title and the bare property link', (
+    tester,
+  ) async {
+    listings.propertyResponses.add(details());
+    final share = FakeShareService();
+    await pumpProperty(tester, signedIn: true, shareService: share);
+
+    await tester.tap(find.byTooltip(l10n.propertyShare));
+    await tester.pump();
+
+    expect(share.shared, [
+      'شقة 3 غرف بإطلالة\nhttps://on-air.website/property/p1',
+    ]);
+  });
+
+  testWidgets('share is disabled offline', (tester) async {
+    listings.propertyResponses.add(details());
+    final share = FakeShareService();
+    await pumpProperty(tester, signedIn: true, shareService: share);
+    connectivity.goOffline();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    final button = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Icons.share_outlined),
+    );
+    expect(button.onPressed, isNull);
+    expect(share.shared, isEmpty);
   });
 }

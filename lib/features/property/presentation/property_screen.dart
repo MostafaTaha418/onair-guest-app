@@ -10,6 +10,7 @@ import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/images/image_variants.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
@@ -313,6 +314,24 @@ final class _ReadyBody extends StatelessWidget {
               propertyId: propertyId,
               images: details.images,
               heroVariants: heroVariants,
+              actions: [
+                BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                  builder: (context, connectivity) => Semantics(
+                    label: l10n.propertyShare,
+                    button: true,
+                    child: IconButton(
+                      tooltip: l10n.propertyShare,
+                      onPressed: connectivity.isOnline
+                          ? () => _onShare(context)
+                          : null,
+                      icon: Icon(
+                        Icons.share_outlined,
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SliverPadding(
@@ -360,6 +379,17 @@ final class _ReadyBody extends StatelessWidget {
         details: details,
         stay: stay,
         guests: guests,
+      ),
+    );
+  }
+
+  /// The share text is the title, then the bare verified link without any
+  /// query parameters (contracts/app-routes-g1.md, "Share links").
+  void _onShare(BuildContext context) {
+    final shareLinks = context.read<ShareLinks>();
+    unawaited(
+      context.read<ShareService>().share(
+        '${details.title}\n${shareLinks.property(details.id)}',
       ),
     );
   }

@@ -808,28 +808,28 @@ below in CI).
 
 ### Tests for User Story 5 (write first, must fail)
 
-- [ ] T096 [P] [US5] Extend `test/app/router/link_parser_test.dart`:
+- [X] T096 [P] [US5] Extend `test/app/router/link_parser_test.dart`:
   - `https://<domain>/search/results?g=2&in=2026-11-20&out=2026-11-23&evil=1` → `/search/results?g=2&in=2026-11-20&out=2026-11-23` (only the whitelisted keys `loc,in,out,g,pmin,pmax,bed,bath,am,type,sort` are kept; the order follows canonical sorting);
   - `https://<domain>/property/<uuid>?resume=book&terms=x` → `/property/<uuid>` (**all** query parameters removed);
   - other linkable paths still drop every query parameter;
   - a wrong host, `http`, or user-info → `/not-available`.
-- [ ] T097 [P] [US5] Write `test/core/share/share_service_test.dart`:
+- [X] T097 [P] [US5] Write `test/core/share/share_service_test.dart`:
   - `ShareLinks(linkDomain: 'onair.test').property('<uuid>')` == `https://onair.test/property/<uuid>`;
   - `ShareLinks.search(criteria)` == `https://onair.test/search/results?<criteria.toQuery() encoded>` and never contains the location label;
   - a `FakeShareService` records the text passed to `share`.
 
 ### Implementation for User Story 5
 
-- [ ] T098 [US5] Update `LinkParser.parse` in `lib/app/router/link_parser.dart` (makes T096 pass): when `link.path == AppRoutes.searchResults`, keep only the whitelisted query keys, sorted alphabetically; every other path keeps `Uri(path: link.path)` as today. Do not import `features/` into `lib/app/router/link_parser.dart`: define the whitelist as a `const Set<String>` in that file, with a comment pointing to `SearchCriteria`.
-- [ ] T099 [US5] Create `lib/core/share/share_service.dart`:
+- [X] T098 [US5] Update `LinkParser.parse` in `lib/app/router/link_parser.dart` (makes T096 pass): when `link.path == AppRoutes.searchResults`, keep only the whitelisted query keys, sorted alphabetically; every other path keeps `Uri(path: link.path)` as today. Do not import `features/` into `lib/app/router/link_parser.dart`: define the whitelist as a `const Set<String>` in that file, with a comment pointing to `SearchCriteria`.
+- [X] T099 [US5] Create `lib/core/share/share_service.dart`:
   - `abstract interface class ShareService { Future<void> share(String text); }`;
   - `final class SharePlusShareService implements ShareService` using `share_plus` (`SharePlus.instance.share(ShareParams(text: text))`, or the API of the installed version);
   - `final class ShareLinks { const ShareLinks({required String linkDomain}); String property(String id); String search(Map<String,String> query); }`.
 
   Provide `ShareService` and `ShareLinks(linkDomain: environment.linkDomain)` in `lib/bootstrap.dart`, and fakes in the test helpers (`test/helpers/fake_share_service.dart`). This makes T097 pass.
-- [ ] T100 [US5] Add a Share `IconButton` (`Icons.share_outlined`, tooltip `l10n.propertyShare`) to the `actions` slot of `property_gallery_header.dart`. On tap: `shareService.share('${details.title}\n${shareLinks.property(details.id)}')`. Disable it while offline.
-- [ ] T101 [US5] Add a share action to the `ResultsScreen` app bar in `lib/features/search/presentation/results_screen.dart` (tooltip `l10n.searchShare`). On tap: `shareService.share('${l10n.shareSearchText}\n${shareLinks.search(state.criteria.toQuery())}')`.
-- [ ] T102 [US5] Write `test/app/router/discovery_links_test.dart` using `IncomingLinks` with a fake `UriLinkSource` and the test harness:
+- [X] T100 [US5] Add a Share `IconButton` (`Icons.share_outlined`, tooltip `l10n.propertyShare`) to the `actions` slot of `property_gallery_header.dart`. On tap: `shareService.share('${details.title}\n${shareLinks.property(details.id)}')`. Disable it while offline.
+- [X] T101 [US5] Add a share action to the `ResultsScreen` app bar in `lib/features/search/presentation/results_screen.dart` (tooltip `l10n.searchShare`). On tap: `shareService.share('${l10n.shareSearchText}\n${shareLinks.search(state.criteria.toQuery())}')`.
+- [X] T102 [US5] Write `test/app/router/discovery_links_test.dart` using `IncomingLinks` with a fake `UriLinkSource` and the test harness:
   - a property link opens `PropertyScreen` for that ID as a visitor;
   - a search link opens `ResultsScreen` with matching criteria;
   - a search link with past dates shows the `searchDatesDropped` banner;

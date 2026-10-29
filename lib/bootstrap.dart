@@ -19,6 +19,7 @@ import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
 import 'package:on_air/core/push/firebase_push_token_source.dart';
 import 'package:on_air/core/push/push_token_source.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
@@ -100,6 +101,12 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<ReferenceDataCache>.value(value: referenceData),
         RepositoryProvider<LastSearchStore>.value(value: lastSearchStore),
         RepositoryProvider<HomeFeedCache>.value(value: homeFeedCache),
+        RepositoryProvider<ShareService>.value(
+          value: const SharePlusShareService(),
+        ),
+        RepositoryProvider<ShareLinks>.value(
+          value: ShareLinks(linkDomain: environment.linkDomain),
+        ),
       ],
       child: OnAirApp(
         signOutCoordinator: signOutCoordinator,

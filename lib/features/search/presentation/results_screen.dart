@@ -8,6 +8,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/filter_chip_bar.dart';
 import 'package:on_air/design_system/components/property_card.dart';
@@ -87,7 +88,10 @@ final class _ResultsScreenState extends State<ResultsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.searchTitle)),
+      appBar: AppBar(
+        title: Text(l10n.searchTitle),
+        actions: const [_ShareSearchAction()],
+      ),
       body: BlocBuilder<SearchCubit, SearchState>(
         builder: (context, state) => NotificationListener<ScrollNotification>(
           onNotification: _onScrollNotification,
@@ -271,6 +275,36 @@ final class _ResultsScreenState extends State<ResultsScreen> {
       (null, final Money max) => formatter.format(max),
       (null, null) => '',
     };
+  }
+}
+
+/// Shares the canonical search link for the current criteria; the label is
+/// never included, it is re-resolved when the link opens.
+final class _ShareSearchAction extends StatelessWidget {
+  const _ShareSearchAction();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return BlocBuilder<SearchCubit, SearchState>(
+      builder: (context, state) => Semantics(
+        label: l10n.searchShare,
+        button: true,
+        child: IconButton(
+          tooltip: l10n.searchShare,
+          onPressed: () {
+            final shareLinks = context.read<ShareLinks>();
+            unawaited(
+              context.read<ShareService>().share(
+                '${l10n.shareSearchText}\n'
+                '${shareLinks.search(state.criteria.toQuery())}',
+              ),
+            );
+          },
+          icon: const Icon(Icons.share_outlined),
+        ),
+      ),
+    );
   }
 }
 

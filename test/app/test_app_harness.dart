@@ -10,6 +10,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -21,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
 import '../helpers/fake_listings_repository.dart';
+import '../helpers/fake_share_service.dart';
 
 Future<void> pumpVisitorApp(
   WidgetTester tester, {
@@ -56,11 +58,13 @@ Future<void> pumpVisitorAppWithLinks(
   WidgetTester tester, {
   required UriLinkSource uriLinkSource,
   required String linkDomain,
+  ListingsRepository? listingsRepository,
 }) async {
   await _pumpApp(
     tester,
     uriLinkSource: uriLinkSource,
     linkDomain: linkDomain,
+    listingsRepository: listingsRepository,
   );
 }
 
@@ -107,6 +111,10 @@ Future<void> _pumpApp(
         ),
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+        RepositoryProvider<ShareService>.value(value: FakeShareService()),
+        RepositoryProvider<ShareLinks>.value(
+          value: const ShareLinks(linkDomain: 'on-air.website'),
+        ),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

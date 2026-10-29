@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -14,6 +15,7 @@ import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'fake_listings_repository.dart';
+import 'fake_share_service.dart';
 
 extension PumpOnAirApp on WidgetTester {
   Future<void> pumpOnAirApp(
@@ -46,6 +48,10 @@ extension PumpOnAirApp on WidgetTester {
             value: ReferenceDataCache(listings, cache),
           ),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          RepositoryProvider<ShareService>.value(value: FakeShareService()),
+          RepositoryProvider<ShareLinks>.value(
+            value: const ShareLinks(linkDomain: 'on-air.website'),
+          ),
         ],
         child: BlocProvider<AuthCubit>.value(
           value: cubit,

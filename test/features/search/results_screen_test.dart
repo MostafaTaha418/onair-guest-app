@@ -9,6 +9,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
@@ -26,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_connectivity.dart';
 import '../../helpers/fake_listings_repository.dart';
+import '../../helpers/fake_share_service.dart';
 
 final AppLocalizations l10n = lookupAppLocalizations(const Locale('ar'));
 
@@ -69,7 +71,7 @@ void main() {
     unawaited(cubit.close());
   });
 
-  Future<void> pumpHost(WidgetTester tester) async {
+  Future<void> pumpHost(WidgetTester tester, {FakeShareService? share}) async {
     // A tall phone-sized window so list items beyond the first are built.
     tester.view.physicalSize = const Size(400, 1600);
     tester.view.devicePixelRatio = 1.0;
@@ -109,6 +111,12 @@ void main() {
         providers: [
           RepositoryProvider<ListingsRepository>.value(value: listings),
           RepositoryProvider<ReferenceDataCache>.value(value: referenceCache),
+          RepositoryProvider<ShareService>.value(
+            value: share ?? FakeShareService(),
+          ),
+          RepositoryProvider<ShareLinks>.value(
+            value: const ShareLinks(linkDomain: 'on-air.website'),
+          ),
         ],
         child: MultiBlocProvider(
           providers: [
@@ -292,5 +300,27 @@ void main() {
     await openResults(tester);
 
     expect(find.textContaining(l10n.searchDatesDropped), findsOneWidget);
+  });
+
+  testWidgets('the app bar share action shares the canonical search link', (
+    tester,
+  ) async {
+    listings.searchResponses.add(
+      const ResultsPage(items: [], nextCursor: null, totalCount: 1),
+    );
+    final share = FakeShareService();
+    await pumpHost(tester, share: share);
+    unawaited(cubit.search(const SearchCriteria(guests: 2)));
+    await openResults(tester);
+
+    await tester.tap(find.byTooltip(l10n.searchShare));
+    await tester.pump();
+
+    expect(share.shared, hasLength(1));
+    expect(share.shared.single, startsWith('${l10n.shareSearchText}\n'));
+    expect(
+      share.shared.single,
+      endsWith('https://on-air.website/search/results?g=2'),
+    );
   });
 }
