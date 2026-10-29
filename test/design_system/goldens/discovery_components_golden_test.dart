@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
@@ -95,6 +96,31 @@ Widget _skeleton(ThemeMode mode, TextDirection direction, double scale) =>
       ),
     );
 
+Widget _areas(ThemeMode mode, TextDirection direction, double scale) => _theme(
+  mode,
+  direction,
+  scale,
+  400,
+  260,
+  Row(
+    children: [
+      AreaCard(
+        title: 'التجمع الخامس',
+        countLabel: '42 شقة',
+        imageVariants: const [],
+        onTap: () {},
+      ),
+      const SizedBox(width: 16),
+      AreaCard(
+        title: 'الرحاب',
+        countLabel: '18 شقة',
+        imageVariants: const [],
+        onTap: () {},
+      ),
+    ],
+  ),
+);
+
 Widget _calendar(ThemeMode mode, TextDirection direction, double scale) =>
     _theme(
       mode,
@@ -148,6 +174,17 @@ void main() {
         builder: () => GoldenTestScenario(
           name: name,
           child: _skeleton(mode, direction, scale),
+        ),
+      ),
+    );
+    unawaited(
+      goldenTest(
+        'area cards — $name',
+        fileName: 'discovery_area_cards_${name.replaceAll(' ', '_')}',
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 320),
+        builder: () => GoldenTestScenario(
+          name: name,
+          child: _areas(mode, direction, scale),
         ),
       ),
     );

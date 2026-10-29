@@ -25,7 +25,10 @@ import 'package:on_air/features/auth/presentation/register_screen.dart';
 import 'package:on_air/features/booking/presentation/booking_entry_placeholder_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
-import 'package:on_air/features/home/presentation/home_placeholder_screen.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
+import 'package:on_air/features/home/presentation/home_cubit.dart';
+import 'package:on_air/features/home/presentation/home_screen.dart';
+import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
@@ -203,7 +206,20 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.home,
               name: 'home',
-              builder: (_, _) => const HomePlaceholderScreen(),
+              builder: (context, _) => BlocProvider<HomeCubit>(
+                create: (context) {
+                  final cubit = HomeCubit(
+                    repo: context.read<ListingsRepository>(),
+                    cache: context.read<HomeFeedCache>(),
+                    reference: context.read<ReferenceDataCache>(),
+                    connectivity: context.read<ConnectivityCubit>(),
+                    auth: context.read<AuthCubit>(),
+                  );
+                  unawaited(cubit.start());
+                  return cubit;
+                },
+                child: const HomeScreen(),
+              ),
             ),
           ],
         ),

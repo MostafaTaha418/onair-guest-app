@@ -668,11 +668,11 @@ area → results, card → details, relaunch in airplane mode shows cached conte
 
 ### Tests for User Story 3 (write first, must fail)
 
-- [ ] T080 [P] [US3] Write `test/features/home/home_feed_cache_test.dart` (temp-dir `JsonFileCache`):
+- [X] T080 [P] [US3] Write `test/features/home/home_feed_cache_test.dart` (temp-dir `JsonFileCache`):
   - `save(feed)` then `load()` returns the public sections;
   - the file content (read as raw JSON) **does not contain** `upcoming_booking` or the booking ID, even when the saved feed had an upcoming booking;
   - the existing `reference` key in the same file is kept after `save`.
-- [ ] T081 [P] [US3] Write `test/features/home/home_cubit_test.dart`:
+- [X] T081 [P] [US3] Write `test/features/home/home_cubit_test.dart`:
   - with a cached feed, the first state is `HomeState(feed: cached, refreshing: true)`, then fresh data replaces it;
   - without a cache, every section starts as loading;
   - a `FeedSectionFailed` section shows only that section as failed;
@@ -684,13 +684,13 @@ area → results, card → details, relaunch in airplane mode shows cached conte
 
 ### Implementation for User Story 3
 
-- [ ] T082 [US3] Implement `HomeFeedCache` in `lib/features/home/data/home_feed_cache.dart`, which makes T080 pass:
+- [X] T082 [US3] Implement `HomeFeedCache` in `lib/features/home/data/home_feed_cache.dart`, which makes T080 pass:
   - **Constructor:** `HomeFeedCache(JsonFileCache)`.
   - **`save(HomeFeed)`:** reads the file, sets the key `home` to `feed.toPublicJson()`, keeps `reference`, and writes it back.
   - **`load()`:** returns `HomeFeed.fromPublicJson` or `null`.
 
   Provide it in `lib/bootstrap.dart` and the test helpers.
-- [ ] T083 [US3] Implement `HomeCubit` in `lib/features/home/presentation/home_cubit.dart`, which makes T081 pass:
+- [X] T083 [US3] Implement `HomeCubit` in `lib/features/home/presentation/home_cubit.dart`, which makes T081 pass:
   - **Dependencies:** `ListingsRepository`, `HomeFeedCache`, `ReferenceDataCache`, `ConnectivityCubit`, `AuthCubit`.
   - **State:** `HomeState {HomeFeed? feed; Map<HomeSectionId, bool> sectionLoading; bool refreshing; bool offline; ApiError? fatalError}`, where `enum HomeSectionId {areas, suggested, newest, upcoming}`.
   - **On start:**
@@ -699,14 +699,14 @@ area → results, card → details, relaunch in airplane mode shows cached conte
     3. Save the fresh public sections.
   - **Subscriptions:** subscribe to `AuthCubit.stream` and refetch on `SignedIn`. On `SignedOut`, clear `upcoming`.
   - **`close()`:** cancel the subscriptions.
-- [ ] T084 [P] [US3] Create `AreaCard({required String title, required String countLabel, required List<ImageVariant> imageVariants, required VoidCallback onTap})` in `lib/design_system/components/area_card.dart`:
+- [X] T084 [P] [US3] Create `AreaCard({required String title, required String countLabel, required List<ImageVariant> imageVariants, required VoidCallback onTap})` in `lib/design_system/components/area_card.dart`:
   - a 140×170 card with the image filling it;
   - a bottom-to-top scrim: a `LinearGradient` from `context.colors['primaryDark'].withValues(alpha: 0.7)` at the bottom to `context.colors['primaryDark'].withValues(alpha: 0)` at the top. Do not use the VIP tokens; VIP is out of scope;
   - `title` in `areaCardTitle` / `onPrimary`;
   - a badge pill in `badgeNavActive` showing `countLabel` in `areaBadge`.
 
   Test in `test/design_system/components/area_card_test.dart`, and add it to the discovery golden file from T035.
-- [ ] T085 [US3] Create the Home widgets in `lib/features/home/presentation/widgets/`:
+- [X] T085 [US3] Create the Home widgets in `lib/features/home/presentation/widgets/`:
   - **`home_header.dart`:**
     - the `header` gradient;
     - «أهلًا» (`l10n.homeHello`, `homeWelcome` style) plus the guest's `fullName` in `homeUserName` when `AuthCubit.state is SignedIn` and the name is not null;
@@ -717,7 +717,7 @@ area → results, card → details, relaunch in airplane mode shows cached conte
     - shows `SkeletonBox`es while loading;
     - shows a compact inline `ErrorView` with retry when failed.
   - **`upcoming_booking_card.dart`:** the title, `dayMonth – dayMonth`, and a text chip «حجز مؤكد» (`l10n.homeUpcomingConfirmed`) using the `successContainer` / `onSuccessContainer` tokens with a check icon (never color alone). Tapping pushes `/bookings/<bookingId>`, which stays a G2 route.
-- [ ] T086 [US3] Create `HomeScreen` in `lib/features/home/presentation/home_screen.dart`:
+- [X] T086 [US3] Create `HomeScreen` in `lib/features/home/presentation/home_screen.dart`:
   - **Scroll view:** a `RefreshIndicator(onRefresh: cubit.refresh)` around a `CustomScrollView(key: const ValueKey('home-scroll'))`. **Keep this key**, because G0 shell tests use it to check that scroll position is kept.
   - **Sections, in order:** header; search box; upcoming card (only when not null); areas (horizontal `ListView.builder` of `AreaCard`s, label `l10n.areaListingCount`); suggested (horizontal list of `PropertyCard`s, width 260); newest (vertical `SliverList` of `PropertyCard`s).
   - **Taps:**
@@ -726,11 +726,11 @@ area → results, card → details, relaunch in airplane mode shows cached conte
     - card → `context.push(AppRoutes.property(id), extra: card.cover?.variants)`.
   - **Empty:** when all three public sections are empty lists, show `EmptyView(message: l10n.homeEmpty)` with a button `l10n.homeEmptyAction` that goes to Search.
   - **Offline:** `OfflineBanner` on top when `state.offline`.
-- [ ] T087 [US3] Wire Home in `lib/app/router/app_router.dart`:
+- [X] T087 [US3] Wire Home in `lib/app/router/app_router.dart`:
   - replace `HomePlaceholderScreen` with `BlocProvider(create: ... HomeCubit(...)..start(), child: const HomeScreen())` in branch 0;
   - delete `lib/features/home/presentation/home_placeholder_screen.dart`;
   - update the G0 tests that referenced it (search `test/` for `HomePlaceholderScreen` and `home-scroll`), so they still pass with the fake repository.
-- [ ] T088 [US3] Write `test/features/home/home_screen_test.dart`:
+- [X] T088 [US3] Write `test/features/home/home_screen_test.dart`:
   - each section shows a skeleton while loading;
   - a failed section shows retry, and the others render;
   - the area tap navigates to `/search/results?loc=<id>`;
@@ -739,7 +739,7 @@ area → results, card → details, relaunch in airplane mode shows cached conte
   - the upcoming card shows only for a signed-in guest with data;
   - a pre-filled cache plus an offline fake renders content and the offline banner within one frame after `pump()` (SC-004 check);
   - the empty state shows when all sections are empty.
-- [ ] T089 [US3] Add `test/features/home/goldens/home_goldens_test.dart` (tag `golden`) covering Home ready (visitor), Home ready (signed in with upcoming card), and Home loading, in Light/Dark × RTL × 1.0/1.3. Generate and commit.
+- [X] T089 [US3] Add `test/features/home/goldens/home_goldens_test.dart` (tag `golden`) covering Home ready (visitor), Home ready (signed in with upcoming card), and Home loading, in Light/Dark × RTL × 1.0/1.3. Generate and commit.
 
 **Checkpoint**: US1–US3 work in mock mode; Home is the real entry point.
 

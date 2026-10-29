@@ -12,6 +12,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
@@ -33,7 +34,10 @@ Future<void> pumpVisitorApp(
   );
 }
 
-Future<void> pumpSignedInApp(WidgetTester tester) async {
+Future<void> pumpSignedInApp(
+  WidgetTester tester, {
+  ListingsRepository? listingsRepository,
+}) async {
   await _pumpApp(
     tester,
     account: GuestAccount(
@@ -44,6 +48,7 @@ Future<void> pumpSignedInApp(WidgetTester tester) async {
       acceptedTermsVersion: 'v1',
       acceptedTermsAt: DateTime.utc(2026),
     ),
+    listingsRepository: listingsRepository,
   );
 }
 
@@ -101,6 +106,7 @@ Future<void> _pumpApp(
           value: ReferenceDataCache(listings, cache),
         ),
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
+        RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

@@ -16,11 +16,22 @@ final class FeedSectionReady<T> extends FeedSection<T> {
   final T value;
 
   @override
-  bool operator ==(Object other) =>
-      other is FeedSectionReady<T> && other.value == value;
+  bool operator ==(Object other) {
+    if (other is! FeedSectionReady<T>) return false;
+    final Object? otherValue = other.value;
+    final Object? sectionValue = value;
+    if (sectionValue is List && otherValue is List) {
+      return listEquals(otherValue, sectionValue);
+    }
+    return otherValue == sectionValue;
+  }
 
   @override
-  int get hashCode => value.hashCode;
+  int get hashCode {
+    final sectionValue = value;
+    if (sectionValue is List) return Object.hashAll(sectionValue);
+    return sectionValue.hashCode;
+  }
 }
 
 @immutable

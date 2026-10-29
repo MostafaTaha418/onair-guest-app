@@ -30,6 +30,7 @@ import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/data/supabase_listings_repository.dart';
@@ -84,6 +85,7 @@ Future<void> bootstrap(String flavor) async {
   );
   final referenceData = ReferenceDataCache(backend.listings, discoveryCache);
   final lastSearchStore = LastSearchStore();
+  final homeFeedCache = HomeFeedCache(discoveryCache);
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -97,6 +99,7 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<JsonFileCache>.value(value: discoveryCache),
         RepositoryProvider<ReferenceDataCache>.value(value: referenceData),
         RepositoryProvider<LastSearchStore>.value(value: lastSearchStore),
+        RepositoryProvider<HomeFeedCache>.value(value: homeFeedCache),
       ],
       child: OnAirApp(
         signOutCoordinator: signOutCoordinator,

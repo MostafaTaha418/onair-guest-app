@@ -8,6 +8,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -44,6 +45,7 @@ extension PumpOnAirApp on WidgetTester {
           RepositoryProvider<ReferenceDataCache>.value(
             value: ReferenceDataCache(listings, cache),
           ),
+          RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
         ],
         child: BlocProvider<AuthCubit>.value(
           value: cubit,
