@@ -252,8 +252,9 @@ void main() {
     await openResults(tester);
     final callsAfterFirst = listings.calls.length;
 
-    // The delete control carries the chip-remove tooltip.
-    await tester.tap(find.byTooltip(l10n.filterChipRemove('')).first);
+    // The delete control carries the chip-remove tooltip with the chip's
+    // label (the amenity key, since reference data is empty here).
+    await tester.tap(find.byTooltip(l10n.filterChipRemove('wifi')).first);
     await tester.pumpAndSettle();
 
     expect(listings.calls.length, greaterThan(callsAfterFirst));

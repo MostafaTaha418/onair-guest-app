@@ -11,6 +11,7 @@ import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/images/image_variants.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/share/share_service.dart';
+import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
@@ -47,6 +48,7 @@ final class PropertyScreen extends StatefulWidget {
   const PropertyScreen({
     required this.propertyId,
     this.heroVariants,
+    this.today,
     super.key,
   });
 
@@ -55,6 +57,11 @@ final class PropertyScreen extends StatefulWidget {
   /// The card cover's variants from `GoRouterState.extra` (research R9); the
   /// loading state shows this photo while the details load (SC-006).
   final List<ImageVariant>? heroVariants;
+
+  /// Injectable Cairo date for goldens/tests; null uses the real clock.
+  /// Pinning it keeps the availability calendar deterministic in reference
+  /// images.
+  final DateOnly? today;
 
   @override
   State<PropertyScreen> createState() => _PropertyScreenState();
@@ -210,6 +217,7 @@ final class _PropertyScreenState extends State<PropertyScreen> {
             typeLabels: _typeLabels,
             scrollController: _scrollController,
             rulesKey: _rulesKey,
+            today: widget.today,
           ),
       },
     );
@@ -291,6 +299,7 @@ final class _ReadyBody extends StatelessWidget {
     required this.typeLabels,
     required this.scrollController,
     required this.rulesKey,
+    this.today,
   });
 
   final String propertyId;
@@ -301,6 +310,7 @@ final class _ReadyBody extends StatelessWidget {
   final Map<String, String> typeLabels;
   final ScrollController scrollController;
   final Key rulesKey;
+  final DateOnly? today;
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +369,10 @@ final class _ReadyBody extends StatelessWidget {
                 const SizedBox(height: Dimens.space24),
                 PropertyPolicySection(details: details),
                 const SizedBox(height: Dimens.space24),
-                PropertyAvailabilitySection(propertyId: propertyId),
+                PropertyAvailabilitySection(
+                  propertyId: propertyId,
+                  today: today,
+                ),
                 const SizedBox(height: Dimens.space24),
                 PropertyReviewsSection(details: details),
                 const SizedBox(height: Dimens.space16),

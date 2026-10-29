@@ -13,7 +13,9 @@ import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/share/share_service.dart';
+import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -313,32 +315,67 @@ void main() {
     expect(find.text(l10n.notAvailable), findsOneWidget);
   });
 
+  /// Walks the calendar (it opens on the real current month) to [target]'s
+  /// month.
+  Future<void> gotoMonth(
+    WidgetTester tester,
+    AppLocalizations l10n,
+    DateOnly target,
+  ) async {
+    final today = CairoTime.today();
+    var displayed = DateOnly(today.year, today.month, 1);
+    while (displayed.year != target.year || displayed.month != target.month) {
+      await tester.tap(find.byTooltip(l10n.calendarNextMonth));
+      await tester.pump();
+      final shifted = displayed.addDays(32);
+      displayed = DateOnly(shifted.year, shifted.month, 1);
+    }
+  }
+
+  /// The 10th/11th of next month: always future relative to the real Cairo
+  /// clock, always inside one month, so the picks never expire or straddle
+  /// a month edge.
+  (DateOnly, DateOnly) nextMonthPicks() {
+    final today = CairoTime.today();
+    final shifted = DateOnly(today.year, today.month, 1).addDays(32);
+    final checkIn = DateOnly(shifted.year, shifted.month, 10);
+    return (checkIn, checkIn.addDays(1));
+  }
+
   testWidgets('picking a valid range updates the bottom-bar caption', (
     tester,
   ) async {
     listings.propertyResponses.add(details());
     await pumpProperty(tester, signedIn: false);
 
-    // CairoTime.today() is the real clock; the calendar shows the current
-    // month (October 2026), so pick from its selectable tail.
-    await tester.tap(find.text('29'));
+    final (checkIn, checkOut) = nextMonthPicks();
+    await gotoMonth(tester, l10n, checkIn);
+    await tester.tap(find.text('${checkIn.day}'));
     await tester.pump();
-    await tester.tap(find.text('30'));
+    await tester.tap(find.text('${checkOut.day}'));
     await tester.pump();
     await tester.tap(find.text(l10n.calendarConfirm));
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.textContaining('29 أكتوبر'), findsOneWidget);
+    expect(
+      find.textContaining(DateOnlyFormatter.dayMonth(checkIn)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('an invalid range shows calendarRangeInvalid', (tester) async {
     listings.propertyResponses.add(details());
-    listings.unavailableNightsResponses.add({DateOnly(2026, 10, 30)});
+    final (checkIn, _) = nextMonthPicks();
+    final checkOut = checkIn.addDays(2);
+    // A night strictly inside the range rejects it (the checkOut day itself
+    // would not).
+    listings.unavailableNightsResponses.add({checkIn.addDays(1)});
     await pumpProperty(tester, signedIn: false);
 
-    await tester.tap(find.text('29'));
+    await gotoMonth(tester, l10n, checkIn);
+    await tester.tap(find.text('${checkIn.day}'));
     await tester.pump();
-    await tester.tap(find.text('31'));
+    await tester.tap(find.text('${checkOut.day}'));
     await tester.pump();
 
     expect(find.text(l10n.calendarRangeInvalid), findsOneWidget);

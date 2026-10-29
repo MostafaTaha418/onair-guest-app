@@ -13,29 +13,33 @@ final class HomeSearchBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Dimens.radiusField),
-      child: Container(
-        padding: const EdgeInsetsDirectional.all(Dimens.space12),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(Dimens.radiusField),
-          border: Border.all(color: colors['subtleBorder']),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.search, size: 20, color: colors.textSecondary),
-            const SizedBox(width: Dimens.space8),
-            Expanded(
-              child: Text(
-                l10n.homeSearchHint,
-                style: context.textStyles.homeSearch.copyWith(
-                  color: colors.textSecondary,
+    return Semantics(
+      label: l10n.homeSearchHint,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Dimens.radiusField),
+        child: Container(
+          padding: const EdgeInsetsDirectional.all(Dimens.space12),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(Dimens.radiusField),
+            border: Border.all(color: colors['subtleBorder']),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search, size: 20, color: colors.textSecondary),
+              const SizedBox(width: Dimens.space8),
+              Expanded(
+                child: Text(
+                  l10n.homeSearchHint,
+                  style: context.textStyles.homeSearch.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -15,9 +16,18 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 /// [AvailabilityCubit] and sits inside a lazily built `SliverList`, so the
 /// months load only when the guest scrolls near it (FR-026).
 final class PropertyAvailabilitySection extends StatefulWidget {
-  const PropertyAvailabilitySection({required this.propertyId, super.key});
+  const PropertyAvailabilitySection({
+    required this.propertyId,
+    this.today,
+    super.key,
+  });
 
   final String propertyId;
+
+  /// Injectable clock for goldens and tests; production uses the real Cairo
+  /// date. Pinning it keeps the calendar's «today» marker deterministic in
+  /// reference images.
+  final DateOnly? today;
 
   @override
   State<PropertyAvailabilitySection> createState() =>
@@ -35,7 +45,7 @@ final class _PropertyAvailabilitySectionState
   @override
   void initState() {
     super.initState();
-    unawaited(_cubit.showMonth(CairoTime.today()));
+    unawaited(_cubit.showMonth(widget.today ?? CairoTime.today()));
   }
 
   @override
@@ -51,7 +61,7 @@ final class _PropertyAvailabilitySectionState
     return BlocBuilder<AvailabilityCubit, AvailabilityState>(
       bloc: _cubit,
       builder: (context, state) {
-        final today = CairoTime.today();
+        final today = widget.today ?? CairoTime.today();
         final selection = state.selection;
         final checkIn = switch (selection) {
           CalendarArrivalPicked(:final day) => day,

@@ -842,22 +842,22 @@ below in CI).
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T103 Run `bash tool/check_hardcoded_styles.sh` and fix every hit in G1 files, by moving values into `lib/design_system/` tokens and components.
-- [ ] T104 [P] Accessibility pass. With the Flutter semantics debugger (`showSemanticsDebugger: true` in a temporary local run), check Home, Search, Results, Details, Gallery, and Reviews:
+- [X] T103 Run `bash tool/check_hardcoded_styles.sh` and fix every hit in G1 files, by moving values into `lib/design_system/` tokens and components.
+- [X] T104 [P] Accessibility pass. With the Flutter semantics debugger (`showSemanticsDebugger: true` in a temporary local run), check Home, Search, Results, Details, Gallery, and Reviews:
   - every icon button has a label;
   - focus order runs right to left;
   - field errors are announced.
 
   Fix any issues. Create `docs/qa/g1-accessibility.md` with a table (screen, TalkBack result, VoiceOver result, notes) for the manual pass in quickstart scenario 17, leaving the result cells for the tester.
-- [ ] T105 [P] Create `test_driver/perf_driver.dart`, which uses `integrationDriver` with `responseDataCallback` and writes the `traceAction` timeline summary to `build/perf/`. Create `integration_test/results_scroll_perf_test.dart`:
+- [X] T105 [P] Create `test_driver/perf_driver.dart`, which uses `integrationDriver` with `responseDataCallback` and writes the `traceAction` timeline summary to `build/perf/`. Create `integration_test/results_scroll_perf_test.dart`:
   - mock mode with 120 fixture apartments;
   - open results with no criteria;
   - `binding.traceAction` around flinging the list down 10 times, with `reportKey: 'results_scroll'`.
 
   Document the run command in `docs/perf/g1-results-scroll.md` with empty result fields for the device run.
-- [ ] T106 [P] Measure the app size: build `flutter build apk --flavor production -t lib/main_production.dart --split-per-abi --release --dart-define-from-file=env/example.json` (or the CI equivalent) before and after G1. Record the per-ABI sizes and the delta from `cached_network_image` / `share_plus` in `docs/perf/g1-size.md`.
-- [ ] T107 Update `docs/OnAir Guest App Plan.md` §17 G1: tick each implemented item, and add a short status note under G1 in the same style as the G0 note. Say that Remote mode waits for the 7 `guest_*` RPCs in the registry, the D-001 address field, and the link-domain store fallback.
-- [ ] T108 Run the full gates and fix any failure:
+- [X] T106 [P] Measure the app size: build `flutter build apk --flavor production -t lib/main_production.dart --split-per-abi --release --dart-define-from-file=env/example.json` (or the CI equivalent) before and after G1. Record the per-ABI sizes and the delta from `cached_network_image` / `share_plus` in `docs/perf/g1-size.md`.
+- [X] T107 Update `docs/OnAir Guest App Plan.md` §17 G1: tick each implemented item, and add a short status note under G1 in the same style as the G0 note. Say that Remote mode waits for the 7 `guest_*` RPCs in the registry, the D-001 address field, and the link-domain store fallback.
+- [X] T108 Run the full gates and fix any failure:
   1. `dart format --set-exit-if-changed .`
   2. `flutter analyze`
   3. `flutter test`
@@ -865,7 +865,7 @@ below in CI).
   5. `bash tool/check_hardcoded_styles.sh`
 
   Then walk through quickstart scenarios 1–16 in mock mode on an Android emulator. Note any scenario that cannot run in mock mode.
-- [ ] T109 Write the PR description in `specs/002-guest-discovery/pr-description.md`, with the Definition of Done checklist from the constitution (Development Workflow → Definition of Done) ticked item by item with evidence (test file names), plus the list of backend and link-domain dependencies still open.
+- [X] T109 Write the PR description in `specs/002-guest-discovery/pr-description.md`, with the Definition of Done checklist from the constitution (Development Workflow → Definition of Done) ticked item by item with evidence (test file names), plus the list of backend and link-domain dependencies still open.
 
 ---
 

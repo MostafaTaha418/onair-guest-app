@@ -144,7 +144,10 @@ Widget _readyChild() {
           value: connectivity.createCubit(),
         ),
       ],
-      child: const PropertyScreen(propertyId: 'p1'),
+      child: PropertyScreen(
+        propertyId: 'p1',
+        today: DateOnly(2026, 11, 15),
+      ),
     ),
   );
 }
@@ -178,7 +181,10 @@ Widget _loadingChild() {
           value: connectivity.createCubit(),
         ),
       ],
-      child: const PropertyScreen(propertyId: 'p1'),
+      child: PropertyScreen(
+        propertyId: 'p1',
+        today: DateOnly(2026, 11, 15),
+      ),
     ),
   );
 }

@@ -246,8 +246,8 @@ final class _ResultsScreenState extends State<ResultsScreen> {
     final formatter = MoneyFormatter();
     final chips = [
       for (final chip in state.criteria.activeFilterChips)
-        (
-          label: switch (chip.kind) {
+        () {
+          final label = switch (chip.kind) {
             FilterChipKind.price => _priceLabel(state.criteria, formatter),
             FilterChipKind.bedrooms => l10n.bedroomsAtLeast(
               state.criteria.minBedrooms ?? 0,
@@ -257,10 +257,13 @@ final class _ResultsScreenState extends State<ResultsScreen> {
             ),
             FilterChipKind.amenity => _labels[chip.key] ?? chip.key!,
             FilterChipKind.type => _labels[chip.key] ?? chip.key!,
-          },
-          removeTooltip: l10n.filterChipRemove(''),
-          onRemove: () => _cubit.removeChip(chip),
-        ),
+          };
+          return (
+            label: label,
+            removeTooltip: l10n.filterChipRemove(label),
+            onRemove: () => _cubit.removeChip(chip),
+          );
+        }(),
     ];
     return FilterChipBar(chips: chips);
   }
