@@ -1,8 +1,4 @@
-import 'package:on_air/core/api/generated/fallback/fallback_client.dart';
-import 'package:on_air/core/api/generated/models/device_registration.dart';
-import 'package:on_air/core/api/generated/models/device_registration_locale.dart';
-import 'package:on_air/core/api/generated/models/device_registration_platform.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum DevicePlatform { android, ios }
 
@@ -17,33 +13,35 @@ abstract interface class DeviceTokenRepository {
 }
 
 final class DeviceRepository implements DeviceTokenRepository {
-  DeviceRepository(this._client, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+  const DeviceRepository(this._client);
 
-  final FallbackClient _client;
-  final Uuid _uuid;
+  final SupabaseClient _client;
 
   @override
   Future<void> registerDeviceToken({
     required String token,
     required DevicePlatform platform,
     required String locale,
-  }) => _client.registerDeviceToken(
-    xRequestId: _uuid.v4(),
-    body: DeviceRegistration(
-      token: token,
-      platform: switch (platform) {
-        DevicePlatform.android => DeviceRegistrationPlatform.android,
-        DevicePlatform.ios => DeviceRegistrationPlatform.ios,
+  }) async {
+    if (locale != 'ar' && locale != 'en') {
+      throw ArgumentError.value(locale, 'locale', 'Must be ar or en');
+    }
+    await _client.rpc<void>(
+      'common_register_device',
+      params: {
+        'p_token': token,
+        'p_app': 'guest',
+        'p_platform': platform.name,
+        'p_locale': locale,
       },
-      locale: switch (locale) {
-        'ar' => DeviceRegistrationLocale.ar,
-        'en' => DeviceRegistrationLocale.en,
-        _ => throw ArgumentError.value(locale, 'locale', 'Must be ar or en'),
-      },
-    ),
-  );
+    );
+  }
 
   @override
-  Future<void> unregisterDeviceToken(String token) =>
-      _client.unregisterDeviceToken(xRequestId: _uuid.v4(), token: token);
+  Future<void> unregisterDeviceToken(String token) async {
+    await _client.rpc<void>(
+      'common_unregister_device',
+      params: {'p_token': token},
+    );
+  }
 }
