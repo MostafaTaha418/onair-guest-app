@@ -18,6 +18,8 @@ import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_booking_backend.dart';
+
 /// Boots the full [OnAirApp] on the mock backend: in-memory repositories,
 /// no Supabase/Firebase connection. Shared by the integration tests that
 /// exercise the real shell (the T095 journey, the T105 scroll-perf run).
@@ -44,6 +46,8 @@ Future<void> bootMockApp(WidgetTester tester) async {
       : MockListingsRepository();
   final auth = MockAuthRepository();
   addTearDown(auth.dispose);
+  final bookingBackend = FakeBookingBackend();
+  addTearDown(bookingBackend.dispose);
 
   await tester.pumpWidget(
     MultiRepositoryProvider(
@@ -61,10 +65,11 @@ Future<void> bootMockApp(WidgetTester tester) async {
         RepositoryProvider<HomeFeedCache>.value(
           value: HomeFeedCache(cache),
         ),
-        RepositoryProvider<NotificationSignalSource>.value(
-          value: ControllableNotificationSignalSource(),
-        ),
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
+        RepositoryProvider<NotificationSignalSource>.value(
+          value: bookingBackend.signals,
+        ),
+        ...bookingBackend.appProviders(),
       ],
       child: const OnAirApp(),
     ),

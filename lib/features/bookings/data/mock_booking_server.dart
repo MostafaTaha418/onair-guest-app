@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math' show min;
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:on_air/core/errors/api_error.dart';
@@ -20,6 +20,7 @@ import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/features/notifications/domain/app_notification.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:uuid/uuid.dart';
 
 const _fixturesRoot = 'lib/features/bookings/data/fixtures';
 
@@ -600,15 +601,11 @@ final class MockBookingServer
 
   int _ceilDiv(int value, int divisor) => (value / divisor).ceil();
 
-  String _newBookingId() => 'b${_randomId('0')}';
+  // Every dynamic id is a UUID v4: booking ids from links and payloads are
+  // format-validated by the app (Constitution IV).
+  static const _uuid = Uuid();
 
-  /// 36-char id (`prefix` + hex); uniqueness is enough for the mock.
-  String _randomId(String prefix) {
-    final random = Random();
-    final hex = List.generate(
-      36 - prefix.length,
-      (_) => random.nextInt(16).toRadixString(16),
-    ).join();
-    return '$prefix$hex';
-  }
+  String _newBookingId() => _uuid.v4();
+
+  String _randomId(String _) => _uuid.v4();
 }

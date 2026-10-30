@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_booking_backend.dart';
 import '../helpers/fake_listings_repository.dart';
 import '../helpers/fake_share_service.dart';
 
@@ -82,6 +83,8 @@ Future<void> _pumpApp(
 }) async {
   final auth = FakeAuthRepository()..account = account;
   addTearDown(auth.dispose);
+  final bookingBackend = FakeBookingBackend();
+  addTearDown(bookingBackend.dispose);
   final config = FakeAppConfigRepository(
     const AppConfig(
       minSupportedBuildAndroid: 1,
@@ -121,6 +124,7 @@ Future<void> _pumpApp(
         RepositoryProvider<ShareLinks>.value(
           value: const ShareLinks(linkDomain: 'on-air.website'),
         ),
+        ...bookingBackend.appProviders(),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

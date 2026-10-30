@@ -1,0 +1,259 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/errors/error_message.dart';
+import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/components/amount_row.dart';
+import 'package:on_air/design_system/components/bottom_action_bar.dart';
+import 'package:on_air/design_system/components/info_banner.dart';
+import 'package:on_air/design_system/components/on_air_network_image.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/booking/domain/booking_quote.dart';
+import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
+import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
+import 'package:on_air/features/listings/domain/property_details.dart';
+import 'package:on_air/features/property/domain/policy_text.dart';
+import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
+import 'package:on_air/l10n/generated/app_localizations.dart';
+
+/// The booking summary: every figure comes from the server quote; the guest
+/// confirms it and goes to the Kashier page.
+final class SummaryScreen extends StatelessWidget {
+  const SummaryScreen({required this.propertyId, super.key});
+
+  final String propertyId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final attemptCubit = context.read<PaymentAttemptCubit>();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.bookingSummaryTitle),
+        leading: BackButton(onPressed: () => context.pop()),
+      ),
+      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+        builder: (context, state) {
+          final quote = state.quote;
+          final property = state.property;
+          if (quote == null || property == null) {
+            // The draft is gone (restart, expired branch): start from the
+            // page.
+            return ErrorView(
+              message: l10n.bookingQuoteExpired,
+              onRetry: () => context.pop(),
+            );
+          }
+          return _SummaryBody(quote: quote, property: property);
+        },
+      ),
+      bottomNavigationBar: _PayBar(
+        propertyId: propertyId,
+        attemptCubit: attemptCubit,
+        flowCubit: context.read<BookingFlowCubit>(),
+      ),
+    );
+  }
+}
+
+final class _SummaryBody extends StatelessWidget {
+  const _SummaryBody({required this.quote, required this.property});
+
+  final BookingQuote quote;
+  final PropertyDetails property;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+      color: colors.textPrimary,
+    );
+    return ListView(
+      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Dimens.radiusCard),
+              child: SizedBox(
+                width: 96,
+                height: 72,
+                child: OnAirNetworkImage(
+                  variants: property.images.isEmpty
+                      ? const []
+                      : property.images.first.variants,
+                ),
+              ),
+            ),
+            const SizedBox(width: Dimens.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(property.title, style: titleStyle),
+                  Text(
+                    '${property.areaName}، ${property.cityName}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: Dimens.space16),
+        AmountRow(
+          label: l10n.searchDatesLabel,
+          value:
+              '${DateOnlyFormatter.dayMonth(quote.stay.checkIn)} – '
+              '${DateOnlyFormatter.dayMonth(quote.stay.checkOut)}',
+        ),
+        AmountRow(
+          label: l10n.bookingNights,
+          value: l10n.bookingNightsCount('${quote.nights}'),
+        ),
+        AmountRow(
+          label: l10n.searchGuestsLabel,
+          value: '${quote.guests}',
+        ),
+        AmountRow(
+          label: l10n.bookingNightlyPrice,
+          value: MoneyFormatter().format(quote.nightly),
+        ),
+        AmountRow(
+          label: l10n.bookingTotal,
+          value: MoneyFormatter().format(quote.total),
+          emphasized: true,
+        ),
+        AmountRow(
+          label: l10n.bookingPayNow,
+          value: MoneyFormatter().format(quote.payNow),
+          emphasized: true,
+        ),
+        if (!quote.isFullPayment) ...[
+          AmountRow(
+            label: l10n.bookingRemaining,
+            value: MoneyFormatter().format(quote.remaining),
+          ),
+          if (quote.remainingDueAt != null)
+            AmountRow(
+              label: l10n.bookingRemaining,
+              value: l10n.bookingRemainingDue(
+                DateOnlyFormatter.dayMonth(
+                  DateOnly.fromDateTime(quote.remainingDueAt!),
+                ),
+              ),
+            ),
+        ],
+        const SizedBox(height: Dimens.space16),
+        Text(l10n.bookingPolicyTitle, style: titleStyle),
+        const SizedBox(height: Dimens.space8),
+        for (final line in policyLines(
+          quote.policySummary ?? property.policy,
+        ))
+          Text(policyLineText(line, l10n)),
+        const SizedBox(height: Dimens.space16),
+        InfoBanner(
+          message: l10n.bookingSummaryOwnerNotice,
+          tone: StatusTone.info,
+        ),
+      ],
+    );
+  }
+}
+
+final class _PayBar extends StatelessWidget {
+  const _PayBar({
+    required this.propertyId,
+    required this.attemptCubit,
+    required this.flowCubit,
+  });
+
+  final String propertyId;
+  final PaymentAttemptCubit attemptCubit;
+  final BookingFlowCubit flowCubit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return BlocBuilder<BookingFlowCubit, BookingFlowState>(
+      builder: (context, flow) {
+        final quote = flow.quote;
+        return BlocListener<PaymentAttemptCubit, PaymentAttemptState>(
+          listener: (context, state) {
+            if (state is AttemptFailed) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(apiErrorMessage(state.error, l10n)),
+                ),
+              );
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
+                builder: (context, attempt) {
+                  final online = context
+                      .read<ConnectivityCubit>()
+                      .state
+                      .isOnline;
+                  final opened =
+                      attempt is AttemptOpened &&
+                      quote != null &&
+                      attempt.attempt.quoteId == quote.quoteId;
+                  return Column(
+                    children: [
+                      if (opened)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: Dimens.screenSide,
+                          ),
+                          child: InfoBanner(
+                            message: l10n.paymentReturnHint,
+                            tone: StatusTone.info,
+                            actionLabel: l10n.paymentCheckStatus,
+                            onAction: () => context.go(
+                              AppRoutes.paymentReturn(
+                                bookingId: attempt.attempt.bookingId,
+                              ),
+                            ),
+                          ),
+                        ),
+                      BottomActionBar(
+                        leading: const SizedBox.shrink(),
+                        action: OnAirPrimaryButton(
+                          key: const ValueKey('summary-pay'),
+                          label: l10n.bookingGoToPayment,
+                          isLoading: attempt is AttemptStarting,
+                          onPressed:
+                              online &&
+                                  attempt is! AttemptStarting &&
+                                  flow.canPay &&
+                                  quote != null
+                              ? () => attemptCubit.pay(quote)
+                              : null,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

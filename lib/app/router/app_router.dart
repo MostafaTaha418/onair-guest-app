@@ -22,7 +22,11 @@ import 'package:on_air/features/auth/presentation/login_screen.dart';
 import 'package:on_air/features/auth/presentation/new_password_screen.dart';
 import 'package:on_air/features/auth/presentation/otp_screen.dart';
 import 'package:on_air/features/auth/presentation/register_screen.dart';
-import 'package:on_air/features/booking/presentation/booking_entry_placeholder_screen.dart';
+import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
+import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
+import 'package:on_air/features/booking/presentation/dates_screen.dart';
+import 'package:on_air/features/booking/presentation/payment_return_screen.dart';
+import 'package:on_air/features/booking/presentation/summary_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -49,13 +53,22 @@ int? _boundedGuests(String? raw) {
   return value == null || value < 1 || value > 50 ? null : value;
 }
 
+/// The booking flow shares one draft across verify → dates → summary, so
+/// the routes live under one shell that owns `BookingFlowCubit`; leaving
+/// the branch disposes the draft (contracts/app-routes-g2.md §1).
+final _bookingNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'booking',
+);
+
 GoRouter createAppRouter({
   required Listenable refreshListenable,
   required AuthCubit authCubit,
   required SearchCubit searchCubit,
+  GlobalKey<NavigatorState>? navigatorKey,
   bool Function() updateRequired = _defaultUpdateRequired,
   void Function()? openStore,
 }) => GoRouter(
+  navigatorKey: navigatorKey,
   initialLocation: AppRoutes.splash,
   refreshListenable: refreshListenable,
   redirect: (_, state) => resolveRedirect(
@@ -171,13 +184,47 @@ GoRouter createAppRouter({
         ),
       ],
     ),
-    GoRoute(
-      path: AppRoutes.bookingEntryPattern,
-      name: 'booking-entry',
-      builder: (context, state) => BookingEntryPlaceholderScreen(
-        propertyId: state.pathParameters['propertyId']!,
-        query: state.uri.queryParameters,
-      ),
+    ShellRoute(
+      navigatorKey: _bookingNavigatorKey,
+      builder: (context, state, child) {
+        final propertyId = state.pathParameters['propertyId']!;
+        final query = state.uri.queryParameters;
+        return BlocProvider<BookingFlowCubit>(
+          key: ValueKey(propertyId),
+          create: (context) {
+            final cubit = BookingFlowCubit(
+              listings: context.read<ListingsRepository>(),
+              flow: context.read<BookingFlowRepository>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              propertyId: propertyId,
+              termsHash: query['terms'] ?? '',
+              initialStay: StayRange.tryCreate(
+                DateOnly.tryParse(query['checkIn']),
+                DateOnly.tryParse(query['checkOut']),
+                CairoTime.today(),
+              ),
+              initialGuests: _boundedGuests(query['guests']),
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: child,
+        );
+      },
+      routes: [
+        GoRoute(
+          path: AppRoutes.bookingEntryPattern,
+          name: 'booking-dates',
+          builder: (_, state) =>
+              DatesScreen(propertyId: state.pathParameters['propertyId']!),
+        ),
+        GoRoute(
+          path: AppRoutes.bookingSummaryPattern,
+          name: 'booking-summary',
+          builder: (_, state) =>
+              SummaryScreen(propertyId: state.pathParameters['propertyId']!),
+        ),
+      ],
     ),
     GoRoute(
       path: AppRoutes.supportNew,
@@ -213,8 +260,10 @@ GoRouter createAppRouter({
     ),
     GoRoute(
       path: AppRoutes.paymentReturnPath,
-      name: 'linked-payment-return',
-      builder: (_, _) => const NotAvailableScreen(),
+      name: 'payment-return',
+      builder: (_, state) => PaymentReturnScreen(
+        bookingIdFromLink: state.uri.queryParameters['booking'],
+      ),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, _, shell) => BlocProvider<SearchCubit>.value(

@@ -8,10 +8,12 @@ import 'package:on_air/app/router/app_router.dart';
 import 'package:on_air/app/router/auth_router_refresh.dart';
 import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/app/router/link_parser.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/payments/in_app_browser.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -22,6 +24,11 @@ import 'package:on_air/features/account_gate/presentation/session_listener.dart'
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/booking/data/mock_in_app_browser.dart';
+import 'package:on_air/features/booking/data/payment_attempt_store.dart';
+import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
+import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
+import 'package:on_air/features/bookings/data/mock_booking_server.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
@@ -39,6 +46,7 @@ final class OnAirApp extends StatefulWidget {
     this.uriLinkSource,
     this.linkDomain,
     this.versionGate,
+    this.inAppBrowser,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -52,6 +60,10 @@ final class OnAirApp extends StatefulWidget {
   /// Injectable for tests; production builds resolve it from
   /// `package_info_plus` and the server config.
   final VersionGate? versionGate;
+
+  /// Injectable browser for tests; production resolves it from the backend
+  /// mode (mock page or the real in-app browser).
+  final InAppBrowser? inAppBrowser;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -67,6 +79,12 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final AppLogger _logger;
   late final VersionGate _versionGate;
   late final NotificationSignalSource _signals;
+  late final PaymentAttemptCubit _paymentAttemptCubit;
+  late final AppLifecycleListener _lifecycle;
+  late InAppBrowser _browser;
+  final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
   StreamSubscription<AuthState>? _authSubscription;
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
@@ -76,6 +94,16 @@ final class _OnAirAppState extends State<OnAirApp> {
     super.initState();
     _logger = context.read<AppLogger>();
     _signals = context.read<NotificationSignalSource>();
+    _paymentAttemptCubit = PaymentAttemptCubit(
+      flow: context.read<BookingFlowRepository>(),
+      store: context.read<PaymentAttemptStore>(),
+      browser: () => _browser,
+      logger: _logger,
+    );
+    _browser = widget.inAppBrowser ?? _createBrowser();
+    // Resuming the app with an open attempt means the guest came back from
+    // the payment page (research R4).
+    _lifecycle = AppLifecycleListener(onResume: _onResume);
     _authCubit = AuthCubit(
       context.read<AuthRepository>(),
       currentTermsVersion: '',
@@ -100,6 +128,7 @@ final class _OnAirAppState extends State<OnAirApp> {
       refreshListenable: Listenable.merge([_refresh, _versionGate]),
       authCubit: _authCubit,
       searchCubit: _searchCubit,
+      navigatorKey: _rootNavigatorKey,
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
@@ -113,9 +142,41 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   void _onAuthStateChanged(AuthState state) => switch (state) {
     SignedIn(:final account) => unawaited(_signals.start(account.id)),
-    SignedOut() || SessionEnded() => unawaited(_signals.stop()),
+    SignedOut() || SessionEnded() => () {
+      unawaited(_signals.stop());
+      unawaited(_paymentAttemptCubit.newAttempt());
+    }(),
     _ => null,
   };
+
+  InAppBrowser _createBrowser() {
+    // Mock mode pushes the local payment page instead of leaving the app.
+    MockBookingServer? mockServer;
+    try {
+      mockServer = context.read<MockBookingServer?>();
+    } on ProviderNotFoundException {
+      mockServer = null;
+    }
+    if (mockServer != null) {
+      return MockInAppBrowser(
+        navigatorKey: _rootNavigatorKey,
+        server: mockServer,
+        onReturn: (bookingId) =>
+            _router.go(AppRoutes.paymentReturn(bookingId: bookingId)),
+      );
+    }
+    return const UrlLauncherInAppBrowser();
+  }
+
+  void _onResume() {
+    final state = _paymentAttemptCubit.state;
+    if (state is! AttemptOpened) return;
+    final path = _router.routerDelegate.currentConfiguration.uri.path;
+    if (path == AppRoutes.paymentReturnPath) return;
+    _router.go(
+      AppRoutes.paymentReturn(bookingId: state.attempt.bookingId),
+    );
+  }
 
   VersionGate _createVersionGate() => VersionGate(
     configSource: context.read<AppConfigSource>(),
@@ -142,6 +203,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     // The restored session opens the channel too (no state change may fire
     // for a restored sign-in).
     _onAuthStateChanged(_authCubit.state);
+    unawaited(_paymentAttemptCubit.restore());
     final source = widget.uriLinkSource;
     final domain = widget.linkDomain;
     if (source != null && domain != null && mounted) {
@@ -162,9 +224,11 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     unawaited(_authSubscription?.cancel());
     unawaited(_signals.stop());
     unawaited(_incomingLinks?.close());
+    unawaited(_paymentAttemptCubit.close());
     _router.dispose();
     _refresh.dispose();
     if (_ownsVersionGate) _versionGate.dispose();
@@ -185,38 +249,42 @@ final class _OnAirAppState extends State<OnAirApp> {
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
       BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
+      BlocProvider<PaymentAttemptCubit>.value(value: _paymentAttemptCubit),
     ],
-    child: MaterialApp.router(
-      routerConfig: _router,
-      locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar'), Locale('en')],
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: OnAirTheme.light,
-      darkTheme: OnAirTheme.dark,
-      // Explicit product choice; keep visible when changing app defaults.
-      // ignore: avoid_redundant_argument_values
-      themeMode: ThemeMode.system,
-      builder: (context, child) => SessionListener(
-        router: _router,
-        eventSource: _sessionEventSource,
-        personalDataResetter: _personalDataResetter,
-        deviceRegistrationService: widget.deviceRegistrationService,
-        child: MediaQuery.withClampedTextScaling(
-          maxScaleFactor: 1.3,
-          child: Stack(
-            children: [
-              ?child,
-              BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                builder: (context, state) => state.isOnline
-                    ? const SizedBox.shrink()
-                    : const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: OfflineBanner(),
-                      ),
-              ),
-            ],
+    child: RepositoryProvider<InAppBrowser>.value(
+      value: _browser,
+      child: MaterialApp.router(
+        routerConfig: _router,
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: OnAirTheme.light,
+        darkTheme: OnAirTheme.dark,
+        // Explicit product choice; keep visible when changing app defaults.
+        // ignore: avoid_redundant_argument_values
+        themeMode: ThemeMode.system,
+        builder: (context, child) => SessionListener(
+          router: _router,
+          eventSource: _sessionEventSource,
+          personalDataResetter: _personalDataResetter,
+          deviceRegistrationService: widget.deviceRegistrationService,
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: Stack(
+              children: [
+                ?child,
+                BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                  builder: (context, state) => state.isOnline
+                      ? const SizedBox.shrink()
+                      : const Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: OfflineBanner(),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

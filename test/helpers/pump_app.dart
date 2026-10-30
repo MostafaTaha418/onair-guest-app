@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/storage/secure_store.dart';
@@ -38,6 +39,7 @@ extension PumpOnAirApp on WidgetTester {
     ListingsRepository? listingsRepository,
     FakeBookingBackend? bookingBackend,
     ConnectivityCubit? connectivityCubit,
+    RouterConfig<Object>? routerConfig,
   }) async {
     final listings = listingsRepository ?? FakeListingsRepository();
     final cache = _tempCache();
@@ -57,6 +59,7 @@ extension PumpOnAirApp on WidgetTester {
           RepositoryProvider<AppConfigSource>.value(
             value: appConfigRepository,
           ),
+          RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
           RepositoryProvider<ListingsRepository>.value(value: listings),
           RepositoryProvider<JsonFileCache>.value(value: cache),
           RepositoryProvider<ReferenceDataCache>.value(
@@ -92,26 +95,42 @@ extension PumpOnAirApp on WidgetTester {
         // A connectivity cubit is provided only when a test hands one in:
         // constructing the real one touches the platform channel.
         child: connectivityCubit == null
-            ? _inner(cubit, child)
+            ? _inner(cubit, child, routerConfig)
             : BlocProvider<ConnectivityCubit>.value(
                 value: connectivityCubit,
-                child: _inner(cubit, child),
+                child: _inner(cubit, child, routerConfig),
               ),
       ),
     );
     addTearDown(cubit.close);
   }
 
-  Widget _inner(AuthCubit cubit, Widget child) => BlocProvider<AuthCubit>.value(
+  Widget _inner(
+    AuthCubit cubit,
+    Widget child,
+    RouterConfig<Object>? routerConfig,
+  ) => BlocProvider<AuthCubit>.value(
     value: cubit,
-    child: MaterialApp(
-      locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar'), Locale('en')],
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: OnAirTheme.light,
-      darkTheme: OnAirTheme.dark,
-      home: Directionality(textDirection: TextDirection.rtl, child: child),
-    ),
+    child: routerConfig == null
+        ? MaterialApp(
+            locale: const Locale('ar'),
+            supportedLocales: const [Locale('ar'), Locale('en')],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            theme: OnAirTheme.light,
+            darkTheme: OnAirTheme.dark,
+            home: Directionality(
+              textDirection: TextDirection.rtl,
+              child: child,
+            ),
+          )
+        : MaterialApp.router(
+            locale: const Locale('ar'),
+            supportedLocales: const [Locale('ar'), Locale('en')],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            theme: OnAirTheme.light,
+            darkTheme: OnAirTheme.dark,
+            routerConfig: routerConfig,
+          ),
   );
 }
 

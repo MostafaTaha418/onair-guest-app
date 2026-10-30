@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
-import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
+import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'mock_app.dart';
@@ -97,21 +97,9 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('complete-profile-button')));
   await tester.pumpAndSettle();
-  // 8. The booking placeholder carries the same dates and guests.
-  expect(find.text(l10n.bookingEntryComingSoon), findsOneWidget);
-  expect(
-    find.textContaining(DateOnlyFormatter.dayMonth(checkIn)),
-    findsOneWidget,
-  );
-  expect(
-    find.textContaining(DateOnlyFormatter.dayMonth(checkOut)),
-    findsOneWidget,
-  );
-  expect(
-    find.textContaining('${l10n.searchGuestsLabel}: 2'),
-    findsOneWidget,
-  );
-  expect(find.text(l10n.bookingEntryTermsCarried), findsOneWidget);
+  // 8. The date step carries the same stay and guests: three nights.
+  expect(find.byType(DatesScreen), findsOneWidget);
+  expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
 
   // 9. Back to the apartment, sign out, and repeat as a visitor:
   // cancelling sign-in returns to the same apartment (FR-029).
