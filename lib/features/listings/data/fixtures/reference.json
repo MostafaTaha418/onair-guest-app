@@ -1,0 +1,83 @@
+{
+  "version": "mock-ref-1",
+  "amenities": [
+    {
+      "key": "wifi",
+      "label": "واي فاي",
+      "icon": "wifi"
+    },
+    {
+      "key": "ac",
+      "label": "تكييف",
+      "icon": "ac_unit"
+    },
+    {
+      "key": "kitchen",
+      "label": "مطبخ",
+      "icon": "kitchen"
+    },
+    {
+      "key": "washer",
+      "label": "غسالة",
+      "icon": "local_laundry_service"
+    },
+    {
+      "key": "parking",
+      "label": "موقف سيارات",
+      "icon": "local_parking"
+    },
+    {
+      "key": "pool",
+      "label": "مسبح",
+      "icon": "pool"
+    },
+    {
+      "key": "elevator",
+      "label": "مصعد",
+      "icon": "elevator"
+    },
+    {
+      "key": "tv",
+      "label": "تلفزيون",
+      "icon": "tv"
+    },
+    {
+      "key": "balcony",
+      "label": "بلكونة",
+      "icon": "balcony"
+    },
+    {
+      "key": "sea_view",
+      "label": "إطلالة بحرية",
+      "icon": "waves"
+    }
+  ],
+  "property_types": [
+    {
+      "key": "apartment",
+      "label": "شقة"
+    },
+    {
+      "key": "studio",
+      "label": "استوديو"
+    },
+    {
+      "key": "villa",
+      "label": "فيلا"
+    },
+    {
+      "key": "chalet",
+      "label": "شاليه"
+    },
+    {
+      "key": "room",
+      "label": "غرفة"
+    }
+  ],
+  "price_bounds": {
+    "min_minor": 61215,
+    "max_minor": 1498242,
+    "currency": "EGP"
+  },
+  "price_step_minor": 5000
+}

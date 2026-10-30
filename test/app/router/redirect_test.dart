@@ -88,6 +88,39 @@ void main() {
     );
   });
 
+  group('resolveAuthReturnDestination', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+
+    test('keeps the account-gated route the guest signed in for', () {
+      expect(
+        resolveAuthReturnDestination('/bookings/$uuid'),
+        '/bookings/$uuid',
+      );
+      expect(
+        resolveAuthReturnDestination('/book/$uuid/dates'),
+        '/book/$uuid/dates',
+      );
+      expect(
+        resolveAuthReturnDestination(AppRoutes.supportNew),
+        AppRoutes.supportNew,
+      );
+    });
+
+    test(
+      'falls back to home for auth screens, external links, and unknowns',
+      () {
+        expect(resolveAuthReturnDestination(AppRoutes.login), AppRoutes.home);
+        expect(
+          resolveAuthReturnDestination('https://evil.example/bookings'),
+          AppRoutes.home,
+        );
+        expect(resolveAuthReturnDestination(null), AppRoutes.home);
+        expect(resolveAuthReturnDestination('/unknown'), AppRoutes.home);
+        expect(resolveAuthReturnDestination(AppRoutes.splash), AppRoutes.home);
+      },
+    );
+  });
+
   test('an active version gate sends every route to update-required', () {
     final contexts = [
       (
@@ -158,5 +191,61 @@ void main() {
       ),
       AppRoutes.home,
     );
+  });
+
+  test('discovery dynamic routes accept only UUID v4 IDs', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+    for (final valid in [
+      AppRoutes.property(uuid),
+      AppRoutes.propertyGallery(uuid),
+      AppRoutes.propertyReviews(uuid),
+      AppRoutes.bookingEntry(uuid),
+    ]) {
+      expect(AppRoutes.isRegisteredLocation(valid), isTrue, reason: valid);
+    }
+    for (final invalid in [
+      '/property/not-a-uuid',
+      '/property/not-a-uuid/gallery',
+      '/property/not-a-uuid/reviews',
+      '/book/not-a-uuid/dates',
+      '/property/00000000-0000-1000-8000-000000000001',
+    ]) {
+      expect(
+        AppRoutes.isRegisteredLocation(invalid),
+        isFalse,
+        reason: invalid,
+      );
+    }
+  });
+
+  test('the booking entry requires an account, the gallery does not', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+    expect(AppRoutes.requiresAccount(AppRoutes.bookingEntry(uuid)), isTrue);
+    expect(AppRoutes.requiresAccount(AppRoutes.supportNew), isTrue);
+    expect(AppRoutes.requiresAccount(AppRoutes.property(uuid)), isFalse);
+    expect(AppRoutes.requiresAccount(AppRoutes.propertyGallery(uuid)), isFalse);
+    expect(AppRoutes.requiresAccount(AppRoutes.propertyReviews(uuid)), isFalse);
+    expect(AppRoutes.requiresAccount(AppRoutes.searchResults), isFalse);
+  });
+
+  test('a visitor on the booking entry is sent to login with a return', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.bookingEntry(uuid),
+          authState: const SignedOut(),
+        ),
+      ),
+      '/auth/login?from=%2Fbook%2F${Uri.encodeComponent(uuid)}%2Fdates',
+    );
+  });
+
+  test('the route builders build the documented paths', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+    expect(AppRoutes.property(uuid), '/property/$uuid');
+    expect(AppRoutes.propertyGallery(uuid), '/property/$uuid/gallery');
+    expect(AppRoutes.propertyReviews(uuid), '/property/$uuid/reviews');
+    expect(AppRoutes.bookingEntry(uuid), '/book/$uuid/dates');
   });
 }

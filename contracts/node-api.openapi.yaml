@@ -1,14 +1,24 @@
 openapi: 3.1.0
 info:
-  title: OnAir Node Commands — Guest App G0 (DRAFT)
-  version: 0.1.0-draft
+  title: OnAir integrations-service — Guest App routes
+  version: 0.2.0-draft
   description: |
-    Draft contract written by the Guest App developer for the backend owner (Guest Plan §2.3).
-    Only the Node commands G0 needs. Supabase Auth and RLS reads are described in
-    supabase-backend.md. Amounts, statuses, and permissions are never sent by the app.
+    The Node.js `integrations-service` routes the Guest App calls (Backend Master Plan §12.6).
+    The single source of names is `docs/OnAir Backend Master Plan.md` (28 Oct 2026).
 
-    Every request carries `Authorization: Bearer <Supabase access token>` (except where noted)
-    and `x-request-id` (UUID v4). Every error response uses the ErrorResponse shape.
+    Changed on 28 Oct 2026:
+    - There is no SMS. Every code goes to the account's email through `POST /v1/otp/send`.
+    - Push tokens moved to the RPCs `common_register_device` / `common_unregister_device`.
+      The old `/v1/devices` routes are removed.
+
+    Rules:
+    - Every request carries `Authorization: Bearer <Supabase access token>` and
+      `x-request-id` (UUID v4).
+    - Every error response uses the ErrorResponse shape.
+    - Amounts, prices, statuses, and permissions are never sent by the app. Amounts in
+      responses are integer minor units (`bigint`) plus `currency`.
+    - Reads and other commands go straight to Supabase RPC (`guest_*`, `common_*`). See
+      supabase-backend.md and supabase-discovery.md.
 servers:
   - url: https://{nodeApiBaseUrl}
     variables:
@@ -18,10 +28,17 @@ servers:
 security:
   - bearerAuth: []
 paths:
-  /v1/devices:
+  /v1/otp/send:
     post:
-      operationId: registerDeviceToken
-      summary: Register or refresh this device's push token for the signed-in user
+      operationId: sendOtpCode
+      summary: Generate and email a 6-digit code for an existing challenge
+      description: |
+        The challenge is created first by an RPC that returns `challenge_id`:
+        `common_request_phone_change`, `common_request_account_deletion`,
+        `guest_start_cash_confirmation` (or the collector's `partner_record_cash_collection`).
+        The caller must be the challenge's requester or its recipient. The code goes to the
+        **recipient's account email** through Resend, and only its hash is stored. Calling
+        again before `retry_after_seconds` returns 429.
       parameters:
         - $ref: '#/components/parameters/RequestId'
       requestBody:
@@ -29,33 +46,193 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceRegistration'
+              type: object
+              additionalProperties: false
+              required: [challenge_id]
+              properties:
+                challenge_id:
+                  type: string
+                  format: uuid
       responses:
-        '204':
-          description: Registered (idempotent per user + token)
+        '200':
+          description: Code sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpSent'
         '400':
           $ref: '#/components/responses/Error'
         '401':
           $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
         '429':
           $ref: '#/components/responses/Error'
-  /v1/devices/{token}:
-    delete:
-      operationId: unregisterDeviceToken
-      summary: Remove this device's push token for the signed-in user (called at sign-out)
+  /v1/guest/bookings/start-payment:
+    post:
+      operationId: startBookingPayment
+      summary: Create the booking from a quote and open a Kashier payment session
+      description: |
+        Calls `guest_start_booking` with the guest's own session, then creates the Kashier
+        session with the server-side amount. The same `idempotency_key` always returns the same
+        booking and session. Returning from the payment page is **not** a confirmation; the app
+        waits for the status notification (Realtime on `notifications`) and polls
+        `guest_get_booking`.
       parameters:
         - $ref: '#/components/parameters/RequestId'
-        - name: token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [quote_id, terms_hash, idempotency_key]
+              properties:
+                quote_id:
+                  type: string
+                  format: uuid
+                terms_hash:
+                  type: string
+                idempotency_key:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Payment session ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSession'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+  /v1/guest/bookings/{bookingId}/remaining-payment:
+    post:
+      operationId: startRemainingPayment
+      summary: Open a Kashier session for the remaining amount after a deposit
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/BookingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotency_key]
+              properties:
+                idempotency_key:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Payment session ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSession'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+  /v1/uploads/sign:
+    post:
+      operationId: signUpload
+      summary: Get a short-lived signed PUT URL for a private attachment
+      description: |
+        Checks permission with `common_authorize_upload` (guest: own support case, own case
+        message, damage claim on own booking). Limits on type and size come from
+        `platform_settings.upload_limits`. Images should have EXIF removed by the app first.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [entity_type, entity_id, mime_type, size_bytes]
+              properties:
+                entity_type:
+                  type: string
+                  enum: [support_case, case_message, damage_claim]
+                entity_id:
+                  type: string
+                  format: uuid
+                mime_type:
+                  type: string
+                  enum: [image/jpeg, image/png, image/webp, application/pdf]
+                size_bytes:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Upload URL issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [attachment_id, upload_url, expires_at]
+                properties:
+                  attachment_id:
+                    type: string
+                    format: uuid
+                  upload_url:
+                    type: string
+                    format: uri
+                  expires_at:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+  /v1/files/{attachmentId}/url:
+    get:
+      operationId: getFileUrl
+      summary: Get a short-lived signed GET URL for a private attachment the caller may read
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - name: attachmentId
           in: path
           required: true
           schema:
             type: string
-            minLength: 1
-            maxLength: 4096
+            format: uuid
       responses:
-        '204':
-          description: Removed, or was not registered (idempotent)
+        '200':
+          description: URL issued (do not cache it on disk)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, expires_at]
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  expires_at:
+                    type: string
+                    format: date-time
         '401':
+          $ref: '#/components/responses/Error'
+        '404':
           $ref: '#/components/responses/Error'
 components:
   securitySchemes:
@@ -67,6 +244,13 @@ components:
     RequestId:
       name: x-request-id
       in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BookingId:
+      name: bookingId
+      in: path
       required: true
       schema:
         type: string
@@ -84,21 +268,41 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    DeviceRegistration:
+    OtpSent:
       type: object
-      additionalProperties: false
-      required: [token, platform, locale]
+      required: [sent_to_masked, retry_after_seconds, expires_at]
       properties:
-        token:
+        sent_to_masked:
           type: string
-          minLength: 1
-          maxLength: 4096
-        platform:
+          description: Masked email, e.g. "a***@gmail.com"
+        retry_after_seconds:
+          type: integer
+          minimum: 0
+        expires_at:
           type: string
-          enum: [android, ios]
-        locale:
+          format: date-time
+    PaymentSession:
+      type: object
+      required: [booking_id, payment_id, payment_url, payment_url_expires_at, amount_minor, currency]
+      properties:
+        booking_id:
           type: string
-          enum: [ar, en]
+          format: uuid
+        payment_id:
+          type: string
+          format: uuid
+        payment_url:
+          type: string
+          format: uri
+        payment_url_expires_at:
+          type: string
+          format: date-time
+        amount_minor:
+          type: integer
+          description: Display only; computed on the server
+        currency:
+          type: string
+          enum: [EGP]
     ErrorResponse:
       type: object
       required: [error]
@@ -124,23 +328,38 @@ components:
                   minimum: 0
     ErrorCode:
       type: string
-      description: See error-codes.md. Clients map unknown values to INTERNAL.
+      description: |
+        Codes the Guest App can receive (Backend Master Plan §11; copy in error-codes.md).
+        Clients map unknown values to INTERNAL.
       enum:
         - UNAUTHENTICATED
+        - PERMISSION_DENIED
+        - ACCOUNT_SUSPENDED
+        - VALIDATION_FAILED
+        - NOT_FOUND
+        - ACTION_NOT_ALLOWED
+        - RATE_LIMITED
+        - CONFLICT
+        - APP_VERSION_UNSUPPORTED
+        - INTERNAL
+        - PHONE_COUNTRY_NOT_SUPPORTED
+        - PHONE_ALREADY_USED
         - PHONE_NOT_VERIFIED
         - EMAIL_NOT_VERIFIED
-        - PHONE_COUNTRY_NOT_SUPPORTED
+        - OTP_INVALID
+        - OTP_EXPIRED
+        - TERMS_CHANGED
         - PROFILE_INCOMPLETE
+        - ACCOUNT_HAS_ACTIVE_BOOKINGS
+        - PROPERTY_NOT_AVAILABLE
         - DATES_UNAVAILABLE
         - GUESTS_EXCEEDED
         - QUOTE_EXPIRED
-        - TERMS_CHANGED
-        - PROPERTY_NOT_AVAILABLE
-        - ACTION_NOT_ALLOWED
-        - RATE_LIMITED
-        - OTP_INVALID
-        - OTP_EXPIRED
+        - INVALID_BOOKING_STATE
+        - REMAINING_NOT_PAID
+        - CANCELLATION_TERMS_CHANGED
+        - REVIEW_NOT_ALLOWED
+        - PAYMENT_AMOUNT_MISMATCH
         - COLLECTOR_NOT_AUTHORIZED
-        - APP_VERSION_UNSUPPORTED
-        - VALIDATION_FAILED
-        - INTERNAL
+        - CASH_NOT_ALLOWED
+        - DUPLICATE_OPERATION

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -104,6 +106,19 @@ final class _LoginScreenState extends State<LoginScreen> {
       if (mounted && context.read<AuthCubit>().state is CodeSent) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).authCodeSent)),
+        );
+        // The redirect's refresh pass re-evaluates an app route (not this
+        // pushed screen) and cannot see this screen's `from`; navigate to
+        // the code screen explicitly and carry the return target, so
+        // sign-in ends where the guest started (SC-007, research R10).
+        // The *return* destination keeps account-gated routes, unlike a
+        // cancellation: after the code the guest is signed in.
+        final origin = GoRouterState.of(context).uri.queryParameters['from'];
+        context.go(
+          Uri(
+            path: AppRoutes.otp,
+            queryParameters: {'from': resolveAuthReturnDestination(origin)},
+          ).toString(),
         );
       }
     } on AuthRequestRejected catch (error) {

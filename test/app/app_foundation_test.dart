@@ -1,16 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/app.dart';
+import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
+import 'package:on_air/features/listings/data/reference_data_cache.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
 
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_listings_repository.dart';
 
 void main() {
   testWidgets('app starts in Arabic RTL with a visitor route', (tester) async {
@@ -24,12 +32,28 @@ void main() {
         currentTermsVersion: 'v1',
       ),
     );
+    final listings = FakeListingsRepository();
+    final cache = JsonFileCache(
+      directory: Directory.systemTemp.createTempSync('on_air_foundation'),
+      fileName: 'discovery_cache.json',
+      schema: 1,
+    );
+    addTearDown(() => cache.directory.deleteSync(recursive: true));
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
           RepositoryProvider<AuthRepository>.value(value: repository),
           RepositoryProvider<AppConfigSource>.value(value: config),
           RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(
+            value: listings,
+          ),
+          RepositoryProvider<JsonFileCache>.value(value: cache),
+          RepositoryProvider<ReferenceDataCache>.value(
+            value: ReferenceDataCache(listings, cache),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
+          RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
         ],
         child: const OnAirApp(),
       ),
@@ -69,12 +93,28 @@ void main() {
     await gate.check();
     expect(gate.updateRequired, isTrue);
 
+    final listings = FakeListingsRepository();
+    final cache = JsonFileCache(
+      directory: Directory.systemTemp.createTempSync('on_air_foundation'),
+      fileName: 'discovery_cache.json',
+      schema: 1,
+    );
+    addTearDown(() => cache.directory.deleteSync(recursive: true));
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
           RepositoryProvider<AuthRepository>.value(value: repository),
           RepositoryProvider<AppConfigSource>.value(value: config),
           RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(
+            value: listings,
+          ),
+          RepositoryProvider<JsonFileCache>.value(value: cache),
+          RepositoryProvider<ReferenceDataCache>.value(
+            value: ReferenceDataCache(listings, cache),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
+          RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
         ],
         child: OnAirApp(versionGate: gate),
       ),

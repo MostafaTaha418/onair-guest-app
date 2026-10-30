@@ -57,7 +57,12 @@ final class SignOutService implements SignOutCoordinator {
     required this.preferences,
   });
 
-  static const preservedPreferenceKeys = {'themeMode', 'localeCode'};
+  // last_search_v1 holds no personal data (spec Assumptions), so it stays.
+  static const preservedPreferenceKeys = {
+    'themeMode',
+    'localeCode',
+    'last_search_v1',
+  };
 
   final DeviceTokenRepository devices;
   final AuthRepository auth;

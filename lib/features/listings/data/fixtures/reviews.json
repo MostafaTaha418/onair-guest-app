@@ -1,0 +1,246 @@
+{
+  "00000000-0000-4000-8000-00000000001f": [
+    {
+      "id": "00000000-0000-4000-8000-0000000001f4",
+      "rating": 3,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-10-20",
+      "reviewer_short_name": "أحمد م.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001f5",
+      "rating": 4,
+      "comment": "المالك متعاون والتوصيل كان في الموعد.",
+      "created_on": "2026-10-19",
+      "reviewer_short_name": "سارة ع.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001f6",
+      "rating": 5,
+      "comment": "تجربة حلوة بشكل عام، هكرر الحجز.",
+      "created_on": "2026-10-18",
+      "reviewer_short_name": "محمد ك.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001f7",
+      "rating": 3,
+      "comment": "الصور مطابقة للواقع.",
+      "created_on": "2026-10-17",
+      "reviewer_short_name": "منى ح.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001f8",
+      "rating": 4,
+      "comment": null,
+      "created_on": "2026-10-16",
+      "reviewer_short_name": "يوسف ط.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001f9",
+      "rating": 5,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-10-15",
+      "reviewer_short_name": "نور أ.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001fa",
+      "rating": 3,
+      "comment": "المالك متعاون والتوصيل كان في الموعد.",
+      "created_on": "2026-10-14",
+      "reviewer_short_name": "كريم س.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001fb",
+      "rating": 4,
+      "comment": "تجربة حلوة بشكل عام، هكرر الحجز.",
+      "created_on": "2026-10-13",
+      "reviewer_short_name": "هدى ف.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001fc",
+      "rating": 5,
+      "comment": "الصور مطابقة للواقع.",
+      "created_on": "2026-10-12",
+      "reviewer_short_name": "أحمد م.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001fd",
+      "rating": 3,
+      "comment": null,
+      "created_on": "2026-10-11",
+      "reviewer_short_name": "سارة ع.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001fe",
+      "rating": 4,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-10-10",
+      "reviewer_short_name": "محمد ك.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-0000000001ff",
+      "rating": 5,
+      "comment": "المالك متعاون والتوصيل كان في الموعد.",
+      "created_on": "2026-10-09",
+      "reviewer_short_name": "منى ح.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000200",
+      "rating": 3,
+      "comment": "تجربة حلوة بشكل عام، هكرر الحجز.",
+      "created_on": "2026-10-08",
+      "reviewer_short_name": "يوسف ط.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000201",
+      "rating": 4,
+      "comment": "الصور مطابقة للواقع.",
+      "created_on": "2026-10-07",
+      "reviewer_short_name": "نور أ.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000202",
+      "rating": 5,
+      "comment": null,
+      "created_on": "2026-10-06",
+      "reviewer_short_name": "كريم س.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000203",
+      "rating": 3,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-10-05",
+      "reviewer_short_name": "هدى ف.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000204",
+      "rating": 4,
+      "comment": "المالك متعاون والتوصيل كان في الموعد.",
+      "created_on": "2026-10-04",
+      "reviewer_short_name": "أحمد م.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000205",
+      "rating": 5,
+      "comment": "تجربة حلوة بشكل عام، هكرر الحجز.",
+      "created_on": "2026-10-03",
+      "reviewer_short_name": "سارة ع.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000206",
+      "rating": 3,
+      "comment": "الصور مطابقة للواقع.",
+      "created_on": "2026-10-02",
+      "reviewer_short_name": "محمد ك.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000207",
+      "rating": 4,
+      "comment": null,
+      "created_on": "2026-10-01",
+      "reviewer_short_name": "منى ح.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000208",
+      "rating": 5,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-09-30",
+      "reviewer_short_name": "يوسف ط.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000209",
+      "rating": 3,
+      "comment": "المالك متعاون والتوصيل كان في الموعد.",
+      "created_on": "2026-09-29",
+      "reviewer_short_name": "نور أ.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000020a",
+      "rating": 4,
+      "comment": "تجربة حلوة بشكل عام، هكرر الحجز.",
+      "created_on": "2026-09-28",
+      "reviewer_short_name": "كريم س.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000020b",
+      "rating": 5,
+      "comment": "الصور مطابقة للواقع.",
+      "created_on": "2026-09-27",
+      "reviewer_short_name": "هدى ف.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000020c",
+      "rating": 3,
+      "comment": null,
+      "created_on": "2026-09-26",
+      "reviewer_short_name": "أحمد م.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000020d",
+      "rating": 4,
+      "comment": "الشقة كانت نظيفة والموقع ممتاز.",
+      "created_on": "2026-09-25",
+      "reviewer_short_name": "سارة ع.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000258",
+      "rating": 1,
+      "comment": "تعليق في انتظار المراجعة.",
+      "created_on": "2026-10-21",
+      "reviewer_short_name": "أحمد م.",
+      "status": "pending"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000259",
+      "rating": 2,
+      "comment": "تعليق مرفوض.",
+      "created_on": "2026-10-22",
+      "reviewer_short_name": "سارة ع.",
+      "status": "rejected"
+    }
+  ],
+  "00000000-0000-4000-8000-000000000021": [
+    {
+      "id": "00000000-0000-4000-8000-000000000262",
+      "rating": 5,
+      "comment": "إقامة رائعة.",
+      "created_on": "2026-10-01",
+      "reviewer_short_name": "محمد ك.",
+      "status": "approved"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000263",
+      "rating": 4,
+      "comment": null,
+      "created_on": "2026-09-28",
+      "reviewer_short_name": "منى ح.",
+      "status": "approved"
+    }
+  ]
+}

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
-import 'package:on_air/core/api/generated/rest_client.dart';
 import 'package:on_air/core/auth/secure_session_storage.dart';
+import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/env/env_config.dart';
@@ -14,10 +14,9 @@ import 'package:on_air/core/env/firebase_options_production.dart'
 import 'package:on_air/core/env/firebase_options_staging.dart'
     as staging_firebase;
 import 'package:on_air/core/logging/app_logger.dart';
-import 'package:on_air/core/network/dio_factory.dart';
-import 'package:on_air/core/network/supabase_token_source.dart';
 import 'package:on_air/core/push/firebase_push_token_source.dart';
 import 'package:on_air/core/push/push_token_source.dart';
+import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
@@ -29,6 +28,12 @@ import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/home/data/home_feed_cache.dart';
+import 'package:on_air/features/listings/data/mock_listings_repository.dart';
+import 'package:on_air/features/listings/data/reference_data_cache.dart';
+import 'package:on_air/features/listings/data/supabase_listings_repository.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> bootstrap(String flavor) async {
@@ -72,6 +77,13 @@ Future<void> bootstrap(String flavor) async {
     preferences: const SharedPreferencesCleaner(),
   );
   final sessionEventSource = backend.sessionEvents;
+  final discoveryCache = await JsonFileCache.appSupport(
+    fileName: 'discovery_cache.json',
+    schema: 1,
+  );
+  final referenceData = ReferenceDataCache(backend.listings, discoveryCache);
+  final lastSearchStore = LastSearchStore();
+  final homeFeedCache = HomeFeedCache(discoveryCache);
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -81,6 +93,17 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<PushTokenSource>.value(value: pushTokens),
         RepositoryProvider<DeviceTokenRepository>.value(value: devices),
+        RepositoryProvider<ListingsRepository>.value(value: backend.listings),
+        RepositoryProvider<JsonFileCache>.value(value: discoveryCache),
+        RepositoryProvider<ReferenceDataCache>.value(value: referenceData),
+        RepositoryProvider<LastSearchStore>.value(value: lastSearchStore),
+        RepositoryProvider<HomeFeedCache>.value(value: homeFeedCache),
+        RepositoryProvider<ShareService>.value(
+          value: const SharePlusShareService(),
+        ),
+        RepositoryProvider<ShareLinks>.value(
+          value: ShareLinks(linkDomain: environment.linkDomain),
+        ),
       ],
       child: OnAirApp(
         signOutCoordinator: signOutCoordinator,
@@ -102,6 +125,7 @@ typedef _Backend = ({
   PushTokenSource pushTokens,
   DeviceTokenRepository devices,
   SessionEventSource sessionEvents,
+  ListingsRepository listings,
 });
 
 Future<_Backend> _remoteBackend(EnvConfig environment) async {
@@ -117,10 +141,6 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     authOptions: FlutterAuthClientOptions(localStorage: SecureSessionStorage()),
   );
   final client = Supabase.instance.client;
-  final dio = createNodeDio(
-    baseUrl: environment.nodeApiBaseUrl,
-    tokens: SupabaseTokenSource(client),
-  );
   return (
     config: AppConfigRepository(client),
     auth: SupabaseAuthRepository(
@@ -128,8 +148,11 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
       ProfileRepository(client),
     ),
     pushTokens: FirebasePushTokenSource(),
-    devices: DeviceRepository(RestClient(dio).fallback),
+    devices: DeviceRepository(client),
     sessionEvents: SupabaseSessionEventSource(client.auth),
+    listings: SupabaseListingsRepository(
+      rpc: (fn, params) => client.rpc<dynamic>(fn, params: params),
+    ),
   );
 }
 
@@ -140,4 +163,5 @@ _Backend _mockBackend() => (
   pushTokens: const NoopPushTokenSource(),
   devices: MockDeviceTokenRepository(),
   sessionEvents: const NoopSessionEventSource(),
+  listings: MockListingsRepository(),
 );

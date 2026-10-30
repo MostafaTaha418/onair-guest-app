@@ -49,6 +49,8 @@ app.*.map.json
 # Local public configuration values; only the example is committed.
 /env/*.json
 !/env/example.json
+.env*
+!.env.example
 
 # Editor and temporary files.
 *.tmp
@@ -57,3 +59,8 @@ Thumbs.db
 
 # Local development tools
 .tools/
+**/node_modules/
+
+# Backend code belongs in onair-backend.
+/supabase/
+/services/

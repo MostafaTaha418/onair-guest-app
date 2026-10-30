@@ -13,6 +13,7 @@ enum ErrorCode {
   datesUnavailable,
   guestsExceeded,
   quoteExpired,
+  notFound,
   propertyNotAvailable,
   actionNotAllowed,
   collectorNotAuthorized,
@@ -35,7 +36,7 @@ final class ApiError {
   final Duration? retryAfter;
 }
 
-final class AppFailure {
+final class AppFailure implements Exception {
   const AppFailure(this.error);
 
   final ApiError error;

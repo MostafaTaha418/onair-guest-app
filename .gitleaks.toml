@@ -48,6 +48,12 @@ keywords = ["service"]
 tags = ["supabase", "service-role"]
 
 [[rules.allowlists]]
+description = "Historical backend SQL removed from the guest app in f3ec2d4"
+condition = "AND"
+paths = ['''^supabase/migrations/2026102818(?:1901_otp_identity|2236_payment_accounting_core|4123_refund_workflow)\.sql$''']
+commits = ["facd2b628acda1ca66b400c85e63e3d5d25a3417"]
+
+[[rules.allowlists]]
 description = "Governance docs, contracts, and the key-checker code mention the word without containing a key"
 paths = [
   '''(^|/)\.gitleaks\.toml$''',
@@ -66,6 +72,12 @@ description = "Kashier key assignment"
 regex = '''(?i)kashier[\s_-]{0,3}(?:api|secret|payment|merchant)?[\s_-]{0,3}(?:key|secret|token)[\s'"]{0,3}[:=][\s'"]{0,3}[A-Za-z0-9_+/.=-]{12,}'''
 keywords = ["kashier"]
 tags = ["kashier"]
+
+[[rules.allowlists]]
+description = "Historical backend example removed from the guest app in f3ec2d4"
+condition = "AND"
+paths = ['''^services/integrations/\.env\.example$''']
+commits = ["facd2b628acda1ca66b400c85e63e3d5d25a3417"]
 
 # --- Resend ----------------------------------------------------------------------
 # Go RE2 has no lookaround, so guard the prefix with a character class instead.

@@ -1,0 +1,610 @@
+{
+  "reference_version": "mock-ref-1",
+  "areas": {
+    "status": "ready",
+    "items": [
+      {
+        "location_id": "00000000-0000-4000-8000-000000000015",
+        "name": "التجمع الخامس",
+        "listing_count": 22,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-21-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-21-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      },
+      {
+        "location_id": "00000000-0000-4000-8000-000000000016",
+        "name": "الرحاب",
+        "listing_count": 21,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-22-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-22-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      },
+      {
+        "location_id": "00000000-0000-4000-8000-000000000017",
+        "name": "الحي العاشر",
+        "listing_count": 20,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-23-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-23-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      },
+      {
+        "location_id": "00000000-0000-4000-8000-000000000018",
+        "name": "بيفرلي هيلز",
+        "listing_count": 21,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-24-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-24-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      },
+      {
+        "location_id": "00000000-0000-4000-8000-000000000019",
+        "name": "البيطاش",
+        "listing_count": 20,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-25-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-25-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      },
+      {
+        "location_id": "00000000-0000-4000-8000-00000000001a",
+        "name": "الهانوفيل",
+        "listing_count": 20,
+        "image": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/area-26-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/area-26-720.jpg"
+            }
+          ],
+          "blurhash": null
+        }
+      }
+    ]
+  },
+  "suggested": {
+    "status": "ready",
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-00000000001f",
+        "title": "شقة 3 غرف في التجمع الخامس",
+        "property_type": "apartment",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/310-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/310-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 150000,
+        "currency": "EGP",
+        "rating_avg": 3.9615384615384617,
+        "review_count": 26
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "title": "شقة 3 غرف في الرحاب",
+        "property_type": "apartment",
+        "area_name": "الرحاب",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/320-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/320-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 80000,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "title": "شقة 3 غرف في بيفرلي هيلز",
+        "property_type": "apartment",
+        "area_name": "بيفرلي هيلز",
+        "city_name": "الشيخ زايد",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/330-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/330-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 220000,
+        "currency": "EGP",
+        "rating_avg": 4.5,
+        "review_count": 2
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "title": "شقة 3 غرف في التجمع الخامس",
+        "property_type": "apartment",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/340-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/340-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 120000,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000064",
+        "title": "شقة 2 غرف في الرحاب",
+        "property_type": "studio",
+        "area_name": "الرحاب",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1000-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1000-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 645165,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000065",
+        "title": "شقة 3 غرف في الحي العاشر",
+        "property_type": "villa",
+        "area_name": "الحي العاشر",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1010-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1010-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 1301495,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000066",
+        "title": "شقة 4 غرف في بيفرلي هيلز",
+        "property_type": "chalet",
+        "area_name": "بيفرلي هيلز",
+        "city_name": "الشيخ زايد",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1020-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1020-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 226063,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000067",
+        "title": "شقة 5 غرف في البيطاش",
+        "property_type": "room",
+        "area_name": "البيطاش",
+        "city_name": "العجمي",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1030-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1030-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 1223656,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000068",
+        "title": "شقة 1 غرف في الهانوفيل",
+        "property_type": "apartment",
+        "area_name": "الهانوفيل",
+        "city_name": "العجمي",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1040-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1040-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 445109,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000069",
+        "title": "شقة 2 غرف في التجمع الخامس",
+        "property_type": "studio",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/1050-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/1050-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 666483,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      }
+    ]
+  },
+  "newest": {
+    "status": "ready",
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "title": "شقة 3 غرف في التجمع الخامس",
+        "property_type": "apartment",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/340-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/340-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 120000,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "title": "شقة 3 غرف في بيفرلي هيلز",
+        "property_type": "apartment",
+        "area_name": "بيفرلي هيلز",
+        "city_name": "الشيخ زايد",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/330-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/330-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 220000,
+        "currency": "EGP",
+        "rating_avg": 4.5,
+        "review_count": 2
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "title": "شقة 3 غرف في الرحاب",
+        "property_type": "apartment",
+        "area_name": "الرحاب",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/320-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/320-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 80000,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000001f",
+        "title": "شقة 3 غرف في التجمع الخامس",
+        "property_type": "apartment",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/310-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/310-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 150000,
+        "currency": "EGP",
+        "rating_avg": 3.9615384615384617,
+        "review_count": 26
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000db",
+        "title": "شقة 1 غرف في التجمع الخامس",
+        "property_type": "apartment",
+        "area_name": "التجمع الخامس",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2190-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2190-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 544732,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000da",
+        "title": "شقة 5 غرف في الهانوفيل",
+        "property_type": "room",
+        "area_name": "الهانوفيل",
+        "city_name": "العجمي",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2180-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2180-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 248008,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000d9",
+        "title": "شقة 4 غرف في البيطاش",
+        "property_type": "chalet",
+        "area_name": "البيطاش",
+        "city_name": "العجمي",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2170-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2170-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 1224332,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000d8",
+        "title": "شقة 3 غرف في بيفرلي هيلز",
+        "property_type": "villa",
+        "area_name": "بيفرلي هيلز",
+        "city_name": "الشيخ زايد",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2160-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2160-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 505855,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000d7",
+        "title": "شقة 2 غرف في الحي العاشر",
+        "property_type": "studio",
+        "area_name": "الحي العاشر",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2150-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2150-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 185890,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      },
+      {
+        "id": "00000000-0000-4000-8000-0000000000d6",
+        "title": "شقة 1 غرف في الرحاب",
+        "property_type": "apartment",
+        "area_name": "الرحاب",
+        "city_name": "القاهرة الجديدة",
+        "cover": {
+          "variants": [
+            {
+              "width": 320,
+              "url": "https://cdn.mock.onair.test/2140-320.jpg"
+            },
+            {
+              "width": 720,
+              "url": "https://cdn.mock.onair.test/2140-720.jpg"
+            }
+          ],
+          "blurhash": null
+        },
+        "nightly_price_minor": 114711,
+        "currency": "EGP",
+        "rating_avg": null,
+        "review_count": 0
+      }
+    ]
+  },
+  "upcoming_booking": {
+    "status": "ready",
+    "item": null
+  }
+}

@@ -303,4 +303,419 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get updateRequiredStoreButton => 'حدّث التطبيق';
+
+  @override
+  String get homeHello => 'أهلًا';
+
+  @override
+  String get homeSearchHint => 'دوّر على شقة: المكان، التاريخ، الضيوف';
+
+  @override
+  String get homeAreasTitle => 'مناطق ووجهات';
+
+  @override
+  String get homeSuggestedTitle => 'شقق مقترحة';
+
+  @override
+  String get homeNewestTitle => 'أحدث الشقق';
+
+  @override
+  String get homeUpcomingTitle => 'حجزك الجاي';
+
+  @override
+  String get homeUpcomingConfirmed => 'حجز مؤكد';
+
+  @override
+  String get homeEmpty => 'مفيش شقق متاحة دلوقتي.';
+
+  @override
+  String get homeEmptyAction => 'ابحث عن شقة';
+
+  @override
+  String areaListingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count شقة',
+      many: '$count شقة',
+      few: '$count شقق',
+      two: 'شقتين',
+      one: 'شقة واحدة',
+      zero: 'مفيش شقق',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchTitle => 'البحث';
+
+  @override
+  String get searchLocationLabel => 'المكان';
+
+  @override
+  String get searchLocationHint => 'محافظة، مدينة أو منطقة';
+
+  @override
+  String get searchAnyLocation => 'كل الأماكن';
+
+  @override
+  String get searchNoLocationMatches => 'مفيش أماكن بالاسم ده.';
+
+  @override
+  String get searchDatesLabel => 'التواريخ';
+
+  @override
+  String get searchDatesHint => 'الوصول والمغادرة';
+
+  @override
+  String get searchGuestsLabel => 'عدد الضيوف';
+
+  @override
+  String get searchGuestsAny => 'أي عدد';
+
+  @override
+  String get searchAction => 'ابحث';
+
+  @override
+  String get searchFilters => 'الفلاتر';
+
+  @override
+  String get searchClearAll => 'مسح الكل';
+
+  @override
+  String searchShowResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'عرض $count نتيجة',
+      two: 'عرض نتيجتين',
+      one: 'عرض نتيجة واحدة',
+      zero: 'مفيش نتايج',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchShowResultsUnknown => 'عرض النتايج';
+
+  @override
+  String get searchPriceRange => 'سعر الليلة';
+
+  @override
+  String get searchMinBedrooms => 'أقل عدد غرف';
+
+  @override
+  String get searchMinBathrooms => 'أقل عدد حمامات';
+
+  @override
+  String get searchAnyCount => 'أي عدد';
+
+  @override
+  String get searchAmenities => 'المرافق والمميزات';
+
+  @override
+  String get searchPropertyType => 'نوع العقار';
+
+  @override
+  String get searchSort => 'الترتيب';
+
+  @override
+  String get sortPriceAsc => 'السعر: من الأقل';
+
+  @override
+  String get sortPriceDesc => 'السعر: من الأعلى';
+
+  @override
+  String get sortNewest => 'الأحدث';
+
+  @override
+  String get searchNoResults => 'مفيش شقق متاحة بالمعايير دي.';
+
+  @override
+  String get searchNoResultsHint => 'جرّب تغيّر التواريخ أو الفلاتر.';
+
+  @override
+  String get searchDatesNeededHint => 'اختار التواريخ عشان تقدر تحجز.';
+
+  @override
+  String get searchDatesDropped =>
+      'التواريخ اللي في الرابط فاتت. اختار تواريخ جديدة.';
+
+  @override
+  String get searchChooseDates => 'اختار التواريخ';
+
+  @override
+  String get searchShare => 'مشاركة البحث';
+
+  @override
+  String get shareSearchText => 'بحث على OnAir';
+
+  @override
+  String nightlyPrice(String price) {
+    return '$price / الليلة';
+  }
+
+  @override
+  String stayTotal(int nights, String total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      nights,
+      locale: localeName,
+      other: 'إجمالي $nights ليلة: $total',
+      few: 'إجمالي $nights ليالي: $total',
+      two: 'إجمالي ليلتين: $total',
+      one: 'إجمالي ليلة واحدة: $total',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filterChipRemove(String label) {
+    return 'شيل فلتر $label';
+  }
+
+  @override
+  String bedroomsAtLeast(int count) {
+    return '$count+ غرف';
+  }
+
+  @override
+  String bathroomsAtLeast(int count) {
+    return '$count+ حمامات';
+  }
+
+  @override
+  String priceRangeChip(String min, String max) {
+    return '$min – $max';
+  }
+
+  @override
+  String get guestsDecrease => 'قلّل عدد الضيوف';
+
+  @override
+  String get guestsIncrease => 'زوّد عدد الضيوف';
+
+  @override
+  String get countDecrease => 'قلّل';
+
+  @override
+  String get countIncrease => 'زوّد';
+
+  @override
+  String get calendarConfirm => 'تمام';
+
+  @override
+  String get calendarClear => 'مسح';
+
+  @override
+  String get calendarPrevMonth => 'الشهر اللي فات';
+
+  @override
+  String get calendarNextMonth => 'الشهر الجاي';
+
+  @override
+  String get calendarRangeInvalid => 'الفترة دي فيها ليالي مش متاحة.';
+
+  @override
+  String get calendarRangeNotLoaded =>
+      'التوافر لسه بيتحمّل لشهر من الفترة دي. حاول تاني بعد لحظات.';
+
+  @override
+  String get calendarRangeLoadFailed =>
+      'تعذّر تحميل التوافر لشهر من الفترة دي. افتح الشهر ده واضغط إعادة المحاولة.';
+
+  @override
+  String calendarNightsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ليلة',
+      few: '$count ليالي',
+      two: 'ليلتين',
+      one: 'ليلة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarUnavailableDay(String date) {
+    return '$date، مش متاح';
+  }
+
+  @override
+  String propertyBedrooms(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count غرفة',
+      few: '$count غرف',
+      two: 'غرفتين',
+      one: 'غرفة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String propertyBathrooms(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حمام',
+      few: '$count حمامات',
+      two: 'حمامين',
+      one: 'حمام واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String propertyMaxGuests(int count) {
+    return 'لحد $count ضيوف';
+  }
+
+  @override
+  String propertyArea(int sqm) {
+    return '$sqm م²';
+  }
+
+  @override
+  String get propertyDescription => 'الوصف';
+
+  @override
+  String get showMore => 'عرض المزيد';
+
+  @override
+  String get showLess => 'عرض أقل';
+
+  @override
+  String get propertyAmenities => 'المرافق';
+
+  @override
+  String get propertySeeAllAmenities => 'عرض كل المرافق';
+
+  @override
+  String get propertyLocation => 'الموقع';
+
+  @override
+  String get propertyRules => 'قواعد الإقامة';
+
+  @override
+  String rulesCheckIn(String time) {
+    return 'الاستلام من $time';
+  }
+
+  @override
+  String rulesCheckOut(String time) {
+    return 'المغادرة لحد $time';
+  }
+
+  @override
+  String rulesVisitorsAllowed(int count) {
+    return 'الزوار مسموحين (لحد $count)';
+  }
+
+  @override
+  String get rulesVisitorsAllowedNoLimit => 'الزوار مسموحين';
+
+  @override
+  String get rulesVisitorsNotAllowed => 'الزوار مش مسموحين';
+
+  @override
+  String get propertyPolicy => 'العربون والإلغاء';
+
+  @override
+  String policyDepositPercent(String percent) {
+    return 'العربون $percent% من إجمالي الحجز.';
+  }
+
+  @override
+  String policyDepositFixed(String amount) {
+    return 'العربون $amount.';
+  }
+
+  @override
+  String get policyDepositFull => 'الحجز ده بيتدفع بالكامل مقدمًا.';
+
+  @override
+  String policyFreeCancellation(int hours) {
+    return 'الإلغاء مجاني لحد $hours ساعة قبل ميعاد الاستلام، وبيرجعلك المبلغ كامل.';
+  }
+
+  @override
+  String get policyAfterDeadline =>
+      'لو لغيت بعد الميعاد ده وقبل الإقامة، بتخسر العربون بس ويرجعلك الباقي.';
+
+  @override
+  String get policyFullyPaidLate =>
+      'لو الحجز مدفوع بالكامل وألغيته بعد 24 ساعة من ميعاد الاستلام، المبلغ مش بيرجع.';
+
+  @override
+  String get propertyAvailability => 'التوافر';
+
+  @override
+  String get propertyReviews => 'التقييمات';
+
+  @override
+  String reviewsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تقييم',
+      few: '$count تقييمات',
+      two: 'تقييمين',
+      one: 'تقييم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewsNone => 'لسه مفيش تقييمات.';
+
+  @override
+  String get reviewsSeeAll => 'عرض كل التقييمات';
+
+  @override
+  String ratingSemantics(String rating, int count) {
+    return 'التقييم $rating من 5، $count تقييم';
+  }
+
+  @override
+  String get propertyContactOnAir => 'عندك سؤال؟ تواصل مع OnAir';
+
+  @override
+  String get bookNow => 'احجز الآن';
+
+  @override
+  String get propertyTermsUpdated => 'الشروط اتحدّثت. راجعها قبل ما تحجز.';
+
+  @override
+  String get propertyShare => 'مشاركة';
+
+  @override
+  String get galleryOpen => 'افتح الصور';
+
+  @override
+  String get galleryClose => 'إغلاق';
+
+  @override
+  String galleryPhotoPosition(int current, int total) {
+    return 'صورة $current من $total';
+  }
+
+  @override
+  String get galleryEmpty => 'مفيش صور للشقة دي.';
+
+  @override
+  String get bookingEntryTitle => 'الحجز';
+
+  @override
+  String get bookingEntryComingSoon => 'الحجز من التطبيق هيتفتح قريب.';
+
+  @override
+  String get bookingEntryTermsCarried => 'الشروط اللي شفتها اتسجّلت مع الطلب.';
+
+  @override
+  String get supportEntryTitle => 'تواصل مع OnAir';
+
+  @override
+  String get supportEntryComingSoon => 'خدمة الدعم من التطبيق هتتفتح قريب.';
 }

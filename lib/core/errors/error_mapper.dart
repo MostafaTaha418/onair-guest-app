@@ -34,6 +34,7 @@ abstract final class ErrorMapper {
     ),
     'GUESTS_EXCEEDED': (ErrorCode.guestsExceeded, 'bookingGuestsExceeded'),
     'QUOTE_EXPIRED': (ErrorCode.quoteExpired, 'bookingQuoteExpired'),
+    'NOT_FOUND': (ErrorCode.notFound, 'propertyNotAvailable'),
     'PROPERTY_NOT_AVAILABLE': (
       ErrorCode.propertyNotAvailable,
       'propertyNotAvailable',
@@ -68,6 +69,10 @@ abstract final class ErrorMapper {
     code: ErrorCode.network,
     messageKey: 'errorNoConnection',
   );
+
+  /// Whether [code] has a mapping. Supabase raises every error as `P0001`
+  /// with the real code in the message, so callers check before mapping.
+  static bool hasCode(String code) => _keys.containsKey(code);
 
   static int? _retrySeconds(Object? value) {
     final parsed = int.tryParse('$value');

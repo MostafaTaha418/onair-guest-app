@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 
 void main() {
@@ -9,6 +10,13 @@ void main() {
       ErrorMapper.fromCode('PHONE_NOT_VERIFIED').messageKey,
       'bookingPhoneNotVerified',
     );
+  });
+
+  test('NOT_FOUND maps to the not-available code and message', () {
+    final error = ErrorMapper.fromCode('NOT_FOUND', requestId: 'request-1');
+    expect(error.code, ErrorCode.notFound);
+    expect(error.messageKey, 'propertyNotAvailable');
+    expect(error.requestId, 'request-1');
   });
 
   test('unknown code preserves the request reference', () {

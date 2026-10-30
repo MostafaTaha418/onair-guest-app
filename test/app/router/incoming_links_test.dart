@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/router/incoming_links.dart';
+import 'package:on_air/features/property/presentation/property_screen.dart';
 
 import '../test_app_harness.dart';
 
@@ -34,7 +35,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('غير متاح حاليًا'), findsOneWidget);
+      // Since US2 the link opens the real details screen (the fake
+      // repository answers with its default published apartment). The
+      // 4:3 gallery header fills the default test viewport, so assert on
+      // the screen and its bottom bar. A link whose ID is unknown still
+      // lands on the not-available content (covered in
+      // test/features/property/property_screen_test.dart).
+      expect(find.byType(PropertyScreen), findsOneWidget);
+      expect(find.text('EGP 1,000.00 / الليلة'), findsOneWidget);
     },
   );
 }
