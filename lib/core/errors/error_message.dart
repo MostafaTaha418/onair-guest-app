@@ -27,6 +27,7 @@ String apiErrorMessage(ApiError error, AppLocalizations l10n) =>
       ErrorCode.termsChanged => l10n.authTermsChanged,
       ErrorCode.otpInvalid => l10n.authOtpInvalid,
       ErrorCode.otpExpired => l10n.authOtpExpired,
+      ErrorCode.phoneCountryNotSupported => l10n.authPhoneCountryNotSupported,
       ErrorCode.actionNotAllowed => l10n.errorActionNotAllowed,
       ErrorCode.rateLimited => l10n.authRateLimited(
         _waitText(error.retryAfter),

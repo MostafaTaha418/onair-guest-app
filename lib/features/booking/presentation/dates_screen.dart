@@ -93,57 +93,74 @@ final class _DatesScreenState extends State<DatesScreen> {
         ),
       );
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.bookingDatesTitle),
-        leading: BackButton(onPressed: () => context.pop()),
-      ),
-      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
-        builder: (context, state) => switch (state.load) {
-          FlowLoad.loading => const _DatesSkeleton(),
-          FlowLoad.notAvailable => EmptyView(
-            icon: Icons.home_outlined,
-            message: l10n.propertyNotAvailable,
-          ),
-          FlowLoad.failed => ErrorView(
-            message: apiErrorMessage(state.error!, l10n),
-            onRetry: cubit.retry,
-            referenceNumber: state.error!.requestId,
-          ),
-          FlowLoad.offline => ErrorView(
-            message: l10n.offline,
-            onRetry: cubit.retry,
-          ),
-          FlowLoad.ready => _ReadyBody(
-            state: state,
-            pickedArrival: _pickedArrival,
-            onDayTap: _onDayTap,
-            onGuestsChanged: cubit.setGuests,
-          ),
-        },
-      ),
-      bottomNavigationBar: BlocBuilder<BookingFlowCubit, BookingFlowState>(
-        builder: (context, state) {
-          final online = context.read<ConnectivityCubit>().state.isOnline;
-          return BottomActionBar(
-            leading: const SizedBox.shrink(),
-            action: OnAirPrimaryButton(
-              key: const ValueKey('dates-continue'),
-              label: l10n.bookingContinue,
-              isLoading: state.quoting,
-              onPressed: state.canContinue && online
-                  ? () async {
-                      final quoted = await cubit.requestQuote();
-                      if (quoted && context.mounted) {
-                        await context.push(
-                          AppRoutes.bookingSummary(widget.propertyId),
-                        );
-                      }
-                    }
-                  : null,
+    return BlocListener<BookingFlowCubit, BookingFlowState>(
+      listenWhen: (previous, current) =>
+          current.load == FlowLoad.ready &&
+          !previous.needsVerification &&
+          current.needsVerification,
+      listener: (context, state) async {
+        final ok = await context.push<bool>(
+          AppRoutes.bookingVerify(widget.propertyId, returnTo: 'dates'),
+        );
+        if (!context.mounted) return;
+        if (ok == true) {
+          _cubit.verificationDone();
+        } else {
+          context.go(AppRoutes.property(widget.propertyId));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.bookingDatesTitle),
+          leading: BackButton(onPressed: () => context.pop()),
+        ),
+        body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+          builder: (context, state) => switch (state.load) {
+            FlowLoad.loading => const _DatesSkeleton(),
+            FlowLoad.notAvailable => EmptyView(
+              icon: Icons.home_outlined,
+              message: l10n.propertyNotAvailable,
             ),
-          );
-        },
+            FlowLoad.failed => ErrorView(
+              message: apiErrorMessage(state.error!, l10n),
+              onRetry: cubit.retry,
+              referenceNumber: state.error!.requestId,
+            ),
+            FlowLoad.offline => ErrorView(
+              message: l10n.offline,
+              onRetry: cubit.retry,
+            ),
+            FlowLoad.ready => _ReadyBody(
+              state: state,
+              pickedArrival: _pickedArrival,
+              onDayTap: _onDayTap,
+              onGuestsChanged: cubit.setGuests,
+            ),
+          },
+        ),
+        bottomNavigationBar: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+          builder: (context, state) {
+            final online = context.read<ConnectivityCubit>().state.isOnline;
+            return BottomActionBar(
+              leading: const SizedBox.shrink(),
+              action: OnAirPrimaryButton(
+                key: const ValueKey('dates-continue'),
+                label: l10n.bookingContinue,
+                isLoading: state.quoting,
+                onPressed: state.canContinue && online
+                    ? () async {
+                        final quoted = await cubit.requestQuote();
+                        if (quoted && context.mounted) {
+                          await context.push(
+                            AppRoutes.bookingSummary(widget.propertyId),
+                          );
+                        }
+                      }
+                    : null,
+              ),
+            );
+          },
+        ),
       ),
     );
   }

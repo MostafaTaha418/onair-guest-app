@@ -15,6 +15,7 @@ import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
+import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
 import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
@@ -27,6 +28,8 @@ import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/features/booking/presentation/payment_return_screen.dart';
 import 'package:on_air/features/booking/presentation/summary_screen.dart';
+import 'package:on_air/features/booking/presentation/verify_identity_cubit.dart';
+import 'package:on_air/features/booking/presentation/verify_identity_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -223,6 +226,21 @@ GoRouter createAppRouter({
           name: 'booking-summary',
           builder: (_, state) =>
               SummaryScreen(propertyId: state.pathParameters['propertyId']!),
+        ),
+        GoRoute(
+          path: AppRoutes.bookingVerifyPattern,
+          name: 'booking-verify',
+          builder: (context, state) => BlocProvider<VerifyIdentityCubit>(
+            create: (context) {
+              final cubit = VerifyIdentityCubit(
+                flow: context.read<BookingFlowRepository>(),
+                auth: context.read<AuthRepository>(),
+              );
+              unawaited(cubit.start());
+              return cubit;
+            },
+            child: const VerifyIdentityScreen(),
+          ),
         ),
       ],
     ),

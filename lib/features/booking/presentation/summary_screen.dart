@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
@@ -184,6 +187,15 @@ final class _PayBar extends StatelessWidget {
   final PaymentAttemptCubit attemptCubit;
   final BookingFlowCubit flowCubit;
 
+  Future<void> _verifyThenPay(BuildContext context, BookingQuote? quote) async {
+    final ok = await context.push<bool>(
+      AppRoutes.bookingVerify(propertyId, returnTo: 'summary'),
+    );
+    if (ok == true && context.mounted && quote != null) {
+      await attemptCubit.pay(quote);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -192,7 +204,14 @@ final class _PayBar extends StatelessWidget {
         final quote = flow.quote;
         return BlocListener<PaymentAttemptCubit, PaymentAttemptState>(
           listener: (context, state) {
-            if (state is AttemptFailed) {
+            if (state is! AttemptFailed) return;
+            final code = state.error.code;
+            if (code == ErrorCode.phoneNotVerified ||
+                code == ErrorCode.emailNotVerified) {
+              // US2: the server stopped the payment — verify on top of the
+              // summary, then retry with the same attempt key.
+              unawaited(_verifyThenPay(context, quote));
+            } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(apiErrorMessage(state.error, l10n)),

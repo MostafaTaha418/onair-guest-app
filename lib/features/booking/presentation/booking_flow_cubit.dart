@@ -196,6 +196,13 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
     }
   }
 
+  /// US2: the verify screen finished on top of this branch; continue.
+  void verificationDone() {
+    if (state.needsVerification) {
+      emit(state.copyWith(needsVerification: false));
+    }
+  }
+
   void setStay(StayRange? stay) {
     emit(
       state.copyWith(stay: stay, error: null, pendingChange: null),

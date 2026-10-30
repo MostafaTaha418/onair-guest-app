@@ -473,7 +473,7 @@ the same dates and guests.
 
 ### Tests for User Story 2
 
-- [ ] T057 [P] [US2] Write `test/features/booking/presentation/verify_identity_cubit_test.dart` for `VerifyIdentityCubit` (T059) with `FakeBookingBackend(startVerified: false)` and the existing `FakeAuthRepository` (`test/helpers/fake_auth_repository.dart`):
+- [x] T057 [P] [US2] Write `test/features/booking/presentation/verify_identity_cubit_test.dart` for `VerifyIdentityCubit` (T059) with `FakeBookingBackend(startVerified: false)` and the existing `FakeAuthRepository` (`test/helpers/fake_auth_repository.dart`):
   - `start()` with email unconfirmed → `VerifyEmailStep(email)`; with email confirmed and phone unconfirmed → `VerifyPhoneStep()`; both confirmed → `VerifyDone`;
   - `submitPhone('0101 234 5678', hasWhatsapp: true, whatsapp: null)` → requests the change with `+201012345678`, sends the code, emits `VerifyCodeStep(challengeId, retryAfter)`;
   - `submitPhone('0123', …)` → `VerifyPhoneStep(error: ErrorCode.phoneCountryNotSupported)` without calling the server (local `EgyptPhone.tryParse` fails → show `l10n.authPhoneCountryNotSupported`);
@@ -481,24 +481,24 @@ the same dates and guests.
   - server `PHONE_ALREADY_USED` → `VerifyPhoneStep(error: phoneAlreadyUsed)`;
   - `submitCode('000000')` → `VerifyCodeStep(error: otpInvalid)`; `submitCode('123456')` → re-checks status → `VerifyDone`;
   - `RATE_LIMITED` with `retryAfter` keeps the code step and exposes `retryAfter`.
-- [ ] T058 [P] [US2] Write `test/features/booking/presentation/verify_identity_screen_test.dart`: each step renders its fields; the WhatsApp number field is hidden while "This number has WhatsApp" is on; the resend button (`ValueKey('verify-resend')`) is disabled until `retryAfter` passes (use `tester.pump(Duration)`); `VerifyDone` pops the route with `true`.
+- [x] T058 [P] [US2] Write `test/features/booking/presentation/verify_identity_screen_test.dart`: each step renders its fields; the WhatsApp number field is hidden while "This number has WhatsApp" is on; the resend button (`ValueKey('verify-resend')`) is disabled until `retryAfter` passes (use `tester.pump(Duration)`); `VerifyDone` pops the route with `true`.
 
 ### Implementation for User Story 2
 
-- [ ] T059 [US2] Create `lib/features/booking/presentation/verify_identity_cubit.dart`. States: `VerifyChecking`; `VerifyEmailStep({required String email, ErrorCode? error, bool sending = false, bool codeSent = false, Duration? retryAfter})`; `VerifyPhoneStep({ErrorCode? error, bool sending = false})`; `VerifyCodeStep({required String challengeId, ErrorCode? error, bool verifying = false, Duration? retryAfter})`; `VerifyDone`; `VerifyFailed(ApiError error)`. Constructor `VerifyIdentityCubit({required BookingFlowRepository flow, required AuthRepository auth})`. Methods:
+- [x] T059 [US2] Create `lib/features/booking/presentation/verify_identity_cubit.dart`. States: `VerifyChecking`; `VerifyEmailStep({required String email, ErrorCode? error, bool sending = false, bool codeSent = false, Duration? retryAfter})`; `VerifyPhoneStep({ErrorCode? error, bool sending = false})`; `VerifyCodeStep({required String challengeId, ErrorCode? error, bool verifying = false, Duration? retryAfter})`; `VerifyDone`; `VerifyFailed(ApiError error)`. Constructor `VerifyIdentityCubit({required BookingFlowRepository flow, required AuthRepository auth})`. Methods:
   - `start()` → `flow.verificationStatus()` → first missing step (email before phone) or `VerifyDone`;
   - email step: `sendEmailCode()` → `auth.requestEmailVerification(email)`; `submitEmailCode(code)` → `auth.verifyEmailCode(email, code)` then `start()` again. Use `AuthRepository` directly — **do not** call `AuthCubit` (its states drive the router and would leave the booking flow);
   - phone step: `submitPhone(String raw, {required bool hasWhatsapp, String? whatsapp})` → `EgyptPhone.tryParse` (both numbers) → `flow.requestPhoneChange(phoneE164, hasWhatsapp, whatsappE164: hasWhatsapp ? null : whatsapp?.e164)` → `flow.sendCode(challengeId)` → `VerifyCodeStep`;
   - `resendCode()` → `flow.sendCode(challengeId)`; `submitCode(String code)` → `flow.verifyCode(...)` → `start()`.
   Map `AppFailure` to the `error` of the current step. Makes T057 pass.
-- [ ] T060 [US2] Create `lib/features/booking/presentation/verify_identity_screen.dart` (`VerifyIdentityScreen`). App bar title `l10n.verifyTitle`; one intro line `l10n.verifyIntro`. Steps:
+- [x] T060 [US2] Create `lib/features/booking/presentation/verify_identity_screen.dart` (`VerifyIdentityScreen`). App bar title `l10n.verifyTitle`; one intro line `l10n.verifyIntro`. Steps:
   - email: shows the email (masked is not required), button `l10n.sendCode` → then `OnAirOtpField` + `l10n.verifyEmailCodeHint`;
   - phone: `OnAirTextField(label: l10n.phoneNumber, hint: l10n.authPhoneHint, keyboardType: TextInputType.phone)`, a `SwitchListTile` `l10n.verifyHasWhatsapp` (default on), and — only when the switch is off — a second `OnAirTextField(label: l10n.verifyWhatsappNumber)`; submit button `l10n.sendCode`;
   - code: `OnAirOtpField(onCompleted: cubit.submitCode)`, text `l10n.verifyCodeSentToEmail`, resend `TextButton(key: ValueKey('verify-resend'))` disabled with `l10n.verifyResendIn(seconds)` while `retryAfter` counts down (use a `Timer.periodic` in the widget state, cancelled in `dispose`);
   - errors under the field via `apiErrorMessage(ApiError(code: error, messageKey: ''), l10n)`;
   - `BlocListener`: `VerifyDone` → `context.pop(true)`.
   Never copy the code to the clipboard. Follow the existing OTP screen look (`lib/features/auth/presentation/otp_screen.dart`).
-- [ ] T061 [US2] Add the verify route and the two entry points (needs T054, T059, T060):
+- [x] T061 [US2] Add the verify route and the two entry points (needs T054, T059, T060):
   - in the booking `ShellRoute` (T054) add `GoRoute(path: AppRoutes.bookingVerifyPattern, name: 'booking-verify', builder: (context, state) => BlocProvider(create: (context) => VerifyIdentityCubit(flow: context.read<BookingFlowRepository>(), auth: context.read<AuthRepository>())..start(), child: const VerifyIdentityScreen()))`;
   - in `BookingFlowCubit.load()` (T048): after the property loads, call `flow.verificationStatus()`; if `!isComplete` emit `needsVerification: true` (errors here are ignored — the server still checks at payment start); add `void verificationDone()` that sets it back to false;
   - in `DatesScreen`: a `BlocListener` that, when `needsVerification` turns true, calls `final ok = await context.push<bool>(AppRoutes.bookingVerify(propertyId, returnTo: 'dates'))`; `ok == true` → `cubit.verificationDone()`; otherwise `context.go(AppRoutes.property(propertyId))`;
