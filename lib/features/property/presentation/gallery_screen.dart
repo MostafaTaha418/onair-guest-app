@@ -4,28 +4,36 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/images/image_variants.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
+import 'package:on_air/design_system/components/skeletons.dart';
+import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
-import 'package:on_air/features/property/presentation/property_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The full-screen photo viewer (`/property/:id/gallery?index=n`). Images
-/// come from the route-level [PropertyCubit] when it is ready, otherwise the
-/// details load once (research R9). Only the next photo is precached
+/// arrive with the route as `extra` from the details header; a direct link
+/// loads the details once (research R9). Only the next photo is precached
 /// (research R8).
 final class GalleryScreen extends StatefulWidget {
   const GalleryScreen({
     required this.propertyId,
     required this.initialIndex,
+    this.images,
     super.key,
   });
 
   final String propertyId;
   final int initialIndex;
+
+  /// Carried by the details screen's `push`; null on a direct link, in which
+  /// case the images are loaded from the repository.
+  final List<ListingImage>? images;
 
   @override
   State<GalleryScreen> createState() => _GalleryScreenState();
@@ -35,16 +43,19 @@ final class _GalleryScreenState extends State<GalleryScreen> {
   List<ListingImage> _images = const [];
   PageController? _controller;
   var _current = 0;
+  var _loading = false;
+  AppFailure? _failure;
 
   @override
   void initState() {
     super.initState();
     _current = widget.initialIndex;
-    final state = context.read<PropertyCubit>().state;
-    if (state is PropertyReady) {
-      _images = state.details.images;
+    final provided = widget.images;
+    if (provided != null && provided.isNotEmpty) {
+      _images = provided;
       _start();
     } else {
+      _loading = true;
       unawaited(_loadImages());
     }
   }
@@ -55,11 +66,27 @@ final class _GalleryScreenState extends State<GalleryScreen> {
         widget.propertyId,
       );
       if (!mounted) return;
-      setState(() => _images = details.images);
+      setState(() {
+        _images = details.images;
+        _loading = false;
+        _failure = null;
+      });
       _start();
-    } on Exception {
-      // The property screen owns error handling; the gallery stays empty.
+    } on AppFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _failure = failure;
+      });
     }
+  }
+
+  void _retry() {
+    setState(() {
+      _loading = true;
+      _failure = null;
+    });
+    unawaited(_loadImages());
   }
 
   void _start() {
@@ -101,11 +128,25 @@ final class _GalleryScreenState extends State<GalleryScreen> {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final controller = _controller;
     final total = _images.length;
+    final failed = _failure;
     return Scaffold(
       backgroundColor: dark ? colors.surface : colors['background'],
       body: Stack(
         children: [
-          if (controller != null && total > 0)
+          // A skeleton, not a spinner (plan §13), roughly the photo's shape.
+          if (_loading)
+            const Center(child: SkeletonBox(width: 280, height: 210)),
+          if (failed != null)
+            ErrorView(
+              message: apiErrorMessage(failed.error, l10n),
+              onRetry: _retry,
+            ),
+          if (!_loading && failed == null && total == 0)
+            EmptyView(
+              icon: Icons.image_outlined,
+              message: l10n.galleryEmpty,
+            ),
+          if (!_loading && failed == null && controller != null && total > 0)
             PageView.builder(
               controller: controller,
               itemCount: total,
@@ -133,7 +174,7 @@ final class _GalleryScreenState extends State<GalleryScreen> {
                   ),
                 ),
                 const Spacer(),
-                if (total > 0)
+                if (total > 0 && !_loading && failed == null)
                   Semantics(
                     label: l10n.galleryPhotoPosition(_current + 1, total),
                     excludeSemantics: true,

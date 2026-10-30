@@ -223,7 +223,9 @@ final class SearchCriteria {
     amenityKeys: amenityKeys ?? this.amenityKeys,
     propertyTypes: propertyTypes ?? this.propertyTypes,
     sort: sort == _unset ? this.sort : sort as SearchSort?,
-    datesDropped: datesDropped ?? this.datesDropped,
+    // New dates replace the dropped ones, so the notice banner clears with
+    // them; without a stay the notice is untouched.
+    datesDropped: datesDropped ?? (stay == null && this.datesDropped),
   );
 
   static int? _boundedInt(String? raw, int min, int max) {
@@ -250,13 +252,14 @@ final class SearchCriteria {
     return keys.length <= 30 ? keys : keys.take(30).toSet();
   }
 
-  // [datesDropped] is a display notice, not filter state, so two criteria
-  // that differ only in it are still the same search.
+  // [datesDropped] and [locationLabel] are display-only state, not filter
+  // state: [locationLabel] is never written to links (a shared link carries
+  // `loc` alone and re-resolves the name), so two criteria that differ only
+  // in it are still the same search.
   @override
   bool operator ==(Object other) =>
       other is SearchCriteria &&
       other.locationId == locationId &&
-      other.locationLabel == locationLabel &&
       other.stay == stay &&
       other.guests == guests &&
       other.priceMin == priceMin &&
@@ -270,7 +273,6 @@ final class SearchCriteria {
   @override
   int get hashCode => Object.hash(
     locationId,
-    locationLabel,
     stay,
     guests,
     priceMin,

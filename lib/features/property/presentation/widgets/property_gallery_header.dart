@@ -58,11 +58,14 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                           ? (widget.heroVariants ?? image.variants)
                           : image.variants;
                       return GestureDetector(
+                        // The images travel as `extra` so the gallery route
+                        // never depends on the details screen's cubit.
                         onTap: () => context.push(
                           Uri(
                             path: AppRoutes.propertyGallery(widget.propertyId),
                             queryParameters: {'index': '$index'},
                           ).toString(),
+                          extra: widget.images,
                         ),
                         child: OnAirNetworkImage(
                           variants: variants,

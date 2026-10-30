@@ -111,11 +111,13 @@ final class _LoginScreenState extends State<LoginScreen> {
         // pushed screen) and cannot see this screen's `from`; navigate to
         // the code screen explicitly and carry the return target, so
         // sign-in ends where the guest started (SC-007, research R10).
+        // The *return* destination keeps account-gated routes, unlike a
+        // cancellation: after the code the guest is signed in.
         final origin = GoRouterState.of(context).uri.queryParameters['from'];
         context.go(
           Uri(
             path: AppRoutes.otp,
-            queryParameters: {'from': resolveAuthCancelDestination(origin)},
+            queryParameters: {'from': resolveAuthReturnDestination(origin)},
           ).toString(),
         );
       }

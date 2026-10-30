@@ -28,11 +28,13 @@ Future<void> pumpVisitorApp(
   WidgetTester tester, {
   ConnectivityCubit? connectivityCubit,
   VersionGate? versionGate,
+  ListingsRepository? listingsRepository,
 }) async {
   await _pumpApp(
     tester,
     connectivityCubit: connectivityCubit,
     versionGate: versionGate,
+    listingsRepository: listingsRepository,
   );
 }
 

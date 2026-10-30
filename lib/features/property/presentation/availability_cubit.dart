@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/errors/api_error.dart';
@@ -55,6 +57,7 @@ final class AvailabilityState {
     this.failed = const {},
     this.selection = const CalendarNone(),
     this.rangeRejected = false,
+    this.pendingRangeMonths = const {},
   });
 
   final Map<int, Set<DateOnly>> windows;
@@ -66,18 +69,28 @@ final class AvailabilityState {
   /// already restarted at the tapped day.
   final bool rangeRejected;
 
+  /// The rejected range's months whose availability is still missing (still
+  /// fetching or failed), so nothing can be vouched for yet. Keys leave the
+  /// set as their fetches land; a new pick replaces the set wholesale.
+  final Set<int> pendingRangeMonths;
+
+  /// True while any month of the rejected range is still missing.
+  bool get rangeIncomplete => pendingRangeMonths.isNotEmpty;
+
   AvailabilityState copyWith({
     Map<int, Set<DateOnly>>? windows,
     Set<int>? loading,
     Set<int>? failed,
     CalendarSelection? selection,
     bool? rangeRejected,
+    Set<int>? pendingRangeMonths,
   }) => AvailabilityState(
     windows: windows ?? this.windows,
     loading: loading ?? this.loading,
     failed: failed ?? this.failed,
     selection: selection ?? this.selection,
     rangeRejected: rangeRejected ?? this.rangeRejected,
+    pendingRangeMonths: pendingRangeMonths ?? this.pendingRangeMonths,
   );
 }
 
@@ -157,13 +170,17 @@ final class AvailabilityCubit extends Cubit<AvailabilityState> {
     try {
       final nights = await _repo.unavailableNights(_propertyId, from, to);
       if (isClosed) return;
+      final loading = {...state.loading}..removeAll(keys);
+      // The fetched months can now be vouched for, whatever other months
+      // (failed or never fetched) are still pending.
       emit(
         state.copyWith(
           windows: {
             ...state.windows,
             for (final key in keys) key: nights,
           },
-          loading: {...state.loading}..removeAll(keys),
+          loading: loading,
+          pendingRangeMonths: {...state.pendingRangeMonths}..removeAll(keys),
         ),
       );
     } on AppFailure {
@@ -179,31 +196,69 @@ final class AvailabilityCubit extends Cubit<AvailabilityState> {
 
   /// The calendar component only reports taps; this cubit decides the
   /// selection (research R3). A range crossing an unavailable night is
-  /// rejected and restarts at the tapped day as the new arrival.
+  /// rejected and restarts at the tapped day as the new arrival. A range
+  /// crossing a month whose availability never loaded (still fetching or
+  /// failed) cannot be vouched for either: it is rejected, the missing
+  /// months are (re)requested, and the screen explains the wait.
   void onDayTap(DateOnly day) {
     if (day.isBefore(_today())) return;
     final selection = state.selection;
     if (selection is! CalendarArrivalPicked || !day.isAfter(selection.day)) {
+      // A new pick replaces any pending notice from the previous one.
       emit(
         state.copyWith(
           selection: CalendarArrivalPicked(day),
           rangeRejected: false,
+          pendingRangeMonths: const {},
         ),
       );
       return;
     }
     final range = StayRange(selection.day, day);
+    final missing = _missingMonths(range);
+    if (missing.isNotEmpty) {
+      emit(
+        state.copyWith(
+          selection: CalendarArrivalPicked(day),
+          rangeRejected: false,
+          pendingRangeMonths: missing,
+        ),
+      );
+      for (final key in missing) {
+        final firstDay = _keyToFirstDay(key);
+        if (state.failed.contains(key)) {
+          unawaited(retryMonth(firstDay));
+        } else {
+          unawaited(showMonth(firstDay));
+        }
+      }
+      return;
+    }
     if (!range.isSelectable(_unavailableNights)) {
       emit(
         state.copyWith(
           selection: CalendarArrivalPicked(day),
           rangeRejected: true,
+          pendingRangeMonths: const {},
         ),
       );
       return;
     }
-    emit(state.copyWith(selection: CalendarRange(range), rangeRejected: false));
+    emit(
+      state.copyWith(
+        selection: CalendarRange(range),
+        rangeRejected: false,
+        pendingRangeMonths: const {},
+      ),
+    );
   }
+
+  /// Months of the range's nights whose unavailable nights are not in the
+  /// loaded windows — covers months still loading and failed ones alike.
+  Set<int> _missingMonths(StayRange range) => {
+    for (final night in range.nightsIterable())
+      if (!state.windows.containsKey(_monthKey(night))) _monthKey(night),
+  };
 
   Set<DateOnly> get _unavailableNights => {
     for (final nights in state.windows.values) ...nights,

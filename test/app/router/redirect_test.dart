@@ -88,6 +88,39 @@ void main() {
     );
   });
 
+  group('resolveAuthReturnDestination', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+
+    test('keeps the account-gated route the guest signed in for', () {
+      expect(
+        resolveAuthReturnDestination('/bookings/$uuid'),
+        '/bookings/$uuid',
+      );
+      expect(
+        resolveAuthReturnDestination('/book/$uuid/dates'),
+        '/book/$uuid/dates',
+      );
+      expect(
+        resolveAuthReturnDestination(AppRoutes.supportNew),
+        AppRoutes.supportNew,
+      );
+    });
+
+    test(
+      'falls back to home for auth screens, external links, and unknowns',
+      () {
+        expect(resolveAuthReturnDestination(AppRoutes.login), AppRoutes.home);
+        expect(
+          resolveAuthReturnDestination('https://evil.example/bookings'),
+          AppRoutes.home,
+        );
+        expect(resolveAuthReturnDestination(null), AppRoutes.home);
+        expect(resolveAuthReturnDestination('/unknown'), AppRoutes.home);
+        expect(resolveAuthReturnDestination(AppRoutes.splash), AppRoutes.home);
+      },
+    );
+  });
+
   test('an active version gate sends every route to update-required', () {
     final contexts = [
       (

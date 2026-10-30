@@ -255,6 +255,83 @@ void main() {
     );
   });
 
+  test(
+    'a feed response crossing sign-out and sign-in drops the booking',
+    () async {
+      final guestCubit = await newAuthCubit(signedIn: true);
+      final pendingFeed = Completer<HomeFeed>();
+      listings.homeFeedResponses.add(pendingFeed.future);
+      final cubit = HomeCubit(
+        repo: listings,
+        cache: homeCache,
+        reference: reference,
+        connectivity: connectivity.createCubit(),
+        auth: guestCubit,
+      );
+      addTearDown(cubit.close);
+      addTearDown(guestCubit.close);
+      final pendingRefresh = cubit.refresh();
+
+      // A signs out, then B signs in before the feed answer lands: the
+      // booking that was requested under A must not surface for B.
+      await guestCubit.signOut();
+      auth.publish(guestAccount());
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      pendingFeed.complete(_feed(withBooking: true));
+      await pendingRefresh;
+
+      expect(
+        (cubit.state.feed!.upcomingBooking as FeedSectionReady).value,
+        isNull,
+        reason: 'the booking belongs to the session that ended',
+      );
+    },
+  );
+
+  test(
+    'a sign-out during the first load keeps the public sections and drops '
+    'the booking, so the screen never stays on skeletons',
+    () async {
+      final guestCubit = await newAuthCubit(signedIn: true);
+      final pendingFeed = Completer<HomeFeed>();
+      listings.homeFeedResponses.add(pendingFeed.future);
+      final cubit = HomeCubit(
+        repo: listings,
+        cache: homeCache,
+        reference: reference,
+        connectivity: connectivity.createCubit(),
+        auth: guestCubit,
+      );
+      addTearDown(cubit.close);
+      addTearDown(guestCubit.close);
+      // No cache: every section starts on its skeleton.
+      final pendingStart = cubit.start();
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.sectionLoading.values, everyElement(isTrue));
+
+      // A sign-out starts no new request, so this answer is still the
+      // newest one and must land.
+      await guestCubit.signOut();
+      await Future<void>.delayed(Duration.zero);
+      pendingFeed.complete(_feed(withBooking: true));
+      await pendingStart;
+
+      expect(cubit.state.sectionLoading, isEmpty);
+      expect(cubit.state.feed, isNotNull);
+      expect(
+        (cubit.state.feed!.suggested as FeedSectionReady).value,
+        isNotEmpty,
+      );
+      expect(
+        (cubit.state.feed!.upcomingBooking as FeedSectionReady).value,
+        isNull,
+        reason: 'the booking was requested under the session that ended',
+      );
+    },
+  );
+
   test('a new reference version refreshes the reference data', () async {
     listings.homeFeedResponses.add(_feed(referenceVersion: 'v2'));
     listings.referenceDataResponses.add(_emptyReference('v2'));

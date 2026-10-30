@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/listings/domain/results_page.dart';
 import 'package:on_air/features/search/domain/search_criteria.dart';
 
@@ -240,6 +241,22 @@ void main() {
       final noPrice = price.withoutChip(priceChip);
       expect(noPrice.priceMin, isNull);
       expect(noPrice.priceMax, isNull);
+    });
+  });
+
+  group('copyWith', () {
+    test('a new stay clears datesDropped; other edits keep it', () {
+      final dropped = fromQuery({'in': '2026-10-31', 'out': '2026-11-03'});
+      expect(dropped.datesDropped, isTrue);
+      expect(
+        dropped
+            .copyWith(
+              stay: StayRange(DateOnly(2026, 11, 20), DateOnly(2026, 11, 23)),
+            )
+            .datesDropped,
+        isFalse,
+      );
+      expect(dropped.copyWith(guests: 3).datesDropped, isTrue);
     });
   });
 

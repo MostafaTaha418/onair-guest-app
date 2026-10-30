@@ -16,6 +16,7 @@ final class ReviewsReady extends ReviewsState {
     required this.items,
     required this.nextCursor,
     this.loadingMore = false,
+    this.loadMoreError,
   });
 
   final List<ApprovedReview> items;
@@ -24,14 +25,26 @@ final class ReviewsReady extends ReviewsState {
   final String? nextCursor;
   final bool loadingMore;
 
+  /// The failure of the last extra page; the loaded items stay on screen
+  /// and the list tail offers a retry.
+  final ApiError? loadMoreError;
+
+  /// Sentinel so an explicit null replaces the old value instead of keeping
+  /// it (clearing a consumed cursor or error).
+  static const _unset = Object();
+
   ReviewsReady copyWith({
     List<ApprovedReview>? items,
-    String? nextCursor,
+    Object? nextCursor = _unset,
     bool? loadingMore,
+    Object? loadMoreError = _unset,
   }) => ReviewsReady(
     items: items ?? this.items,
-    nextCursor: nextCursor ?? this.nextCursor,
+    nextCursor: nextCursor == _unset ? this.nextCursor : nextCursor as String?,
     loadingMore: loadingMore ?? this.loadingMore,
+    loadMoreError: loadMoreError == _unset
+        ? this.loadMoreError
+        : loadMoreError as ApiError?,
   );
 }
 
@@ -80,7 +93,7 @@ final class ReviewsCubit extends Cubit<ReviewsState> {
         ready.nextCursor == null) {
       return;
     }
-    emit(ready.copyWith(loadingMore: true));
+    emit(ready.copyWith(loadingMore: true, loadMoreError: null));
     try {
       final page = await _repo.reviews(
         _propertyId,
@@ -88,15 +101,21 @@ final class ReviewsCubit extends Cubit<ReviewsState> {
         limit: _limit,
       );
       if (isClosed) return;
+      final current = state;
+      if (current is! ReviewsReady) return;
       emit(
-        ReviewsReady(
-          items: [...ready.items, ...page.items],
+        current.copyWith(
+          items: [...current.items, ...page.items],
           nextCursor: page.nextCursor,
+          loadingMore: false,
         ),
       );
     } on AppFailure catch (failure) {
       if (isClosed) return;
-      emit(ReviewsFailed(failure.error));
+      final current = state;
+      if (current is! ReviewsReady) return;
+      // The loaded pages stay; only the tail switches to the error row.
+      emit(current.copyWith(loadingMore: false, loadMoreError: failure.error));
     }
   }
 

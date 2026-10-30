@@ -1,22 +1,39 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/listings/domain/approved_review.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
-import 'package:on_air/features/property/presentation/property_cubit.dart';
+import 'package:on_air/features/property/presentation/property_screen.dart';
 import 'package:on_air/features/property/presentation/reviews_screen.dart';
+import 'package:on_air/features/property/presentation/widgets/property_gallery_header.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../app/test_app_harness.dart';
 import '../../helpers/fake_connectivity.dart';
 import '../../helpers/fake_listings_repository.dart';
+
+final class _FakeUriLinkSource implements UriLinkSource {
+  final controller = StreamController<Uri>.broadcast();
+
+  @override
+  Stream<Uri> get uriLinks => controller.stream;
+}
 
 void main() {
   late FakeListingsRepository listings;
@@ -27,6 +44,7 @@ void main() {
   });
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     listings = FakeListingsRepository();
     connectivity = FakeConnectivity();
   });
@@ -83,34 +101,61 @@ void main() {
     reviewerShortName: 'أحمد م.',
   );
 
-  Future<PropertyCubit> readyCubit() async {
-    listings.propertyResponses.add(details(3));
-    final cubit = PropertyCubit(
-      repo: listings,
-      connectivity: connectivity.createCubit(),
-      propertyId: 'p1',
-    );
-    await cubit.load();
-    return cubit;
-  }
-
-  Future<void> pumpGallery(WidgetTester tester, int initialIndex) async {
-    final cubit = await readyCubit();
-    addTearDown(cubit.close);
+  Future<void> pumpGallery(
+    WidgetTester tester,
+    int initialIndex, {
+    List<ListingImage>? images,
+  }) async {
     await tester.pumpWidget(
-      BlocProvider<PropertyCubit>.value(
-        value: cubit,
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<ListingsRepository>.value(value: listings),
+        ],
         child: MaterialApp(
           locale: const Locale('ar'),
           supportedLocales: const [Locale('ar'), Locale('en')],
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           theme: OnAirTheme.light,
-          home: GalleryScreen(propertyId: 'p1', initialIndex: initialIndex),
+          home: GalleryScreen(
+            propertyId: 'p1',
+            initialIndex: initialIndex,
+            images: images,
+          ),
         ),
       ),
     );
     await tester.pump();
     await tester.pump();
+  }
+
+  const propertyId = '550e8400-e29b-41d4-a716-446655440000';
+  const linkDomain = 'on-air.website';
+
+  /// The real router, driven the same way `discovery_links_test` drives it:
+  /// the app builds `createAppRouter` itself, so a router change cannot
+  /// leave these tests green against a stale hand-copied route shape.
+  Future<void> pumpVisitorAndOpenLink(WidgetTester tester, Uri link) async {
+    final source = _FakeUriLinkSource();
+    addTearDown(source.controller.close);
+    await pumpVisitorAppWithLinks(
+      tester,
+      uriLinkSource: source,
+      linkDomain: linkDomain,
+      listingsRepository: listings,
+    );
+    source.controller.add(link);
+    await tester.pumpAndSettle();
+  }
+
+  /// Opens an in-app route on the real router. The gallery path is a
+  /// registered location but not a linkable one, so it is reached with
+  /// `go` instead of a share link.
+  Future<void> pumpVisitorAndGo(WidgetTester tester, String location) async {
+    await pumpVisitorApp(tester, listingsRepository: listings);
+    tester.element(find.byType(Scaffold).first).go(location);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
   }
 
   Future<void> pumpReviews(WidgetTester tester) async {
@@ -136,13 +181,13 @@ void main() {
   }
 
   testWidgets('the gallery opens at the given index', (tester) async {
-    await pumpGallery(tester, 1);
+    await pumpGallery(tester, 1, images: details(3).images);
 
     expect(find.text(l10n.galleryPhotoPosition(2, 3)), findsOneWidget);
   });
 
   testWidgets('the close button has a tooltip', (tester) async {
-    await pumpGallery(tester, 0);
+    await pumpGallery(tester, 0, images: details(3).images);
 
     final closeButton = tester.widget<IconButton>(
       find.ancestor(
@@ -151,6 +196,80 @@ void main() {
       ),
     );
     expect(closeButton.tooltip, l10n.galleryClose);
+  });
+
+  testWidgets(
+    'tapping a photo on the details screen opens the gallery through the '
+    'real router',
+    (tester) async {
+      listings.propertyResponses.add(details(3));
+      await pumpVisitorAndOpenLink(
+        tester,
+        Uri.parse('https://$linkDomain/property/$propertyId'),
+      );
+
+      expect(find.byType(PropertyScreen), findsOneWidget);
+      expect(find.byType(PropertyGalleryHeader), findsOneWidget);
+
+      await tester.tap(find.byType(PropertyGalleryHeader));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.text(l10n.galleryPhotoPosition(1, 3)), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a direct gallery route loads the images from the repository',
+    (tester) async {
+      // The details page behind the gallery also builds on the route and
+      // consumes one response; the gallery's fallback load consumes another.
+      listings.propertyResponses
+        ..add(details(3))
+        ..add(details(3));
+      await pumpVisitorAndGo(tester, '/property/$propertyId/gallery?index=1');
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.text(l10n.galleryPhotoPosition(2, 3)), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a failed direct gallery route shows an error and retrying succeeds',
+    (tester) async {
+      listings.propertyResponses
+        ..add(AppFailure(ErrorMapper.noResponse()))
+        ..add(AppFailure(ErrorMapper.noResponse()));
+      await pumpVisitorAndGo(tester, '/property/$propertyId/gallery?index=0');
+
+      expect(find.byType(ErrorView), findsOneWidget);
+
+      listings.propertyResponses.add(details(3));
+      await tester.tap(find.text(l10n.retry));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ErrorView), findsNothing);
+      expect(find.text(l10n.galleryPhotoPosition(1, 3)), findsOneWidget);
+    },
+  );
+
+  testWidgets('a property without photos shows the empty message', (
+    tester,
+  ) async {
+    listings.propertyResponses
+      ..add(details(0))
+      ..add(details(0));
+    await pumpVisitorAndGo(tester, '/property/$propertyId/gallery?index=0');
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(l10n.galleryEmpty), findsOneWidget);
   });
 
   testWidgets('reviews paginate until the last page', (tester) async {

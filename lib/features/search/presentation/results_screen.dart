@@ -92,24 +92,36 @@ final class _ResultsScreenState extends State<ResultsScreen> {
         title: Text(l10n.searchTitle),
         actions: const [_ShareSearchAction()],
       ),
-      body: BlocBuilder<SearchCubit, SearchState>(
-        builder: (context, state) => NotificationListener<ScrollNotification>(
-          onNotification: _onScrollNotification,
-          child: CustomScrollView(
-            controller: _controller,
-            slivers: [
-              const SliverToBoxAdapter(child: OfflineBannerVisibility()),
-              SliverToBoxAdapter(child: _SummaryBar(state: state)),
-              SliverToBoxAdapter(child: _chipBar(context, state)),
-              if (state.criteria.stay == null &&
-                  state.status != ResultsStatus.loading)
-                SliverToBoxAdapter(
-                  child: _HintBanner(text: l10n.searchDatesNeededHint),
-                ),
-              if (state.datesDropped)
-                const SliverToBoxAdapter(child: _DroppedBanner()),
-              ..._resultsSlivers(context, state),
-            ],
+      body: BlocListener<ConnectivityCubit, ConnectivityState>(
+        // Back online while the results are stuck in the offline state:
+        // rerun the search automatically (plan §13).
+        listener: (context, connectivity) {
+          final state = _cubit.state;
+          if (connectivity.isOnline && state.status == ResultsStatus.offline) {
+            unawaited(
+              _cubit.search(state.criteria, label: state.locationLabel),
+            );
+          }
+        },
+        child: BlocBuilder<SearchCubit, SearchState>(
+          builder: (context, state) => NotificationListener<ScrollNotification>(
+            onNotification: _onScrollNotification,
+            child: CustomScrollView(
+              controller: _controller,
+              slivers: [
+                const SliverToBoxAdapter(child: OfflineBannerVisibility()),
+                SliverToBoxAdapter(child: _SummaryBar(state: state)),
+                SliverToBoxAdapter(child: _chipBar(context, state)),
+                if (state.criteria.stay == null &&
+                    state.status != ResultsStatus.loading)
+                  SliverToBoxAdapter(
+                    child: _HintBanner(text: l10n.searchDatesNeededHint),
+                  ),
+                if (state.datesDropped)
+                  const SliverToBoxAdapter(child: _DroppedBanner()),
+                ..._resultsSlivers(context, state),
+              ],
+            ),
           ),
         ),
       ),
@@ -152,7 +164,11 @@ final class _ResultsScreenState extends State<ResultsScreen> {
                   );
                   if (edited == null || !context.mounted) return;
                   _cubit.setCriteria(edited);
-                  unawaited(_cubit.search(edited));
+                  // The filters never touch the location, so its label is
+                  // carried into the new search.
+                  unawaited(
+                    _cubit.search(edited, label: _cubit.state.locationLabel),
+                  );
                 },
                 child: Text(l10n.searchFilters),
               ),
@@ -171,74 +187,89 @@ final class _ResultsScreenState extends State<ResultsScreen> {
           ),
         ];
       case ResultsStatus.offline:
-        return [
-          const SliverToBoxAdapter(child: SizedBox.shrink()),
-        ];
-      case ResultsStatus.ready:
-        return [
-          SliverPadding(
-            padding: const EdgeInsetsDirectional.all(Dimens.space16),
-            sliver: SliverList.builder(
-              itemCount: state.items.length + (state.loadingMore ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index >= state.items.length) {
-                  return const Padding(
-                    padding: EdgeInsetsDirectional.only(bottom: Dimens.space16),
-                    child: PropertyCardSkeleton(),
-                  );
-                }
-                final card = state.items[index];
-                final stay = state.criteria.stay;
-                return Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    bottom: Dimens.space16,
-                  ),
-                  child: PropertyCard(
-                    title: card.title,
-                    subtitle: '${card.areaName} • ${card.cityName}',
-                    imageVariants: card.cover?.variants ?? const [],
-                    priceText: l10n.nightlyPrice(
-                      MoneyFormatter().format(card.nightlyPrice),
-                    ),
-                    stayTotalText: card.stay == null
-                        ? null
-                        : l10n.stayTotal(
-                            card.stay!.nights,
-                            MoneyFormatter().format(card.stay!.stayTotal),
-                          ),
-                    ratingText: card.ratingAvg?.toStringAsFixed(1),
-                    ratingSemantics: card.ratingAvg == null
-                        ? null
-                        : l10n.ratingSemantics(
-                            card.ratingAvg!.toStringAsFixed(1),
-                            card.reviewCount,
-                          ),
-                    heroTag: 'listing-${card.id}',
-                    onTap: () {
-                      final guests = state.criteria.guests;
-                      unawaited(
-                        context.push(
-                          Uri(
-                            path: AppRoutes.property(card.id),
-                            queryParameters: {
-                              if (stay != null)
-                                'checkIn': stay.checkIn.toString(),
-                              if (stay != null)
-                                'checkOut': stay.checkOut.toString(),
-                              if (guests != null) 'guests': '$guests',
-                            },
-                          ).toString(),
-                          extra: card.cover?.variants,
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+        // Cached items stay visible under the offline banner; with nothing
+        // cached the retry button reruns the search (plan §13).
+        if (state.items.isEmpty) {
+          return [
+            SliverFillRemaining(
+              child: ErrorView(
+                message: l10n.errorNoConnection,
+                onRetry: () => _cubit.search(
+                  state.criteria,
+                  label: state.locationLabel,
+                ),
+              ),
             ),
-          ),
-        ];
+          ];
+        }
+        return _readySlivers(state);
+      case ResultsStatus.ready:
+        return _readySlivers(state);
     }
+  }
+
+  List<Widget> _readySlivers(SearchState state) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      SliverPadding(
+        padding: const EdgeInsetsDirectional.all(Dimens.space16),
+        sliver: SliverList.builder(
+          itemCount: state.items.length + (state.loadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= state.items.length) {
+              return const Padding(
+                padding: EdgeInsetsDirectional.only(bottom: Dimens.space16),
+                child: PropertyCardSkeleton(),
+              );
+            }
+            final card = state.items[index];
+            final stay = state.criteria.stay;
+            return Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
+              child: PropertyCard(
+                title: card.title,
+                subtitle: '${card.areaName} • ${card.cityName}',
+                imageVariants: card.cover?.variants ?? const [],
+                priceText: l10n.nightlyPrice(
+                  MoneyFormatter().format(card.nightlyPrice),
+                ),
+                stayTotalText: card.stay == null
+                    ? null
+                    : l10n.stayTotal(
+                        card.stay!.nights,
+                        MoneyFormatter().format(card.stay!.stayTotal),
+                      ),
+                ratingText: card.ratingAvg?.toStringAsFixed(1),
+                ratingSemantics: card.ratingAvg == null
+                    ? null
+                    : l10n.ratingSemantics(
+                        card.ratingAvg!.toStringAsFixed(1),
+                        card.reviewCount,
+                      ),
+                heroTag: 'listing-${card.id}',
+                onTap: () {
+                  final guests = state.criteria.guests;
+                  unawaited(
+                    context.push(
+                      Uri(
+                        path: AppRoutes.property(card.id),
+                        queryParameters: {
+                          if (stay != null) 'checkIn': stay.checkIn.toString(),
+                          if (stay != null)
+                            'checkOut': stay.checkOut.toString(),
+                          if (guests != null) 'guests': '$guests',
+                        },
+                      ).toString(),
+                      extra: card.cover?.variants,
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    ];
   }
 
   Widget _chipBar(BuildContext context, SearchState state) {
@@ -435,7 +466,10 @@ final class _DroppedBanner extends StatelessWidget {
         if (selected == null || !context.mounted) return;
         final criteria = cubit.state.criteria.copyWith(stay: selected);
         cubit.setCriteria(criteria);
-        unawaited(cubit.search(criteria));
+        // The location is untouched, so its label is carried along.
+        unawaited(
+          cubit.search(criteria, label: cubit.state.locationLabel),
+        );
       },
     );
   }

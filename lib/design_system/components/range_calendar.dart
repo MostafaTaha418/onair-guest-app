@@ -20,7 +20,9 @@ final class RangeCalendar extends StatefulWidget {
     this.selectedCheckOut,
     this.unavailableNights = const {},
     this.loadingMonthKeys = const {},
+    this.failedMonthKeys = const {},
     this.onMonthShown,
+    this.onRetryMonth,
     this.lastSelectableDay,
     super.key,
   });
@@ -34,8 +36,15 @@ final class RangeCalendar extends StatefulWidget {
   /// Months being fetched, keyed by `year * 12 + month`; every day is greyed
   /// and not tappable.
   final Set<int> loadingMonthKeys;
+
+  /// Months whose fetch failed; their days are greyed and not tappable like
+  /// the loading ones, and a retry button is shown for the displayed month.
+  final Set<int> failedMonthKeys;
   final void Function(DateOnly day) onDayTap;
   final void Function(DateOnly firstDayOfMonth)? onMonthShown;
+
+  /// Reports the displayed month for a retry after its fetch failed.
+  final void Function(DateOnly firstDayOfMonth)? onRetryMonth;
   final DateOnly? lastSelectableDay;
 
   static int monthKey(DateOnly date) => date.year * 12 + date.month;
@@ -140,9 +149,23 @@ final class _RangeCalendarState extends State<RangeCalendar> {
               ),
           ],
         ),
+        if (_retryVisible) ...[
+          const SizedBox(height: Dimens.space4),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              onPressed: () => widget.onRetryMonth!(_displayedMonth),
+              child: Text(l10n.retry),
+            ),
+          ),
+        ],
       ],
     );
   }
+
+  bool get _retryVisible =>
+      widget.onRetryMonth != null &&
+      widget.failedMonthKeys.contains(RangeCalendar.monthKey(_displayedMonth));
 
   /// Column index of a date, with Saturday first (Egypt week). Dart's
   /// weekday runs Monday = 1 … Sunday = 7.
@@ -165,7 +188,10 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     final isLoading = widget.loadingMonthKeys.contains(
       RangeCalendar.monthKey(day),
     );
-    final disabled = isPast || isBeyond || isLoading;
+    final isFailed = widget.failedMonthKeys.contains(
+      RangeCalendar.monthKey(day),
+    );
+    final disabled = isPast || isBeyond || isLoading || isFailed;
     final unavailable = widget.unavailableNights.contains(day);
     final isStart = day == widget.selectedCheckIn;
     final isEnd = day == widget.selectedCheckOut;
@@ -187,7 +213,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
       foreground = colors.onPrimary;
     } else if (inRange) {
       background = colors['badgeNavActive'];
-    } else if (isPast || isLoading) {
+    } else if (isPast || isLoading || isFailed) {
       foreground = colors['placeholder'];
     } else if (unavailable) {
       foreground = colors.textSecondary;

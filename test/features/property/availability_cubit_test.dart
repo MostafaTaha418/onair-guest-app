@@ -180,4 +180,64 @@ void main() {
       expect(cubit.state.windows, isNotEmpty);
     },
   );
+
+  test(
+    'a range crossing a failed month is rejected as incomplete and retried',
+    () async {
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+      listings.unavailableNightsResponses
+        ..add(const <DateOnly>{}) // November's window loads
+        ..add(AppFailure(ErrorMapper.noResponse())); // February's window fails
+      await cubit.showMonth(DateOnly(2026, 11, 1));
+      await cubit.showMonth(DateOnly(2027, 2, 1));
+      expect(cubit.state.failed, isNotEmpty);
+
+      final callsBefore = listings.calls
+          .where((call) => call.startsWith('unavailableNights'))
+          .length;
+      cubit
+        ..onDayTap(DateOnly(2026, 11, 30))
+        ..onDayTap(DateOnly(2027, 2, 2));
+
+      expect(
+        cubit.state.selection,
+        CalendarArrivalPicked(DateOnly(2027, 2, 2)),
+      );
+      expect(cubit.state.rangeIncomplete, isTrue);
+      expect(cubit.state.rangeRejected, isFalse);
+      expect(
+        listings.calls
+            .where((call) => call.startsWith('unavailableNights'))
+            .length,
+        callsBefore + 1,
+        reason: 'the missing failed month is refetched via retryMonth',
+      );
+
+      listings.unavailableNightsResponses.add(const <DateOnly>{});
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.rangeIncomplete, isFalse);
+      expect(cubit.state.failed, isEmpty);
+    },
+  );
+
+  test('the incomplete notice clears when the missing month arrives', () async {
+    final cubit = buildCubit();
+    addTearDown(cubit.close);
+    final february = Completer<Set<DateOnly>>();
+    listings.unavailableNightsResponses
+      ..add(const <DateOnly>{}) // November's window loads
+      ..add(february.future); // February's window is still pending
+    await cubit.showMonth(DateOnly(2026, 11, 1));
+    final pending = cubit.showMonth(DateOnly(2027, 2, 1));
+
+    cubit
+      ..onDayTap(DateOnly(2026, 11, 30))
+      ..onDayTap(DateOnly(2027, 2, 2));
+    expect(cubit.state.rangeIncomplete, isTrue);
+
+    february.complete(const <DateOnly>{});
+    await pending;
+    expect(cubit.state.rangeIncomplete, isFalse);
+  });
 }

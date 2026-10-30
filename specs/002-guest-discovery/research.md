@@ -332,3 +332,19 @@ Exact versions are the latest stable at implementation start, locked by `pubspec
 | SC-009 | Goldens (Light, Dark, RTL, 1.3×) + state widget tests per screen |
 | SC-010 | Manual TalkBack and VoiceOver pass recorded in `docs/qa/` |
 | SC-011 | Usability check script with three comprehension questions |
+
+## R20. OPEN: Shared-link location label (search results summary bar)
+
+- **Context**: Shared links carry `loc` (the location ID) but never a display
+  name; the label is "display only, never written to links" (research R13).
+- **Current behaviour**: Opening `/search/results?loc=…` keeps the summary
+  label empty, so the bar shows «كل الأماكن» while the results *are* filtered
+  by the location (the RPC receives `p_location_id`). Re-searches from the
+  results screen (chips, filters, dates) keep the label of the current
+  session; only a link open without a same-location match starts empty.
+- **Options considered**: resolving the name client-side from the Home feed's
+  areas (only covers area-level IDs, not cities/governorates), or a new
+  `guest_*` lookup RPC (rejected: no new endpoints in this plan).
+- **Open point**: a server-side source for ID → display name (e.g. extend
+  `guest_search_locations` or the link payload) is needed to label shared
+  links; tracked for a follow-up plan.

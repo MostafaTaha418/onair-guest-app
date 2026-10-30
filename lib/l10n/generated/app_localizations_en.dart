@@ -519,6 +519,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarRangeInvalid => 'This range includes unavailable nights.';
 
   @override
+  String get calendarRangeNotLoaded =>
+      'Availability for a month in this range is still loading. Try again in a moment.';
+
+  @override
+  String get calendarRangeLoadFailed =>
+      'Availability for a month in this range failed to load. Open that month and tap retry.';
+
+  @override
   String calendarNightsSelected(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -688,6 +696,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String galleryPhotoPosition(int current, int total) {
     return 'Photo $current of $total';
   }
+
+  @override
+  String get galleryEmpty => 'This property has no photos.';
 
   @override
   String get bookingEntryTitle => 'Booking';

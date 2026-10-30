@@ -516,6 +516,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get calendarRangeInvalid => 'الفترة دي فيها ليالي مش متاحة.';
 
   @override
+  String get calendarRangeNotLoaded =>
+      'التوافر لسه بيتحمّل لشهر من الفترة دي. حاول تاني بعد لحظات.';
+
+  @override
+  String get calendarRangeLoadFailed =>
+      'تعذّر تحميل التوافر لشهر من الفترة دي. افتح الشهر ده واضغط إعادة المحاولة.';
+
+  @override
   String calendarNightsSelected(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -692,6 +700,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String galleryPhotoPosition(int current, int total) {
     return 'صورة $current من $total';
   }
+
+  @override
+  String get galleryEmpty => 'مفيش صور للشقة دي.';
 
   @override
   String get bookingEntryTitle => 'الحجز';

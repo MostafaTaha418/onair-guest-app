@@ -29,6 +29,7 @@ import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
+import 'package:on_air/features/listings/domain/listing_image.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
@@ -41,6 +42,12 @@ import 'package:on_air/features/search/presentation/search_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 
 bool _defaultUpdateRequired() => false;
+
+/// Same bounds as `ResumeIntent`'s guests (1–50); anything else means «any».
+int? _boundedGuests(String? raw) {
+  final value = int.tryParse(raw ?? '');
+  return value == null || value < 1 || value > 50 ? null : value;
+}
 
 GoRouter createAppRouter({
   required Listenable refreshListenable,
@@ -122,7 +129,7 @@ GoRouter createAppRouter({
                 DateOnly.tryParse(query['checkOut']),
                 CairoTime.today(),
               ),
-              initialGuests: int.tryParse(query['guests'] ?? ''),
+              initialGuests: _boundedGuests(query['guests']),
               pendingResume: ResumeIntent.fromQuery(
                 query,
                 today: CairoTime.today(),
@@ -133,7 +140,11 @@ GoRouter createAppRouter({
           },
           child: PropertyScreen(
             propertyId: id,
-            heroVariants: state.extra as List<ImageVariant>?,
+            // `extra` comes from the results card's push; never assume the
+            // caller's type (a deep link has no extra at all).
+            heroVariants: state.extra is List<ImageVariant>
+                ? state.extra! as List<ImageVariant>
+                : null,
           ),
         );
       },
@@ -145,6 +156,11 @@ GoRouter createAppRouter({
             propertyId: state.pathParameters['id']!,
             initialIndex:
                 int.tryParse(state.uri.queryParameters['index'] ?? '') ?? 0,
+            // The details header pushes the images along; a direct link has
+            // no extra and the screen falls back to loading them.
+            images: state.extra is List<ListingImage>
+                ? state.extra! as List<ListingImage>
+                : null,
           ),
         ),
         GoRoute(
@@ -277,8 +293,8 @@ GoRouter createAppRouter({
   ],
 );
 
-/// Opens the results query once per new location, so re-entering the route
-/// with the same query never searches twice (research R9).
+/// Opens the results query for every new location. Repeat queries are
+/// deduplicated inside `SearchCubit.openFromQuery` itself (research R9).
 final class _ResultsQueryOpener extends StatefulWidget {
   const _ResultsQueryOpener({required this.query});
 
@@ -289,8 +305,6 @@ final class _ResultsQueryOpener extends StatefulWidget {
 }
 
 final class _ResultsQueryOpenerState extends State<_ResultsQueryOpener> {
-  String? _openedQuery;
-
   @override
   void initState() {
     super.initState();
@@ -304,11 +318,6 @@ final class _ResultsQueryOpenerState extends State<_ResultsQueryOpener> {
   }
 
   void _open() {
-    final canonical = Uri(
-      queryParameters: widget.query.isEmpty ? null : widget.query,
-    ).query;
-    if (canonical == _openedQuery) return;
-    _openedQuery = canonical;
     unawaited(context.read<SearchCubit>().openFromQuery(widget.query));
   }
 

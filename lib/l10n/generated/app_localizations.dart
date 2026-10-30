@@ -998,6 +998,18 @@ abstract class AppLocalizations {
   /// **'الفترة دي فيها ليالي مش متاحة.'**
   String get calendarRangeInvalid;
 
+  /// No description provided for @calendarRangeNotLoaded.
+  ///
+  /// In ar, this message translates to:
+  /// **'التوافر لسه بيتحمّل لشهر من الفترة دي. حاول تاني بعد لحظات.'**
+  String get calendarRangeNotLoaded;
+
+  /// No description provided for @calendarRangeLoadFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل التوافر لشهر من الفترة دي. افتح الشهر ده واضغط إعادة المحاولة.'**
+  String get calendarRangeLoadFailed;
+
   /// No description provided for @calendarNightsSelected.
   ///
   /// In ar, this message translates to:
@@ -1225,6 +1237,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'صورة {current} من {total}'**
   String galleryPhotoPosition(int current, int total);
+
+  /// No description provided for @galleryEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش صور للشقة دي.'**
+  String get galleryEmpty;
 
   /// No description provided for @bookingEntryTitle.
   ///

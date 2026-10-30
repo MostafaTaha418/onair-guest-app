@@ -92,11 +92,25 @@ String? resolveRedirect(RedirectContext context) {
   return null;
 }
 
+/// Where a *cancelled* sign-in should land. Account-gated routes are useless
+/// without a session, so they fall back to Home.
 String resolveAuthCancelDestination(String? origin) {
   final safe = _safeReturnLocation(origin);
   if (safe == null ||
       AppRoutes.requiresAccount(safe) ||
       AppRoutes.isAuthLocation(safe)) {
+    return AppRoutes.home;
+  }
+  return safe;
+}
+
+/// Where a *completed* sign-in should land. Unlike the cancel destination,
+/// account-gated routes are exactly why the guest signed in, so they are
+/// kept (SC-007): only auth screens themselves and unknown locations fall
+/// back to Home.
+String resolveAuthReturnDestination(String? origin) {
+  final safe = _safeReturnLocation(origin);
+  if (safe == null || AppRoutes.isAuthLocation(safe)) {
     return AppRoutes.home;
   }
   return safe;

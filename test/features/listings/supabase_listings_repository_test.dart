@@ -303,4 +303,97 @@ void main() {
       );
     });
   });
+
+  group('malformed responses', () {
+    const propertyId = '00000000-0000-4000-8000-000000000001';
+    final nightsRange = (
+      DateOnly(2026, 11, 1),
+      DateOnly(2026, 11, 10),
+    );
+
+    /// A payload of the wrong shape per function: a string where a map is
+    /// expected, a map where a list is expected, and a string where an int
+    /// or a date is expected.
+    Future<dynamic> wrongTypeRpc(
+      String function,
+      Map<String, dynamic> params,
+    ) async => switch (function) {
+      'guest_search_locations' => <String, dynamic>{},
+      'guest_get_property_unavailable_dates' => <Object?>['not-a-date'],
+      'guest_search_properties' => <String, dynamic>{
+        'items': <Object?>[],
+        'next_cursor': null,
+        'total_count': 'many',
+      },
+      _ => 'not-a-map',
+    };
+
+    test('a null response is an AppFailure for every method', () async {
+      final repo = SupabaseListingsRepository(
+        rpc: (function, params) async => null,
+      );
+      const params = PropertySearchParams();
+      await expectLater(repo.homeFeed(), throwsA(isA<AppFailure>()));
+      await expectLater(
+        repo.searchProperties(params),
+        throwsA(isA<AppFailure>()),
+      );
+      await expectLater(
+        repo.countProperties(params),
+        throwsA(isA<AppFailure>()),
+      );
+      await expectLater(repo.searchLocations('q'), throwsA(isA<AppFailure>()));
+      await expectLater(repo.referenceData(), throwsA(isA<AppFailure>()));
+      // An empty answer is NOT_FOUND so existence is never revealed.
+      await expectLater(
+        repo.property(propertyId),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.notFound,
+          ),
+        ),
+      );
+      await expectLater(
+        repo.unavailableNights(propertyId, nightsRange.$1, nightsRange.$2),
+        throwsA(isA<AppFailure>()),
+      );
+      await expectLater(repo.reviews(propertyId), throwsA(isA<AppFailure>()));
+    });
+
+    test(
+      'a wrong payload type is an internal AppFailure for every method',
+      () async {
+        final repo = SupabaseListingsRepository(rpc: wrongTypeRpc);
+        const params = PropertySearchParams();
+        for (final call in <Future<Object?> Function()>[
+          repo.homeFeed,
+          () => repo.searchProperties(params),
+          () => repo.countProperties(params),
+          () => repo.searchLocations('q'),
+          repo.referenceData,
+          () => repo.property(propertyId),
+          () => repo.unavailableNights(
+            propertyId,
+            nightsRange.$1,
+            nightsRange.$2,
+          ),
+          () => repo.reviews(propertyId),
+        ]) {
+          await expectLater(
+            call(),
+            throwsA(
+              isA<AppFailure>().having(
+                (failure) => failure.error.code,
+                'code',
+                ErrorCode.internal,
+              ),
+            ),
+            reason: 'parsing must happen inside the guard',
+          );
+        }
+      },
+    );
+  });
 }

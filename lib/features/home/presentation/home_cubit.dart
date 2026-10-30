@@ -62,7 +62,8 @@ final class HomeCubit extends Cubit<HomeState> {
     required this._reference,
     required ConnectivityCubit connectivity,
     required AuthCubit auth,
-  }) : super(HomeState(offline: !connectivity.state.isOnline)) {
+  }) : _auth = auth,
+       super(HomeState(offline: !connectivity.state.isOnline)) {
     _authSubscription = auth.stream.listen(_onAuthChanged);
     _connectivitySubscription = connectivity.stream.listen(
       _onConnectivityChanged,
@@ -72,6 +73,21 @@ final class HomeCubit extends Cubit<HomeState> {
   final ListingsRepository _repo;
   final HomeFeedCache _cache;
   final ReferenceDataCache _reference;
+
+  /// Kept so a feed response is checked against the *current* auth state
+  /// before it reaches the UI (Constitution III).
+  final AuthCubit _auth;
+
+  /// Bumped on every signed-in/signed-out transition, so a feed response is
+  /// discarded when the account it was requested for is no longer the one
+  /// signed in — a booking must never cross accounts.
+  int _authEpoch = 0;
+
+  /// Bumped by every feed request, so a response that lands after a newer
+  /// one started (a refresh overtaking a section retry or another refresh)
+  /// is dropped instead of overwriting newer state. Supabase RPCs cannot be
+  /// cancelled, so a sequence number stands in for a CancelToken.
+  int _requestSeq = 0;
 
   late final StreamSubscription<AuthState> _authSubscription;
   late final StreamSubscription<ConnectivityState> _connectivitySubscription;
@@ -112,9 +128,24 @@ final class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> _loadFeed({HomeSectionId? retrySection}) async {
+    final epoch = _authEpoch;
+    _requestSeq++;
+    final seq = _requestSeq;
     try {
-      final feed = await _repo.homeFeed();
+      var feed = await _repo.homeFeed();
       if (isClosed) return;
+      // A newer request owns the screen now: drop this response entirely —
+      // emitting it would overwrite newer sections with older ones. The
+      // newest request is the one that clears `sectionLoading`.
+      if (seq != _requestSeq) return;
+      // Still the newest request, but the account changed while it was in
+      // flight (a sign-out starts no new request): keep the public sections
+      // so the screen never stays on skeletons, and strip the booking that
+      // was requested under the old session (Constitution III). A sign-in
+      // always starts a newer request, so it is handled by the check above.
+      if (epoch != _authEpoch || _auth.state is! SignedIn) {
+        feed = _copy(feed, upcomingBooking: const FeedSectionReady(null));
+      }
       if (retrySection == null) {
         emit(
           state.copyWith(
@@ -149,6 +180,10 @@ final class HomeCubit extends Cubit<HomeState> {
       await _reference.refreshIfVersionChanged(feed.referenceVersion);
     } on AppFailure catch (failure) {
       if (isClosed) return;
+      // The same staleness rule as the success path: a newer request owns
+      // the failure handling (its own result or its retry state). A failure
+      // carries no personal data, so an auth change alone does not drop it.
+      if (seq != _requestSeq) return;
       if (state.feed == null) {
         // Nothing cached: the whole screen failed.
         emit(
@@ -224,6 +259,7 @@ final class HomeCubit extends Cubit<HomeState> {
     // events (Constitution III).
     final ended = authState is SignedOut || authState is SessionEnded;
     if (ended) {
+      _authEpoch++;
       final feed = state.feed;
       if (feed == null) return;
       emit(
@@ -234,6 +270,7 @@ final class HomeCubit extends Cubit<HomeState> {
       return;
     }
     if (authState is SignedIn) {
+      _authEpoch++;
       unawaited(refresh());
     }
   }

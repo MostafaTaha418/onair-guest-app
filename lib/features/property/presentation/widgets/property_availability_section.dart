@@ -90,15 +90,33 @@ final class _PropertyAvailabilitySectionState
               unavailableNights: {
                 for (final nights in state.windows.values) ...nights,
               },
-              loadingMonthKeys: {...state.loading, ...state.failed},
+              loadingMonthKeys: state.loading,
+              failedMonthKeys: state.failed,
               onDayTap: _cubit.onDayTap,
               onMonthShown: (firstDay) => unawaited(_cubit.showMonth(firstDay)),
+              onRetryMonth: (firstDay) =>
+                  unawaited(_cubit.retryMonth(firstDay)),
             ),
             if (state.rangeRejected)
               Padding(
                 padding: const EdgeInsetsDirectional.only(top: 8),
                 child: Text(
                   l10n.calendarRangeInvalid,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.errorText,
+                  ),
+                ),
+              )
+            else if (state.rangeIncomplete)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(top: 8),
+                child: Text(
+                  // The retry button belongs to the displayed month, so the
+                  // failure text only applies when one of the pending
+                  // months actually failed.
+                  state.pendingRangeMonths.any(state.failed.contains)
+                      ? l10n.calendarRangeLoadFailed
+                      : l10n.calendarRangeNotLoaded,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colors.errorText,
                   ),

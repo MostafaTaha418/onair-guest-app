@@ -13,6 +13,7 @@ import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
+import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
@@ -236,6 +237,61 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PropertyCard), findsOneWidget);
     expect(find.text(l10n.offline), findsOneWidget);
+  });
+
+  testWidgets(
+    'offline without items shows the retry view and researches when '
+    'back online',
+    (tester) async {
+      await pumpHost(tester);
+      connectivity.goOffline();
+      await tester.pump();
+      unawaited(cubit.search(SearchCriteria.empty));
+      await openResults(tester);
+
+      expect(cubit.state.status, ResultsStatus.offline);
+      expect(find.byType(ErrorView), findsOneWidget);
+      expect(
+        find.text(l10n.retry),
+        findsOneWidget,
+        reason: 'the error view offers a retry button',
+      );
+
+      // Back online: the listener reruns the search automatically.
+      listings.searchResponses.add(
+        ResultsPage(items: [_card('a')], nextCursor: null, totalCount: 1),
+      );
+      connectivity.goOnline();
+      await tester.pumpAndSettle();
+
+      expect(cubit.state.status, ResultsStatus.ready);
+      expect(find.byType(PropertyCard), findsOneWidget);
+    },
+  );
+
+  testWidgets('a new search offline drops the old results', (tester) async {
+    listings.searchResponses.add(
+      ResultsPage(items: [_card('a')], nextCursor: 'c2', totalCount: 3),
+    );
+    await pumpHost(tester);
+    unawaited(
+      cubit.search(SearchCriteria.fromQuery({'am': 'wifi'}, today: today)),
+    );
+    await openResults(tester);
+    expect(find.byType(PropertyCard), findsOneWidget);
+
+    connectivity.goOffline();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(l10n.filterChipRemove('wifi')).first);
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.status, ResultsStatus.offline);
+    expect(
+      cubit.state.items,
+      isEmpty,
+      reason: 'the old results must not dress up as the new query’s',
+    );
+    expect(find.byType(ErrorView), findsOneWidget);
   });
 
   testWidgets('removing a chip searches again', (tester) async {

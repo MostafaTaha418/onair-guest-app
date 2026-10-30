@@ -45,6 +45,9 @@ final class _ReviewsViewState extends State<_ReviewsView> {
     final cubit = context.read<ReviewsCubit>();
     final state = cubit.state;
     if (state is! ReviewsReady || state.loadingMore) return false;
+    // A failed extra page waits for its manual retry row instead of
+    // re-triggering on every scroll frame.
+    if (state.loadMoreError != null) return false;
     if (state.nextCursor != null && notification.metrics.extentAfter < 600) {
       unawaited(cubit.loadMore());
     }
@@ -98,20 +101,43 @@ final class _ReviewsViewState extends State<_ReviewsView> {
     ],
   );
 
-  Widget _list(BuildContext context, ReviewsReady state) => ListView.builder(
-    padding: const EdgeInsetsDirectional.all(Dimens.space16),
-    itemCount: state.items.length + (state.loadingMore ? 1 : 0),
-    itemBuilder: (context, index) {
-      if (index >= state.items.length) {
-        return const Padding(
-          padding: EdgeInsetsDirectional.only(bottom: Dimens.space16),
-          child: SkeletonBox(height: 96),
+  Widget _list(BuildContext context, ReviewsReady state) {
+    final l10n = AppLocalizations.of(context);
+    final tailRows =
+        (state.loadingMore ? 1 : 0) + (state.loadMoreError != null ? 1 : 0);
+    return ListView.builder(
+      padding: const EdgeInsetsDirectional.all(Dimens.space16),
+      itemCount: state.items.length + tailRows,
+      itemBuilder: (context, index) {
+        if (index >= state.items.length) {
+          final error = state.loadMoreError;
+          if (error != null && !state.loadingMore) {
+            return Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
+              child: Column(
+                children: [
+                  Text(
+                    apiErrorMessage(error, l10n),
+                    textAlign: TextAlign.center,
+                  ),
+                  TextButton(
+                    onPressed: context.read<ReviewsCubit>().loadMore,
+                    child: Text(l10n.retry),
+                  ),
+                ],
+              ),
+            );
+          }
+          return const Padding(
+            padding: EdgeInsetsDirectional.only(bottom: Dimens.space16),
+            child: SkeletonBox(height: 96),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
+          child: ReviewTile(review: state.items[index]),
         );
-      }
-      return Padding(
-        padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
-        child: ReviewTile(review: state.items[index]),
-      );
-    },
-  );
+      },
+    );
+  }
 }

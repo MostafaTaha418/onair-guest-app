@@ -19,6 +19,10 @@ import 'package:on_air/features/listings/domain/results_page.dart';
 final class FakeListingsRepository implements ListingsRepository {
   final List<String> calls = [];
 
+  /// The params of every `searchProperties` call, in order, for value
+  /// comparison (the string in [calls] cannot show them).
+  final List<PropertySearchParams> searchParams = [];
+
   final List<Object> homeFeedResponses = [];
   final List<Object> searchResponses = [];
   final List<Object> countResponses = [];
@@ -50,6 +54,7 @@ final class FakeListingsRepository implements ListingsRepository {
     calls.add(
       'searchProperties(cursor: $cursor, limit: $limit, params: $params)',
     );
+    searchParams.add(params);
     return _next<ResultsPage>(
       searchResponses,
       const ResultsPage(items: [], nextCursor: null, totalCount: 0),

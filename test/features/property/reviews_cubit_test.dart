@@ -102,4 +102,41 @@ void main() {
       isA<ReviewsReady>(),
     ],
   );
+
+  blocTest<ReviewsCubit, ReviewsState>(
+    'a failed loadMore keeps the list, and the retry clears the error',
+    build: () {
+      listings.reviewsResponses
+        ..add(ReviewsPage(items: [_review(1)], nextCursor: 'c2'))
+        ..add(AppFailure(ErrorMapper.noResponse()))
+        ..add(ReviewsPage(items: [_review(2)], nextCursor: null));
+      return buildCubit();
+    },
+    act: (cubit) async {
+      await cubit.load();
+      await cubit.loadMore();
+      await cubit.loadMore();
+    },
+    expect: () => [
+      isA<ReviewsReady>(),
+      isA<ReviewsReady>().having(
+        (state) => state.loadingMore,
+        'loadingMore',
+        true,
+      ),
+      isA<ReviewsReady>()
+          .having((state) => state.items, 'items', hasLength(1))
+          .having((state) => state.loadMoreError, 'loadMoreError', isNotNull)
+          .having((state) => state.loadingMore, 'loadingMore', false),
+      isA<ReviewsReady>().having(
+        (state) => state.loadingMore,
+        'loadingMore',
+        true,
+      ),
+      isA<ReviewsReady>()
+          .having((state) => state.items, 'items', hasLength(2))
+          .having((state) => state.loadMoreError, 'loadMoreError', isNull)
+          .having((state) => state.nextCursor, 'nextCursor', isNull),
+    ],
+  );
 }
