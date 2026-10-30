@@ -1273,6 +1273,1212 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'خدمة الدعم من التطبيق هتتفتح قريب.'**
   String get supportEntryComingSoon;
+
+  /// No description provided for @errorAccountSuspended.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب موقوف. تواصل مع خدمة العملاء.'**
+  String get errorAccountSuspended;
+
+  /// No description provided for @authPhoneAlreadyUsed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم ده مستخدم في حساب تاني.'**
+  String get authPhoneAlreadyUsed;
+
+  /// No description provided for @bookingPolicyOutOfBounds.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر مش ثابت على التواريخ دي. جرّب تواريخ تانية أو تواصل مع الدعم.'**
+  String get bookingPolicyOutOfBounds;
+
+  /// No description provided for @errorConflict.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيانات اتغيرت. حدّث الصفحة وجرّب تاني.'**
+  String get errorConflict;
+
+  /// No description provided for @bookingStateChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة الحجز اتغيرت. حدّث الصفحة.'**
+  String get bookingStateChanged;
+
+  /// No description provided for @errorDuplicateOperation.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملية دي اتعملت قبل كده.'**
+  String get errorDuplicateOperation;
+
+  /// No description provided for @paymentVerificationIssue.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيه مشكلة في التحقق من الدفع. فريقنا هيتواصل معاك.'**
+  String get paymentVerificationIssue;
+
+  /// No description provided for @close.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق'**
+  String get close;
+
+  /// No description provided for @bookingDatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار التواريخ'**
+  String get bookingDatesTitle;
+
+  /// No description provided for @bookingRangeHasUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفترة دي فيها يوم مش متاح. اختار تواريخ تانية.'**
+  String get bookingRangeHasUnavailable;
+
+  /// No description provided for @bookingNightsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد الليالي: {count}'**
+  String bookingNightsCount(String count);
+
+  /// No description provided for @bookingContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة'**
+  String get bookingContinue;
+
+  /// No description provided for @bookingStartFromProperty.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ الحجز من صفحة الشقة.'**
+  String get bookingStartFromProperty;
+
+  /// No description provided for @bookingSummaryTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملخص الحجز'**
+  String get bookingSummaryTitle;
+
+  /// No description provided for @bookingNights.
+  ///
+  /// In ar, this message translates to:
+  /// **'الليالي'**
+  String get bookingNights;
+
+  /// No description provided for @bookingNightlyPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الليلة'**
+  String get bookingNightlyPrice;
+
+  /// No description provided for @bookingTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي'**
+  String get bookingTotal;
+
+  /// No description provided for @bookingPayNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'المطلوب دفعه دلوقتي'**
+  String get bookingPayNow;
+
+  /// No description provided for @bookingRemaining.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتبقي'**
+  String get bookingRemaining;
+
+  /// No description provided for @bookingRemainingDue.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتسدد قبل {date}'**
+  String bookingRemainingDue(String date);
+
+  /// No description provided for @bookingPolicyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط وسياسة الإلغاء'**
+  String get bookingPolicyTitle;
+
+  /// No description provided for @bookingSummaryOwnerNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتبعت طلبك للمالك بعد الدفع. لو رفض أو مردّش خلال 24 ساعة هيترد لك المبلغ بالكامل.'**
+  String get bookingSummaryOwnerNotice;
+
+  /// No description provided for @bookingGoToPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'اذهب للدفع'**
+  String get bookingGoToPayment;
+
+  /// No description provided for @paymentReturnHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'لو خلّصت الدفع، اضغط هنا عشان نتحقق منه.'**
+  String get paymentReturnHint;
+
+  /// No description provided for @paymentCheckStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقق من الدفع'**
+  String get paymentCheckStatus;
+
+  /// No description provided for @paymentVerifying.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ التحقق من الدفع…'**
+  String get paymentVerifying;
+
+  /// No description provided for @paymentVerifyingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ده ممكن ياخد دقايق. هنبلغك أول ما يتأكد.'**
+  String get paymentVerifyingBody;
+
+  /// No description provided for @paymentSuccessTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الدفع وأُرسل طلبك للمالك'**
+  String get paymentSuccessTitle;
+
+  /// No description provided for @paymentSuccessBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواريخ محجوزة لك لحد ما المالك يرد.'**
+  String get paymentSuccessBody;
+
+  /// No description provided for @ownerDeadlineCountdown.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك قدامه {time} للرد'**
+  String ownerDeadlineCountdown(String time);
+
+  /// No description provided for @paymentViewBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الحجز'**
+  String get paymentViewBooking;
+
+  /// No description provided for @paymentFailedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تكتمل عملية الدفع'**
+  String get paymentFailedTitle;
+
+  /// No description provided for @paymentFailedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ولم يُخصم أي مبلغ.'**
+  String get paymentFailedBody;
+
+  /// No description provided for @paymentTryAgain.
+  ///
+  /// In ar, this message translates to:
+  /// **'حاول مرة أخرى'**
+  String get paymentTryAgain;
+
+  /// No description provided for @paymentConflictTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواريخ اتحجزت قبل اكتمال دفعتك'**
+  String get paymentConflictTitle;
+
+  /// No description provided for @paymentConflictBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترد لك المبلغ بالكامل ({amount}).'**
+  String paymentConflictBody(String amount);
+
+  /// No description provided for @paymentFindOtherDates.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن تواريخ تانية'**
+  String get paymentFindOtherDates;
+
+  /// No description provided for @paymentTimeoutTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه موصلناش تأكيد الدفع'**
+  String get paymentTimeoutTitle;
+
+  /// No description provided for @paymentTimeoutBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.'**
+  String get paymentTimeoutBody;
+
+  /// No description provided for @paymentGoToBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'اذهب لحجوزاتي'**
+  String get paymentGoToBookings;
+
+  /// No description provided for @mockPaymentTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'صفحة دفع تجريبية'**
+  String get mockPaymentTitle;
+
+  /// No description provided for @mockPaySuccess.
+  ///
+  /// In ar, this message translates to:
+  /// **'دفع ناجح'**
+  String get mockPaySuccess;
+
+  /// No description provided for @mockPayFailure.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل الدفع'**
+  String get mockPayFailure;
+
+  /// No description provided for @mockPayConflict.
+  ///
+  /// In ar, this message translates to:
+  /// **'دفع ناجح بتواريخ محجوزة'**
+  String get mockPayConflict;
+
+  /// No description provided for @mockPaySilent.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخادم ما يردش'**
+  String get mockPaySilent;
+
+  /// No description provided for @mockPayClose.
+  ///
+  /// In ar, this message translates to:
+  /// **'إغلاق الصفحة'**
+  String get mockPayClose;
+
+  /// No description provided for @verifyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد بياناتك'**
+  String get verifyTitle;
+
+  /// No description provided for @verifyIntro.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل أول حجز لازم نأكد بريدك ورقم موبايلك بكود يوصلك على البريد.'**
+  String get verifyIntro;
+
+  /// No description provided for @verifyEmailCodeHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب الكود اللي وصلك على البريد'**
+  String get verifyEmailCodeHint;
+
+  /// No description provided for @verifyHasWhatsapp.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم ده عليه واتساب'**
+  String get verifyHasWhatsapp;
+
+  /// No description provided for @verifyWhatsappNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الواتساب (اختياري)'**
+  String get verifyWhatsappNumber;
+
+  /// No description provided for @verifyCodeSentToEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعتنا كود من 6 أرقام على بريدك.'**
+  String get verifyCodeSentToEmail;
+
+  /// No description provided for @verifyResend.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت الكود تاني'**
+  String get verifyResend;
+
+  /// No description provided for @verifyResendIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقدر تبعت الكود تاني بعد {seconds} ثانية'**
+  String verifyResendIn(String seconds);
+
+  /// No description provided for @bookingsTabCurrent.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالية'**
+  String get bookingsTabCurrent;
+
+  /// No description provided for @bookingsTabPast.
+  ///
+  /// In ar, this message translates to:
+  /// **'السابقة'**
+  String get bookingsTabPast;
+
+  /// No description provided for @bookingsTabCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملغاة'**
+  String get bookingsTabCancelled;
+
+  /// No description provided for @bookingsEmptyCurrent.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش حجوزات حالية.'**
+  String get bookingsEmptyCurrent;
+
+  /// No description provided for @bookingsEmptyPast.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش إقامات سابقة.'**
+  String get bookingsEmptyPast;
+
+  /// No description provided for @bookingsEmptyCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش حجوزات ملغاة.'**
+  String get bookingsEmptyCancelled;
+
+  /// No description provided for @bookingsFindApartment.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن شقة'**
+  String get bookingsFindApartment;
+
+  /// No description provided for @lastUpdated.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر تحديث: {time}'**
+  String lastUpdated(String time);
+
+  /// No description provided for @bookingStatusPaymentPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار إتمام الدفع'**
+  String get bookingStatusPaymentPending;
+
+  /// No description provided for @bookingStatusPaymentVerifying.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ التحقق من الدفع'**
+  String get bookingStatusPaymentVerifying;
+
+  /// No description provided for @bookingStatusAwaitingOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار تأكيد المالك'**
+  String get bookingStatusAwaitingOwner;
+
+  /// No description provided for @bookingStatusPaymentConflict.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواريخ اتحجزت قبلك'**
+  String get bookingStatusPaymentConflict;
+
+  /// No description provided for @bookingStatusConfirmed.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز مؤكد'**
+  String get bookingStatusConfirmed;
+
+  /// No description provided for @bookingStatusCheckedIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إقامة جارية'**
+  String get bookingStatusCheckedIn;
+
+  /// No description provided for @bookingStatusCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'إقامة مكتملة'**
+  String get bookingStatusCompleted;
+
+  /// No description provided for @bookingStatusRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض المالك'**
+  String get bookingStatusRejected;
+
+  /// No description provided for @bookingStatusExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت مهلة التأكيد'**
+  String get bookingStatusExpired;
+
+  /// No description provided for @bookingStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغي'**
+  String get bookingStatusCancelled;
+
+  /// No description provided for @bookingStatusNoShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يحضر'**
+  String get bookingStatusNoShow;
+
+  /// No description provided for @bookingStatusAbandoned.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل'**
+  String get bookingStatusAbandoned;
+
+  /// No description provided for @bookingStatusUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث على الحجز'**
+  String get bookingStatusUnknown;
+
+  /// No description provided for @bookingMsgPaymentPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع بعد. تقدر تكمّل الدفع عشان طلبك يتبعت للمالك.'**
+  String get bookingMsgPaymentPending;
+
+  /// No description provided for @bookingMsgPaymentVerifying.
+  ///
+  /// In ar, this message translates to:
+  /// **'نتحقق من عملية الدفع. قد يستغرق ذلك دقائق، وسنبلغك فور التأكيد.'**
+  String get bookingMsgPaymentVerifying;
+
+  /// No description provided for @bookingMsgAwaitingOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الدفع وأُرسل طلبك للمالك. المالك لديه حتى {deadline} للرد. التواريخ محجوزة لك حتى ذلك الحين.'**
+  String bookingMsgAwaitingOwner(String deadline);
+
+  /// No description provided for @bookingMsgAwaitingOwnerNoDeadline.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الدفع وأُرسل طلبك للمالك. التواريخ محجوزة لك لحد ما يرد.'**
+  String get bookingMsgAwaitingOwnerNoDeadline;
+
+  /// No description provided for @bookingMsgConfirmed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك!'**
+  String get bookingMsgConfirmed;
+
+  /// No description provided for @bookingMsgConfirmedWithRemaining.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك! يجب سداد {amount} قبل الاستلام.'**
+  String bookingMsgConfirmedWithRemaining(String amount);
+
+  /// No description provided for @bookingMsgCheckedIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'نتمنى لك إقامة سعيدة.'**
+  String get bookingMsgCheckedIn;
+
+  /// No description provided for @bookingMsgCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتملت إقامتك. شاركنا رأيك!'**
+  String get bookingMsgCompleted;
+
+  /// No description provided for @bookingMsgRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'اعتذر المالك عن قبول الطلب. سيتم رد كامل المبلغ ({amount}). سيتواصل معك فريق OnAir وقد يقترح بديلًا إن رغبت.'**
+  String bookingMsgRejected(String amount);
+
+  /// No description provided for @bookingMsgExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يرد المالك خلال 24 ساعة. سيتم رد كامل المبلغ ({amount}).'**
+  String bookingMsgExpired(String amount);
+
+  /// No description provided for @bookingMsgCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إلغاء الحجز.'**
+  String get bookingMsgCancelled;
+
+  /// No description provided for @bookingMsgNoShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تسجيل عدم الحضور. للاستفسار تواصل مع الدعم.'**
+  String get bookingMsgNoShow;
+
+  /// No description provided for @bookingMsgConflict.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حجز هذه التواريخ قبل اكتمال دفعتك. سيتم رد المبلغ بالكامل ({amount}).'**
+  String bookingMsgConflict(String amount);
+
+  /// No description provided for @bookingMsgAbandoned.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع ولم يُخصم أي مبلغ.'**
+  String get bookingMsgAbandoned;
+
+  /// No description provided for @bookingMsgUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيه تحديث على حجزك. للاستفسار تواصل مع الدعم.'**
+  String get bookingMsgUnknown;
+
+  /// No description provided for @bookingCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحجز'**
+  String get bookingCode;
+
+  /// No description provided for @bookingCopyCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخ رقم الحجز'**
+  String get bookingCopyCode;
+
+  /// No description provided for @bookingCodeCopied.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم نسخ رقم الحجز'**
+  String get bookingCodeCopied;
+
+  /// No description provided for @bookingStayTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإقامة'**
+  String get bookingStayTitle;
+
+  /// No description provided for @bookingArrival.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوصول'**
+  String get bookingArrival;
+
+  /// No description provided for @bookingDeparture.
+  ///
+  /// In ar, this message translates to:
+  /// **'المغادرة'**
+  String get bookingDeparture;
+
+  /// No description provided for @bookingCheckInTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت الاستلام'**
+  String get bookingCheckInTime;
+
+  /// No description provided for @bookingCheckOutTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت المغادرة'**
+  String get bookingCheckOutTime;
+
+  /// No description provided for @bookingPaymentsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدفوعات'**
+  String get bookingPaymentsTitle;
+
+  /// No description provided for @bookingPaid.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدفوع'**
+  String get bookingPaid;
+
+  /// No description provided for @paymentMethodCard.
+  ///
+  /// In ar, this message translates to:
+  /// **'بطاقة / محفظة'**
+  String get paymentMethodCard;
+
+  /// No description provided for @paymentMethodCash.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقدًا'**
+  String get paymentMethodCash;
+
+  /// No description provided for @paymentLineSucceeded.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get paymentLineSucceeded;
+
+  /// No description provided for @paymentLinePending.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التنفيذ'**
+  String get paymentLinePending;
+
+  /// No description provided for @paymentLineFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل'**
+  String get paymentLineFailed;
+
+  /// No description provided for @bookingAddressTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get bookingAddressTitle;
+
+  /// No description provided for @bookingArrivalInstructions.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعليمات الوصول'**
+  String get bookingArrivalInstructions;
+
+  /// No description provided for @bookingSavedTermsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط وقت الحجز'**
+  String get bookingSavedTermsTitle;
+
+  /// No description provided for @bookingTimelineTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الحجز'**
+  String get bookingTimelineTitle;
+
+  /// No description provided for @bookingEventGeneric.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث على الحجز'**
+  String get bookingEventGeneric;
+
+  /// No description provided for @bookingContactSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحتاج مساعدة؟ تواصل مع OnAir'**
+  String get bookingContactSupport;
+
+  /// No description provided for @refundChipRequested.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم طلب الاسترداد'**
+  String get refundChipRequested;
+
+  /// No description provided for @refundChipInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسترداد قيد التنفيذ'**
+  String get refundChipInProgress;
+
+  /// No description provided for @refundChipDone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رد المبلغ'**
+  String get refundChipDone;
+
+  /// No description provided for @refundChipProblem.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة في الاسترداد'**
+  String get refundChipProblem;
+
+  /// No description provided for @refundTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسترداد'**
+  String get refundTitle;
+
+  /// No description provided for @refundAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ الاسترداد'**
+  String get refundAmount;
+
+  /// No description provided for @refundStageRequested.
+  ///
+  /// In ar, this message translates to:
+  /// **'طُلب'**
+  String get refundStageRequested;
+
+  /// No description provided for @refundStageApproved.
+  ///
+  /// In ar, this message translates to:
+  /// **'اعتُمد'**
+  String get refundStageApproved;
+
+  /// No description provided for @refundStageExecuting.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد التنفيذ'**
+  String get refundStageExecuting;
+
+  /// No description provided for @refundStageVerified.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التحقق من وصوله'**
+  String get refundStageVerified;
+
+  /// No description provided for @refundProblemHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيه مشكلة في الاسترداد. فريق OnAir بيتابعها، وتقدر تتواصل مع الدعم.'**
+  String get refundProblemHint;
+
+  /// No description provided for @unfinishedPaymentBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك دفع لم يكتمل.'**
+  String get unfinishedPaymentBanner;
+
+  /// No description provided for @unfinishedPaymentOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض'**
+  String get unfinishedPaymentOpen;
+
+  /// No description provided for @quoteChangedNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر اتحدّث. راجع المبالغ الجديدة قبل الدفع.'**
+  String get quoteChangedNotice;
+
+  /// No description provided for @quoteConfirmNew.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد المبالغ الجديدة'**
+  String get quoteConfirmNew;
+
+  /// No description provided for @termsChangedNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط اتحدّثت. راجعها ووافق عليها للمتابعة.'**
+  String get termsChangedNotice;
+
+  /// No description provided for @termsAcceptNew.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على الشروط الجديدة'**
+  String get termsAcceptNew;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد الكل كمقروء'**
+  String get notificationsMarkAllRead;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش إشعارات لسه.'**
+  String get notificationsEmpty;
+
+  /// No description provided for @notificationsOffNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات مقفولة. فعّلها عشان تعرف فورًا لما المالك يرد.'**
+  String get notificationsOffNotice;
+
+  /// No description provided for @notificationsOpenSettings.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الإعدادات'**
+  String get notificationsOpenSettings;
+
+  /// No description provided for @pushPermissionTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'فعّل الإشعارات'**
+  String get pushPermissionTitle;
+
+  /// No description provided for @pushPermissionBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'عشان تعرف فورًا لما المالك يرد على طلبك.'**
+  String get pushPermissionBody;
+
+  /// No description provided for @pushPermissionEnable.
+  ///
+  /// In ar, this message translates to:
+  /// **'فعّل'**
+  String get pushPermissionEnable;
+
+  /// No description provided for @pushPermissionLater.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش دلوقتي'**
+  String get pushPermissionLater;
+
+  /// No description provided for @unreadBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} إشعار غير مقروء'**
+  String unreadBadge(String count);
+
+  /// No description provided for @notifBookingRequestReceivedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الدفع وأُرسل طلبك'**
+  String get notifBookingRequestReceivedTitle;
+
+  /// No description provided for @notifBookingRequestReceivedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك هيرد خلال 24 ساعة. اضغط للتفاصيل.'**
+  String get notifBookingRequestReceivedBody;
+
+  /// No description provided for @notifBookingConfirmedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك ✓'**
+  String get notifBookingConfirmedTitle;
+
+  /// No description provided for @notifBookingConfirmedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifBookingConfirmedBody;
+
+  /// No description provided for @notifBookingRejectedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك اعتذر عن الطلب'**
+  String get notifBookingRejectedTitle;
+
+  /// No description provided for @notifBookingRejectedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.'**
+  String get notifBookingRejectedBody;
+
+  /// No description provided for @notifBookingExpiredTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك مردّش في المهلة'**
+  String get notifBookingExpiredTitle;
+
+  /// No description provided for @notifBookingExpiredBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.'**
+  String get notifBookingExpiredBody;
+
+  /// No description provided for @notifBookingPaymentConflictTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواريخ اتحجزت قبل دفعتك'**
+  String get notifBookingPaymentConflictTitle;
+
+  /// No description provided for @notifBookingPaymentConflictBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.'**
+  String get notifBookingPaymentConflictBody;
+
+  /// No description provided for @notifBookingCancelledByGuestTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إلغاء حجزك'**
+  String get notifBookingCancelledByGuestTitle;
+
+  /// No description provided for @notifBookingCancelledByGuestBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifBookingCancelledByGuestBody;
+
+  /// No description provided for @notifBookingCancelledByPlatformTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'OnAir ألغت الحجز'**
+  String get notifBookingCancelledByPlatformTitle;
+
+  /// No description provided for @notifBookingCancelledByPlatformBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifBookingCancelledByPlatformBody;
+
+  /// No description provided for @notifBookingReplacementOfferedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك عرض بديل'**
+  String get notifBookingReplacementOfferedTitle;
+
+  /// No description provided for @notifBookingReplacementOfferedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط لمراجعة العرض.'**
+  String get notifBookingReplacementOfferedBody;
+
+  /// No description provided for @notifBookingNoShowRecordedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تسجيل عدم الحضور'**
+  String get notifBookingNoShowRecordedTitle;
+
+  /// No description provided for @notifBookingNoShowRecordedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifBookingNoShowRecordedBody;
+
+  /// No description provided for @notifBookingReopenedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إعادة فتح الحجز'**
+  String get notifBookingReopenedTitle;
+
+  /// No description provided for @notifBookingReopenedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifBookingReopenedBody;
+
+  /// No description provided for @notifPaymentFailedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع'**
+  String get notifPaymentFailedTitle;
+
+  /// No description provided for @notifPaymentFailedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ولم يُخصم أي مبلغ.'**
+  String get notifPaymentFailedBody;
+
+  /// No description provided for @notifPaymentRemainingDueTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تذكير بسداد المتبقي'**
+  String get notifPaymentRemainingDueTitle;
+
+  /// No description provided for @notifPaymentRemainingDueBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لازم يتسدد قبل الاستلام.'**
+  String get notifPaymentRemainingDueBody;
+
+  /// No description provided for @notifPaymentRemainingPaidTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم سداد المتبقي'**
+  String get notifPaymentRemainingPaidTitle;
+
+  /// No description provided for @notifPaymentRemainingPaidBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifPaymentRemainingPaidBody;
+
+  /// No description provided for @notifCashConfirmationRequestedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد الدفع النقدي'**
+  String get notifCashConfirmationRequestedTitle;
+
+  /// No description provided for @notifCashConfirmationRequestedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود على بريدك.'**
+  String get notifCashConfirmationRequestedBody;
+
+  /// No description provided for @notifCashPaymentConfirmedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد الدفع النقدي'**
+  String get notifCashPaymentConfirmedTitle;
+
+  /// No description provided for @notifCashPaymentConfirmedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للإيصال.'**
+  String get notifCashPaymentConfirmedBody;
+
+  /// No description provided for @notifStayCheckinReminderTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ميعاد وصولك قرّب'**
+  String get notifStayCheckinReminderTitle;
+
+  /// No description provided for @notifStayCheckinReminderBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifStayCheckinReminderBody;
+
+  /// No description provided for @notifStayCheckoutReminderTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ميعاد المغادرة قرّب'**
+  String get notifStayCheckoutReminderTitle;
+
+  /// No description provided for @notifStayCheckoutReminderBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifStayCheckoutReminderBody;
+
+  /// No description provided for @notifStayHostHandoverConfirmedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك أكّد تسليم الشقة'**
+  String get notifStayHostHandoverConfirmedTitle;
+
+  /// No description provided for @notifStayHostHandoverConfirmedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد استلامك من التطبيق.'**
+  String get notifStayHostHandoverConfirmedBody;
+
+  /// No description provided for @notifStayCheckedInTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدأت إقامتك'**
+  String get notifStayCheckedInTitle;
+
+  /// No description provided for @notifStayCheckedInBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'نتمنى لك إقامة سعيدة.'**
+  String get notifStayCheckedInBody;
+
+  /// No description provided for @notifStayCompletedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتملت إقامتك'**
+  String get notifStayCompletedTitle;
+
+  /// No description provided for @notifStayCompletedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'شاركنا رأيك!'**
+  String get notifStayCompletedBody;
+
+  /// No description provided for @notifDamageClaimOpenedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيه مطالبة على حجزك'**
+  String get notifDamageClaimOpenedTitle;
+
+  /// No description provided for @notifDamageClaimOpenedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للمراجعة.'**
+  String get notifDamageClaimOpenedBody;
+
+  /// No description provided for @notifDamageResolvedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم البت في المطالبة'**
+  String get notifDamageResolvedTitle;
+
+  /// No description provided for @notifDamageResolvedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifDamageResolvedBody;
+
+  /// No description provided for @notifRefundRequestedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم طلب الاسترداد'**
+  String get notifRefundRequestedTitle;
+
+  /// No description provided for @notifRefundRequestedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifRefundRequestedBody;
+
+  /// No description provided for @notifRefundExecutedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسترداد قيد التنفيذ'**
+  String get notifRefundExecutedTitle;
+
+  /// No description provided for @notifRefundExecutedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifRefundExecutedBody;
+
+  /// No description provided for @notifRefundVerifiedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رد المبلغ'**
+  String get notifRefundVerifiedTitle;
+
+  /// No description provided for @notifRefundVerifiedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifRefundVerifiedBody;
+
+  /// No description provided for @notifSupportStaffRepliedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'رد جديد من خدمة العملاء'**
+  String get notifSupportStaffRepliedTitle;
+
+  /// No description provided for @notifSupportStaffRepliedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للقراءة.'**
+  String get notifSupportStaffRepliedBody;
+
+  /// No description provided for @notifSupportCaseResolvedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حل حالتك'**
+  String get notifSupportCaseResolvedTitle;
+
+  /// No description provided for @notifSupportCaseResolvedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifSupportCaseResolvedBody;
+
+  /// No description provided for @notifReviewApprovedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم نشر تقييمك'**
+  String get notifReviewApprovedTitle;
+
+  /// No description provided for @notifReviewApprovedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكرًا لمشاركتك.'**
+  String get notifReviewApprovedBody;
+
+  /// No description provided for @notifReviewRejectedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييمك مش هيتنشر'**
+  String get notifReviewRejectedTitle;
+
+  /// No description provided for @notifReviewRejectedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifReviewRejectedBody;
+
+  /// No description provided for @notifAccountPhoneChangedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تغيير رقم الموبايل'**
+  String get notifAccountPhoneChangedTitle;
+
+  /// No description provided for @notifAccountPhoneChangedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لو مش انت، تواصل مع الدعم.'**
+  String get notifAccountPhoneChangedBody;
+
+  /// No description provided for @notifAccountPasswordChangedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تغيير كلمة المرور'**
+  String get notifAccountPasswordChangedTitle;
+
+  /// No description provided for @notifAccountPasswordChangedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لو مش انت، تواصل مع الدعم.'**
+  String get notifAccountPasswordChangedBody;
+
+  /// No description provided for @notifGenericTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك تحديث جديد'**
+  String get notifGenericTitle;
+
+  /// No description provided for @notifGenericBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتفاصيل.'**
+  String get notifGenericBody;
 }
 
 class _AppLocalizationsDelegate

@@ -718,4 +718,649 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportEntryComingSoon => 'خدمة الدعم من التطبيق هتتفتح قريب.';
+
+  @override
+  String get errorAccountSuspended => 'الحساب موقوف. تواصل مع خدمة العملاء.';
+
+  @override
+  String get authPhoneAlreadyUsed => 'الرقم ده مستخدم في حساب تاني.';
+
+  @override
+  String get bookingPolicyOutOfBounds =>
+      'السعر مش ثابت على التواريخ دي. جرّب تواريخ تانية أو تواصل مع الدعم.';
+
+  @override
+  String get errorConflict => 'البيانات اتغيرت. حدّث الصفحة وجرّب تاني.';
+
+  @override
+  String get bookingStateChanged => 'حالة الحجز اتغيرت. حدّث الصفحة.';
+
+  @override
+  String get errorDuplicateOperation => 'العملية دي اتعملت قبل كده.';
+
+  @override
+  String get paymentVerificationIssue =>
+      'فيه مشكلة في التحقق من الدفع. فريقنا هيتواصل معاك.';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get bookingDatesTitle => 'اختار التواريخ';
+
+  @override
+  String get bookingRangeHasUnavailable =>
+      'الفترة دي فيها يوم مش متاح. اختار تواريخ تانية.';
+
+  @override
+  String bookingNightsCount(String count) {
+    return 'عدد الليالي: $count';
+  }
+
+  @override
+  String get bookingContinue => 'متابعة';
+
+  @override
+  String get bookingStartFromProperty => 'ابدأ الحجز من صفحة الشقة.';
+
+  @override
+  String get bookingSummaryTitle => 'ملخص الحجز';
+
+  @override
+  String get bookingNights => 'الليالي';
+
+  @override
+  String get bookingNightlyPrice => 'سعر الليلة';
+
+  @override
+  String get bookingTotal => 'الإجمالي';
+
+  @override
+  String get bookingPayNow => 'المطلوب دفعه دلوقتي';
+
+  @override
+  String get bookingRemaining => 'المتبقي';
+
+  @override
+  String bookingRemainingDue(String date) {
+    return 'يتسدد قبل $date';
+  }
+
+  @override
+  String get bookingPolicyTitle => 'الشروط وسياسة الإلغاء';
+
+  @override
+  String get bookingSummaryOwnerNotice =>
+      'هيتبعت طلبك للمالك بعد الدفع. لو رفض أو مردّش خلال 24 ساعة هيترد لك المبلغ بالكامل.';
+
+  @override
+  String get bookingGoToPayment => 'اذهب للدفع';
+
+  @override
+  String get paymentReturnHint => 'لو خلّصت الدفع، اضغط هنا عشان نتحقق منه.';
+
+  @override
+  String get paymentCheckStatus => 'تحقق من الدفع';
+
+  @override
+  String get paymentVerifying => 'جارٍ التحقق من الدفع…';
+
+  @override
+  String get paymentVerifyingBody => 'ده ممكن ياخد دقايق. هنبلغك أول ما يتأكد.';
+
+  @override
+  String get paymentSuccessTitle => 'تم الدفع وأُرسل طلبك للمالك';
+
+  @override
+  String get paymentSuccessBody => 'التواريخ محجوزة لك لحد ما المالك يرد.';
+
+  @override
+  String ownerDeadlineCountdown(String time) {
+    return 'المالك قدامه $time للرد';
+  }
+
+  @override
+  String get paymentViewBooking => 'عرض الحجز';
+
+  @override
+  String get paymentFailedTitle => 'لم تكتمل عملية الدفع';
+
+  @override
+  String get paymentFailedBody => 'ولم يُخصم أي مبلغ.';
+
+  @override
+  String get paymentTryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get paymentConflictTitle => 'التواريخ اتحجزت قبل اكتمال دفعتك';
+
+  @override
+  String paymentConflictBody(String amount) {
+    return 'هيترد لك المبلغ بالكامل ($amount).';
+  }
+
+  @override
+  String get paymentFindOtherDates => 'ابحث عن تواريخ تانية';
+
+  @override
+  String get paymentTimeoutTitle => 'لسه موصلناش تأكيد الدفع';
+
+  @override
+  String get paymentTimeoutBody => 'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.';
+
+  @override
+  String get paymentGoToBookings => 'اذهب لحجوزاتي';
+
+  @override
+  String get mockPaymentTitle => 'صفحة دفع تجريبية';
+
+  @override
+  String get mockPaySuccess => 'دفع ناجح';
+
+  @override
+  String get mockPayFailure => 'فشل الدفع';
+
+  @override
+  String get mockPayConflict => 'دفع ناجح بتواريخ محجوزة';
+
+  @override
+  String get mockPaySilent => 'الخادم ما يردش';
+
+  @override
+  String get mockPayClose => 'إغلاق الصفحة';
+
+  @override
+  String get verifyTitle => 'تأكيد بياناتك';
+
+  @override
+  String get verifyIntro =>
+      'قبل أول حجز لازم نأكد بريدك ورقم موبايلك بكود يوصلك على البريد.';
+
+  @override
+  String get verifyEmailCodeHint => 'اكتب الكود اللي وصلك على البريد';
+
+  @override
+  String get verifyHasWhatsapp => 'الرقم ده عليه واتساب';
+
+  @override
+  String get verifyWhatsappNumber => 'رقم الواتساب (اختياري)';
+
+  @override
+  String get verifyCodeSentToEmail => 'بعتنا كود من 6 أرقام على بريدك.';
+
+  @override
+  String get verifyResend => 'ابعت الكود تاني';
+
+  @override
+  String verifyResendIn(String seconds) {
+    return 'تقدر تبعت الكود تاني بعد $seconds ثانية';
+  }
+
+  @override
+  String get bookingsTabCurrent => 'الحالية';
+
+  @override
+  String get bookingsTabPast => 'السابقة';
+
+  @override
+  String get bookingsTabCancelled => 'الملغاة';
+
+  @override
+  String get bookingsEmptyCurrent => 'مفيش حجوزات حالية.';
+
+  @override
+  String get bookingsEmptyPast => 'مفيش إقامات سابقة.';
+
+  @override
+  String get bookingsEmptyCancelled => 'مفيش حجوزات ملغاة.';
+
+  @override
+  String get bookingsFindApartment => 'ابحث عن شقة';
+
+  @override
+  String lastUpdated(String time) {
+    return 'آخر تحديث: $time';
+  }
+
+  @override
+  String get bookingStatusPaymentPending => 'بانتظار إتمام الدفع';
+
+  @override
+  String get bookingStatusPaymentVerifying => 'جارٍ التحقق من الدفع';
+
+  @override
+  String get bookingStatusAwaitingOwner => 'بانتظار تأكيد المالك';
+
+  @override
+  String get bookingStatusPaymentConflict => 'التواريخ اتحجزت قبلك';
+
+  @override
+  String get bookingStatusConfirmed => 'حجز مؤكد';
+
+  @override
+  String get bookingStatusCheckedIn => 'إقامة جارية';
+
+  @override
+  String get bookingStatusCompleted => 'إقامة مكتملة';
+
+  @override
+  String get bookingStatusRejected => 'رفض المالك';
+
+  @override
+  String get bookingStatusExpired => 'انتهت مهلة التأكيد';
+
+  @override
+  String get bookingStatusCancelled => 'ملغي';
+
+  @override
+  String get bookingStatusNoShow => 'لم يحضر';
+
+  @override
+  String get bookingStatusAbandoned => 'لم يكتمل';
+
+  @override
+  String get bookingStatusUnknown => 'تحديث على الحجز';
+
+  @override
+  String get bookingMsgPaymentPending =>
+      'لم يكتمل الدفع بعد. تقدر تكمّل الدفع عشان طلبك يتبعت للمالك.';
+
+  @override
+  String get bookingMsgPaymentVerifying =>
+      'نتحقق من عملية الدفع. قد يستغرق ذلك دقائق، وسنبلغك فور التأكيد.';
+
+  @override
+  String bookingMsgAwaitingOwner(String deadline) {
+    return 'تم الدفع وأُرسل طلبك للمالك. المالك لديه حتى $deadline للرد. التواريخ محجوزة لك حتى ذلك الحين.';
+  }
+
+  @override
+  String get bookingMsgAwaitingOwnerNoDeadline =>
+      'تم الدفع وأُرسل طلبك للمالك. التواريخ محجوزة لك لحد ما يرد.';
+
+  @override
+  String get bookingMsgConfirmed => 'تم تأكيد حجزك!';
+
+  @override
+  String bookingMsgConfirmedWithRemaining(String amount) {
+    return 'تم تأكيد حجزك! يجب سداد $amount قبل الاستلام.';
+  }
+
+  @override
+  String get bookingMsgCheckedIn => 'نتمنى لك إقامة سعيدة.';
+
+  @override
+  String get bookingMsgCompleted => 'اكتملت إقامتك. شاركنا رأيك!';
+
+  @override
+  String bookingMsgRejected(String amount) {
+    return 'اعتذر المالك عن قبول الطلب. سيتم رد كامل المبلغ ($amount). سيتواصل معك فريق OnAir وقد يقترح بديلًا إن رغبت.';
+  }
+
+  @override
+  String bookingMsgExpired(String amount) {
+    return 'لم يرد المالك خلال 24 ساعة. سيتم رد كامل المبلغ ($amount).';
+  }
+
+  @override
+  String get bookingMsgCancelled => 'تم إلغاء الحجز.';
+
+  @override
+  String get bookingMsgNoShow =>
+      'تم تسجيل عدم الحضور. للاستفسار تواصل مع الدعم.';
+
+  @override
+  String bookingMsgConflict(String amount) {
+    return 'تم حجز هذه التواريخ قبل اكتمال دفعتك. سيتم رد المبلغ بالكامل ($amount).';
+  }
+
+  @override
+  String get bookingMsgAbandoned => 'لم يكتمل الدفع ولم يُخصم أي مبلغ.';
+
+  @override
+  String get bookingMsgUnknown =>
+      'فيه تحديث على حجزك. للاستفسار تواصل مع الدعم.';
+
+  @override
+  String get bookingCode => 'رقم الحجز';
+
+  @override
+  String get bookingCopyCode => 'نسخ رقم الحجز';
+
+  @override
+  String get bookingCodeCopied => 'تم نسخ رقم الحجز';
+
+  @override
+  String get bookingStayTitle => 'الإقامة';
+
+  @override
+  String get bookingArrival => 'الوصول';
+
+  @override
+  String get bookingDeparture => 'المغادرة';
+
+  @override
+  String get bookingCheckInTime => 'وقت الاستلام';
+
+  @override
+  String get bookingCheckOutTime => 'وقت المغادرة';
+
+  @override
+  String get bookingPaymentsTitle => 'المدفوعات';
+
+  @override
+  String get bookingPaid => 'المدفوع';
+
+  @override
+  String get paymentMethodCard => 'بطاقة / محفظة';
+
+  @override
+  String get paymentMethodCash => 'نقدًا';
+
+  @override
+  String get paymentLineSucceeded => 'تم';
+
+  @override
+  String get paymentLinePending => 'قيد التنفيذ';
+
+  @override
+  String get paymentLineFailed => 'لم يكتمل';
+
+  @override
+  String get bookingAddressTitle => 'العنوان';
+
+  @override
+  String get bookingArrivalInstructions => 'تعليمات الوصول';
+
+  @override
+  String get bookingSavedTermsTitle => 'الشروط وقت الحجز';
+
+  @override
+  String get bookingTimelineTitle => 'سجل الحجز';
+
+  @override
+  String get bookingEventGeneric => 'تحديث على الحجز';
+
+  @override
+  String get bookingContactSupport => 'تحتاج مساعدة؟ تواصل مع OnAir';
+
+  @override
+  String get refundChipRequested => 'تم طلب الاسترداد';
+
+  @override
+  String get refundChipInProgress => 'الاسترداد قيد التنفيذ';
+
+  @override
+  String get refundChipDone => 'تم رد المبلغ';
+
+  @override
+  String get refundChipProblem => 'مشكلة في الاسترداد';
+
+  @override
+  String get refundTitle => 'الاسترداد';
+
+  @override
+  String get refundAmount => 'مبلغ الاسترداد';
+
+  @override
+  String get refundStageRequested => 'طُلب';
+
+  @override
+  String get refundStageApproved => 'اعتُمد';
+
+  @override
+  String get refundStageExecuting => 'قيد التنفيذ';
+
+  @override
+  String get refundStageVerified => 'تم التحقق من وصوله';
+
+  @override
+  String get refundProblemHint =>
+      'فيه مشكلة في الاسترداد. فريق OnAir بيتابعها، وتقدر تتواصل مع الدعم.';
+
+  @override
+  String get unfinishedPaymentBanner => 'عندك دفع لم يكتمل.';
+
+  @override
+  String get unfinishedPaymentOpen => 'عرض';
+
+  @override
+  String get quoteChangedNotice =>
+      'السعر اتحدّث. راجع المبالغ الجديدة قبل الدفع.';
+
+  @override
+  String get quoteConfirmNew => 'أكّد المبالغ الجديدة';
+
+  @override
+  String get termsChangedNotice =>
+      'الشروط اتحدّثت. راجعها ووافق عليها للمتابعة.';
+
+  @override
+  String get termsAcceptNew => 'أوافق على الشروط الجديدة';
+
+  @override
+  String get notificationsMarkAllRead => 'تحديد الكل كمقروء';
+
+  @override
+  String get notificationsEmpty => 'مفيش إشعارات لسه.';
+
+  @override
+  String get notificationsOffNotice =>
+      'الإشعارات مقفولة. فعّلها عشان تعرف فورًا لما المالك يرد.';
+
+  @override
+  String get notificationsOpenSettings => 'فتح الإعدادات';
+
+  @override
+  String get pushPermissionTitle => 'فعّل الإشعارات';
+
+  @override
+  String get pushPermissionBody => 'عشان تعرف فورًا لما المالك يرد على طلبك.';
+
+  @override
+  String get pushPermissionEnable => 'فعّل';
+
+  @override
+  String get pushPermissionLater => 'مش دلوقتي';
+
+  @override
+  String unreadBadge(String count) {
+    return '$count إشعار غير مقروء';
+  }
+
+  @override
+  String get notifBookingRequestReceivedTitle => 'تم الدفع وأُرسل طلبك';
+
+  @override
+  String get notifBookingRequestReceivedBody =>
+      'المالك هيرد خلال 24 ساعة. اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingConfirmedTitle => 'تم تأكيد حجزك ✓';
+
+  @override
+  String get notifBookingConfirmedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingRejectedTitle => 'المالك اعتذر عن الطلب';
+
+  @override
+  String get notifBookingRejectedBody =>
+      'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingExpiredTitle => 'المالك مردّش في المهلة';
+
+  @override
+  String get notifBookingExpiredBody =>
+      'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingPaymentConflictTitle => 'التواريخ اتحجزت قبل دفعتك';
+
+  @override
+  String get notifBookingPaymentConflictBody =>
+      'هيترد لك المبلغ بالكامل. اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingCancelledByGuestTitle => 'تم إلغاء حجزك';
+
+  @override
+  String get notifBookingCancelledByGuestBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingCancelledByPlatformTitle => 'OnAir ألغت الحجز';
+
+  @override
+  String get notifBookingCancelledByPlatformBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingReplacementOfferedTitle => 'عندك عرض بديل';
+
+  @override
+  String get notifBookingReplacementOfferedBody => 'اضغط لمراجعة العرض.';
+
+  @override
+  String get notifBookingNoShowRecordedTitle => 'تم تسجيل عدم الحضور';
+
+  @override
+  String get notifBookingNoShowRecordedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifBookingReopenedTitle => 'تم إعادة فتح الحجز';
+
+  @override
+  String get notifBookingReopenedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifPaymentFailedTitle => 'لم يكتمل الدفع';
+
+  @override
+  String get notifPaymentFailedBody => 'ولم يُخصم أي مبلغ.';
+
+  @override
+  String get notifPaymentRemainingDueTitle => 'تذكير بسداد المتبقي';
+
+  @override
+  String get notifPaymentRemainingDueBody => 'لازم يتسدد قبل الاستلام.';
+
+  @override
+  String get notifPaymentRemainingPaidTitle => 'تم سداد المتبقي';
+
+  @override
+  String get notifPaymentRemainingPaidBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifCashConfirmationRequestedTitle => 'أكّد الدفع النقدي';
+
+  @override
+  String get notifCashConfirmationRequestedBody => 'الكود على بريدك.';
+
+  @override
+  String get notifCashPaymentConfirmedTitle => 'تم تأكيد الدفع النقدي';
+
+  @override
+  String get notifCashPaymentConfirmedBody => 'اضغط للإيصال.';
+
+  @override
+  String get notifStayCheckinReminderTitle => 'ميعاد وصولك قرّب';
+
+  @override
+  String get notifStayCheckinReminderBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifStayCheckoutReminderTitle => 'ميعاد المغادرة قرّب';
+
+  @override
+  String get notifStayCheckoutReminderBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifStayHostHandoverConfirmedTitle => 'المالك أكّد تسليم الشقة';
+
+  @override
+  String get notifStayHostHandoverConfirmedBody => 'أكّد استلامك من التطبيق.';
+
+  @override
+  String get notifStayCheckedInTitle => 'بدأت إقامتك';
+
+  @override
+  String get notifStayCheckedInBody => 'نتمنى لك إقامة سعيدة.';
+
+  @override
+  String get notifStayCompletedTitle => 'اكتملت إقامتك';
+
+  @override
+  String get notifStayCompletedBody => 'شاركنا رأيك!';
+
+  @override
+  String get notifDamageClaimOpenedTitle => 'فيه مطالبة على حجزك';
+
+  @override
+  String get notifDamageClaimOpenedBody => 'اضغط للمراجعة.';
+
+  @override
+  String get notifDamageResolvedTitle => 'تم البت في المطالبة';
+
+  @override
+  String get notifDamageResolvedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifRefundRequestedTitle => 'تم طلب الاسترداد';
+
+  @override
+  String get notifRefundRequestedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifRefundExecutedTitle => 'الاسترداد قيد التنفيذ';
+
+  @override
+  String get notifRefundExecutedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifRefundVerifiedTitle => 'تم رد المبلغ';
+
+  @override
+  String get notifRefundVerifiedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifSupportStaffRepliedTitle => 'رد جديد من خدمة العملاء';
+
+  @override
+  String get notifSupportStaffRepliedBody => 'اضغط للقراءة.';
+
+  @override
+  String get notifSupportCaseResolvedTitle => 'تم حل حالتك';
+
+  @override
+  String get notifSupportCaseResolvedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifReviewApprovedTitle => 'تم نشر تقييمك';
+
+  @override
+  String get notifReviewApprovedBody => 'شكرًا لمشاركتك.';
+
+  @override
+  String get notifReviewRejectedTitle => 'تقييمك مش هيتنشر';
+
+  @override
+  String get notifReviewRejectedBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get notifAccountPhoneChangedTitle => 'تم تغيير رقم الموبايل';
+
+  @override
+  String get notifAccountPhoneChangedBody => 'لو مش انت، تواصل مع الدعم.';
+
+  @override
+  String get notifAccountPasswordChangedTitle => 'تم تغيير كلمة المرور';
+
+  @override
+  String get notifAccountPasswordChangedBody => 'لو مش انت، تواصل مع الدعم.';
+
+  @override
+  String get notifGenericTitle => 'عندك تحديث جديد';
+
+  @override
+  String get notifGenericBody => 'اضغط للتفاصيل.';
 }
