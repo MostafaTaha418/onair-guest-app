@@ -49,9 +49,14 @@ void main() {
       apiErrorMessage(errorOf(ErrorCode.unauthenticated), l10n),
       l10n.errorUnexpectedNoRef,
     );
+  });
+
+  test('rate limited shows its own wait time (zero when absent)', () {
+    // G2 gives the rate-limit code its own message; without server metadata
+    // the wait renders as 0:00.
     expect(
       apiErrorMessage(errorOf(ErrorCode.rateLimited), l10n),
-      l10n.errorUnexpectedNoRef,
+      l10n.authRateLimited('0:00'),
     );
   });
 }

@@ -9,6 +9,7 @@ import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -54,6 +55,12 @@ void main() {
           ),
           RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          RepositoryProvider<NotificationSignalSource>.value(
+            value: ControllableNotificationSignalSource(),
+          ),
+          RepositoryProvider<NotificationSignalSource>.value(
+            value: ControllableNotificationSignalSource(),
+          ),
         ],
         child: const OnAirApp(),
       ),
@@ -115,6 +122,12 @@ void main() {
           ),
           RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          RepositoryProvider<NotificationSignalSource>.value(
+            value: ControllableNotificationSignalSource(),
+          ),
+          RepositoryProvider<NotificationSignalSource>.value(
+            value: ControllableNotificationSignalSource(),
+          ),
         ],
         child: OnAirApp(versionGate: gate),
       ),

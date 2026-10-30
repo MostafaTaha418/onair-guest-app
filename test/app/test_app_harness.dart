@@ -10,6 +10,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -113,6 +114,9 @@ Future<void> _pumpApp(
         ),
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+        RepositoryProvider<NotificationSignalSource>.value(
+          value: ControllableNotificationSignalSource(),
+        ),
         RepositoryProvider<ShareService>.value(value: FakeShareService()),
         RepositoryProvider<ShareLinks>.value(
           value: const ShareLinks(linkDomain: 'on-air.website'),

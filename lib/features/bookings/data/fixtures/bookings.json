@@ -1,0 +1,918 @@
+[
+  {
+    "id": "b0000000-0000-4000-8000-000000000001",
+    "code": "OA-MOCK001",
+    "status": "confirmed",
+    "property": {
+      "id": "00000000-0000-4000-8000-00000000001f",
+      "title": "شقة 3 غرف للتجربة",
+      "cover_image": {
+        "variants": [
+          {
+            "width": 320,
+            "url": "https://cdn.mock.onair.test/310-320.jpg"
+          },
+          {
+            "width": 720,
+            "url": "https://cdn.mock.onair.test/310-720.jpg"
+          }
+        ],
+        "blurhash": null
+      },
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-11-20",
+    "check_out": "2026-11-23",
+    "nights": 3,
+    "guests_count": 2,
+    "nightly_minor": 150000,
+    "total_minor": 450000,
+    "pay_now_minor": 112500,
+    "paid_minor": 112500,
+    "remaining_minor": 337500,
+    "remaining_due_at": "2026-11-19T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000001",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 112500,
+        "paid_at": "2026-10-28T09:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": "المفتاح مع حارس العمارة. اطلب منه باسم الحجز.",
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-28T08:55:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.confirmed",
+        "to_status": "confirmed",
+        "created_at": "2026-10-28T12:00:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-28T08:55:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000002",
+    "code": "OA-MOCK002",
+    "status": "awaiting_owner",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-11-10",
+    "check_out": "2026-11-12",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 120000,
+    "total_minor": 240000,
+    "pay_now_minor": 60000,
+    "paid_minor": 60000,
+    "remaining_minor": 180000,
+    "remaining_due_at": "2026-11-09T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": "2026-11-02T10:00:00Z",
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000002",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 60000,
+        "paid_at": "2026-10-20T02:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.awaiting_owner",
+        "to_status": "awaiting_owner",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T02:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000003",
+    "code": "OA-MOCK003",
+    "status": "payment_verifying",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000021",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-12-01",
+    "check_out": "2026-12-05",
+    "nights": 4,
+    "guests_count": 2,
+    "nightly_minor": 100000,
+    "total_minor": 400000,
+    "pay_now_minor": 100000,
+    "paid_minor": 0,
+    "remaining_minor": 400000,
+    "remaining_due_at": "2026-11-30T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "pending",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000003",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "pending",
+        "amount_minor": 100000,
+        "paid_at": null
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.payment_verifying",
+        "to_status": "payment_verifying",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T03:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000004",
+    "code": "OA-MOCK004",
+    "status": "checked_in",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000022",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-10-29",
+    "check_out": "2026-11-02",
+    "nights": 4,
+    "guests_count": 2,
+    "nightly_minor": 90000,
+    "total_minor": 360000,
+    "pay_now_minor": 360000,
+    "paid_minor": 360000,
+    "remaining_minor": 0,
+    "remaining_due_at": null,
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000004",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 360000,
+        "paid_at": "2026-10-20T04:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": "الدور الثالث، شقة 7.",
+    "available_actions": [
+      "pay_remaining",
+      "request_cancellation",
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.checked_in",
+        "to_status": "checked_in",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T04:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000005",
+    "code": "OA-MOCK005",
+    "status": "completed",
+    "property": {
+      "id": "00000000-0000-4000-8000-00000000001f",
+      "title": "شقة 3 غرف للتجربة",
+      "cover_image": {
+        "variants": [
+          {
+            "width": 320,
+            "url": "https://cdn.mock.onair.test/310-320.jpg"
+          },
+          {
+            "width": 720,
+            "url": "https://cdn.mock.onair.test/310-720.jpg"
+          }
+        ],
+        "blurhash": null
+      },
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-09-10",
+    "check_out": "2026-09-13",
+    "nights": 3,
+    "guests_count": 2,
+    "nightly_minor": 150000,
+    "total_minor": 450000,
+    "pay_now_minor": 450000,
+    "paid_minor": 450000,
+    "remaining_minor": 0,
+    "remaining_due_at": null,
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000005",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 450000,
+        "paid_at": "2026-10-20T05:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.completed",
+        "to_status": "completed",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T05:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000006",
+    "code": "OA-MOCK006",
+    "status": "rejected",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-11-15",
+    "check_out": "2026-11-17",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 120000,
+    "total_minor": 240000,
+    "pay_now_minor": 60000,
+    "paid_minor": 60000,
+    "remaining_minor": 180000,
+    "remaining_due_at": "2026-11-14T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000006",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 60000,
+        "paid_at": "2026-10-20T06:00:00Z"
+      }
+    ],
+    "refund": {
+      "id": "d0000000-0000-4000-8000-000000000006",
+      "amount_minor": 60000,
+      "status": "requested",
+      "updated_at": "2026-10-27T10:00:00Z"
+    },
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.rejected",
+        "to_status": "rejected",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T06:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000007",
+    "code": "OA-MOCK007",
+    "status": "expired",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000021",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-11-18",
+    "check_out": "2026-11-20",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 100000,
+    "total_minor": 200000,
+    "pay_now_minor": 50000,
+    "paid_minor": 50000,
+    "remaining_minor": 150000,
+    "remaining_due_at": "2026-11-17T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000007",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 50000,
+        "paid_at": "2026-10-20T07:00:00Z"
+      }
+    ],
+    "refund": {
+      "id": "d0000000-0000-4000-8000-000000000007",
+      "amount_minor": 50000,
+      "status": "approved",
+      "updated_at": "2026-10-27T11:00:00Z"
+    },
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.expired",
+        "to_status": "expired",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T07:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000008",
+    "code": "OA-MOCK008",
+    "status": "cancelled",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000022",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-10-05",
+    "check_out": "2026-10-07",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 90000,
+    "total_minor": 180000,
+    "pay_now_minor": 180000,
+    "paid_minor": 180000,
+    "remaining_minor": 0,
+    "remaining_due_at": null,
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000008",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 180000,
+        "paid_at": "2026-10-20T08:00:00Z"
+      }
+    ],
+    "refund": {
+      "id": "d0000000-0000-4000-8000-000000000008",
+      "amount_minor": 180000,
+      "status": "verified",
+      "updated_at": "2026-10-27T12:00:00Z"
+    },
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.cancelled",
+        "to_status": "cancelled",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T08:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000009",
+    "code": "OA-MOCK009",
+    "status": "no_show",
+    "property": {
+      "id": "00000000-0000-4000-8000-00000000001f",
+      "title": "شقة 3 غرف للتجربة",
+      "cover_image": {
+        "variants": [
+          {
+            "width": 320,
+            "url": "https://cdn.mock.onair.test/310-320.jpg"
+          },
+          {
+            "width": 720,
+            "url": "https://cdn.mock.onair.test/310-720.jpg"
+          }
+        ],
+        "blurhash": null
+      },
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-10-01",
+    "check_out": "2026-10-03",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 150000,
+    "total_minor": 300000,
+    "pay_now_minor": 75000,
+    "paid_minor": 75000,
+    "remaining_minor": 225000,
+    "remaining_due_at": "2026-09-30T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000009",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 75000,
+        "paid_at": "2026-10-20T09:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.no_show",
+        "to_status": "no_show",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T09:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000010",
+    "code": "OA-MOCK010",
+    "status": "payment_conflict",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-11-25",
+    "check_out": "2026-11-27",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 120000,
+    "total_minor": 240000,
+    "pay_now_minor": 60000,
+    "paid_minor": 60000,
+    "remaining_minor": 180000,
+    "remaining_due_at": "2026-11-24T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000010",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 60000,
+        "paid_at": "2026-10-20T10:00:00Z"
+      }
+    ],
+    "refund": {
+      "id": "d0000000-0000-4000-8000-000000000010",
+      "amount_minor": 60000,
+      "status": "executed",
+      "updated_at": "2026-10-27T13:00:00Z"
+    },
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.payment_conflict",
+        "to_status": "payment_conflict",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T10:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000011",
+    "code": "OA-MOCK011",
+    "status": "payment_pending",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000021",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-12-10",
+    "check_out": "2026-12-12",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 100000,
+    "total_minor": 200000,
+    "pay_now_minor": 50000,
+    "paid_minor": 0,
+    "remaining_minor": 200000,
+    "remaining_due_at": "2026-12-09T22:00:00Z",
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "failed",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000011",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "failed",
+        "amount_minor": 50000,
+        "paid_at": null
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "payment.failed",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T11:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000012",
+    "code": "OA-MOCK012",
+    "status": "abandoned",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000022",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-12-20",
+    "check_out": "2026-12-22",
+    "nights": 2,
+    "guests_count": 2,
+    "nightly_minor": 90000,
+    "total_minor": 180000,
+    "pay_now_minor": 45000,
+    "paid_minor": 0,
+    "remaining_minor": 180000,
+    "remaining_due_at": null,
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "failed",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000012",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "failed",
+        "amount_minor": 45000,
+        "paid_at": null
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.abandoned",
+        "to_status": "abandoned",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T12:00:00Z"
+  },
+  {
+    "id": "b0000000-0000-4000-8000-000000000013",
+    "code": "OA-MOCK013",
+    "status": "completed",
+    "property": {
+      "id": "00000000-0000-4000-8000-000000000021",
+      "title": "شقة 3 غرف",
+      "cover_image": null,
+      "area_name": "المعادي",
+      "city_name": "القاهرة",
+      "address_text": "شارع 9، المعادي، القاهرة",
+      "check_in_time": "14:00",
+      "check_out_time": "12:00"
+    },
+    "check_in": "2026-08-01",
+    "check_out": "2026-08-04",
+    "nights": 3,
+    "guests_count": 2,
+    "nightly_minor": 100000,
+    "total_minor": 300000,
+    "pay_now_minor": 300000,
+    "paid_minor": 300000,
+    "remaining_minor": 0,
+    "remaining_due_at": null,
+    "currency": "EGP",
+    "owner_response_deadline": null,
+    "payment_state": "succeeded",
+    "payments": [
+      {
+        "id": "c0000000-0000-4000-8000-000000000013",
+        "purpose": "initial",
+        "method": "kashier",
+        "status": "succeeded",
+        "amount_minor": 300000,
+        "paid_at": "2026-10-20T13:00:00Z"
+      }
+    ],
+    "refund": null,
+    "terms_snapshot": {
+      "policy_summary": {
+        "deposit_type": "percent",
+        "deposit_percent_bp": 2500,
+        "deposit_amount_minor": null,
+        "free_cancellation_hours": 72
+      }
+    },
+    "access_instructions": null,
+    "available_actions": [
+      "contact_support"
+    ],
+    "events": [
+      {
+        "event_type": "booking.started",
+        "to_status": "payment_pending",
+        "created_at": "2026-10-19T00:00:00Z",
+        "note": null
+      },
+      {
+        "event_type": "booking.completed",
+        "to_status": "completed",
+        "created_at": "2026-10-19T00:30:00Z",
+        "note": null
+      }
+    ],
+    "created_at": "2026-10-20T13:00:00Z"
+  }
+]

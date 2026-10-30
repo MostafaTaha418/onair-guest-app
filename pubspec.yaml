@@ -57,6 +57,7 @@ flutter:
   generate: true
   assets:
     - lib/features/listings/data/fixtures/
+    - lib/features/bookings/data/fixtures/
   fonts:
     - family: Cairo
       fonts:

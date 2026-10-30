@@ -12,6 +12,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
@@ -19,6 +20,7 @@ import 'package:on_air/features/account_gate/application/personal_data_resetter.
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
@@ -64,6 +66,8 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final PersonalDataResetter _personalDataResetter;
   late final AppLogger _logger;
   late final VersionGate _versionGate;
+  late final NotificationSignalSource _signals;
+  StreamSubscription<AuthState>? _authSubscription;
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
 
@@ -71,6 +75,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   void initState() {
     super.initState();
     _logger = context.read<AppLogger>();
+    _signals = context.read<NotificationSignalSource>();
     _authCubit = AuthCubit(
       context.read<AuthRepository>(),
       currentTermsVersion: '',
@@ -98,10 +103,19 @@ final class _OnAirAppState extends State<OnAirApp> {
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
+    // One live channel per signed-in guest (Guest Plan §12.3): open on the
+    // session, close on sign-out and session end.
+    _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
     unawaited(
       _initialize(context.read<AppConfigSource>()),
     );
   }
+
+  void _onAuthStateChanged(AuthState state) => switch (state) {
+    SignedIn(:final account) => unawaited(_signals.start(account.id)),
+    SignedOut() || SessionEnded() => unawaited(_signals.stop()),
+    _ => null,
+  };
 
   VersionGate _createVersionGate() => VersionGate(
     configSource: context.read<AppConfigSource>(),
@@ -125,6 +139,9 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   Future<void> _initialize(AppConfigSource configRepository) async {
     await _authCubit.restore();
+    // The restored session opens the channel too (no state change may fire
+    // for a restored sign-in).
+    _onAuthStateChanged(_authCubit.state);
     final source = widget.uriLinkSource;
     final domain = widget.linkDomain;
     if (source != null && domain != null && mounted) {
@@ -145,6 +162,8 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   @override
   void dispose() {
+    unawaited(_authSubscription?.cancel());
+    unawaited(_signals.stop());
     unawaited(_incomingLinks?.close());
     _router.dispose();
     _refresh.dispose();

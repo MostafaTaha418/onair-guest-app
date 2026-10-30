@@ -7,6 +7,7 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -59,6 +60,9 @@ Future<void> bootMockApp(WidgetTester tester) async {
         ),
         RepositoryProvider<HomeFeedCache>.value(
           value: HomeFeedCache(cache),
+        ),
+        RepositoryProvider<NotificationSignalSource>.value(
+          value: ControllableNotificationSignalSource(),
         ),
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
       ],

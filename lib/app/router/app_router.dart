@@ -212,7 +212,7 @@ GoRouter createAppRouter({
       builder: (_, _) => const NotAvailableScreen(),
     ),
     GoRoute(
-      path: AppRoutes.paymentReturn,
+      path: AppRoutes.paymentReturnPath,
       name: 'linked-payment-return',
       builder: (_, _) => const NotAvailableScreen(),
     ),
