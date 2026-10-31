@@ -213,6 +213,15 @@ Future<String> openFirstApartmentAndSignIn(
   final apartmentTitle = _firstCardTitle(tester);
   await tester.tap(find.byType(PropertyCard).first);
   await tester.pumpAndSettle();
+  // On device, loading fixture assets can finish after the navigation frame.
+  for (
+    var attempt = 0;
+    attempt < 40 && !tester.any(find.text(l10n.bookNow));
+    attempt++
+  ) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(find.text(l10n.bookNow), findsOneWidget);
   await tester.tap(find.text(l10n.bookNow));
   await tester.pumpAndSettle();
   if (firstSignIn) {
