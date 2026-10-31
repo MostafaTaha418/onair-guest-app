@@ -117,7 +117,10 @@ jobs:
           echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tar.gz' | sha256sum --check --strict
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           GITLEAKS_BINARY=/tmp/gitleaks python3 -m unittest discover -s tool/tests -p 'test_gitleaks.py' -v
-          /tmp/gitleaks detect -c .gitleaks.toml --redact
+          /tmp/gitleaks detect -c .gitleaks.toml --redact --report-format json --report-path /tmp/gitleaks-report.json || {
+            python3 -c 'import json; findings=json.load(open("/tmp/gitleaks-report.json")); [print("::error file={}::Gitleaks rule {} in commit {}".format(item["File"], item["RuleID"], item["Commit"])) for item in findings]'
+            exit 1
+          }
 
   android-device:
     name: android device (API ${{ matrix.api-level }})
