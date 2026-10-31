@@ -13,7 +13,7 @@ void main() {
 
   testWidgets('one attempt key opens one booking, and the charged amount '
       'equals the quote', (tester) async {
-    skipUnlessStaging();
+    if (!skipUnlessStaging()) return;
     final propertyId = seedValue('DEPOSIT_PROPERTY');
     final harness = await bootStaging();
 

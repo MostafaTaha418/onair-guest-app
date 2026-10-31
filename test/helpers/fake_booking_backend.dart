@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
@@ -22,14 +23,18 @@ final class FakeBookingBackend {
     listings = MockListingsRepository(
       // Sync IO wrapped in an async signature: real async file reads never
       // complete under the fake async zone of a widget test.
-      loader: (path) async => File(path).readAsStringSync(),
+      loader: (path) => File(path).existsSync()
+          ? Future.value(File(path).readAsStringSync())
+          : rootBundle.loadString(path),
       latency: Duration.zero,
     );
     signals = ControllableNotificationSignalSource();
     server = MockBookingServer(
       listings: listings,
       signals: signals,
-      loader: (path) async => File(path).readAsStringSync(),
+      loader: (path) => File(path).existsSync()
+          ? Future.value(File(path).readAsStringSync())
+          : rootBundle.loadString(path),
       latency: Duration.zero,
       now: () => DateTime.utc(2026, 11, 1, 10),
       startVerified: startVerified,

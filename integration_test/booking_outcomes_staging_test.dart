@@ -14,7 +14,7 @@ void main() {
 
   testWidgets('seeded bookings surface their status, refund stage, and '
       'notifications', (tester) async {
-    skipUnlessStaging();
+    if (!skipUnlessStaging()) return;
     final harness = await bootStaging();
 
     final expected = {

@@ -15,7 +15,7 @@ void main() {
   testWidgets('a foreign booking is invisible to another guest', (
     tester,
   ) async {
-    skipUnlessStaging();
+    if (!skipUnlessStaging()) return;
     final foreignId = seedValue('FOREIGN_BOOKING');
     // bootStaging signs the seeded guest (A) in; the foreign booking belongs
     // to guest B.

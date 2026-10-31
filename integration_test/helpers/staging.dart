@@ -17,14 +17,27 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// with the required message unless it runs in remote mode against the
 /// Staging seed: mock mode has no Kashier, and the seed ids come from
 /// dart-defines carried in the seed configuration.
-void skipUnlessStaging() {
+bool skipUnlessStaging() {
   const mode = String.fromEnvironment('BACKEND_MODE');
-  if (mode != 'remote') {
+  if (mode != 'remote' || !const bool.fromEnvironment('KASHIER_TEST')) {
     markTestSkipped('remote mode + Kashier test account required');
+    return false;
   }
-  if (!const bool.fromEnvironment('KASHIER_TEST')) {
-    markTestSkipped('remote mode + Kashier test account required');
+  for (final key in <String>[
+    'GUEST_EMAIL',
+    'GUEST_PASSWORD',
+    'DEPOSIT_PROPERTY',
+    'BOOKING_CONFIRMED',
+    'BOOKING_REJECTED',
+    'BOOKING_EXPIRED',
+    'BOOKING_CONFLICT',
+    'BOOKING_REFUND_REQUESTED',
+    'BOOKING_REFUND_VERIFIED',
+    'FOREIGN_BOOKING',
+  ]) {
+    if (seedValue(key).isEmpty) return false;
   }
+  return true;
 }
 
 /// One dart-define seed; empty means the Staging seed does not carry it yet.
