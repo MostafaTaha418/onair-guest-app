@@ -103,9 +103,11 @@ PropertyDetails _property1fDetails() => PropertyDetails(
   termsVersion: 'mock-terms-1',
 );
 
-StayRange _threeNights() => StayRange(
-  CairoTime.today().addDays(20),
-  CairoTime.today().addDays(23),
+/// A fixed stay far enough out that the rendered calendar never rolls over
+/// with the real midnight (a relative range would shift the pixels daily).
+final StayRange _threeNights = StayRange(
+  DateOnly(2027, 3, 20),
+  DateOnly(2027, 3, 23),
 );
 
 /// A deterministic fixture read: goldens never await the server.
@@ -139,7 +141,7 @@ Widget _datesChild() {
           connectivity: connectivityCubit,
           propertyId: _property1f,
           termsHash: 'mock-terms-1',
-          initialStay: _threeNights(),
+          initialStay: _threeNights,
           initialGuests: 2,
         );
         unawaited(cubit.load());
@@ -180,7 +182,7 @@ Widget _summaryChild({bool pendingChange = false}) {
               connectivity: connectivityCubit,
               propertyId: _property1f,
               termsHash: 'mock-terms-1',
-              initialStay: _threeNights(),
+              initialStay: _threeNights,
               initialGuests: 2,
             );
             unawaited(() async {
