@@ -95,6 +95,15 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('return-try-again')));
   await tester.pumpAndSettle();
   expect(find.byType(DatesScreen), findsOneWidget);
+  // On device, restoring the stay into the dates screen lands after the
+  // first frames of the route.
+  for (
+    var attempt = 0;
+    attempt < 40 && !tester.any(find.text(l10n.bookingNightsCount('3')));
+    attempt++
+  ) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
   expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
 
   // 4. «Never answer»: the shortened backoff runs out and the timeout view
@@ -209,7 +218,14 @@ Future<String> openFirstApartmentAndSignIn(
   }
   await tester.tap(find.text(l10n.searchAction));
   await tester.pumpAndSettle();
-  await tester.pumpAndSettle();
+  // On device, loading fixture assets can finish after the results frame.
+  for (
+    var attempt = 0;
+    attempt < 40 && !tester.any(find.byType(PropertyCard));
+    attempt++
+  ) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
   final apartmentTitle = _firstCardTitle(tester);
   await tester.tap(find.byType(PropertyCard).first);
   await tester.pumpAndSettle();
