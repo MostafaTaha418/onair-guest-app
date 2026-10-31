@@ -14,8 +14,10 @@ import 'package:on_air/features/notifications/domain/app_notification.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
 import 'package:on_air/features/notifications/presentation/notifications_screen.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_app_config_repository.dart';
 import '../../helpers/fake_auth_repository.dart';
@@ -78,20 +80,26 @@ void main() {
             unawaited(unread.refresh());
             return RepositoryProvider<NotificationPermission>.value(
               value: permission ?? FakeNotificationPermission(),
-              child: BlocProvider<UnreadCountCubit>.value(
-                value: unread,
-                child: BlocProvider<NotificationsCubit>(
-                  create: (context) {
-                    final cubit = NotificationsCubit(
-                      notifications: effectiveRepo,
-                      signals: backend.signals,
-                      connectivity: context.read<ConnectivityCubit>(),
-                      unread: context.read<UnreadCountCubit>(),
-                    );
-                    unawaited(cubit.load());
-                    return cubit;
-                  },
-                  child: const NotificationsScreen(),
+              child: RepositoryProvider<PushPermissionCoordinator>.value(
+                value: PushPermissionCoordinator(
+                  permission: permission ?? FakeNotificationPermission(),
+                  devices: null,
+                ),
+                child: BlocProvider<UnreadCountCubit>.value(
+                  value: unread,
+                  child: BlocProvider<NotificationsCubit>(
+                    create: (context) {
+                      final cubit = NotificationsCubit(
+                        notifications: effectiveRepo,
+                        signals: backend.signals,
+                        connectivity: context.read<ConnectivityCubit>(),
+                        unread: context.read<UnreadCountCubit>(),
+                      );
+                      unawaited(cubit.load());
+                      return cubit;
+                    },
+                    child: const NotificationsScreen(),
+                  ),
                 ),
               ),
             );
@@ -192,12 +200,32 @@ void main() {
     expect(permission.openSettingsCalls, 1);
   });
 
+  testWidgets('after «Later» the notice shows and the tap requests', (
+    tester,
+  ) async {
+    // The sheet was shown once and the guest chose «Later»: the flag is set
+    // while the system status is still notDetermined (FR-030).
+    SharedPreferences.setMockInitialValues({
+      PushPermissionCoordinator.askedKey: true,
+    });
+    final permission = FakeNotificationPermission();
+    await pumpCenter(tester, permission: permission);
+    await tester.pump();
+
+    expect(find.text(l10n.notificationsOffNotice), findsOneWidget);
+
+    await tester.tap(find.text(l10n.notificationsOpenSettings));
+    await tester.pump();
+    await tester.pump();
+    expect(permission.requestCalls, 1);
+    // Granted: the notice hides.
+    expect(find.text(l10n.notificationsOffNotice), findsNothing);
+  });
+
   testWidgets('a granted permission hides the off notice', (tester) async {
     await pumpCenter(
       tester,
-      permission: FakeNotificationPermission(
-        current: PushPermission.granted,
-      ),
+      permission: FakeNotificationPermission(current: PushPermission.granted),
     );
     expect(find.text(l10n.notificationsOffNotice), findsNothing);
   });

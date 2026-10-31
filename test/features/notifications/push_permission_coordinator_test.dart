@@ -173,4 +173,60 @@ void main() {
     expect(find.text(l10n.pushPermissionTitle), findsNothing);
     expect(grantedPermission.requestCalls, 0);
   });
+
+  test('shouldShowOffNotice follows the status and the asked flag', () async {
+    // Denied: always on.
+    var (coordinator, _, _, prefs) = await buildHarness(
+      current: PushPermission.denied,
+    );
+    expect(await coordinator.shouldShowOffNotice(), isTrue);
+
+    // notDetermined with the flag unset (never asked): off.
+    (coordinator, _, _, prefs) = await buildHarness(
+      current: PushPermission.notDetermined,
+    );
+    expect(await coordinator.shouldShowOffNotice(), isFalse);
+
+    // notDetermined after «Later» (flag set): on.
+    await prefs.setBool(PushPermissionCoordinator.askedKey, true);
+    expect(await coordinator.shouldShowOffNotice(), isTrue);
+
+    // granted: never.
+    (coordinator, _, _, _) = await buildHarness(
+      current: PushPermission.granted,
+    );
+    expect(await coordinator.shouldShowOffNotice(), isFalse);
+  });
+
+  test('enableFromNotice requests when not determined and registers', () async {
+    final (coordinator, permission, devices, _) = await buildHarness(
+      current: PushPermission.notDetermined,
+    );
+    await coordinator.enableFromNotice();
+    expect(permission.requestCalls, 1);
+    expect(devices.registered, hasLength(1));
+  });
+
+  test('enableFromNotice opens settings when denied', () async {
+    final (coordinator, permission, devices, _) = await buildHarness(
+      current: PushPermission.denied,
+    );
+    await coordinator.enableFromNotice();
+    expect(permission.openSettingsCalls, 1);
+    expect(permission.requestCalls, 0);
+    expect(devices.registered, isEmpty);
+  });
+
+  test(
+    'enableFromNotice with an ungranted request does not register',
+    () async {
+      final (coordinator, permission, devices, _) = await buildHarness(
+        current: PushPermission.notDetermined,
+      );
+      permission.answer = PushPermission.denied;
+      await coordinator.enableFromNotice();
+      expect(permission.requestCalls, 1);
+      expect(devices.registered, isEmpty);
+    },
+  );
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/core/errors/error_message.dart';
-import 'package:on_air/core/push/notification_permission.dart';
+
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
@@ -13,10 +13,12 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/notifications/presentation/notification_texts.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The notification center (US5): every type's title + body, tap-to-open
-/// through the router, and the off-notifications notice when denied.
+/// through the router, and the persistent off-notifications notice (FR-030)
+/// for a denied permission — or one the guest deferred with «Later».
 final class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -48,7 +50,7 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final permission = context.read<NotificationPermission>();
+    final coordinator = context.read<PushPermissionCoordinator>();
     final cubit = context.read<NotificationsCubit>();
     return Scaffold(
       appBar: AppBar(
@@ -60,18 +62,22 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<PushPermission>(
-        future: permission.status(),
+      body: FutureBuilder<bool>(
+        future: coordinator.shouldShowOffNotice(),
         builder: (context, snapshot) {
-          final denied = snapshot.data == PushPermission.denied;
+          final off = snapshot.data ?? false;
           return Column(
             children: [
-              if (denied)
+              if (off)
                 NoticeCard(
                   icon: Icons.notifications_off_outlined,
                   message: l10n.notificationsOffNotice,
                   actionLabel: l10n.notificationsOpenSettings,
-                  onAction: () => unawaited(permission.openSettings()),
+                  onAction: () async {
+                    await coordinator.enableFromNotice();
+                    // Re-check: granted hides the notice, denied keeps it.
+                    if (mounted) setState(() {});
+                  },
                 ),
               Expanded(
                 child: RefreshIndicator(

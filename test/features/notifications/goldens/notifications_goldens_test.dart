@@ -17,6 +17,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/notifications/domain/app_notification.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
 import 'package:on_air/features/notifications/presentation/notifications_screen.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -119,7 +120,15 @@ Widget _centerChild({required bool denied}) {
         value: FakeNotificationPermission(
           current: denied ? PushPermission.denied : PushPermission.granted,
         ),
-        child: const NotificationsScreen(),
+        child: RepositoryProvider<PushPermissionCoordinator>.value(
+          value: PushPermissionCoordinator(
+            permission: FakeNotificationPermission(
+              current: denied ? PushPermission.denied : PushPermission.granted,
+            ),
+            devices: null,
+          ),
+          child: const NotificationsScreen(),
+        ),
       ),
     ),
   );

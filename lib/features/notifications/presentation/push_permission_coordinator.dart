@@ -78,4 +78,29 @@ final class PushPermissionCoordinator {
       await _devices?.registerAfterSignIn();
     }
   }
+
+  /// FR-030: the persistent «Notifications are off» notice in the center.
+  /// A `notDetermined` status counts once the sheet was shown (and «Later»
+  /// was chosen) — on iOS there is no settings switch before the first ask.
+  Future<bool> shouldShowOffNotice() async {
+    final status = await _permission.status();
+    if (status == PushPermission.denied) return true;
+    if (status != PushPermission.notDetermined) return false;
+    final prefs = await _prefs();
+    return prefs.getBool(askedKey) ?? false;
+  }
+
+  /// The off-notice action: an unasked permission is requested now; a
+  /// denied one needs the OS settings page.
+  Future<void> enableFromNotice() async {
+    final status = await _permission.status();
+    if (status != PushPermission.notDetermined) {
+      await _permission.openSettings();
+      return;
+    }
+    final result = await _permission.request();
+    if (result == PushPermission.granted) {
+      await _devices?.registerAfterSignIn();
+    }
+  }
 }
