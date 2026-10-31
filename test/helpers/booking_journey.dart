@@ -250,6 +250,15 @@ Future<String> openFirstApartmentAndSignIn(
     await tester.tap(find.byKey(const ValueKey('complete-profile-button')));
     await tester.pumpAndSettle();
   }
+  // On device, the dates route push waits on the real secure-storage write
+  // that completes the sign-in, which outlasts pumpAndSettle.
+  for (
+    var attempt = 0;
+    attempt < 40 && !tester.any(find.byType(DatesScreen));
+    attempt++
+  ) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
   expect(find.byType(DatesScreen), findsOneWidget);
   return apartmentTitle;
 }
