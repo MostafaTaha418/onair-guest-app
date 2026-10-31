@@ -33,8 +33,10 @@ BookingSummary _summary() => BookingSummary.fromJson(const {
   'created_at': '2026-10-20T01:00:00Z',
 });
 
-BookingDetails _details() => BookingDetails.fromJson(const {
-  'id': 'b0000000-0000-4000-8000-000000000001',
+const _defaultDetailsId = 'b0000000-0000-4000-8000-000000000001';
+
+const _detailsJson = <String, dynamic>{
+  'id': _defaultDetailsId,
   'code': 'OA-MOCK001',
   'status': 'confirmed',
   'property': {
@@ -67,7 +69,12 @@ BookingDetails _details() => BookingDetails.fromJson(const {
   'available_actions': <String>['contact_support'],
   'events': <Object>[],
   'created_at': '2026-10-28T08:55:00Z',
-});
+};
+
+BookingDetails _details([String id = _defaultDetailsId]) =>
+    BookingDetails.fromJson(
+      id == _defaultDetailsId ? _detailsJson : {..._detailsJson, 'id': id},
+    );
 
 JsonFileCache _tempCache() {
   final directory = Directory.systemTemp.createTempSync('on_air_g2_cache');
@@ -145,6 +152,22 @@ void main() {
       expect(cached!.details.accessInstructions, isNull);
       await cache.clear();
       expect(await cache.readDetails(details.id), isNull);
+    });
+
+    test('removeDetails drops only that booking', () async {
+      final cache = BookingsCache(_tempCache());
+      final details = _details();
+      await cache.saveDetails(details);
+      final other = _details('b0000000-0000-4000-8000-000000000099');
+      await cache.saveDetails(other);
+
+      await cache.removeDetails(details.id);
+
+      expect(await cache.readDetails(details.id), isNull);
+      expect(await cache.readDetails(other.id), isNotNull);
+      // Removing an unknown id is a no-op.
+      await cache.removeDetails('b0000000-0000-4000-8000-0000000000ff');
+      expect(await cache.readDetails(other.id), isNotNull);
     });
   });
 

@@ -163,10 +163,19 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
     } on AppFailure catch (failure) {
       if (_stale(generation)) return;
       if (failure.error.code == ErrorCode.notFound) {
+        // The booking is gone: the saved copy and its instructions must
+        // not survive (FR-024a).
+        await _cache.removeDetails(_bookingId);
+        await _arrival.remove(_bookingId);
+        if (_stale(generation)) return;
         emit(const DetailsNotAvailable());
-      } else {
-        emit(DetailsFailed(failure.error));
+        return;
       }
+      // A failed refresh never hides a cached copy that is already on
+      // screen (FR-025): keep it and let the next refresh retry.
+      final shown = state;
+      if (shown is DetailsReady && shown.fromCache) return;
+      emit(DetailsFailed(failure.error));
     }
   }
 

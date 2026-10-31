@@ -91,5 +91,13 @@ final class BookingsCache {
     await _cache.write({...document, 'details': all});
   }
 
+  Future<void> removeDetails(String id) async {
+    final document = await _document();
+    final details = document?['details'];
+    if (details is! Map<String, dynamic> || !details.containsKey(id)) return;
+    final all = Map<String, dynamic>.from(details)..remove(id);
+    await _cache.write({...?document, 'details': all});
+  }
+
   Future<void> clear() => _cache.clear();
 }

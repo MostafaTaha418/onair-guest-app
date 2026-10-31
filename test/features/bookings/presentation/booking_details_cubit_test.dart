@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
@@ -20,6 +22,9 @@ final class RecordingBookings implements BookingsRepository {
   final BookingsRepository _inner;
   int getBookingCalls = 0;
 
+  /// When set, every fetch throws it instead.
+  AppFailure? getBookingError;
+
   @override
   Future<BookingsPage> listBookings(BookingTab tab, {String? cursor}) =>
       _inner.listBookings(tab, cursor: cursor);
@@ -27,6 +32,8 @@ final class RecordingBookings implements BookingsRepository {
   @override
   Future<BookingDetails> getBooking(String bookingId) async {
     getBookingCalls++;
+    final error = getBookingError;
+    if (error != null) throw error;
     return _inner.getBooking(bookingId);
   }
 }
@@ -201,6 +208,45 @@ void main() {
       unawaited(cubit.close());
       async.flushMicrotasks();
     });
+  });
+
+  test('a failed refresh keeps the cached copy on screen', () async {
+    final recording = RecordingBookings(backend.server);
+    final cubit = buildCubit(bookings: recording);
+    await cubit.load();
+    final shown = cubit.state as DetailsReady;
+    expect(shown.fromCache, isFalse);
+
+    recording.getBookingError = AppFailure(ErrorMapper.noResponse());
+    await cubit.refresh();
+
+    // The refresh re-shows the cached copy and never emits DetailsFailed
+    // (FR-025).
+    final state = cubit.state;
+    expect(state, isA<DetailsReady>());
+    expect((state as DetailsReady).fromCache, isTrue);
+    expect(state.details.id, shown.details.id);
+    expect(await backend.cache.readDetails(_confirmedId), isNotNull);
+    await cubit.close();
+  });
+
+  test('not found drops the saved copy and the arrival instructions', () async {
+    final recording = RecordingBookings(backend.server);
+    final cubit = buildCubit(bookings: recording);
+    await cubit.load();
+    expect(await backend.cache.readDetails(_confirmedId), isNotNull);
+    expect(
+      await backend.arrivalInstructions.read(_confirmedId),
+      _instructionsText,
+    );
+
+    recording.getBookingError = AppFailure(ErrorMapper.fromCode('NOT_FOUND'));
+    await cubit.refresh();
+
+    expect(cubit.state, isA<DetailsNotAvailable>());
+    expect(await backend.cache.readDetails(_confirmedId), isNull);
+    expect(await backend.arrivalInstructions.read(_confirmedId), isNull);
+    await cubit.close();
   });
 
   test('a closed cubit never refreshes at the deadline', () {
