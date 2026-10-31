@@ -81,6 +81,10 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
   /// after it, without touching the poll timer (FR-013 / SC-005).
   var _refetchRequested = false;
 
+  /// A poll fired while a fetch was running: the deferred fetch must still
+  /// count as a poll, or the schedule (and the timeout) would stop.
+  var _refetchFromPoll = false;
+
   void start() {
     _logger.info('payment_return_received booking=$_bookingId');
     _signalSubscription = _signals.signals
@@ -95,6 +99,7 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     if (_finished || isClosed) return;
     if (_fetching) {
       _refetchRequested = true;
+      _refetchFromPoll = _refetchFromPoll || fromPoll;
       return;
     }
     _fetching = true;
@@ -132,8 +137,10 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     } finally {
       _fetching = false;
       if (_refetchRequested && !_finished && !isClosed) {
+        final asPoll = _refetchFromPoll;
         _refetchRequested = false;
-        unawaited(_fetch(fromPoll: false));
+        _refetchFromPoll = false;
+        unawaited(_fetch(fromPoll: asPoll));
       }
     }
   }

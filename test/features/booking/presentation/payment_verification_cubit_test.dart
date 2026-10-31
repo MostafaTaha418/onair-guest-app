@@ -409,6 +409,65 @@ void main() {
       unawaited(cubit.close());
     });
   });
+
+  test('a poll that fires during a signal fetch keeps the schedule', () {
+    fakeAsync((async) {
+      var bookingId = '';
+      unawaited(createSilentBooking().then((id) => bookingId = id));
+      async.flushMicrotasks();
+
+      final bookings = GatedBookings(backend.server);
+      final cubit = PaymentVerificationCubit(
+        bookings: bookings,
+        signals: backend.signals,
+        bookingId: bookingId,
+        logger: AppLogger(sink: (_) {}),
+      );
+      // The fakeAsync zone interleaves calls with microtask flushes on
+      // different receivers, which the cascade lint cannot see past the
+      // local declarations.
+      // ignore: cascade_invocations
+      cubit.start();
+      async.flushMicrotasks();
+      expect(bookings.calls, 1);
+
+      // A signal fetch is held open across the 2 s poll.
+      bookings.gate = Completer<void>();
+      unawaited(backend.signals.start('guest'));
+      async.flushMicrotasks();
+      backend.signals.emit(
+        NotificationSignal(
+          id: 'n1',
+          typeKey: 'booking.request_received',
+          entityType: 'booking',
+          entityId: bookingId,
+        ),
+      );
+      async.flushMicrotasks();
+      expect(bookings.calls, 2);
+      async
+        ..elapse(const Duration(seconds: 2))
+        ..flushMicrotasks();
+      expect(bookings.calls, 2, reason: 'the poll waits for the signal fetch');
+
+      final pending = bookings.gate!;
+      bookings.gate = null;
+      pending.complete();
+      async.flushMicrotasks();
+      expect(bookings.calls, 3, reason: 'the deferred poll runs');
+
+      async
+        ..elapse(const Duration(seconds: 4))
+        ..flushMicrotasks();
+      expect(bookings.calls, 4, reason: 'the schedule goes on (4 s step)');
+
+      async
+        ..elapse(const Duration(seconds: 8 + 16 + 30 + 30 + 30))
+        ..flushMicrotasks();
+      expect(cubit.state, isA<VerifyTimeout>());
+      unawaited(cubit.close());
+    });
+  });
 }
 
 StayRange _threeNights() =>
