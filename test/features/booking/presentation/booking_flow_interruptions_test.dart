@@ -201,6 +201,98 @@ void main() {
     });
   });
 
+  test('setStay drops the quote and cancels the old expiry refresh', () {
+    fakeAsync((async) {
+      final connectivity = FakeConnectivity();
+      final listings = FakeListingsRepository()
+        ..propertyResponses.add(_property('mock-terms-1'))
+        ..unavailableNightsResponses.add(<DateOnly>{});
+      final flow = ScriptedFlow()
+        ..quotes.add(_quote(expiresAt: expiresAt(async)));
+      final cubit = BookingFlowCubit(
+        listings: listings,
+        flow: flow,
+        connectivity: connectivity.createCubit(),
+        propertyId: _property1f,
+        termsHash: 'mock-terms-1',
+        initialStay: _threeNights(),
+        initialGuests: 2,
+        now: () => start.add(async.elapsed),
+      );
+      unawaited(quoteAfterLoad(cubit));
+      async.flushMicrotasks();
+      expect(cubit.state.quote!.quoteId, 'quote-1');
+
+      // New dates: the quote and its expiry timer go.
+      cubit.setStay(
+        StayRange(DateOnly.parse('2026-11-20'), DateOnly.parse('2026-11-24')),
+      );
+      expect(cubit.state.quote, isNull);
+      expect(cubit.state.pendingChange, isNull);
+
+      // A re-priced answer waits in vain: the old expiry never fires.
+      flow.quotes.add(_quote(id: 9, expiresAt: DateTime.utc(2026, 11, 1, 11)));
+      async.elapse(const Duration(minutes: 3));
+      expect(flow.quoteCalls, 1);
+      expect(cubit.state.quote, isNull);
+
+      unawaited(cubit.close());
+      async.flushMicrotasks();
+      connectivity.dispose();
+    });
+  });
+
+  test('a fresh requestQuote clears a parked pendingChange', () {
+    fakeAsync((async) {
+      final connectivity = FakeConnectivity();
+      final listings = FakeListingsRepository()
+        ..propertyResponses.add(_property('mock-terms-1'))
+        ..unavailableNightsResponses.add(<DateOnly>{});
+      final flow = ScriptedFlow()
+        ..quotes.add(_quote(expiresAt: expiresAt(async)));
+      final cubit = BookingFlowCubit(
+        listings: listings,
+        flow: flow,
+        connectivity: connectivity.createCubit(),
+        propertyId: _property1f,
+        termsHash: 'mock-terms-1',
+        initialStay: _threeNights(),
+        initialGuests: 2,
+        now: () => start.add(async.elapsed),
+      );
+      unawaited(quoteAfterLoad(cubit));
+      async.flushMicrotasks();
+
+      // A changed re-quote parks in pendingChange.
+      flow.quotes.add(
+        _quote(
+          id: 2,
+          expiresAt: DateTime.utc(2026, 11, 1, 11),
+          nightly: Money(180000),
+          total: Money(540000),
+          payNow: Money(135000),
+          remaining: Money(405000),
+        ),
+      );
+      unawaited(cubit.refreshQuote());
+      async.flushMicrotasks();
+      expect(cubit.state.pendingChange, isNotNull);
+
+      // The guest asks for a fresh quote instead: the parked change goes.
+      flow.quotes.add(_quote(id: 3, expiresAt: DateTime.utc(2026, 11, 1, 11)));
+      unawaited(cubit.requestQuote());
+      async.flushMicrotasks();
+      expect(flow.quoteCalls, 3);
+      expect(cubit.state.pendingChange, isNull);
+      expect(cubit.state.quote!.quoteId, 'quote-3');
+      expect(cubit.state.canPay, isTrue);
+
+      unawaited(cubit.close());
+      async.flushMicrotasks();
+      connectivity.dispose();
+    });
+  });
+
   test('an identical re-quote does not set pendingChange', () {
     fakeAsync((async) {
       final connectivity = FakeConnectivity();

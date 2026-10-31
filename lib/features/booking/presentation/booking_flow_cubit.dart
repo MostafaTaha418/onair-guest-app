@@ -78,7 +78,7 @@ final class BookingFlowState {
     int? guests,
     String? termsHash,
     bool? quoting,
-    BookingQuote? quote,
+    Object? quote = _unset,
     Object? error = _unset,
     Object? pendingChange = _unset,
     bool? termsChanged,
@@ -91,7 +91,7 @@ final class BookingFlowState {
     guests: guests ?? this.guests,
     termsHash: termsHash ?? this.termsHash,
     quoting: quoting ?? this.quoting,
-    quote: quote ?? this.quote,
+    quote: quote == _unset ? this.quote : quote as BookingQuote?,
     error: error == _unset ? this.error : error as ApiError?,
     pendingChange: pendingChange == _unset
         ? this.pendingChange
@@ -206,18 +206,28 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
     }
   }
 
+  /// T048: new stay (or guests) invalidates the priced answer — the quote,
+  /// its expiry timer, and any parked change all go.
   void setStay(StayRange? stay) {
+    _expiryTimer?.cancel();
     emit(
-      state.copyWith(stay: stay, error: null, pendingChange: null),
+      state.copyWith(
+        stay: stay,
+        quote: null,
+        error: null,
+        pendingChange: null,
+      ),
     );
   }
 
   void setGuests(int guests) {
     final max = state.property?.maxGuests;
     final clamped = max == null ? guests : guests.clamp(1, max);
+    _expiryTimer?.cancel();
     emit(
       state.copyWith(
         guests: clamped,
+        quote: null,
         error: null,
         pendingChange: null,
       ),
@@ -236,7 +246,9 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
         termsHash: state.termsHash,
       );
       if (isClosed) return false;
-      emit(state.copyWith(quoting: false, quote: quote));
+      emit(
+        state.copyWith(quoting: false, quote: quote, pendingChange: null),
+      );
       _scheduleExpiryRefresh(quote);
       return true;
     } on AppFailure catch (failure) {

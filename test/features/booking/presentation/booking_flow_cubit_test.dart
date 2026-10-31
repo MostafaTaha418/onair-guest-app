@@ -258,4 +258,29 @@ void main() {
     expect(listings.unavailableNightsResponses, hasLength(1));
     await cubit.close();
   });
+
+  test('changing the stay or the guests drops the quote (T048)', () async {
+    final cubit = buildCubit(
+      initialStay: _threeNights(),
+      initialGuests: 2,
+      today: DateOnly(2026, 11, 1),
+    );
+    await cubit.load();
+    await cubit.requestQuote();
+    expect(cubit.state.quote, isNotNull);
+
+    cubit.setStay(
+      StayRange(DateOnly.parse('2026-11-20'), DateOnly.parse('2026-11-24')),
+    );
+    expect(cubit.state.quote, isNull);
+    expect(cubit.state.pendingChange, isNull);
+    expect(cubit.state.error, isNull);
+
+    await cubit.requestQuote();
+    expect(cubit.state.quote, isNotNull);
+    cubit.setGuests(3);
+    expect(cubit.state.quote, isNull);
+    expect(cubit.state.pendingChange, isNull);
+    await cubit.close();
+  });
 }
