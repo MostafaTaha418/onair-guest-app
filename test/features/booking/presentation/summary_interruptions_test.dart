@@ -9,6 +9,7 @@ import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
@@ -75,6 +76,7 @@ final class InterruptibleFlow implements BookingFlowRepository {
   final BookingFlowRepository _inner;
   int startCalls = 0;
   Completer<PaymentSessionInfo>? holdStart;
+  AppFailure? nextStartFailure;
 
   @override
   Future<BookingQuote> quote({
@@ -100,6 +102,8 @@ final class InterruptibleFlow implements BookingFlowRepository {
     required String attemptKey,
   }) {
     startCalls++;
+    final failure = nextStartFailure;
+    if (failure != null) throw failure;
     final hold = holdStart;
     if (hold != null) return hold.future;
     return _inner.startPayment(
@@ -345,5 +349,57 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(flow.startCalls, 1);
+  });
+
+  testWidgets('PROPERTY_NOT_AVAILABLE replaces the summary body', (
+    tester,
+  ) async {
+    final listings = FakeListingsRepository()
+      ..propertyResponses.add(_property(property1f, 'mock-terms-1'))
+      ..unavailableNightsResponses.add(<DateOnly>{});
+    flow.nextStartFailure = AppFailure(
+      ErrorMapper.fromCode('PROPERTY_NOT_AVAILABLE'),
+    );
+    await pumpSummary(tester, listings: listings);
+
+    await tester.tap(find.byKey(const ValueKey('summary-pay')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.propertyNotAvailable), findsOneWidget);
+    expect(find.text(l10n.bookingsFindApartment), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('RATE_LIMITED snacks and disables pay until retry-after', (
+    tester,
+  ) async {
+    final listings = FakeListingsRepository()
+      ..propertyResponses.add(_property(property1f, 'mock-terms-1'))
+      ..unavailableNightsResponses.add(<DateOnly>{});
+    flow.nextStartFailure = const AppFailure(
+      ApiError(
+        code: ErrorCode.rateLimited,
+        messageKey: 'authRateLimited',
+        retryAfter: Duration(seconds: 3),
+      ),
+    );
+    await pumpSummary(tester, listings: listings);
+
+    await tester.tap(find.byKey(const ValueKey('summary-pay')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    final pay = tester.widget<OnAirPrimaryButton>(
+      find.byKey(const ValueKey('summary-pay')),
+    );
+    expect(pay.onPressed, isNull);
+
+    // The retry-after passes: the pay button comes back on its own.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    final payAgain = tester.widget<OnAirPrimaryButton>(
+      find.byKey(const ValueKey('summary-pay')),
+    );
+    expect(payAgain.onPressed, isNotNull);
   });
 }

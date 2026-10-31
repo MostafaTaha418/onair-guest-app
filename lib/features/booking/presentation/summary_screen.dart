@@ -44,19 +44,36 @@ final class SummaryScreen extends StatelessWidget {
         title: Text(l10n.bookingSummaryTitle),
         leading: BackButton(onPressed: () => context.pop()),
       ),
-      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
-        builder: (context, state) {
-          final quote = state.quote;
-          final property = state.property;
-          if (quote == null || property == null) {
-            // The draft is gone (restart, expired branch): start from the
-            // page.
-            return ErrorView(
-              message: l10n.bookingQuoteExpired,
-              onRetry: () => context.pop(),
+      body: BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
+        builder: (context, attempt) {
+          // AC-003: the server refused the start because the apartment is
+          // gone — the summary is replaced with the not-available view.
+          if (attempt is AttemptFailed &&
+              attempt.error.code == ErrorCode.propertyNotAvailable) {
+            return EmptyView(
+              icon: Icons.home_outlined,
+              message: l10n.propertyNotAvailable,
+              action: OnAirPrimaryButton(
+                label: l10n.bookingsFindApartment,
+                onPressed: () => context.go(AppRoutes.search),
+              ),
             );
           }
-          return _SummaryBody(flow: state);
+          return BlocBuilder<BookingFlowCubit, BookingFlowState>(
+            builder: (context, state) {
+              final quote = state.quote;
+              final property = state.property;
+              if (quote == null || property == null) {
+                // The draft is gone (restart, expired branch): start from
+                // the page.
+                return ErrorView(
+                  message: l10n.bookingQuoteExpired,
+                  onRetry: () => context.pop(),
+                );
+              }
+              return _SummaryBody(flow: state);
+            },
+          );
         },
       ),
       bottomNavigationBar: _PayBar(
@@ -240,7 +257,7 @@ final class _SummaryBody extends StatelessWidget {
   }
 }
 
-final class _PayBar extends StatelessWidget {
+final class _PayBar extends StatefulWidget {
   const _PayBar({
     required this.propertyId,
     required this.attemptCubit,
@@ -251,12 +268,37 @@ final class _PayBar extends StatelessWidget {
   final PaymentAttemptCubit attemptCubit;
   final BookingFlowCubit flowCubit;
 
-  Future<void> _verifyThenPay(BuildContext context, BookingQuote? quote) async {
+  @override
+  State<_PayBar> createState() => _PayBarState();
+}
+
+final class _PayBarState extends State<_PayBar> {
+  /// The server answered RATE_LIMITED with a retry-after: the pay button
+  /// stays disabled until it passes (AC-003).
+  Timer? _rateLimitTimer;
+  var _rateLimited = false;
+
+  @override
+  void dispose() {
+    _rateLimitTimer?.cancel();
+    super.dispose();
+  }
+
+  void _armRateLimit(Duration retryAfter) {
+    _rateLimitTimer?.cancel();
+    setState(() => _rateLimited = true);
+    _rateLimitTimer = Timer(retryAfter, () {
+      if (mounted) setState(() => _rateLimited = false);
+    });
+  }
+
+  Future<void> _verifyThenPay(BookingQuote? quote) async {
+    final context = this.context;
     final ok = await context.push<bool>(
-      AppRoutes.bookingVerify(propertyId, returnTo: 'summary'),
+      AppRoutes.bookingVerify(widget.propertyId, returnTo: 'summary'),
     );
     if (ok == true && context.mounted && quote != null) {
-      await attemptCubit.pay(quote);
+      await widget.attemptCubit.pay(quote);
     }
   }
 
@@ -274,13 +316,20 @@ final class _PayBar extends StatelessWidget {
                 code == ErrorCode.emailNotVerified) {
               // US2: the server stopped the payment — verify on top of the
               // summary, then retry with the same attempt key.
-              unawaited(_verifyThenPay(context, quote));
+              unawaited(_verifyThenPay(quote));
             } else if (code == ErrorCode.quoteExpired ||
                 code == ErrorCode.termsChanged) {
               // US6: the flow cubit reacts silently — a fresh quote or the
               // new terms appear on the summary itself.
-              unawaited(flowCubit.onPaymentError(state.error));
+              unawaited(widget.flowCubit.onPaymentError(state.error));
+            } else if (code == ErrorCode.propertyNotAvailable) {
+              // AC-003: the body is replaced with the not-available view;
+              // there is nothing to snack about.
             } else {
+              if (code == ErrorCode.rateLimited &&
+                  state.error.retryAfter != null) {
+                _armRateLimit(state.error.retryAfter!);
+              }
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(apiErrorMessage(state.error, l10n)),
@@ -325,7 +374,7 @@ final class _PayBar extends StatelessWidget {
                             ? OnAirPrimaryButton(
                                 key: const ValueKey('quote-confirm-new'),
                                 label: l10n.quoteConfirmNew,
-                                onPressed: flowCubit.acceptChange,
+                                onPressed: widget.flowCubit.acceptChange,
                               )
                             : OnAirPrimaryButton(
                                 key: const ValueKey('summary-pay'),
@@ -335,8 +384,9 @@ final class _PayBar extends StatelessWidget {
                                     online &&
                                         attempt is! AttemptStarting &&
                                         flow.canPay &&
-                                        quote != null
-                                    ? () => attemptCubit.pay(quote)
+                                        quote != null &&
+                                        !_rateLimited
+                                    ? () => widget.attemptCubit.pay(quote)
                                     : null,
                               ),
                       ),
