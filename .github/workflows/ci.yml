@@ -128,7 +128,8 @@ jobs:
     # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
     needs: format-and-analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The API 24 run of the suite can pass 45 min on a slow runner.
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
