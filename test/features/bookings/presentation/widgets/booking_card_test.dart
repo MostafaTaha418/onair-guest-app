@@ -111,4 +111,45 @@ void main() {
     expect(find.bySemanticsLabel(RegExp('حتى')), findsNothing);
     handle.dispose();
   });
+
+  testWidgets('the card asks for a refresh exactly once at the deadline', (
+    tester,
+  ) async {
+    final fixedNow = DateTime.utc(2026, 11, 1, 10);
+    var now = fixedNow;
+    final deadline = fixedNow.add(const Duration(seconds: 3));
+    var refreshCalls = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: OnAirTheme.light,
+        home: Scaffold(
+          body: ListView(
+            children: [
+              BookingCard(
+                booking: awaitingOwner(deadline),
+                onTap: () {},
+                now: () => now,
+                onDeadlineReached: () => refreshCalls++,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(refreshCalls, 0);
+
+    // The stream emits zero and closes at the deadline; the callback fires
+    // once.
+    now = fixedNow.add(const Duration(seconds: 4));
+    await tester.pump(const Duration(seconds: 4));
+    expect(refreshCalls, 1);
+
+    await tester.pump(const Duration(seconds: 2));
+    expect(refreshCalls, 1);
+  });
 }

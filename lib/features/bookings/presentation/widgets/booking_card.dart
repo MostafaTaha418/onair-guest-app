@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
@@ -13,18 +15,22 @@ import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// One row in a My Bookings tab (US3). [now] pins the countdown clock in
-/// tests and goldens; production uses the real time.
+/// tests and goldens; production uses the real time. [onDeadlineReached]
+/// fires once when the owner's deadline passes (FR-029): the screen asks
+/// the server again — the card never touches the status itself.
 final class BookingCard extends StatefulWidget {
   const BookingCard({
     required this.booking,
     required this.onTap,
     this.now,
+    this.onDeadlineReached,
     super.key,
   });
 
   final BookingSummary booking;
   final VoidCallback onTap;
   final DateTime Function()? now;
+  final VoidCallback? onDeadlineReached;
 
   @override
   State<BookingCard> createState() => _BookingCardState();
@@ -33,6 +39,8 @@ final class BookingCard extends StatefulWidget {
 final class _BookingCardState extends State<BookingCard> {
   Countdown? _countdown;
   DateTime? _countdownDeadline;
+  StreamSubscription<Duration>? _deadlineSubscription;
+  var _deadlineNotified = false;
 
   @override
   void didUpdateWidget(BookingCard oldWidget) {
@@ -42,13 +50,23 @@ final class _BookingCardState extends State<BookingCard> {
       _countdown?.cancel();
       _countdown = null;
       _countdownDeadline = deadline;
+      unawaited(_deadlineSubscription?.cancel());
+      _deadlineSubscription = null;
+      _deadlineNotified = false;
     }
   }
 
   @override
   void dispose() {
     _countdown?.cancel();
+    unawaited(_deadlineSubscription?.cancel());
     super.dispose();
+  }
+
+  void _notifyDeadlineReached() {
+    if (_deadlineNotified) return;
+    _deadlineNotified = true;
+    widget.onDeadlineReached?.call();
   }
 
   Countdown? _countdownFor(BookingSummary booking) {
@@ -58,10 +76,25 @@ final class _BookingCardState extends State<BookingCard> {
     }
     if (_countdown == null || _countdownDeadline == null) {
       _countdownDeadline = booking.ownerResponseDeadline;
-      _countdown = Countdown(
+      _deadlineNotified = false;
+      final countdown = _countdown = Countdown(
         deadlineUtc: booking.ownerResponseDeadline!,
         now: widget.now,
       );
+      // FR-029: the card notices the deadline passing even though the
+      // ticking text is excluded from semantics; the screen refreshes.
+      // The subscription must not precede CountdownText's: a sync broadcast
+      // controller delivers the first value only through onListen (first
+      // listener), and the card only waits for the closing zero.
+      scheduleMicrotask(() {
+        if (!mounted || !identical(_countdown, countdown)) return;
+        _deadlineSubscription = countdown.remaining.listen(
+          (remaining) {
+            if (remaining == Duration.zero) _notifyDeadlineReached();
+          },
+          onDone: _notifyDeadlineReached,
+        );
+      });
     }
     return _countdown;
   }

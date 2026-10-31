@@ -7,6 +7,7 @@ import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/features/bookings/data/arrival_instructions_store.dart';
 import 'package:on_air/features/bookings/data/bookings_cache.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
+import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
 
 sealed class BookingDetailsState {
@@ -58,7 +59,9 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
     required this._signals,
     required this._connectivity,
     required this._bookingId,
-  }) : super(const DetailsLoading()) {
+    DateTime Function()? now,
+  }) : _now = now ?? (() => DateTime.now().toUtc()),
+       super(const DetailsLoading()) {
     _signalSubscription = _signals.signals
         .where((signal) => signal.entityId == _bookingId)
         .listen((_) => unawaited(refresh()));
@@ -70,7 +73,14 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
   final NotificationSignalSource _signals;
   final ConnectivityCubit _connectivity;
   final String _bookingId;
+  final DateTime Function() _now;
   StreamSubscription<NotificationSignal>? _signalSubscription;
+
+  /// FR-029: when the owner's deadline passes while the screen is open, the
+  /// booking is asked from the server again — the status never changes
+  /// locally. One timer per load, firing 5 s past the deadline.
+  Timer? _deadlineTimer;
+  DateTime? _deadlineFiredFor;
 
   /// Bumped by every load so a superseded response never overwrites a
   /// newer one (research R12 pattern).
@@ -78,8 +88,28 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
 
   bool _stale(int generation) => isClosed || generation != _generation;
 
+  void _armDeadlineTimer(BookingDetails details) {
+    _deadlineTimer?.cancel();
+    final deadline = details.ownerResponseDeadline;
+    if (deadline == null || deadline == _deadlineFiredFor) {
+      // Already refreshed once for this exact deadline: the server's fresh
+      // answer decides — never a local loop (FR-029 edge case).
+      return;
+    }
+    final delay = deadline.add(const Duration(seconds: 5)).difference(_now());
+    _deadlineTimer = Timer(
+      delay.isNegative ? Duration.zero : delay,
+      () {
+        _deadlineFiredFor = deadline;
+        _deadlineTimer = null;
+        unawaited(refresh());
+      },
+    );
+  }
+
   Future<void> load() async {
     final generation = ++_generation;
+    _deadlineTimer?.cancel();
     final cached = await _cache.readDetails(_bookingId);
     if (_stale(generation)) return;
     final stored = await _arrival.read(_bookingId);
@@ -127,6 +157,9 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
           fromCache: false,
         ),
       );
+      if (details.status == BookingStatus.awaitingOwner) {
+        _armDeadlineTimer(details);
+      }
     } on AppFailure catch (failure) {
       if (_stale(generation)) return;
       if (failure.error.code == ErrorCode.notFound) {
@@ -141,6 +174,7 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
 
   @override
   Future<void> close() async {
+    _deadlineTimer?.cancel();
     await _signalSubscription?.cancel();
     await super.close();
   }

@@ -142,13 +142,36 @@ final class _TabBody extends StatelessWidget {
   }
 }
 
-final class _TabList extends StatelessWidget {
+final class _TabList extends StatefulWidget {
   const _TabList({required this.tab, required this.state});
 
   final BookingTab tab;
   final BookingsState state;
 
-  String _emptyMessage(AppLocalizations l10n) => switch (tab) {
+  @override
+  State<_TabList> createState() => _TabListState();
+}
+
+final class _TabListState extends State<_TabList> {
+  /// Several cards can pass their deadline in the same moment (FR-029);
+  /// they collapse into one server refresh.
+  Timer? _deadlineRefresh;
+
+  void _scheduleDeadlineRefresh(BookingsCubit cubit) {
+    _deadlineRefresh?.cancel();
+    _deadlineRefresh = Timer(const Duration(milliseconds: 250), () {
+      _deadlineRefresh = null;
+      if (mounted) unawaited(cubit.refresh());
+    });
+  }
+
+  @override
+  void dispose() {
+    _deadlineRefresh?.cancel();
+    super.dispose();
+  }
+
+  String _emptyMessage(AppLocalizations l10n) => switch (widget.tab) {
     BookingTab.past => l10n.bookingsEmptyPast,
     BookingTab.cancelled => l10n.bookingsEmptyCancelled,
     _ => l10n.bookingsEmptyCurrent,
@@ -158,6 +181,8 @@ final class _TabList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<BookingsCubit>();
+    final tab = widget.tab;
+    final state = widget.state;
     final data = state.tabs[tab]!;
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -221,6 +246,7 @@ final class _TabList extends StatelessWidget {
               onTap: () => context.push(
                 AppRoutes.bookingDetails(data.items[index].id),
               ),
+              onDeadlineReached: () => _scheduleDeadlineRefresh(cubit),
             ),
           ),
         },

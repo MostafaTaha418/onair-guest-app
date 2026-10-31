@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
@@ -55,6 +58,7 @@ void main() {
     String bookingId = _confirmedId,
     BookingsRepository? bookings,
     ConnectivityCubit? connectivityCubit,
+    DateTime Function()? now,
   }) => BookingDetailsCubit(
     bookings: bookings ?? backend.server,
     cache: backend.cache,
@@ -62,6 +66,7 @@ void main() {
     signals: backend.signals,
     connectivity: connectivityCubit ?? connectivity.createCubit(),
     bookingId: bookingId,
+    now: now,
   );
 
   test(
@@ -167,5 +172,53 @@ void main() {
     expect(recording.getBookingCalls, before + 1);
     await cubit.close();
     await backend.signals.stop();
+  });
+
+  test('the details refresh exactly once when the owner deadline passes', () {
+    fakeAsync((async) {
+      // Fixture OA-MOCK002 awaits the owner until 2026-11-02T10:00Z; the
+      // pinned clock sits 10 s before it.
+      final fixedNow = DateTime.utc(2026, 11, 2, 9, 59, 50);
+      final recording = RecordingBookings(backend.server);
+      final cubit = buildCubit(
+        bookings: recording,
+        bookingId: 'b0000000-0000-4000-8000-000000000002',
+        now: () => fixedNow.add(async.elapsed),
+      );
+      unawaited(cubit.load());
+      async.flushMicrotasks();
+      final initial = recording.getBookingCalls;
+      expect(initial, 1);
+
+      // Deadline + 5 s: one server refresh, never a local status change.
+      async.elapse(const Duration(seconds: 15));
+      expect(recording.getBookingCalls, initial + 1);
+
+      // The deadline is still behind: no loop, at most one refresh per load.
+      async.elapse(const Duration(seconds: 15));
+      expect(recording.getBookingCalls, initial + 1);
+
+      unawaited(cubit.close());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('a closed cubit never refreshes at the deadline', () {
+    fakeAsync((async) {
+      final fixedNow = DateTime.utc(2026, 11, 2, 9, 59, 50);
+      final recording = RecordingBookings(backend.server);
+      final cubit = buildCubit(
+        bookings: recording,
+        bookingId: 'b0000000-0000-4000-8000-000000000002',
+        now: () => fixedNow.add(async.elapsed),
+      );
+      unawaited(cubit.load());
+      async.flushMicrotasks();
+      final initial = recording.getBookingCalls;
+      unawaited(cubit.close());
+
+      async.elapse(const Duration(seconds: 15));
+      expect(recording.getBookingCalls, initial);
+    });
   });
 }
