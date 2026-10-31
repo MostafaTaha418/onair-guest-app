@@ -41,6 +41,7 @@ import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/bookings/data/arrival_instructions_store.dart';
 import 'package:on_air/features/bookings/data/bookings_cache.dart';
 import 'package:on_air/features/bookings/data/mock_booking_server.dart';
+import 'package:on_air/features/bookings/data/mock_home_feed_with_bookings.dart';
 import 'package:on_air/features/bookings/data/supabase_bookings_repository.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
@@ -248,9 +249,16 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
 
 /// In-memory backend: no Supabase, Node, or Firebase connection.
 _Backend _mockBackend() {
-  final listings = MockListingsRepository();
+  final rawListings = MockListingsRepository();
   final signals = ControllableNotificationSignalSource();
-  final server = MockBookingServer(listings: listings, signals: signals);
+  // The server reads the raw fixtures; everyone else sees the listings
+  // mock with the Home feed's upcoming booking filled from the bookings
+  // fixtures (FR-026).
+  final server = MockBookingServer(listings: rawListings, signals: signals);
+  final listings = MockHomeFeedWithBookings(
+    inner: rawListings,
+    server: server,
+  );
   return (
     config: const MockAppConfigSource(),
     auth: MockAuthRepository(),
