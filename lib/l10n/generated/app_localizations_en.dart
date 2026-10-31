@@ -701,16 +701,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryEmpty => 'This property has no photos.';
 
   @override
-  String get bookingEntryTitle => 'Booking';
-
-  @override
-  String get bookingEntryComingSoon => 'Booking in the app opens soon.';
-
-  @override
-  String get bookingEntryTermsCarried =>
-      'The terms you saw are attached to this request.';
-
-  @override
   String get supportEntryTitle => 'Contact OnAir';
 
   @override

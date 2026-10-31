@@ -14,6 +14,7 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/presentation/bookings_cubit.dart';
 import 'package:on_air/features/bookings/presentation/widgets/booking_card.dart';
+import 'package:on_air/features/bookings/presentation/widgets/unfinished_payment_banner.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// My Bookings (US3): Current / Past / Cancelled tabs over one cubit; the
@@ -44,14 +45,21 @@ final class BookingsScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const _TabSync(
-          child: TabBarView(
-            children: [
-              _TabBody(tab: BookingTab.current),
-              _TabBody(tab: BookingTab.past),
-              _TabBody(tab: BookingTab.cancelled),
-            ],
-          ),
+        body: const Column(
+          children: [
+            UnfinishedPaymentBanner(),
+            Expanded(
+              child: _TabSync(
+                child: TabBarView(
+                  children: [
+                    _TabBody(tab: BookingTab.current),
+                    _TabBody(tab: BookingTab.past),
+                    _TabBody(tab: BookingTab.cancelled),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

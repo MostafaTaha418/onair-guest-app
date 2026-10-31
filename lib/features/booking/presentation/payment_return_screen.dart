@@ -50,6 +50,8 @@ final class PaymentReturnScreen extends StatelessWidget {
         signals: context.read(),
         bookingId: bookingId,
         logger: context.read<AppLogger>(),
+        // Test-only shortening; production never binds the override.
+        backoff: context.read<PaymentVerificationBackoff?>()?.intervals,
       )..start(),
       child: const _ReturnBody(),
     );
@@ -212,6 +214,11 @@ final class _DeadlineCountdownState extends State<_DeadlineCountdown> {
     deadlineUtc: widget.deadlineUtc,
   );
 
+  /// Announced once (US6/T106): the ticking text must not re-announce every
+  /// second, so it sits inside `ExcludeSemantics` and the container carries
+  /// a single static deadline label.
+  String? _deadlineLabel;
+
   @override
   void initState() {
     super.initState();
@@ -219,11 +226,24 @@ final class _DeadlineCountdownState extends State<_DeadlineCountdown> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _deadlineLabel ??= AppLocalizations.of(context).ownerDeadlineCountdown(
+      Countdown.format(_countdown.current),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return CountdownText(
-      remaining: _countdown.remaining,
-      format: (d) => l10n.ownerDeadlineCountdown(Countdown.format(d)),
+    return ExcludeSemantics(
+      child: Semantics(
+        label: _deadlineLabel ?? l10n.paymentVerifying,
+        child: CountdownText(
+          remaining: _countdown.remaining,
+          format: (d) => l10n.ownerDeadlineCountdown(Countdown.format(d)),
+        ),
+      ),
     );
   }
 }

@@ -1244,24 +1244,6 @@ abstract class AppLocalizations {
   /// **'مفيش صور للشقة دي.'**
   String get galleryEmpty;
 
-  /// No description provided for @bookingEntryTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'الحجز'**
-  String get bookingEntryTitle;
-
-  /// No description provided for @bookingEntryComingSoon.
-  ///
-  /// In ar, this message translates to:
-  /// **'الحجز من التطبيق هيتفتح قريب.'**
-  String get bookingEntryComingSoon;
-
-  /// No description provided for @bookingEntryTermsCarried.
-  ///
-  /// In ar, this message translates to:
-  /// **'الشروط اللي شفتها اتسجّلت مع الطلب.'**
-  String get bookingEntryTermsCarried;
-
   /// No description provided for @supportEntryTitle.
   ///
   /// In ar, this message translates to:

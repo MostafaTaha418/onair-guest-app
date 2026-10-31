@@ -31,6 +31,8 @@ import 'package:on_air/features/booking/data/payment_attempt_store.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
 import 'package:on_air/features/bookings/data/mock_booking_server.dart';
+import 'package:on_air/features/bookings/domain/bookings_repository.dart';
+import 'package:on_air/features/bookings/presentation/unfinished_payment_cubit.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/in_app_notification_banner.dart';
@@ -91,6 +93,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final NotificationSignalSource _signals;
   late final PaymentAttemptCubit _paymentAttemptCubit;
   late final UnreadCountCubit _unreadCountCubit;
+  late final UnfinishedPaymentCubit _unfinishedPaymentCubit;
   late final PushMessageSource _pushMessages;
   final ValueNotifier<PushMessage?> _banner = ValueNotifier(null);
   Timer? _bannerHideTimer;
@@ -100,6 +103,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     debugLabel: 'root',
   );
   StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription<PaymentAttemptState>? _paymentAttemptSubscription;
   final List<StreamSubscription<PushMessage>> _pushSubscriptions = [];
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
@@ -119,6 +123,17 @@ final class _OnAirAppState extends State<OnAirApp> {
       notifications: context.read<NotificationsRepository>(),
       signals: _signals,
     );
+    _unfinishedPaymentCubit = UnfinishedPaymentCubit(
+      bookings: context.read<BookingsRepository>(),
+      attempts: context.read<PaymentAttemptStore>(),
+    );
+    // A finished attempt (success, conflict, «Try again») means the banner's
+    // reason is gone — the pending tab may have changed with it.
+    _paymentAttemptSubscription = _paymentAttemptCubit.stream.listen((state) {
+      if (state is AttemptIdle) {
+        unawaited(_unfinishedPaymentCubit.refresh());
+      }
+    });
     _pushMessages = _createPushSource();
     _pushSubscriptions
       ..add(
@@ -175,11 +190,13 @@ final class _OnAirAppState extends State<OnAirApp> {
     SignedIn(:final account) => () {
       unawaited(_signals.start(account.id));
       unawaited(_unreadCountCubit.refresh());
+      unawaited(_unfinishedPaymentCubit.refresh());
     }(),
     SignedOut() || SessionEnded() => () {
       unawaited(_signals.stop());
       unawaited(_paymentAttemptCubit.newAttempt());
       _unreadCountCubit.reset();
+      _unfinishedPaymentCubit.reset();
     }(),
     _ => null,
   };
@@ -224,6 +241,7 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   void _onResume() {
     unawaited(_unreadCountCubit.refresh());
+    unawaited(_unfinishedPaymentCubit.refresh());
     final state = _paymentAttemptCubit.state;
     if (state is! AttemptOpened) return;
     final path = _router.routerDelegate.currentConfiguration.uri.path;
@@ -296,6 +314,8 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(subscription.cancel());
     }
     unawaited(_unreadCountCubit.close());
+    unawaited(_unfinishedPaymentCubit.close());
+    unawaited(_paymentAttemptSubscription?.cancel());
     unawaited(_authSubscription?.cancel());
     unawaited(_signals.stop());
     unawaited(_incomingLinks?.close());
@@ -322,6 +342,9 @@ final class _OnAirAppState extends State<OnAirApp> {
       BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
       BlocProvider<PaymentAttemptCubit>.value(value: _paymentAttemptCubit),
       BlocProvider<UnreadCountCubit>.value(value: _unreadCountCubit),
+      BlocProvider<UnfinishedPaymentCubit>.value(
+        value: _unfinishedPaymentCubit,
+      ),
     ],
     child: RepositoryProvider<InAppBrowser>.value(
       value: _browser,

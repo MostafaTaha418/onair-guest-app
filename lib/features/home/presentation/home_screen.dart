@@ -12,6 +12,9 @@ import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/bookings/presentation/widgets/unfinished_payment_banner.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/widgets/home_header.dart';
 import 'package:on_air/features/home/presentation/widgets/home_search_box.dart';
@@ -47,6 +50,11 @@ final class HomeScreen extends StatelessWidget {
     return [
       // The offline banner itself is global (app.dart); the state flag only
       // drives behaviour, not a second banner.
+      BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, authState) => authState is SignedIn
+            ? const SliverToBoxAdapter(child: UnfinishedPaymentBanner())
+            : const SliverToBoxAdapter(child: SizedBox.shrink()),
+      ),
       const SliverToBoxAdapter(child: HomeHeader()),
       SliverToBoxAdapter(
         child: Padding(

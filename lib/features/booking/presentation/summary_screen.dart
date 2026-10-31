@@ -13,6 +13,7 @@ import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
 import 'package:on_air/design_system/components/info_banner.dart';
+import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/state_views.dart';
@@ -20,9 +21,9 @@ import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
+import 'package:on_air/features/booking/domain/quote_change.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
 import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
-import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/features/property/domain/policy_text.dart';
 import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -55,7 +56,7 @@ final class SummaryScreen extends StatelessWidget {
               onRetry: () => context.pop(),
             );
           }
-          return _SummaryBody(quote: quote, property: property);
+          return _SummaryBody(flow: state);
         },
       ),
       bottomNavigationBar: _PayBar(
@@ -68,21 +69,56 @@ final class SummaryScreen extends StatelessWidget {
 }
 
 final class _SummaryBody extends StatelessWidget {
-  const _SummaryBody({required this.quote, required this.property});
+  const _SummaryBody({required this.flow});
 
-  final BookingQuote quote;
-  final PropertyDetails property;
+  final BookingFlowState flow;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final quote = flow.quote!;
+    final property = flow.property!;
+    final change = flow.pendingChange;
+    String? previousValue(QuoteField field) {
+      if (change == null || !change.changedFields.contains(field)) return null;
+      return switch (field) {
+        QuoteField.nightly => MoneyFormatter().format(change.previous.nightly),
+        QuoteField.total => MoneyFormatter().format(change.previous.total),
+        QuoteField.payNow => MoneyFormatter().format(change.previous.payNow),
+        QuoteField.remaining => MoneyFormatter().format(
+          change.previous.remaining,
+        ),
+        QuoteField.remainingDueAt => l10n.bookingRemainingDue(
+          DateOnlyFormatter.dayMonth(
+            DateOnly.fromDateTime(change.previous.remainingDueAt!),
+          ),
+        ),
+        // The hash itself has no row; it only blocks payment until accepted.
+        QuoteField.termsHash => null,
+      };
+    }
+
     final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
       color: colors.textPrimary,
     );
     return ListView(
       padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
       children: [
+        if (change != null) ...[
+          InfoBanner(
+            message: l10n.quoteChangedNotice,
+            tone: StatusTone.warning,
+          ),
+          const SizedBox(height: Dimens.space12),
+        ],
+        if (flow.termsChanged) ...[
+          NoticeCard(
+            icon: Icons.history_edu,
+            message: l10n.termsChangedNotice,
+          ),
+          const SizedBox(height: Dimens.space12),
+        ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -133,21 +169,33 @@ final class _SummaryBody extends StatelessWidget {
         AmountRow(
           label: l10n.bookingNightlyPrice,
           value: MoneyFormatter().format(quote.nightly),
+          previousValue: previousValue(QuoteField.nightly),
+          highlighted:
+              change?.changedFields.contains(QuoteField.nightly) ?? false,
         ),
         AmountRow(
           label: l10n.bookingTotal,
           value: MoneyFormatter().format(quote.total),
+          previousValue: previousValue(QuoteField.total),
+          highlighted:
+              change?.changedFields.contains(QuoteField.total) ?? false,
           emphasized: true,
         ),
         AmountRow(
           label: l10n.bookingPayNow,
           value: MoneyFormatter().format(quote.payNow),
+          previousValue: previousValue(QuoteField.payNow),
+          highlighted:
+              change?.changedFields.contains(QuoteField.payNow) ?? false,
           emphasized: true,
         ),
         if (!quote.isFullPayment) ...[
           AmountRow(
             label: l10n.bookingRemaining,
             value: MoneyFormatter().format(quote.remaining),
+            previousValue: previousValue(QuoteField.remaining),
+            highlighted:
+                change?.changedFields.contains(QuoteField.remaining) ?? false,
           ),
           if (quote.remainingDueAt != null)
             AmountRow(
@@ -157,15 +205,31 @@ final class _SummaryBody extends StatelessWidget {
                   DateOnly.fromDateTime(quote.remainingDueAt!),
                 ),
               ),
+              previousValue: previousValue(QuoteField.remainingDueAt),
+              highlighted:
+                  change?.changedFields.contains(QuoteField.remainingDueAt) ??
+                  false,
             ),
         ],
         const SizedBox(height: Dimens.space16),
         Text(l10n.bookingPolicyTitle, style: titleStyle),
         const SizedBox(height: Dimens.space8),
+        // Changed terms show the reloaded property's lines — the quote may
+        // still carry the old snapshot.
         for (final line in policyLines(
-          quote.policySummary ?? property.policy,
+          flow.termsChanged
+              ? property.policy
+              : (quote.policySummary ?? property.policy),
         ))
           Text(policyLineText(line, l10n)),
+        if (flow.termsChanged) ...[
+          const SizedBox(height: Dimens.space12),
+          OnAirPrimaryButton(
+            key: const ValueKey('terms-accept-new'),
+            label: l10n.termsAcceptNew,
+            onPressed: () => context.read<BookingFlowCubit>().acceptNewTerms(),
+          ),
+        ],
         const SizedBox(height: Dimens.space16),
         InfoBanner(
           message: l10n.bookingSummaryOwnerNotice,
@@ -211,6 +275,11 @@ final class _PayBar extends StatelessWidget {
               // US2: the server stopped the payment — verify on top of the
               // summary, then retry with the same attempt key.
               unawaited(_verifyThenPay(context, quote));
+            } else if (code == ErrorCode.quoteExpired ||
+                code == ErrorCode.termsChanged) {
+              // US6: the flow cubit reacts silently — a fresh quote or the
+              // new terms appear on the summary itself.
+              unawaited(flowCubit.onPaymentError(state.error));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -252,18 +321,24 @@ final class _PayBar extends StatelessWidget {
                         ),
                       BottomActionBar(
                         leading: const SizedBox.shrink(),
-                        action: OnAirPrimaryButton(
-                          key: const ValueKey('summary-pay'),
-                          label: l10n.bookingGoToPayment,
-                          isLoading: attempt is AttemptStarting,
-                          onPressed:
-                              online &&
-                                  attempt is! AttemptStarting &&
-                                  flow.canPay &&
-                                  quote != null
-                              ? () => attemptCubit.pay(quote)
-                              : null,
-                        ),
+                        action: flow.pendingChange != null
+                            ? OnAirPrimaryButton(
+                                key: const ValueKey('quote-confirm-new'),
+                                label: l10n.quoteConfirmNew,
+                                onPressed: flowCubit.acceptChange,
+                              )
+                            : OnAirPrimaryButton(
+                                key: const ValueKey('summary-pay'),
+                                label: l10n.bookingGoToPayment,
+                                isLoading: attempt is AttemptStarting,
+                                onPressed:
+                                    online &&
+                                        attempt is! AttemptStarting &&
+                                        flow.canPay &&
+                                        quote != null
+                                    ? () => attemptCubit.pay(quote)
+                                    : null,
+                              ),
                       ),
                     ],
                   );

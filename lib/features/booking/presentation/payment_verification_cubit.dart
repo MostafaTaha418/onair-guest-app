@@ -12,6 +12,15 @@ sealed class VerifyState {
   const VerifyState();
 }
 
+/// Test-only override for the polling backoff: a harness provides this
+/// repository so the «server never answers» journey reaches the timeout in
+/// seconds instead of minutes. Production never binds it.
+final class PaymentVerificationBackoff {
+  const PaymentVerificationBackoff(this.intervals);
+
+  final List<Duration> intervals;
+}
+
 final class VerifyWaiting extends VerifyState {
   const VerifyWaiting();
 }
@@ -42,16 +51,19 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     required this._signals,
     required this._bookingId,
     required this._logger,
-    this._backoff = const [
-      Duration(seconds: 2),
-      Duration(seconds: 4),
-      Duration(seconds: 8),
-      Duration(seconds: 16),
-      Duration(seconds: 30),
-      Duration(seconds: 30),
-      Duration(seconds: 30),
-    ],
-  }) : super(const VerifyWaiting());
+    List<Duration>? backoff,
+  }) : _backoff =
+           backoff ??
+           const [
+             Duration(seconds: 2),
+             Duration(seconds: 4),
+             Duration(seconds: 8),
+             Duration(seconds: 16),
+             Duration(seconds: 30),
+             Duration(seconds: 30),
+             Duration(seconds: 30),
+           ],
+       super(const VerifyWaiting());
 
   final BookingsRepository _bookings;
   final NotificationSignalSource _signals;

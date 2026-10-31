@@ -705,15 +705,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryEmpty => 'مفيش صور للشقة دي.';
 
   @override
-  String get bookingEntryTitle => 'الحجز';
-
-  @override
-  String get bookingEntryComingSoon => 'الحجز من التطبيق هيتفتح قريب.';
-
-  @override
-  String get bookingEntryTermsCarried => 'الشروط اللي شفتها اتسجّلت مع الطلب.';
-
-  @override
   String get supportEntryTitle => 'تواصل مع OnAir';
 
   @override

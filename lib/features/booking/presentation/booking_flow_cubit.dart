@@ -112,7 +112,9 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
     StayRange? initialStay,
     int? initialGuests,
     DateOnly Function()? today,
+    DateTime Function()? now,
   }) : _today = today ?? CairoTime.today,
+       _now = now ?? (() => DateTime.now().toUtc()),
        super(
          BookingFlowState(
            load: FlowLoad.loading,
@@ -134,6 +136,7 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
   final ConnectivityCubit _connectivity;
   final String _propertyId;
   final DateOnly Function() _today;
+  final DateTime Function() _now;
   Timer? _expiryTimer;
 
   Future<void> load() async {
@@ -263,9 +266,80 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
 
   Future<void> retry() => load();
 
+  /// US6: re-asks the server for the same stay after the quote neared its
+  /// expiry or the payment start rejected it. A changed quote parks in
+  /// [BookingFlowState.pendingChange] until the guest confirms it.
+  Future<void> refreshQuote() async {
+    final stay = state.stay;
+    final previous = state.quote;
+    if (stay == null || !state.canContinue) return;
+    try {
+      final next = await _flow.quote(
+        propertyId: _propertyId,
+        stay: stay,
+        guests: state.guests,
+        termsHash: state.termsHash,
+      );
+      if (isClosed) return;
+      final change = previous == null
+          ? null
+          : QuoteChange.between(previous, next);
+      emit(
+        state.copyWith(
+          quote: next,
+          pendingChange: change != null && change.hasChanges ? change : null,
+          error: null,
+        ),
+      );
+      _scheduleExpiryRefresh(next);
+    } on AppFailure {
+      // The previous quote stays; the payment start re-checks the server.
+    }
+  }
+
+  /// US6: the guest saw the changed amounts and accepted them.
+  void acceptChange() {
+    if (state.pendingChange != null) {
+      emit(state.copyWith(pendingChange: null));
+    }
+  }
+
+  /// US6: the payment start refused the attempt — react by code.
+  Future<void> onPaymentError(ApiError error) async {
+    if (error.code == ErrorCode.quoteExpired) {
+      await refreshQuote();
+    } else if (error.code == ErrorCode.termsChanged) {
+      try {
+        final property = await _listings.property(_propertyId);
+        if (isClosed) return;
+        emit(state.copyWith(property: property, termsChanged: true));
+      } on AppFailure {
+        if (isClosed) return;
+        emit(state.copyWith(termsChanged: true));
+      }
+    }
+  }
+
+  /// US6: the guest accepted the new terms — continue under them.
+  Future<void> acceptNewTerms() async {
+    final property = state.property;
+    if (property == null) return;
+    emit(
+      state.copyWith(termsHash: property.termsVersion, termsChanged: false),
+    );
+    await requestQuote();
+  }
+
   void _scheduleExpiryRefresh(BookingQuote quote) {
     _expiryTimer?.cancel();
     _expiryTimer = null;
+    final fireAt = quote.expiresAt.subtract(const Duration(seconds: 30));
+    final delay = fireAt.difference(_now());
+    if (delay <= Duration.zero) {
+      scheduleMicrotask(() => unawaited(refreshQuote()));
+      return;
+    }
+    _expiryTimer = Timer(delay, () => unawaited(refreshQuote()));
   }
 
   @override

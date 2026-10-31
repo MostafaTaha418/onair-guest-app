@@ -39,6 +39,10 @@ final class Countdown {
     return left.isNegative ? Duration.zero : left;
   }
 
+  /// The time left right now, without opening the stream — for a screen that
+  /// announces the deadline text once instead of on every tick.
+  Duration get current => _left();
+
   void _emitAndSchedule() {
     if (_pastDeadline) return;
     _emit(_left());
