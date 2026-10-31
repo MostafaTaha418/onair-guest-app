@@ -85,6 +85,8 @@ final class PinnedBookings implements BookingsRepository {
 }
 
 const _confirmedId = 'b0000000-0000-4000-8000-000000000001';
+const _conflictId = 'b0000000-0000-4000-8000-000000000010';
+const _cancelledId = 'b0000000-0000-4000-8000-000000000008';
 
 Widget _bookingsChild() {
   final backend = FakeBookingBackend();
@@ -109,7 +111,7 @@ Widget _bookingsChild() {
   );
 }
 
-Widget _detailsChild() {
+Widget _detailsChild([String bookingId = _confirmedId]) {
   final backend = FakeBookingBackend();
   final connectivity = FakeConnectivity();
   final connectivityCubit = connectivity.createCubit();
@@ -119,7 +121,7 @@ Widget _detailsChild() {
     arrival: backend.arrivalInstructions,
     signals: backend.signals,
     connectivity: connectivityCubit,
-    bookingId: _confirmedId,
+    bookingId: bookingId,
   );
   unawaited(cubit.load());
   return MultiRepositoryProvider(
@@ -133,7 +135,7 @@ Widget _detailsChild() {
     ],
     child: BlocProvider<BookingDetailsCubit>.value(
       value: cubit,
-      child: const BookingDetailsScreen(bookingId: _confirmedId),
+      child: BookingDetailsScreen(bookingId: bookingId),
     ),
   );
 }
@@ -189,6 +191,42 @@ void main() {
         builder: () => GoldenTestScenario(
           name: name,
           child: _theme(mode, scale, 400, 2800, _detailsChild()),
+        ),
+      ),
+    );
+    unawaited(
+      goldenTest(
+        'booking details conflict — $name',
+        fileName: 'booking_details_conflict_$name',
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 2900),
+        pumpBeforeTest: _pumpTwoFrames,
+        builder: () => GoldenTestScenario(
+          name: name,
+          child: _theme(
+            mode,
+            scale,
+            400,
+            2800,
+            _detailsChild(_conflictId),
+          ),
+        ),
+      ),
+    );
+    unawaited(
+      goldenTest(
+        'booking details cancelled — $name',
+        fileName: 'booking_details_cancelled_$name',
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 2900),
+        pumpBeforeTest: _pumpTwoFrames,
+        builder: () => GoldenTestScenario(
+          name: name,
+          child: _theme(
+            mode,
+            scale,
+            400,
+            2800,
+            _detailsChild(_cancelledId),
+          ),
         ),
       ),
     );

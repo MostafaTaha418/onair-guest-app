@@ -25,6 +25,7 @@ import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/booking_parts.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
+import 'package:on_air/features/bookings/presentation/widgets/refund_section.dart';
 import 'package:on_air/features/property/domain/policy_text.dart';
 import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -173,6 +174,11 @@ final class _DetailsList extends StatelessWidget {
                   label: _methodLabel(line, l10n),
                   value: _lineValue(line, l10n),
                 ),
+              ],
+              // Section 5: the refund's own progress (US4).
+              if (details.refund != null) ...[
+                const SizedBox(height: Dimens.space16),
+                RefundSection(refund: details.refund!),
               ],
               const SizedBox(height: Dimens.space16),
               Text(
@@ -368,9 +374,22 @@ final class _Header extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Dimens.space4),
-        StatusChip(
-          label: bookingStatusLabel(details.status, l10n),
-          tone: bookingStatusTone(details.status),
+        // The refund chip sits next to the status chip only when the
+        // server reported a refund (US4).
+        Wrap(
+          spacing: Dimens.space8,
+          runSpacing: Dimens.space4,
+          children: [
+            StatusChip(
+              label: bookingStatusLabel(details.status, l10n),
+              tone: bookingStatusTone(details.status),
+            ),
+            if (details.refund != null)
+              StatusChip(
+                label: refundStageLabel(details.refund!.stage, l10n),
+                tone: refundStageTone(details.refund!.stage),
+              ),
+          ],
         ),
       ],
     );

@@ -116,9 +116,25 @@ final class _BookingCardState extends State<BookingCard> {
                         ),
                       ),
                       const SizedBox(height: Dimens.space8),
-                      StatusChip(
-                        label: statusLabel,
-                        tone: bookingStatusTone(booking.status),
+                      Wrap(
+                        spacing: Dimens.space8,
+                        runSpacing: Dimens.space4,
+                        children: [
+                          StatusChip(
+                            label: statusLabel,
+                            tone: bookingStatusTone(booking.status),
+                          ),
+                          // The refund chip rides along only when the
+                          // server reported a refund (US4).
+                          if (booking.refundStage != null)
+                            StatusChip(
+                              label: refundStageLabel(
+                                booking.refundStage!,
+                                l10n,
+                              ),
+                              tone: refundStageTone(booking.refundStage!),
+                            ),
+                        ],
                       ),
                     ],
                   ),

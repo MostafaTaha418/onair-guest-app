@@ -577,16 +577,16 @@ fixture; only the `verified` refund shows `refundChipDone`.
 
 ### Tests for User Story 4
 
-- [ ] T074 [P] [US4] Write `test/features/bookings/presentation/refund_display_test.dart` (widget): for each refund fixture (`requested`, `approved`, `executed`, `verified`) the details screen shows the refund section with `refundAmount` = the fixture amount, `RefundStageTracker.currentIndex` = 0/1/2/3, and the chip label `refundChipRequested` / `refundChipInProgress` / `refundChipInProgress` / `refundChipDone`; `refundChipDone` and `refundStageVerified` appear **only** for `verified` (AC-042); a `failed` refund shows `refundChipProblem` and `refundProblemHint`; a booking card in the Cancelled tab with a refund shows the refund chip next to the status chip; the rejected fixture's message contains the formatted paid amount (AC-020) and the expired one too (AC-021); the confirmed fixture shows `bookingMsgConfirmedWithRemaining` (AC-019).
+- [x] T074 [P] [US4] Write `test/features/bookings/presentation/refund_display_test.dart` (widget): for each refund fixture (`requested`, `approved`, `executed`, `verified`) the details screen shows the refund section with `refundAmount` = the fixture amount, `RefundStageTracker.currentIndex` = 0/1/2/3, and the chip label `refundChipRequested` / `refundChipInProgress` / `refundChipInProgress` / `refundChipDone`; `refundChipDone` and `refundStageVerified` appear **only** for `verified` (AC-042); a `failed` refund shows `refundChipProblem` and `refundProblemHint`; a booking card in the Cancelled tab with a refund shows the refund chip next to the status chip; the rejected fixture's message contains the formatted paid amount (AC-020) and the expired one too (AC-021); the confirmed fixture shows `bookingMsgConfirmedWithRemaining` (AC-019).
 
 ### Implementation for User Story 4
 
-- [ ] T075 [US4] Add the refund UI (needs T071, T069):
+- [x] T075 [US4] Add the refund UI (needs T071, T069):
   - `lib/features/bookings/presentation/widgets/refund_section.dart`: `RefundSection({required RefundInfo refund})` with title `refundTitle`, an `AmountRow(label: l10n.refundAmount, value: MoneyFormatter().format(refund.amount))`, and `RefundStageTracker(stageLabels: [l10n.refundStageRequested, l10n.refundStageApproved, l10n.refundStageExecuting, l10n.refundStageVerified], currentIndex: switch (refund.stage) { requested => 0, approved => 1, executed => 2, verified => 3, _ => 0 }, failed: refund.stage == RefundStage.failed || refund.stage == RefundStage.cancelled)`; when failed, add `NoticeCard(icon: Icons.support_agent, message: l10n.refundProblemHint)`;
   - insert it into `BookingDetailsScreen` as section 5 when `details.refund != null`;
   - add `StatusChip(label: refundStageLabel(...), tone: refundStageTone(...))` next to the status chip in the details header and in `BookingCard` when `refund`/`refundStage` is not null.
   Makes T074 pass.
-- [ ] T076 [US4] Extend the goldens in `test/features/bookings/goldens/bookings_goldens_test.dart` (T073) with the conflict fixture (refund `executed`) and the cancelled fixture (refund `verified`); regenerate only those pictures.
+- [x] T076 [US4] Extend the goldens in `test/features/bookings/goldens/bookings_goldens_test.dart` (T073) with the conflict fixture (refund `executed`) and the cancelled fixture (refund `verified`); regenerate only those pictures.
 
 **Checkpoint**: US4 Independent Test passes; T074 passes.
 

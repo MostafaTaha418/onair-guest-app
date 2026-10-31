@@ -29,24 +29,28 @@ final class RefundStageTracker extends StatelessWidget {
             Expanded(
               child: Container(height: 2, color: colors['borderDetail']),
             ),
-          Column(
-            children: [
-              Icon(
-                index <= currentIndex && !failed
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                size: Dimens.space20,
-                color: _stepColor(colors, index),
-              ),
-              const SizedBox(height: Dimens.space4),
-              Text(
-                stageLabels[index],
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          // Flexible: a long label (تم التحقق من وصوله) wraps instead of
+          // overflowing the row on narrow screens.
+          Flexible(
+            child: Column(
+              children: [
+                Icon(
+                  index <= currentIndex && !failed
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  size: Dimens.space20,
                   color: _stepColor(colors, index),
                 ),
-              ),
-            ],
+                const SizedBox(height: Dimens.space4),
+                Text(
+                  stageLabels[index],
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: _stepColor(colors, index),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ],
