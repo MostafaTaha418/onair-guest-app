@@ -46,6 +46,10 @@ import 'package:on_air/features/home/presentation/home_screen.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
+import 'package:on_air/features/notifications/presentation/notifications_screen.dart';
+import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
@@ -317,6 +321,23 @@ GoRouter createAppRouter({
       name: 'payment-return',
       builder: (_, state) => PaymentReturnScreen(
         bookingIdFromLink: state.uri.queryParameters['booking'],
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.notifications,
+      name: 'notifications',
+      builder: (context, state) => BlocProvider<NotificationsCubit>(
+        create: (context) {
+          final cubit = NotificationsCubit(
+            notifications: context.read<NotificationsRepository>(),
+            signals: context.read<NotificationSignalSource>(),
+            connectivity: context.read<ConnectivityCubit>(),
+            unread: context.read<UnreadCountCubit>(),
+          );
+          unawaited(cubit.load());
+          return cubit;
+        },
+        child: const NotificationsScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(

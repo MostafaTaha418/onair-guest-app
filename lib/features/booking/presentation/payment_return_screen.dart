@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import 'package:on_air/features/booking/domain/verification_outcome.dart';
 import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
 import 'package:on_air/features/booking/presentation/payment_verification_cubit.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The screen the app lands on after the Kashier page: it waits for the
@@ -81,6 +84,14 @@ final class _ReturnBodyState extends State<_ReturnBody> {
               state.outcome == VerificationOutcome.success &&
               !_asked) {
             _asked = true;
+            // US5: the push sheet shows once, after the first successful
+            // payment. Tests without a coordinator skip the ask.
+            try {
+              final coordinator = context.read<PushPermissionCoordinator>();
+              unawaited(coordinator.maybeAskAfterFirstSuccess(context));
+            } on ProviderNotFoundException {
+              // No coordinator in this harness: nothing to ask.
+            }
           }
         },
         builder: (context, state) => switch (state) {

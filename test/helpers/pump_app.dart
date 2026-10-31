@@ -7,6 +7,8 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/push/notification_permission.dart';
+import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/storage/secure_store.dart';
@@ -23,8 +25,10 @@ import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
+import 'controllable_push_message_source.dart';
 import 'fake_booking_backend.dart';
 import 'fake_listings_repository.dart';
 import 'fake_share_service.dart';
@@ -45,6 +49,13 @@ extension PumpOnAirApp on WidgetTester {
     final cache = _tempCache();
     final backend = bookingBackend ?? FakeBookingBackend();
     addTearDown(backend.dispose);
+    final unreadCubit = UnreadCountCubit(
+      notifications: backend.server,
+      signals: backend.signals,
+    );
+    addTearDown(unreadCubit.close);
+    final pushSource = ControllablePushMessageSource();
+    addTearDown(pushSource.dispose);
     final cubit =
         authCubit ??
         AuthCubit(
@@ -91,6 +102,11 @@ extension PumpOnAirApp on WidgetTester {
           RepositoryProvider<BookingActionRegistry>.value(
             value: BookingActionRegistry.g2(),
           ),
+          RepositoryProvider<NotificationPermission>.value(
+            value: FakeNotificationPermission(),
+          ),
+          RepositoryProvider<PushMessageSource>.value(value: pushSource),
+          BlocProvider<UnreadCountCubit>.value(value: unreadCubit),
         ],
         // A connectivity cubit is provided only when a test hands one in:
         // constructing the real one touches the platform channel.

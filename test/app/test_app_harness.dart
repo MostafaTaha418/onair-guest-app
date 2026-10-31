@@ -10,6 +10,8 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/push/notification_permission.dart';
+import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -17,9 +19,11 @@ import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers/controllable_push_message_source.dart';
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
 import '../helpers/fake_booking_backend.dart';
@@ -94,6 +98,8 @@ Future<void> _pumpApp(
     ),
   );
   SharedPreferences.setMockInitialValues({});
+  final pushSource = ControllablePushMessageSource();
+  addTearDown(pushSource.dispose);
   final listings = listingsRepository ?? FakeListingsRepository();
   final cacheDirectory = Directory.systemTemp.createTempSync(
     'on_air_test_cache',
@@ -125,6 +131,16 @@ Future<void> _pumpApp(
           value: const ShareLinks(linkDomain: 'on-air.website'),
         ),
         ...bookingBackend.appProviders(),
+        RepositoryProvider<NotificationPermission>.value(
+          value: FakeNotificationPermission(),
+        ),
+        RepositoryProvider<PushMessageSource>.value(value: pushSource),
+        RepositoryProvider<PushPermissionCoordinator>.value(
+          value: PushPermissionCoordinator(
+            permission: FakeNotificationPermission(),
+            devices: null,
+          ),
+        ),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

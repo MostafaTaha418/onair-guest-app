@@ -18,6 +18,8 @@ import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
 import 'package:on_air/core/push/firebase_push_token_source.dart';
+import 'package:on_air/core/push/notification_permission.dart';
+import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/push/push_token_source.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
@@ -49,6 +51,7 @@ import 'package:on_air/features/listings/data/supabase_listings_repository.dart'
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/data/supabase_notifications_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -107,6 +110,11 @@ Future<void> bootstrap(String flavor) async {
   final paymentAttemptStore = PaymentAttemptStore(backend.secureStore);
   final arrivalInstructions = ArrivalInstructionsStore(backend.secureStore);
   final bookingsCache = BookingsCache(bookingsFileCache);
+  final notificationPermission = backend.permission;
+  final pushPermissionCoordinator = PushPermissionCoordinator(
+    permission: notificationPermission,
+    devices: deviceRegistrationService,
+  );
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -151,6 +159,13 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<MockBookingServer?>.value(
           value: backend.mockServer,
         ),
+        RepositoryProvider<NotificationPermission>.value(
+          value: notificationPermission,
+        ),
+        RepositoryProvider<PushMessageSource>.value(value: backend.pushes),
+        RepositoryProvider<PushPermissionCoordinator>.value(
+          value: pushPermissionCoordinator,
+        ),
       ],
       child: OnAirApp(
         signOutCoordinator: signOutCoordinator,
@@ -184,6 +199,8 @@ typedef _Backend = ({
   NotificationSignalSource signals,
   SecureStore secureStore,
   MockBookingServer? mockServer,
+  PushMessageSource pushes,
+  NotificationPermission permission,
 });
 
 Future<_Backend> _remoteBackend(EnvConfig environment) async {
@@ -224,6 +241,8 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     signals: SupabaseNotificationSignalSource(client),
     secureStore: FlutterSecureStore(),
     mockServer: null,
+    pushes: FirebasePushMessageSource(),
+    permission: FirebaseNotificationPermission(),
   );
 }
 
@@ -245,5 +264,7 @@ _Backend _mockBackend() {
     signals: signals,
     secureStore: InMemorySecureStore(),
     mockServer: server,
+    pushes: const NoopPushMessageSource(),
+    permission: FakeNotificationPermission(),
   );
 }
