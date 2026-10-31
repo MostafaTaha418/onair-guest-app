@@ -31,4 +31,14 @@ abstract final class CairoTime {
     final cairo = tz.TZDateTime.from(now ?? DateTime.now(), location);
     return DateOnly(cairo.year, cairo.month, cairo.day);
   }
+
+  /// The instant [utc] as seen on a Cairo wall clock.
+  static DateTime inCairo(DateTime utc) {
+    final location = _location;
+    if (location == null) {
+      throw StateError('CairoTime.initialize must be called first');
+    }
+    final parsed = utc.isUtc ? utc : utc.toUtc();
+    return tz.TZDateTime.from(parsed, location);
+  }
 }

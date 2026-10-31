@@ -9,6 +9,7 @@ import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/images/image_variants.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
@@ -30,7 +31,14 @@ import 'package:on_air/features/booking/presentation/payment_return_screen.dart'
 import 'package:on_air/features/booking/presentation/summary_screen.dart';
 import 'package:on_air/features/booking/presentation/verify_identity_cubit.dart';
 import 'package:on_air/features/booking/presentation/verify_identity_screen.dart';
-import 'package:on_air/features/bookings/presentation/bookings_placeholder_screen.dart';
+import 'package:on_air/features/bookings/data/arrival_instructions_store.dart';
+import 'package:on_air/features/bookings/data/bookings_cache.dart';
+import 'package:on_air/features/bookings/domain/booking_status.dart';
+import 'package:on_air/features/bookings/domain/bookings_repository.dart';
+import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
+import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
+import 'package:on_air/features/bookings/presentation/bookings_cubit.dart';
+import 'package:on_air/features/bookings/presentation/bookings_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
@@ -55,6 +63,13 @@ int? _boundedGuests(String? raw) {
   final value = int.tryParse(raw ?? '');
   return value == null || value < 1 || value > 50 ? null : value;
 }
+
+/// The bookings tab from a `/bookings?tab=` query; anything else is current.
+BookingTab _tabFrom(String? raw) => switch (raw) {
+  'past' => BookingTab.past,
+  'cancelled' => BookingTab.cancelled,
+  _ => BookingTab.current,
+};
 
 /// The booking flow shares one draft across verify → dates → summary, so
 /// the routes live under one shell that owns `BookingFlowCubit`; leaving
@@ -247,14 +262,35 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.supportNew,
       name: 'support-new',
-      builder: (_, state) => SupportEntryPlaceholderScreen(
-        propertyId: state.uri.queryParameters['property'],
-      ),
+      builder: (_, state) {
+        final booking = state.uri.queryParameters['booking'];
+        return SupportEntryPlaceholderScreen(
+          propertyId: state.uri.queryParameters['property'],
+          bookingId: AppRoutes.isUuidV4(booking ?? '') ? booking : null,
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.bookingDetailsPattern,
-      name: 'linked-booking',
-      builder: (_, _) => const NotAvailableScreen(),
+      name: 'booking-details',
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return BlocProvider<BookingDetailsCubit>(
+          create: (context) {
+            final cubit = BookingDetailsCubit(
+              bookings: context.read<BookingsRepository>(),
+              cache: context.read<BookingsCache>(),
+              arrival: context.read<ArrivalInstructionsStore>(),
+              signals: context.read<NotificationSignalSource>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              bookingId: bookingId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: BookingDetailsScreen(bookingId: bookingId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.remainingPaymentPattern,
@@ -333,7 +369,21 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.bookings,
               name: 'bookings',
-              builder: (_, _) => const BookingsPlaceholderScreen(),
+              builder: (context, state) {
+                final tab = _tabFrom(state.uri.queryParameters['tab']);
+                return BlocProvider<BookingsCubit>(
+                  create: (context) {
+                    final cubit = BookingsCubit(
+                      bookings: context.read<BookingsRepository>(),
+                      cache: context.read<BookingsCache>(),
+                      connectivity: context.read<ConnectivityCubit>(),
+                    );
+                    unawaited(cubit.start(tab));
+                    return cubit;
+                  },
+                  child: BookingsScreen(initialTab: tab),
+                );
+              },
             ),
           ],
         ),

@@ -5,9 +5,16 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// G4 entry point until support ships (research R10).
 final class SupportEntryPlaceholderScreen extends StatelessWidget {
-  const SupportEntryPlaceholderScreen({this.propertyId, super.key});
+  const SupportEntryPlaceholderScreen({
+    this.propertyId,
+    this.bookingId,
+    super.key,
+  });
 
   final String? propertyId;
+
+  /// The booking the guest came from (US3 details actions, G2 contract).
+  final String? bookingId;
 
   @override
   Widget build(BuildContext context) {
