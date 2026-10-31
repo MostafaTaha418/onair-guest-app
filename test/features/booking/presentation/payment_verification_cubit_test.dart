@@ -41,6 +41,27 @@ final class CountingBookingsRepository implements BookingsRepository {
       _inner.listBookings(tab, cursor: cursor);
 }
 
+/// Counts `getBooking` calls and holds every fetch open until released.
+final class GatedBookings implements BookingsRepository {
+  GatedBookings(this._inner);
+
+  final BookingsRepository _inner;
+  int calls = 0;
+  Completer<void>? gate;
+
+  @override
+  Future<BookingDetails> getBooking(String bookingId) async {
+    calls++;
+    final pending = gate;
+    if (pending != null) await pending.future;
+    return _inner.getBooking(bookingId);
+  }
+
+  @override
+  Future<BookingsPage> listBookings(BookingTab tab, {String? cursor}) =>
+      _inner.listBookings(tab, cursor: cursor);
+}
+
 void main() {
   late FakeBookingBackend backend;
 
@@ -271,6 +292,121 @@ void main() {
         ..elapse(const Duration(seconds: 10))
         ..flushMicrotasks();
       expect(bookings.calls, 1);
+    });
+  });
+
+  test('signals do not push the 120 s timeout further away', () {
+    fakeAsync((async) {
+      var bookingId = '';
+      unawaited(createSilentBooking().then((id) => bookingId = id));
+      async.flushMicrotasks();
+
+      final bookings = CountingBookingsRepository(backend.server);
+      final cubit = PaymentVerificationCubit(
+        bookings: bookings,
+        signals: backend.signals,
+        bookingId: bookingId,
+        logger: AppLogger(sink: (_) {}),
+      );
+      // The fakeAsync zone interleaves calls with microtask flushes on
+      // different receivers, which the cascade lint cannot see past the
+      // local declarations.
+      // ignore: cascade_invocations
+      cubit.start();
+      async.flushMicrotasks();
+      expect(bookings.calls, 1);
+
+      // Signals at 1 s and 3 s fetch at once but never touch the poll
+      // schedule.
+      unawaited(backend.signals.start('guest'));
+      async
+        ..flushMicrotasks()
+        ..elapse(const Duration(seconds: 1))
+        ..flushMicrotasks();
+      backend.signals.emit(
+        NotificationSignal(
+          id: 'n1',
+          typeKey: 'booking.request_received',
+          entityType: 'booking',
+          entityId: bookingId,
+        ),
+      );
+      async.flushMicrotasks();
+      expect(bookings.calls, 2);
+
+      async
+        ..elapse(const Duration(seconds: 2))
+        ..flushMicrotasks();
+      backend.signals.emit(
+        NotificationSignal(
+          id: 'n2',
+          typeKey: 'booking.request_received',
+          entityType: 'booking',
+          entityId: bookingId,
+        ),
+      );
+      async.flushMicrotasks();
+      // Calls so far: start, signal@1s, poll@2s, signal@3s.
+      expect(bookings.calls, 4);
+
+      // The backoff sum is untouched: the timeout still lands at 120 s,
+      // having fetched 8 poll times plus the 2 signal fetches.
+      async
+        ..elapse(const Duration(seconds: 117))
+        ..flushMicrotasks();
+      expect(cubit.state, isA<VerifyTimeout>());
+      expect(bookings.calls, 10);
+      unawaited(cubit.close());
+    });
+  });
+
+  test('a signal during an in-flight fetch triggers one more fetch', () {
+    fakeAsync((async) {
+      var bookingId = '';
+      unawaited(createSilentBooking().then((id) => bookingId = id));
+      async.flushMicrotasks();
+
+      final bookings = GatedBookings(backend.server)..gate = Completer<void>();
+      final cubit = PaymentVerificationCubit(
+        bookings: bookings,
+        signals: backend.signals,
+        bookingId: bookingId,
+        logger: AppLogger(sink: (_) {}),
+      );
+      // The fakeAsync zone interleaves calls with microtask flushes on
+      // different receivers, which the cascade lint cannot see past the
+      // local declarations.
+      // ignore: cascade_invocations
+      cubit.start();
+      async.flushMicrotasks();
+      expect(bookings.calls, 1);
+
+      // The signal arrives while the first fetch is still running.
+      unawaited(backend.signals.start('guest'));
+      async.flushMicrotasks();
+      backend.signals.emit(
+        NotificationSignal(
+          id: 'n1',
+          typeKey: 'booking.request_received',
+          entityType: 'booking',
+          entityId: bookingId,
+        ),
+      );
+      async.flushMicrotasks();
+      expect(bookings.calls, 1, reason: 'the signal is remembered, not run');
+
+      final pending = bookings.gate!;
+      bookings.gate = null;
+      pending.complete();
+      async.flushMicrotasks();
+      expect(bookings.calls, 2, reason: 'one extra fetch right after');
+
+      // The pending 2 s poll was never rescheduled by the extra fetch.
+      async
+        ..elapse(const Duration(seconds: 2))
+        ..flushMicrotasks();
+      expect(bookings.calls, 3);
+      unawaited(cubit.close());
     });
   });
 }

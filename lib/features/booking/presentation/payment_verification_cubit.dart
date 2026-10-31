@@ -77,23 +77,36 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
   var _fetching = false;
   var _finished = false;
 
+  /// A signal arrived while a fetch was running: one more fetch runs right
+  /// after it, without touching the poll timer (FR-013 / SC-005).
+  var _refetchRequested = false;
+
   void start() {
     _logger.info('payment_return_received booking=$_bookingId');
     _signalSubscription = _signals.signals
         .where((signal) => signal.entityId == _bookingId)
-        .listen((_) => unawaited(_fetch()));
-    unawaited(_fetch());
+        .listen((_) => unawaited(_fetch(fromPoll: false)));
+    // The first fetch counts as poll-triggered: it opens the backoff
+    // schedule.
+    unawaited(_fetch(fromPoll: true));
   }
 
-  Future<void> _fetch() async {
-    if (_finished || _fetching || isClosed) return;
+  Future<void> _fetch({required bool fromPoll}) async {
+    if (_finished || isClosed) return;
+    if (_fetching) {
+      _refetchRequested = true;
+      return;
+    }
     _fetching = true;
     try {
       final details = await _bookings.getBooking(_bookingId);
       if (isClosed) return;
       final outcome = verificationOutcomeFor(details);
       if (outcome == VerificationOutcome.waiting) {
-        _scheduleNextPoll();
+        // Only poll-triggered fetches advance the schedule: a signal just
+        // got a fresher answer — the pending poll timer stays as it is, so
+        // the total waiting time remains the backoff sum.
+        if (fromPoll) _scheduleNextPoll();
         return;
       }
       _finished = true;
@@ -115,9 +128,13 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
         return;
       }
       // Network and other errors keep waiting.
-      _scheduleNextPoll();
+      if (fromPoll) _scheduleNextPoll();
     } finally {
       _fetching = false;
+      if (_refetchRequested && !_finished && !isClosed) {
+        _refetchRequested = false;
+        unawaited(_fetch(fromPoll: false));
+      }
     }
   }
 
@@ -133,7 +150,7 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     _pollTimer?.cancel();
     _pollTimer = Timer(_backoff[_backoffIndex], () {
       _backoffIndex++;
-      unawaited(_fetch());
+      unawaited(_fetch(fromPoll: true));
     });
   }
 
