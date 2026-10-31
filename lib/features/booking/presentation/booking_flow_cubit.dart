@@ -320,6 +320,10 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
   Future<void> onPaymentError(ApiError error) async {
     if (error.code == ErrorCode.quoteExpired) {
       await refreshQuote();
+    } else if (error.code == ErrorCode.propertyNotAvailable) {
+      // AC-003: the apartment is gone; this booking branch cannot continue.
+      _expiryTimer?.cancel();
+      emit(state.copyWith(load: FlowLoad.notAvailable));
     } else if (error.code == ErrorCode.termsChanged) {
       try {
         final property = await _listings.property(_propertyId);

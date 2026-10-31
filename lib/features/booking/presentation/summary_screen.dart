@@ -44,12 +44,12 @@ final class SummaryScreen extends StatelessWidget {
         title: Text(l10n.bookingSummaryTitle),
         leading: BackButton(onPressed: () => context.pop()),
       ),
-      body: BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
-        builder: (context, attempt) {
+      body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
+        builder: (context, state) {
           // AC-003: the server refused the start because the apartment is
-          // gone — the summary is replaced with the not-available view.
-          if (attempt is AttemptFailed &&
-              attempt.error.code == ErrorCode.propertyNotAvailable) {
+          // gone. The fact lives in this booking's own flow cubit, so it
+          // never leaks into another apartment's summary.
+          if (state.load == FlowLoad.notAvailable) {
             return EmptyView(
               icon: Icons.home_outlined,
               message: l10n.propertyNotAvailable,
@@ -59,21 +59,17 @@ final class SummaryScreen extends StatelessWidget {
               ),
             );
           }
-          return BlocBuilder<BookingFlowCubit, BookingFlowState>(
-            builder: (context, state) {
-              final quote = state.quote;
-              final property = state.property;
-              if (quote == null || property == null) {
-                // The draft is gone (restart, expired branch): start from
-                // the page.
-                return ErrorView(
-                  message: l10n.bookingQuoteExpired,
-                  onRetry: () => context.pop(),
-                );
-              }
-              return _SummaryBody(flow: state);
-            },
-          );
+          final quote = state.quote;
+          final property = state.property;
+          if (quote == null || property == null) {
+            // The draft is gone (restart, expired branch): start from the
+            // page.
+            return ErrorView(
+              message: l10n.bookingQuoteExpired,
+              onRetry: () => context.pop(),
+            );
+          }
+          return _SummaryBody(flow: state);
         },
       ),
       bottomNavigationBar: _PayBar(
@@ -308,6 +304,10 @@ final class _PayBarState extends State<_PayBar> {
     return BlocBuilder<BookingFlowCubit, BookingFlowState>(
       builder: (context, flow) {
         final quote = flow.quote;
+        // AC-003: no pay button under the not-available view.
+        if (flow.load == FlowLoad.notAvailable) {
+          return const SizedBox.shrink();
+        }
         return BlocListener<PaymentAttemptCubit, PaymentAttemptState>(
           listener: (context, state) {
             if (state is! AttemptFailed) return;
@@ -318,13 +318,12 @@ final class _PayBarState extends State<_PayBar> {
               // summary, then retry with the same attempt key.
               unawaited(_verifyThenPay(quote));
             } else if (code == ErrorCode.quoteExpired ||
-                code == ErrorCode.termsChanged) {
-              // US6: the flow cubit reacts silently — a fresh quote or the
-              // new terms appear on the summary itself.
+                code == ErrorCode.termsChanged ||
+                code == ErrorCode.propertyNotAvailable) {
+              // US6 / AC-003: the flow cubit reacts silently — a fresh
+              // quote, the new terms, or the not-available view appear on
+              // the summary itself.
               unawaited(widget.flowCubit.onPaymentError(state.error));
-            } else if (code == ErrorCode.propertyNotAvailable) {
-              // AC-003: the body is replaced with the not-available view;
-              // there is nothing to snack about.
             } else {
               if (code == ErrorCode.rateLimited &&
                   state.error.retryAfter != null) {

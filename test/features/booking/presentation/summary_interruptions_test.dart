@@ -368,6 +368,37 @@ void main() {
     expect(find.text(l10n.propertyNotAvailable), findsOneWidget);
     expect(find.text(l10n.bookingsFindApartment), findsOneWidget);
     expect(find.byType(SnackBar), findsNothing);
+    expect(
+      find.byKey(const ValueKey('summary-pay')),
+      findsNothing,
+      reason: 'no pay button under the not-available view',
+    );
+  });
+
+  testWidgets('a not-available refusal does not leak into a new summary', (
+    tester,
+  ) async {
+    final listings = FakeListingsRepository()
+      ..propertyResponses.addAll([
+        _property(property1f, 'mock-terms-1'),
+        _property(property1f, 'mock-terms-1'),
+      ])
+      ..unavailableNightsResponses.addAll([<DateOnly>{}, <DateOnly>{}]);
+    flow.nextStartFailure = AppFailure(
+      ErrorMapper.fromCode('PROPERTY_NOT_AVAILABLE'),
+    );
+    await pumpSummary(tester, listings: listings);
+    await tester.tap(find.byKey(const ValueKey('summary-pay')));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.propertyNotAvailable), findsOneWidget);
+    // The app-scoped attempt cubit still holds the refusal.
+    expect(attemptCubit.state, isA<AttemptFailed>());
+
+    // A new booking branch (fresh flow cubit) opens its summary normally.
+    await pumpSummary(tester, listings: listings);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.propertyNotAvailable), findsNothing);
+    expect(find.byKey(const ValueKey('summary-pay')), findsOneWidget);
   });
 
   testWidgets('RATE_LIMITED snacks and disables pay until retry-after', (
