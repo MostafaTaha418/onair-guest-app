@@ -64,3 +64,4 @@ Thumbs.db
 # Backend code belongs in onair-backend.
 /supabase/
 /services/
+failures/
