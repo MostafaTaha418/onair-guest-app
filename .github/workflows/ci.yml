@@ -118,7 +118,7 @@ jobs:
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           GITLEAKS_BINARY=/tmp/gitleaks python3 -m unittest discover -s tool/tests -p 'test_gitleaks.py' -v
           /tmp/gitleaks detect -c .gitleaks.toml --redact --report-format json --report-path /tmp/gitleaks-report.json || {
-            python3 -c 'import json; findings=json.load(open("/tmp/gitleaks-report.json")); [print("::error file={}::Gitleaks rule {} in commit {}".format(item["File"], item["RuleID"], item["Commit"])) for item in findings]'
+            python3 -c 'import json; findings=json.load(open("/tmp/gitleaks-report.json")); [print("Gitleaks finding: rule {}, file {}, commit {}".format(item["RuleID"], item["File"], item["Commit"])) for item in findings]'
             exit 1
           }
 
