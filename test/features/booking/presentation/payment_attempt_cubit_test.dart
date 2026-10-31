@@ -255,7 +255,7 @@ void main() {
     expect(await backend.paymentAttempts.read(), isNull);
   });
 
-  test('restore emits AttemptOpened without opening the browser', () async {
+  test('restore emits AttemptReturned for an attempt with a booking', () async {
     final attempt = PaymentAttempt(
       attemptKey: 'key-9'.padRight(36, '0'),
       quoteId: 'quote-x',
@@ -272,9 +272,61 @@ void main() {
       logger: AppLogger(sink: (_) {}),
     );
     await restored.restore();
-    expect(restored.state, isA<AttemptOpened>());
-    expect((restored.state as AttemptOpened).attempt, attempt);
+    expect(restored.state, isA<AttemptReturned>());
+    expect((restored.state as AttemptReturned).attempt, attempt);
     expect(browser.opened, isEmpty);
     await restored.close();
+  });
+
+  test('restore stays idle for an attempt without a booking', () async {
+    final attempt = PaymentAttempt(
+      attemptKey: 'key-8'.padRight(36, '0'),
+      quoteId: 'quote-x',
+      propertyId: property1f,
+      termsHash: 'mock-terms-1',
+      startedAt: DateTime.utc(2026, 11, 1, 9),
+    );
+    await backend.paymentAttempts.save(attempt);
+    final restored = PaymentAttemptCubit(
+      flow: flow,
+      store: backend.paymentAttempts,
+      browser: () => browser,
+      logger: AppLogger(sink: (_) {}),
+    );
+    await restored.restore();
+    expect(restored.state, isA<AttemptIdle>());
+    await restored.close();
+  });
+
+  test('markReturned moves AttemptOpened to AttemptReturned and keeps the '
+      'record', () async {
+    await cubit.pay(await quoteFor(property1f));
+    final attempt = (cubit.state as AttemptOpened).attempt;
+    cubit.markReturned();
+    expect(cubit.state, isA<AttemptReturned>());
+    expect((cubit.state as AttemptReturned).attempt, attempt);
+    expect(await backend.paymentAttempts.read(), attempt);
+  });
+
+  test('markReturned does nothing when no attempt is open', () async {
+    cubit.markReturned();
+    expect(cubit.state, isA<AttemptIdle>());
+  });
+
+  test('syncWithStore goes idle only when the store is empty', () async {
+    await cubit.pay(await quoteFor(property1f));
+    cubit.markReturned();
+    // A non-empty store leaves the returned state alone.
+    await cubit.syncWithStore();
+    expect(cubit.state, isA<AttemptReturned>());
+
+    // The server decided elsewhere: the store is empty, the state follows.
+    await backend.paymentAttempts.clear();
+    await cubit.syncWithStore();
+    expect(cubit.state, isA<AttemptIdle>());
+
+    // Idempotent: syncing again does not emit or re-trigger anything.
+    await cubit.syncWithStore();
+    expect(cubit.state, isA<AttemptIdle>());
   });
 }

@@ -190,7 +190,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     SignedIn(:final account) => () {
       unawaited(_signals.start(account.id));
       unawaited(_unreadCountCubit.refresh());
-      unawaited(_unfinishedPaymentCubit.refresh());
+      unawaited(_refreshUnfinished());
     }(),
     SignedOut() || SessionEnded() => () {
       unawaited(_signals.stop());
@@ -239,9 +239,18 @@ final class _OnAirAppState extends State<OnAirApp> {
     return const UrlLauncherInAppBrowser();
   }
 
+  /// The reconciliation may clear a stale attempt: the in-memory state
+  /// follows the store after every banner refresh (sign-in and resume).
+  Future<void> _refreshUnfinished() async {
+    await _unfinishedPaymentCubit.refresh();
+    await _paymentAttemptCubit.syncWithStore();
+  }
+
   void _onResume() {
     unawaited(_unreadCountCubit.refresh());
-    unawaited(_unfinishedPaymentCubit.refresh());
+    unawaited(_refreshUnfinished());
+    // Only an attempt the guest has not seen the verification screen for
+    // still pulls them back (US6).
     final state = _paymentAttemptCubit.state;
     if (state is! AttemptOpened) return;
     final path = _router.routerDelegate.currentConfiguration.uri.path;

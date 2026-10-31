@@ -8,6 +8,7 @@ import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/stay_range.dart';
+import 'package:on_air/features/booking/domain/payment_attempt.dart';
 import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
 import 'package:on_air/features/booking/presentation/payment_return_screen.dart';
 import 'package:on_air/features/bookings/data/mock_booking_server.dart';
@@ -204,5 +205,71 @@ void main() {
     // all, and the failed server state decides the outcome.
     expect(find.text(l10n.paymentFailedTitle), findsOneWidget);
     expect(find.text(l10n.paymentSuccessTitle), findsNothing);
+  });
+
+  Future<void> pumpReturnWithAttempt(
+    WidgetTester tester, {
+    required String bookingId,
+  }) async {
+    await backend.paymentAttempts.save(
+      PaymentAttempt(
+        attemptKey: 'attempt-return-${++attemptCounter}'.padRight(36, '0'),
+        quoteId: 'quote-x',
+        propertyId: property1f,
+        termsHash: 'mock-terms-1',
+        bookingId: bookingId,
+        startedAt: DateTime.utc(2026, 11, 1, 9),
+      ),
+    );
+    await attemptCubit.restore();
+    await pumpReturn(tester, bookingId: bookingId);
+  }
+
+  testWidgets('a resolved outcome clears the attempt without any tap: '
+      'success', (tester) async {
+    final bookingId = await bookingFor(MockPaymentResult.success);
+    await pumpReturnWithAttempt(tester, bookingId: bookingId);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(l10n.paymentSuccessTitle), findsOneWidget);
+    expect(await backend.paymentAttempts.read(), isNull);
+  });
+
+  testWidgets('a resolved outcome clears the attempt without any tap: '
+      'conflict', (tester) async {
+    final bookingId = await bookingFor(MockPaymentResult.conflict);
+    await pumpReturnWithAttempt(tester, bookingId: bookingId);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(l10n.paymentConflictTitle), findsOneWidget);
+    expect(await backend.paymentAttempts.read(), isNull);
+  });
+
+  testWidgets('a failed payment keeps the stored attempt for try again', (
+    tester,
+  ) async {
+    final bookingId = await bookingFor(MockPaymentResult.failure);
+    await pumpReturnWithAttempt(tester, bookingId: bookingId);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(l10n.paymentFailedTitle), findsOneWidget);
+    expect(await backend.paymentAttempts.read(), isNotNull);
+  });
+
+  testWidgets('a timeout keeps the stored attempt for the banner', (
+    tester,
+  ) async {
+    final bookingId = await bookingFor(MockPaymentResult.silent);
+    await pumpReturnWithAttempt(tester, bookingId: bookingId);
+    // The full default backoff is 120 s; one pump past it reaches the
+    // timeout state.
+    await tester.pump(const Duration(seconds: 125));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.paymentTimeoutTitle), findsOneWidget);
+    expect(await backend.paymentAttempts.read(), isNotNull);
   });
 }

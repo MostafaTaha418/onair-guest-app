@@ -10,6 +10,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/payments/in_app_browser.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
@@ -35,18 +36,21 @@ Future<void> pumpVisitorApp(
   ConnectivityCubit? connectivityCubit,
   VersionGate? versionGate,
   ListingsRepository? listingsRepository,
+  InAppBrowser? inAppBrowser,
 }) async {
   await _pumpApp(
     tester,
     connectivityCubit: connectivityCubit,
     versionGate: versionGate,
     listingsRepository: listingsRepository,
+    inAppBrowser: inAppBrowser,
   );
 }
 
 Future<void> pumpSignedInApp(
   WidgetTester tester, {
   ListingsRepository? listingsRepository,
+  InAppBrowser? inAppBrowser,
 }) async {
   await _pumpApp(
     tester,
@@ -59,6 +63,7 @@ Future<void> pumpSignedInApp(
       acceptedTermsAt: DateTime.utc(2026),
     ),
     listingsRepository: listingsRepository,
+    inAppBrowser: inAppBrowser,
   );
 }
 
@@ -84,6 +89,7 @@ Future<void> _pumpApp(
   String? linkDomain,
   VersionGate? versionGate,
   ListingsRepository? listingsRepository,
+  InAppBrowser? inAppBrowser,
 }) async {
   final auth = FakeAuthRepository()..account = account;
   addTearDown(auth.dispose);
@@ -147,6 +153,7 @@ Future<void> _pumpApp(
         uriLinkSource: uriLinkSource,
         linkDomain: linkDomain,
         versionGate: versionGate,
+        inAppBrowser: inAppBrowser,
       ),
     ),
   );

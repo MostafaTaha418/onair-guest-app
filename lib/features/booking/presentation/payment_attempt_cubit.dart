@@ -28,6 +28,14 @@ final class AttemptOpened extends PaymentAttemptState {
   final PaymentAttempt attempt;
 }
 
+/// The guest already reached the verification screen for this attempt:
+/// a resume must not pull them there again (US6).
+final class AttemptReturned extends PaymentAttemptState {
+  const AttemptReturned(this.attempt);
+
+  final PaymentAttempt attempt;
+}
+
 final class AttemptFailed extends PaymentAttemptState {
   const AttemptFailed(this.error, this.attempt);
 
@@ -62,11 +70,31 @@ final class PaymentAttemptCubit extends Cubit<PaymentAttemptState> {
   final DateTime Function() _now;
   bool _starting = false;
 
-  /// Restores the record saved before a killed app (US6).
+  /// Restores the record saved before a killed app (US6). An attempt the
+  /// app never started (no booking id) stays idle — the unfinished-payment
+  /// banner handles a cold start, and the next `pay()` reuses its key.
   Future<void> restore() async {
     final attempt = await _store.read();
     if (isClosed || attempt == null) return;
-    emit(AttemptOpened(attempt));
+    if (attempt.bookingId == null) return;
+    emit(AttemptReturned(attempt));
+  }
+
+  /// The verification screen was reached for the open attempt (US6).
+  void markReturned() {
+    final state = this.state;
+    if (state is AttemptOpened) emit(AttemptReturned(state.attempt));
+  }
+
+  /// Follows the store after another component (the unfinished-payment
+  /// reconciliation) cleared a stale attempt. Never loops: it emits nothing
+  /// when the state is already idle.
+  Future<void> syncWithStore() async {
+    final stored = await _store.read();
+    if (isClosed || stored != null) return;
+    if (state is AttemptOpened || state is AttemptReturned) {
+      emit(const AttemptIdle());
+    }
   }
 
   Future<void> pay(BookingQuote quote) async {

@@ -29,9 +29,11 @@ final class PaymentReturnScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final attemptState = context.read<PaymentAttemptCubit>().state;
-    final fromAttempt = attemptState is AttemptOpened
-        ? attemptState.attempt.bookingId
-        : null;
+    final fromAttempt = switch (attemptState) {
+      AttemptOpened(:final attempt) => attempt.bookingId,
+      AttemptReturned(:final attempt) => attempt.bookingId,
+      _ => null,
+    };
     final bookingId = AppRoutes.isUuidV4(bookingIdFromLink ?? '')
         ? bookingIdFromLink
         : fromAttempt;
@@ -45,14 +47,20 @@ final class PaymentReturnScreen extends StatelessWidget {
     }
     return BlocProvider<PaymentVerificationCubit>(
       key: ValueKey(bookingId),
-      create: (context) => PaymentVerificationCubit(
-        bookings: context.read(),
-        signals: context.read(),
-        bookingId: bookingId,
-        logger: context.read<AppLogger>(),
-        // Test-only shortening; production never binds the override.
-        backoff: context.read<PaymentVerificationBackoff?>()?.intervals,
-      )..start(),
+      create: (context) {
+        final cubit = PaymentVerificationCubit(
+          bookings: context.read(),
+          signals: context.read(),
+          bookingId: bookingId,
+          logger: context.read<AppLogger>(),
+          // Test-only shortening; production never binds the override.
+          backoff: context.read<PaymentVerificationBackoff?>()?.intervals,
+        )..start();
+        // The guest has now seen the verification screen: a resume must not
+        // pull them here again (US6).
+        context.read<PaymentAttemptCubit>().markReturned();
+        return cubit;
+      },
       child: const _ReturnBody(),
     );
   }
@@ -82,6 +90,13 @@ final class _ReturnBodyState extends State<_ReturnBody> {
       appBar: AppBar(title: Text(l10n.paymentVerifying)),
       body: BlocConsumer<PaymentVerificationCubit, VerifyState>(
         listener: (context, state) {
+          if (state is VerifyResolved &&
+              (state.outcome == VerificationOutcome.success ||
+                  state.outcome == VerificationOutcome.conflict)) {
+            // The server decided: the attempt record goes now, so a resume
+            // can never reopen this wait. The buttons below only navigate.
+            unawaited(context.read<PaymentAttemptCubit>().finish());
+          }
           if (state is VerifyResolved &&
               state.outcome == VerificationOutcome.success &&
               !_asked) {
@@ -261,6 +276,7 @@ final class _Failed extends StatelessWidget {
     // Read the terms before the reset: the new attempt keeps them.
     final termsHash = switch (attemptState) {
       AttemptOpened(:final attempt) => attempt.termsHash,
+      AttemptReturned(:final attempt) => attempt.termsHash,
       AttemptFailed(:final attempt) => attempt?.termsHash ?? '',
       _ => '',
     };
