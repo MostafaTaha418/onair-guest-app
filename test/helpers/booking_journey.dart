@@ -256,6 +256,15 @@ Future<String> openFirstApartmentAndSignIn(
 
 /// Three nights from today on the dates screen calendar.
 Future<void> pickThreeNights(WidgetTester tester, AppLocalizations l10n) async {
+  // The dates route can render its loading skeleton while device assets load.
+  for (
+    var attempt = 0;
+    attempt < 40 && !tester.any(find.byType(RangeCalendar));
+    attempt++
+  ) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(find.byType(RangeCalendar), findsOneWidget);
   final today = CairoTime.today();
   final checkIn = today.addDays(3);
   final checkOut = today.addDays(6);
