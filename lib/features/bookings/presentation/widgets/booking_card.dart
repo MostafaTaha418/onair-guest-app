@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
@@ -71,6 +72,14 @@ final class _BookingCardState extends State<BookingCard> {
     final booking = widget.booking;
     final statusLabel = bookingStatusLabel(booking.status, l10n);
     final countdown = _countdownFor(booking);
+    // One static announcement with the absolute Cairo deadline (FR-038):
+    // the ticking CountdownText is excluded from the card's merged
+    // semantics so the announcement never changes every second.
+    final deadlineLabel = countdown == null
+        ? null
+        : l10n.bookingMsgAwaitingOwner(
+            formatCairoDayMonthTime(booking.ownerResponseDeadline!),
+          );
     return Card(
       margin: const EdgeInsetsDirectional.only(
         start: Dimens.screenSide,
@@ -82,7 +91,9 @@ final class _BookingCardState extends State<BookingCard> {
         borderRadius: BorderRadius.circular(Dimens.radiusCard),
         child: Semantics(
           button: true,
-          label: '${booking.title}، $statusLabel',
+          label: deadlineLabel == null
+              ? '${booking.title}، $statusLabel'
+              : '${booking.title}، $statusLabel، $deadlineLabel',
           child: Padding(
             padding: const EdgeInsetsDirectional.all(Dimens.space12),
             child: Row(
@@ -145,10 +156,12 @@ final class _BookingCardState extends State<BookingCard> {
                       padding: const EdgeInsetsDirectional.only(
                         start: Dimens.space8,
                       ),
-                      child: CountdownText(
-                        remaining: countdown.remaining,
-                        format: (remaining) => l10n.ownerDeadlineCountdown(
-                          Countdown.format(remaining),
+                      child: ExcludeSemantics(
+                        child: CountdownText(
+                          remaining: countdown.remaining,
+                          format: (remaining) => l10n.ownerDeadlineCountdown(
+                            Countdown.format(remaining),
+                          ),
                         ),
                       ),
                     ),

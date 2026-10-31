@@ -13,7 +13,7 @@ Checked on 2026-10-31 against the G2 screens and their new components:
 
 | Requirement | Where | Result |
 |---|---|---|
-| Countdown announced once, not per tick | `_DeadlineCountdown` wraps the ticking `CountdownText` in `ExcludeSemantics` and exposes a single static `Semantics(label: <deadline text>)` on its container (`payment_return_screen.dart`) | ✓ |
+| Countdown announced once, not per tick | `_DeadlineCountdown` exposes a single static `Semantics(label: <absolute Cairo deadline>)` **outside** an `ExcludeSemantics` that wraps only the ticking `CountdownText` (`payment_return_screen.dart`); `BookingCard` does the same — the static deadline joins the card's `Semantics` label and the ticking text sits inside `ExcludeSemantics` (`booking_card.dart`) | ✓ |
 | Icon-only controls have labels | Notifications bell: `Semantics(label, button: true)` + tooltip, with the unread count announced as `unreadBadge(count)` (`home_header.dart`) | ✓ |
 | Icon-only controls have labels | Verify-screen retake buttons and the payment page's close button use text labels or `tooltip`s (`verify_identity_screen.dart`, `mock_payment_page.dart`) | ✓ |
 | Touch targets ≥ 48×48 | All G2 actions use `OnAirPrimaryButton` / Material buttons (48-dp default); calendar day cells are `Dimens.minTouchTarget` squares (`range_calendar.dart`) | ✓ |

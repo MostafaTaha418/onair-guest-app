@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -243,17 +244,19 @@ final class _DeadlineCountdownState extends State<_DeadlineCountdown> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _deadlineLabel ??= AppLocalizations.of(context).ownerDeadlineCountdown(
-      Countdown.format(_countdown.current),
+    // One static announcement with the absolute Cairo deadline (FR-038):
+    // the ticking text itself is excluded below.
+    _deadlineLabel ??= AppLocalizations.of(context).bookingMsgAwaitingOwner(
+      formatCairoDayMonthTime(widget.deadlineUtc),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return ExcludeSemantics(
-      child: Semantics(
-        label: _deadlineLabel ?? l10n.paymentVerifying,
+    return Semantics(
+      label: _deadlineLabel ?? l10n.paymentVerifying,
+      child: ExcludeSemantics(
         child: CountdownText(
           remaining: _countdown.remaining,
           format: (d) => l10n.ownerDeadlineCountdown(Countdown.format(d)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/booking/domain/payment_attempt.dart';
@@ -159,6 +161,32 @@ void main() {
     final countdownPrefix = l10n.ownerDeadlineCountdown('x').split('x').first;
     expect(find.textContaining(countdownPrefix), findsOneWidget);
     expect(find.byKey(const ValueKey('return-view-booking')), findsOneWidget);
+  });
+
+  testWidgets('the deadline is announced once with the static Cairo label', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    final bookingId = await bookingFor(MockPaymentResult.success);
+    final details = await backend.server.getBooking(bookingId);
+    final expected = l10n.bookingMsgAwaitingOwner(
+      formatCairoDayMonthTime(details.ownerResponseDeadline!),
+    );
+    await pumpReturn(tester, bookingId: bookingId);
+    await tester.pump();
+
+    SemanticsNode deadlineNode() =>
+        tester.getSemantics(find.bySemanticsLabel(RegExp(expected)));
+    expect(deadlineNode().label, expected);
+    // The ticking remaining-time template never reaches semantics.
+    final ticking = RegExp(l10n.ownerDeadlineCountdown('x').split('x').first);
+    expect(find.bySemanticsLabel(ticking), findsNothing);
+
+    await tester.pump(const Duration(seconds: 2));
+
+    expect(deadlineNode().label, expected);
+    expect(find.bySemanticsLabel(ticking), findsNothing);
+    handle.dispose();
   });
 
   testWidgets('a failed payment offers try again', (tester) async {
