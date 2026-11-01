@@ -8,10 +8,15 @@ import 'package:on_air/app/router/app_router.dart';
 import 'package:on_air/app/router/auth_router_refresh.dart';
 import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/app/router/link_parser.dart';
+import 'package:on_air/app/router/notification_router.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/payments/in_app_browser.dart';
+import 'package:on_air/core/push/push_messages.dart';
+import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
@@ -19,8 +24,19 @@ import 'package:on_air/features/account_gate/application/personal_data_resetter.
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/booking/data/mock_in_app_browser.dart';
+import 'package:on_air/features/booking/data/payment_attempt_store.dart';
+import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
+import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
+import 'package:on_air/features/bookings/data/mock_booking_server.dart';
+import 'package:on_air/features/bookings/domain/bookings_repository.dart';
+import 'package:on_air/features/bookings/presentation/unfinished_payment_cubit.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/notifications/presentation/in_app_notification_banner.dart';
+import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -37,6 +53,8 @@ final class OnAirApp extends StatefulWidget {
     this.uriLinkSource,
     this.linkDomain,
     this.versionGate,
+    this.inAppBrowser,
+    this.pushMessages,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -50,6 +68,14 @@ final class OnAirApp extends StatefulWidget {
   /// Injectable for tests; production builds resolve it from
   /// `package_info_plus` and the server config.
   final VersionGate? versionGate;
+
+  /// Injectable browser for tests; production resolves it from the backend
+  /// mode (mock page or the real in-app browser).
+  final InAppBrowser? inAppBrowser;
+
+  /// Injectable push source for tests; production resolves it from the
+  /// backend mode (FCM or nothing).
+  final PushMessageSource? pushMessages;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -64,6 +90,21 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final PersonalDataResetter _personalDataResetter;
   late final AppLogger _logger;
   late final VersionGate _versionGate;
+  late final NotificationSignalSource _signals;
+  late final PaymentAttemptCubit _paymentAttemptCubit;
+  late final UnreadCountCubit _unreadCountCubit;
+  late final UnfinishedPaymentCubit _unfinishedPaymentCubit;
+  late final PushMessageSource _pushMessages;
+  final ValueNotifier<PushMessage?> _banner = ValueNotifier(null);
+  Timer? _bannerHideTimer;
+  late final AppLifecycleListener _lifecycle;
+  late InAppBrowser _browser;
+  final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
+  StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription<PaymentAttemptState>? _paymentAttemptSubscription;
+  final List<StreamSubscription<PushMessage>> _pushSubscriptions = [];
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
 
@@ -71,6 +112,44 @@ final class _OnAirAppState extends State<OnAirApp> {
   void initState() {
     super.initState();
     _logger = context.read<AppLogger>();
+    _signals = context.read<NotificationSignalSource>();
+    _paymentAttemptCubit = PaymentAttemptCubit(
+      flow: context.read<BookingFlowRepository>(),
+      store: context.read<PaymentAttemptStore>(),
+      browser: () => _browser,
+      logger: _logger,
+    );
+    _unreadCountCubit = UnreadCountCubit(
+      notifications: context.read<NotificationsRepository>(),
+      signals: _signals,
+    );
+    _unfinishedPaymentCubit = UnfinishedPaymentCubit(
+      bookings: context.read<BookingsRepository>(),
+      attempts: context.read<PaymentAttemptStore>(),
+    );
+    // A finished attempt (success, conflict, «Try again») means the banner's
+    // reason is gone — the pending tab may have changed with it.
+    _paymentAttemptSubscription = _paymentAttemptCubit.stream.listen((state) {
+      if (state is AttemptIdle) {
+        unawaited(_unfinishedPaymentCubit.refresh());
+      }
+    });
+    _pushMessages = _createPushSource();
+    _pushSubscriptions
+      ..add(
+        _pushMessages.foreground.listen(_showBanner),
+      )
+      ..add(
+        _pushMessages.opened.listen(
+          (message) => _router.push(
+            NotificationRouter.locationFor(message.type, '', message.targetId),
+          ),
+        ),
+      );
+    _browser = widget.inAppBrowser ?? _createBrowser();
+    // Resuming the app with an open attempt means the guest came back from
+    // the payment page (research R4).
+    _lifecycle = AppLifecycleListener(onResume: _onResume);
     _authCubit = AuthCubit(
       context.read<AuthRepository>(),
       currentTermsVersion: '',
@@ -95,11 +174,89 @@ final class _OnAirAppState extends State<OnAirApp> {
       refreshListenable: Listenable.merge([_refresh, _versionGate]),
       authCubit: _authCubit,
       searchCubit: _searchCubit,
+      navigatorKey: _rootNavigatorKey,
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
+    // One live channel per signed-in guest (Guest Plan §12.3): open on the
+    // session, close on sign-out and session end.
+    _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
     unawaited(
       _initialize(context.read<AppConfigSource>()),
+    );
+  }
+
+  void _onAuthStateChanged(AuthState state) => switch (state) {
+    SignedIn(:final account) => () {
+      unawaited(_signals.start(account.id));
+      unawaited(_unreadCountCubit.refresh());
+      unawaited(_refreshUnfinished());
+    }(),
+    SignedOut() || SessionEnded() => () {
+      unawaited(_signals.stop());
+      unawaited(_paymentAttemptCubit.newAttempt());
+      _unreadCountCubit.reset();
+      _unfinishedPaymentCubit.reset();
+    }(),
+    _ => null,
+  };
+
+  void _showBanner(PushMessage message) {
+    _bannerHideTimer?.cancel();
+    _banner.value = message;
+    _bannerHideTimer = Timer(const Duration(seconds: 4), () {
+      _banner.value = null;
+    });
+  }
+
+  PushMessageSource _createPushSource() {
+    if (widget.pushMessages != null) return widget.pushMessages!;
+    // Harnesses that pump the app without a push source (older app tests)
+    // simply never receive pushes.
+    try {
+      return context.read<PushMessageSource>();
+    } on ProviderNotFoundException {
+      return const NoopPushMessageSource();
+    }
+  }
+
+  InAppBrowser _createBrowser() {
+    // Mock mode pushes the local payment page instead of leaving the app.
+    MockBookingServer? mockServer;
+    try {
+      mockServer = context.read<MockBookingServer?>();
+    } on ProviderNotFoundException {
+      mockServer = null;
+    }
+    if (mockServer != null) {
+      return MockInAppBrowser(
+        navigatorKey: _rootNavigatorKey,
+        server: mockServer,
+        onReturn: (bookingId) =>
+            _router.go(AppRoutes.paymentReturn(bookingId: bookingId)),
+      );
+    }
+    return const UrlLauncherInAppBrowser();
+  }
+
+  /// The reconciliation may clear a stale attempt: the in-memory state
+  /// follows the store after every banner refresh (sign-in and resume).
+  Future<void> _refreshUnfinished() async {
+    await _unfinishedPaymentCubit.refresh();
+    await _paymentAttemptCubit.syncWithStore();
+  }
+
+  void _onResume() {
+    unawaited(_unreadCountCubit.refresh());
+    unawaited(_refreshUnfinished());
+    // Only an attempt the guest has not seen the verification screen for
+    // still pulls them back (US6).
+    final state = _paymentAttemptCubit.state;
+    if (state is! AttemptOpened) return;
+    final path = _router.routerDelegate.currentConfiguration.uri.path;
+    if (path == AppRoutes.paymentReturnPath) return;
+    _router.go(
+      AppRoutes.paymentReturn(bookingId: state.attempt.bookingId),
     );
   }
 
@@ -125,6 +282,10 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   Future<void> _initialize(AppConfigSource configRepository) async {
     await _authCubit.restore();
+    // The restored session opens the channel too (no state change may fire
+    // for a restored sign-in).
+    _onAuthStateChanged(_authCubit.state);
+    unawaited(_paymentAttemptCubit.restore());
     final source = widget.uriLinkSource;
     final domain = widget.linkDomain;
     if (source != null && domain != null && mounted) {
@@ -141,11 +302,33 @@ final class _OnAirAppState extends State<OnAirApp> {
     } on Object catch (error) {
       _logger.warning('App config unavailable: $error');
     }
+    // A cold-start push opens its screen once the router is ready; the
+    // redirect handles sign-in and comes back.
+    final initial = await _pushMessages.initial();
+    if (initial != null && mounted) {
+      unawaited(
+        _router.push(
+          NotificationRouter.locationFor(initial.type, '', initial.targetId),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    _bannerHideTimer?.cancel();
+    _banner.dispose();
+    for (final subscription in _pushSubscriptions) {
+      unawaited(subscription.cancel());
+    }
+    unawaited(_unreadCountCubit.close());
+    unawaited(_unfinishedPaymentCubit.close());
+    unawaited(_paymentAttemptSubscription?.cancel());
+    unawaited(_authSubscription?.cancel());
+    unawaited(_signals.stop());
     unawaited(_incomingLinks?.close());
+    unawaited(_paymentAttemptCubit.close());
     _router.dispose();
     _refresh.dispose();
     if (_ownsVersionGate) _versionGate.dispose();
@@ -166,38 +349,72 @@ final class _OnAirAppState extends State<OnAirApp> {
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
       BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
+      BlocProvider<PaymentAttemptCubit>.value(value: _paymentAttemptCubit),
+      BlocProvider<UnreadCountCubit>.value(value: _unreadCountCubit),
+      BlocProvider<UnfinishedPaymentCubit>.value(
+        value: _unfinishedPaymentCubit,
+      ),
     ],
-    child: MaterialApp.router(
-      routerConfig: _router,
-      locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar'), Locale('en')],
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      theme: OnAirTheme.light,
-      darkTheme: OnAirTheme.dark,
-      // Explicit product choice; keep visible when changing app defaults.
-      // ignore: avoid_redundant_argument_values
-      themeMode: ThemeMode.system,
-      builder: (context, child) => SessionListener(
-        router: _router,
-        eventSource: _sessionEventSource,
-        personalDataResetter: _personalDataResetter,
-        deviceRegistrationService: widget.deviceRegistrationService,
-        child: MediaQuery.withClampedTextScaling(
-          maxScaleFactor: 1.3,
-          child: Stack(
-            children: [
-              ?child,
-              BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                builder: (context, state) => state.isOnline
-                    ? const SizedBox.shrink()
-                    : const Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: OfflineBanner(),
-                      ),
-              ),
-            ],
+    child: RepositoryProvider<InAppBrowser>.value(
+      value: _browser,
+      child: MaterialApp.router(
+        routerConfig: _router,
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: OnAirTheme.light,
+        darkTheme: OnAirTheme.dark,
+        // Explicit product choice; keep visible when changing app defaults.
+        // ignore: avoid_redundant_argument_values
+        themeMode: ThemeMode.system,
+        builder: (context, child) => SessionListener(
+          router: _router,
+          eventSource: _sessionEventSource,
+          personalDataResetter: _personalDataResetter,
+          deviceRegistrationService: widget.deviceRegistrationService,
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: Stack(
+              children: [
+                ?child,
+                BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                  builder: (context, state) => state.isOnline
+                      ? const SizedBox.shrink()
+                      : const Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: OfflineBanner(),
+                        ),
+                ),
+                ValueListenableBuilder<PushMessage?>(
+                  valueListenable: _banner,
+                  builder: (context, message, _) => message == null
+                      ? const SizedBox.shrink()
+                      : Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: InAppNotificationBanner(
+                            message: message,
+                            onOpen: (opened) {
+                              _banner.value = null;
+                              unawaited(
+                                _router.push(
+                                  NotificationRouter.locationFor(
+                                    opened.type,
+                                    '',
+                                    opened.targetId,
+                                  ),
+                                ),
+                              );
+                            },
+                            onDismiss: () => _banner.value = null,
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

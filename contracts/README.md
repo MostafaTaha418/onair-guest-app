@@ -7,3 +7,5 @@ These contracts are drafts for the backend implementer to review and confirm. Th
 - `app-routes-g1.md` is a G1 draft whose reviewed source is `specs/002-guest-discovery/contracts/`.
 - `verified-links.md` is a G1 draft whose reviewed source is `specs/002-guest-discovery/contracts/`.
 - `supabase-backend.md` §8 lists the changes the G0 app code needs after the 28 Oct 2026 update.
+- `supabase-booking.md` is a G2 draft whose reviewed source is `specs/003-guest-booking-payment/contracts/`.
+- `app-routes-g2.md` is a G2 draft whose reviewed source is `specs/003-guest-booking-payment/contracts/`.

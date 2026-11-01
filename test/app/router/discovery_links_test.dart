@@ -9,7 +9,7 @@ import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
-import 'package:on_air/features/booking/presentation/booking_entry_placeholder_screen.dart';
+import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/features/property/presentation/property_screen.dart';
 import 'package:on_air/features/search/presentation/results_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -143,6 +143,6 @@ void main() {
     // The parser strips every query key, so the details screen opens as a
     // clean visit instead of pushing the booking entry.
     expect(find.byType(PropertyScreen), findsOneWidget);
-    expect(find.byType(BookingEntryPlaceholderScreen), findsNothing);
+    expect(find.byType(DatesScreen), findsNothing);
   });
 }

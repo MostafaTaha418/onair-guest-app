@@ -108,6 +108,15 @@ regexes = [
   '''(?i)x{8,}''',
 ]
 
+# A historical test used a fixed attemptKey made from a label padded with zeros.
+# Scope this generic-rule false positive to its exact file and introducing commit.
+[[allowlists]]
+description = "Fixed payment attempt identifier in historical widget test"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''^test/features/booking/presentation/payment_verification_cubit_test\.dart$''']
+commits = ["7a8a83db2bb6936ca06563cf04ba36792d9b3baa"]
+
 # Firebase API keys are public client configuration (Constitution IV allows "public
 # Firebase config"); they are restricted per service in the Firebase console. Scope the
 # default GCP and generic key rules away from the FlutterFire config files only.

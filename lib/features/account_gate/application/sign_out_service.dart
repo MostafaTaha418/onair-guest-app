@@ -2,6 +2,7 @@ import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/push/push_token_source.dart';
 import 'package:on_air/features/account_gate/data/device_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract interface class SignOutCoordinator {
@@ -58,10 +59,12 @@ final class SignOutService implements SignOutCoordinator {
   });
 
   // last_search_v1 holds no personal data (spec Assumptions), so it stays.
-  static const preservedPreferenceKeys = {
+  static const Set<String> preservedPreferenceKeys = {
     'themeMode',
     'localeCode',
     'last_search_v1',
+    // The push sheet shows once per install; it holds no personal data.
+    PushPermissionCoordinator.askedKey,
   };
 
   final DeviceTokenRepository devices;

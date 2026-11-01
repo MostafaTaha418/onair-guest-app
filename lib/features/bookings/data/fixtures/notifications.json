@@ -1,0 +1,80 @@
+[
+  {
+    "id": "e0000000-0000-4000-8000-000000000001",
+    "type_key": "booking.request_received",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000002",
+    "title_key": "booking.request_received",
+    "body_key": "booking.request_received",
+    "params": {},
+    "read_at": null,
+    "created_at": "2026-10-30T08:00:00Z"
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000002",
+    "type_key": "booking.confirmed",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000001",
+    "title_key": "booking.confirmed",
+    "body_key": "booking.confirmed",
+    "params": {},
+    "read_at": null,
+    "created_at": "2026-10-29T12:00:00Z"
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000003",
+    "type_key": "booking.rejected",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000006",
+    "title_key": "booking.rejected",
+    "body_key": "booking.rejected",
+    "params": {},
+    "read_at": null,
+    "created_at": "2026-10-29T11:00:00Z"
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000004",
+    "type_key": "refund.verified",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000008",
+    "title_key": "refund.verified",
+    "body_key": "refund.verified",
+    "params": {},
+    "read_at": "2026-10-29T10:00:00Z",
+    "created_at": "2026-10-29T09:30:00Z"
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000005",
+    "type_key": "payment.failed",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000011",
+    "title_key": "payment.failed",
+    "body_key": "payment.failed",
+    "params": {},
+    "read_at": "2026-10-29T09:00:00Z",
+    "created_at": "2026-10-29T08:30:00Z"
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000006",
+    "type_key": "something.new",
+    "category": "booking",
+    "priority": "normal",
+    "entity_type": "booking",
+    "entity_id": "b0000000-0000-4000-8000-000000000001",
+    "title_key": "something.new",
+    "body_key": "something.new",
+    "params": {},
+    "read_at": "2026-10-28T09:00:00Z",
+    "created_at": "2026-10-28T09:00:00Z"
+  }
+]

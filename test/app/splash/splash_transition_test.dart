@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -18,6 +17,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 
+import '../../helpers/fake_booking_backend.dart';
 import '../../helpers/fake_listings_repository.dart';
 
 final class _Auth extends Mock implements AuthRepository {}
@@ -57,6 +57,7 @@ void main() {
           ),
           RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          ...FakeBookingBackend().appProviders(),
         ],
         child: const OnAirApp(),
       ),

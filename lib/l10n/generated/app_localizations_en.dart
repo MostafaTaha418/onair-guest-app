@@ -701,18 +701,671 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryEmpty => 'This property has no photos.';
 
   @override
-  String get bookingEntryTitle => 'Booking';
-
-  @override
-  String get bookingEntryComingSoon => 'Booking in the app opens soon.';
-
-  @override
-  String get bookingEntryTermsCarried =>
-      'The terms you saw are attached to this request.';
-
-  @override
   String get supportEntryTitle => 'Contact OnAir';
 
   @override
   String get supportEntryComingSoon => 'Support in the app opens soon.';
+
+  @override
+  String get errorAccountSuspended =>
+      'Your account is suspended. Please contact support.';
+
+  @override
+  String get authPhoneAlreadyUsed =>
+      'This number is already used by another account.';
+
+  @override
+  String get bookingPolicyOutOfBounds =>
+      'The price is not fixed for these dates. Try other dates or contact support.';
+
+  @override
+  String get errorConflict => 'The data changed. Refresh and try again.';
+
+  @override
+  String get bookingStateChanged =>
+      'The booking status changed. Please refresh.';
+
+  @override
+  String get errorDuplicateOperation => 'This operation was already done.';
+
+  @override
+  String get paymentVerificationIssue =>
+      'There is an issue verifying the payment. Our team will contact you.';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get bookingDatesTitle => 'Choose dates';
+
+  @override
+  String get bookingRangeHasUnavailable =>
+      'This range includes an unavailable day. Choose other dates.';
+
+  @override
+  String bookingNightsCount(String count) {
+    return 'Nights: $count';
+  }
+
+  @override
+  String get bookingContinue => 'Continue';
+
+  @override
+  String get bookingStartFromProperty =>
+      'Start the booking from the apartment page.';
+
+  @override
+  String get bookingSummaryTitle => 'Booking summary';
+
+  @override
+  String get bookingNights => 'Nights';
+
+  @override
+  String get bookingNightlyPrice => 'Price per night';
+
+  @override
+  String get bookingTotal => 'Total';
+
+  @override
+  String get bookingPayNow => 'Due now';
+
+  @override
+  String get bookingRemaining => 'Remaining';
+
+  @override
+  String bookingRemainingDue(String date) {
+    return 'Due before $date';
+  }
+
+  @override
+  String get bookingPolicyTitle => 'Terms and cancellation policy';
+
+  @override
+  String get bookingSummaryOwnerNotice =>
+      'Your request goes to the owner after payment. If they decline or do not reply within 24 hours, you get a full refund.';
+
+  @override
+  String get bookingGoToPayment => 'Go to payment';
+
+  @override
+  String get paymentReturnHint =>
+      'If you finished paying, tap here so we can check it.';
+
+  @override
+  String get paymentCheckStatus => 'Check payment';
+
+  @override
+  String get paymentVerifying => 'Verifying your payment…';
+
+  @override
+  String get paymentVerifyingBody =>
+      'This can take a few minutes. We will notify you once it is confirmed.';
+
+  @override
+  String get paymentSuccessTitle =>
+      'Payment received and your request was sent to the owner';
+
+  @override
+  String get paymentSuccessBody =>
+      'The dates are held for you until the owner replies.';
+
+  @override
+  String ownerDeadlineCountdown(String time) {
+    return 'The owner has $time to reply';
+  }
+
+  @override
+  String get paymentViewBooking => 'View booking';
+
+  @override
+  String get paymentFailedTitle => 'The payment was not completed';
+
+  @override
+  String get paymentFailedBody => 'Nothing was charged.';
+
+  @override
+  String get paymentTryAgain => 'Try again';
+
+  @override
+  String get paymentConflictTitle =>
+      'These dates were booked before your payment completed';
+
+  @override
+  String paymentConflictBody(String amount) {
+    return 'You will get a full refund ($amount).';
+  }
+
+  @override
+  String get paymentFindOtherDates => 'Find other dates';
+
+  @override
+  String get paymentTimeoutTitle =>
+      'We have not received payment confirmation yet';
+
+  @override
+  String get paymentTimeoutBody =>
+      'Don\'t worry and don\'t pay again. We will notify you once it is confirmed.';
+
+  @override
+  String get paymentGoToBookings => 'Go to My Bookings';
+
+  @override
+  String get mockPaymentTitle => 'Test payment page';
+
+  @override
+  String get mockPaySuccess => 'Succeed';
+
+  @override
+  String get mockPayFailure => 'Fail';
+
+  @override
+  String get mockPayConflict => 'Succeed with conflict';
+
+  @override
+  String get mockPaySilent => 'Server never answers';
+
+  @override
+  String get mockPayClose => 'Close the page';
+
+  @override
+  String get verifyTitle => 'Confirm your details';
+
+  @override
+  String get verifyIntro =>
+      'Before your first booking we confirm your email and mobile number with a code sent to your email.';
+
+  @override
+  String get verifyEmailCodeHint => 'Enter the code sent to your email';
+
+  @override
+  String get verifyHasWhatsapp => 'This number has WhatsApp';
+
+  @override
+  String get verifyWhatsappNumber => 'WhatsApp number (optional)';
+
+  @override
+  String get verifyCodeSentToEmail => 'We sent a 6-digit code to your email.';
+
+  @override
+  String get verifyResend => 'Resend code';
+
+  @override
+  String verifyResendIn(String seconds) {
+    return 'You can resend in $seconds s';
+  }
+
+  @override
+  String get bookingsTabCurrent => 'Current';
+
+  @override
+  String get bookingsTabPast => 'Past';
+
+  @override
+  String get bookingsTabCancelled => 'Cancelled';
+
+  @override
+  String get bookingsEmptyCurrent => 'No current bookings.';
+
+  @override
+  String get bookingsEmptyPast => 'No past stays.';
+
+  @override
+  String get bookingsEmptyCancelled => 'No cancelled bookings.';
+
+  @override
+  String get bookingsFindApartment => 'Find an apartment';
+
+  @override
+  String lastUpdated(String time) {
+    return 'Last updated: $time';
+  }
+
+  @override
+  String get bookingStatusPaymentPending => 'Payment not completed';
+
+  @override
+  String get bookingStatusPaymentVerifying => 'Verifying payment';
+
+  @override
+  String get bookingStatusAwaitingOwner => 'Awaiting owner';
+
+  @override
+  String get bookingStatusPaymentConflict => 'Dates taken first';
+
+  @override
+  String get bookingStatusConfirmed => 'Confirmed';
+
+  @override
+  String get bookingStatusCheckedIn => 'Stay in progress';
+
+  @override
+  String get bookingStatusCompleted => 'Stay completed';
+
+  @override
+  String get bookingStatusRejected => 'Declined by owner';
+
+  @override
+  String get bookingStatusExpired => 'Owner did not reply';
+
+  @override
+  String get bookingStatusCancelled => 'Cancelled';
+
+  @override
+  String get bookingStatusNoShow => 'No-show';
+
+  @override
+  String get bookingStatusAbandoned => 'Not completed';
+
+  @override
+  String get bookingStatusUnknown => 'Booking update';
+
+  @override
+  String get bookingMsgPaymentPending =>
+      'Payment is not completed yet. Complete it to send your request to the owner.';
+
+  @override
+  String get bookingMsgPaymentVerifying =>
+      'We are verifying your payment. This can take minutes; we will notify you once confirmed.';
+
+  @override
+  String bookingMsgAwaitingOwner(String deadline) {
+    return 'Paid and sent to the owner. The owner has until $deadline to reply. The dates are held for you until then.';
+  }
+
+  @override
+  String get bookingMsgAwaitingOwnerNoDeadline =>
+      'Paid and sent to the owner. The dates are held for you until they reply.';
+
+  @override
+  String get bookingMsgConfirmed => 'Your booking is confirmed!';
+
+  @override
+  String bookingMsgConfirmedWithRemaining(String amount) {
+    return 'Your booking is confirmed! $amount must be paid before check-in.';
+  }
+
+  @override
+  String get bookingMsgCheckedIn => 'Enjoy your stay.';
+
+  @override
+  String get bookingMsgCompleted =>
+      'Your stay is complete. Tell us how it went!';
+
+  @override
+  String bookingMsgRejected(String amount) {
+    return 'The owner declined. You will get a full refund ($amount). The OnAir team may contact you with an alternative.';
+  }
+
+  @override
+  String bookingMsgExpired(String amount) {
+    return 'The owner did not reply within 24 hours. You will get a full refund ($amount).';
+  }
+
+  @override
+  String get bookingMsgCancelled => 'The booking was cancelled.';
+
+  @override
+  String get bookingMsgNoShow =>
+      'A no-show was recorded. Contact support with any questions.';
+
+  @override
+  String bookingMsgConflict(String amount) {
+    return 'These dates were booked before your payment completed. You will get a full refund ($amount).';
+  }
+
+  @override
+  String get bookingMsgAbandoned =>
+      'The payment was not completed and nothing was charged.';
+
+  @override
+  String get bookingMsgUnknown =>
+      'There is an update on your booking. Contact support with any questions.';
+
+  @override
+  String get bookingCode => 'Booking number';
+
+  @override
+  String get bookingCopyCode => 'Copy booking number';
+
+  @override
+  String get bookingCodeCopied => 'Booking number copied';
+
+  @override
+  String get bookingStayTitle => 'Stay';
+
+  @override
+  String get bookingArrival => 'Arrival';
+
+  @override
+  String get bookingDeparture => 'Departure';
+
+  @override
+  String get bookingCheckInTime => 'Check-in time';
+
+  @override
+  String get bookingCheckOutTime => 'Check-out time';
+
+  @override
+  String get bookingPaymentsTitle => 'Payments';
+
+  @override
+  String get bookingPaid => 'Paid';
+
+  @override
+  String get paymentMethodCard => 'Card / wallet';
+
+  @override
+  String get paymentMethodCash => 'Cash';
+
+  @override
+  String get paymentLineSucceeded => 'Done';
+
+  @override
+  String get paymentLinePending => 'In progress';
+
+  @override
+  String get paymentLineFailed => 'Not completed';
+
+  @override
+  String get bookingAddressTitle => 'Address';
+
+  @override
+  String get bookingArrivalInstructions => 'Arrival instructions';
+
+  @override
+  String get bookingSavedTermsTitle => 'Terms at booking time';
+
+  @override
+  String get bookingTimelineTitle => 'Booking history';
+
+  @override
+  String get bookingEventGeneric => 'Booking update';
+
+  @override
+  String get bookingContactSupport => 'Need help? Contact OnAir';
+
+  @override
+  String get refundChipRequested => 'Refund requested';
+
+  @override
+  String get refundChipInProgress => 'Refund in progress';
+
+  @override
+  String get refundChipDone => 'Refunded';
+
+  @override
+  String get refundChipProblem => 'Refund issue';
+
+  @override
+  String get refundTitle => 'Refund';
+
+  @override
+  String get refundAmount => 'Refund amount';
+
+  @override
+  String get refundStageRequested => 'Requested';
+
+  @override
+  String get refundStageApproved => 'Approved';
+
+  @override
+  String get refundStageExecuting => 'In progress';
+
+  @override
+  String get refundStageVerified => 'Received';
+
+  @override
+  String get refundProblemHint =>
+      'There is an issue with the refund. The OnAir team is on it; you can contact support.';
+
+  @override
+  String get unfinishedPaymentBanner => 'You have an unfinished payment.';
+
+  @override
+  String get unfinishedPaymentOpen => 'View';
+
+  @override
+  String get quoteChangedNotice =>
+      'The price was updated. Review the new amounts before paying.';
+
+  @override
+  String get quoteConfirmNew => 'Confirm new amounts';
+
+  @override
+  String get termsChangedNotice =>
+      'The terms were updated. Review and accept them to continue.';
+
+  @override
+  String get termsAcceptNew => 'I accept the new terms';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsEmpty => 'No notifications yet.';
+
+  @override
+  String get notificationsOffNotice =>
+      'Notifications are off. Turn them on to know as soon as the owner replies.';
+
+  @override
+  String get notificationsOpenSettings => 'Open settings';
+
+  @override
+  String get pushPermissionTitle => 'Turn on notifications';
+
+  @override
+  String get pushPermissionBody =>
+      'So you know as soon as the owner replies to your request.';
+
+  @override
+  String get pushPermissionEnable => 'Turn on';
+
+  @override
+  String get pushPermissionLater => 'Not now';
+
+  @override
+  String unreadBadge(String count) {
+    return '$count unread notifications';
+  }
+
+  @override
+  String get notifBookingRequestReceivedTitle => 'Request sent';
+
+  @override
+  String get notifBookingRequestReceivedBody =>
+      'The owner replies within 24 hours. Tap for details.';
+
+  @override
+  String get notifBookingConfirmedTitle => 'Booking confirmed ✓';
+
+  @override
+  String get notifBookingConfirmedBody => 'Tap for details.';
+
+  @override
+  String get notifBookingRejectedTitle => 'Request declined';
+
+  @override
+  String get notifBookingRejectedBody =>
+      'You will get a full refund. Tap for details.';
+
+  @override
+  String get notifBookingExpiredTitle => 'No reply in time';
+
+  @override
+  String get notifBookingExpiredBody =>
+      'You will get a full refund. Tap for details.';
+
+  @override
+  String get notifBookingPaymentConflictTitle => 'Dates taken first';
+
+  @override
+  String get notifBookingPaymentConflictBody =>
+      'You will get a full refund. Tap for details.';
+
+  @override
+  String get notifBookingCancelledByGuestTitle => 'Booking cancelled';
+
+  @override
+  String get notifBookingCancelledByGuestBody => 'Tap for details.';
+
+  @override
+  String get notifBookingCancelledByPlatformTitle =>
+      'Booking cancelled by OnAir';
+
+  @override
+  String get notifBookingCancelledByPlatformBody => 'Tap for details.';
+
+  @override
+  String get notifBookingReplacementOfferedTitle => 'Alternative offer';
+
+  @override
+  String get notifBookingReplacementOfferedBody => 'Tap to review the offer.';
+
+  @override
+  String get notifBookingNoShowRecordedTitle => 'No-show recorded';
+
+  @override
+  String get notifBookingNoShowRecordedBody => 'Tap for details.';
+
+  @override
+  String get notifBookingReopenedTitle => 'Booking reopened';
+
+  @override
+  String get notifBookingReopenedBody => 'Tap for details.';
+
+  @override
+  String get notifPaymentFailedTitle => 'Payment not completed';
+
+  @override
+  String get notifPaymentFailedBody => 'Nothing was charged.';
+
+  @override
+  String get notifPaymentRemainingDueTitle => 'Remaining amount due';
+
+  @override
+  String get notifPaymentRemainingDueBody => 'Pay it before check-in.';
+
+  @override
+  String get notifPaymentRemainingPaidTitle => 'Remaining amount paid';
+
+  @override
+  String get notifPaymentRemainingPaidBody => 'Tap for details.';
+
+  @override
+  String get notifCashConfirmationRequestedTitle => 'Confirm cash payment';
+
+  @override
+  String get notifCashConfirmationRequestedBody => 'The code is in your email.';
+
+  @override
+  String get notifCashPaymentConfirmedTitle => 'Cash payment confirmed';
+
+  @override
+  String get notifCashPaymentConfirmedBody => 'Tap for the receipt.';
+
+  @override
+  String get notifStayCheckinReminderTitle => 'Check-in is soon';
+
+  @override
+  String get notifStayCheckinReminderBody => 'Tap for details.';
+
+  @override
+  String get notifStayCheckoutReminderTitle => 'Check-out is soon';
+
+  @override
+  String get notifStayCheckoutReminderBody => 'Tap for details.';
+
+  @override
+  String get notifStayHostHandoverConfirmedTitle => 'Owner confirmed handover';
+
+  @override
+  String get notifStayHostHandoverConfirmedBody =>
+      'Confirm you received the apartment.';
+
+  @override
+  String get notifStayCheckedInTitle => 'Your stay started';
+
+  @override
+  String get notifStayCheckedInBody => 'Enjoy your stay.';
+
+  @override
+  String get notifStayCompletedTitle => 'Your stay is complete';
+
+  @override
+  String get notifStayCompletedBody => 'Tell us how it went!';
+
+  @override
+  String get notifDamageClaimOpenedTitle => 'A claim was opened';
+
+  @override
+  String get notifDamageClaimOpenedBody => 'Tap to review.';
+
+  @override
+  String get notifDamageResolvedTitle => 'Claim resolved';
+
+  @override
+  String get notifDamageResolvedBody => 'Tap for details.';
+
+  @override
+  String get notifRefundRequestedTitle => 'Refund requested';
+
+  @override
+  String get notifRefundRequestedBody => 'Tap for details.';
+
+  @override
+  String get notifRefundExecutedTitle => 'Refund in progress';
+
+  @override
+  String get notifRefundExecutedBody => 'Tap for details.';
+
+  @override
+  String get notifRefundVerifiedTitle => 'Refund received';
+
+  @override
+  String get notifRefundVerifiedBody => 'Tap for details.';
+
+  @override
+  String get notifSupportStaffRepliedTitle => 'New reply from support';
+
+  @override
+  String get notifSupportStaffRepliedBody => 'Tap to read.';
+
+  @override
+  String get notifSupportCaseResolvedTitle => 'Your case is resolved';
+
+  @override
+  String get notifSupportCaseResolvedBody => 'Tap for details.';
+
+  @override
+  String get notifReviewApprovedTitle => 'Your review is published';
+
+  @override
+  String get notifReviewApprovedBody => 'Thanks for sharing.';
+
+  @override
+  String get notifReviewRejectedTitle => 'Your review was not published';
+
+  @override
+  String get notifReviewRejectedBody => 'Tap for details.';
+
+  @override
+  String get notifAccountPhoneChangedTitle => 'Mobile number changed';
+
+  @override
+  String get notifAccountPhoneChangedBody =>
+      'If this wasn\'t you, contact support.';
+
+  @override
+  String get notifAccountPasswordChangedTitle => 'Password changed';
+
+  @override
+  String get notifAccountPasswordChangedBody =>
+      'If this wasn\'t you, contact support.';
+
+  @override
+  String get notifGenericTitle => 'You have a new update';
+
+  @override
+  String get notifGenericBody => 'Tap for details.';
 }

@@ -4,6 +4,7 @@ import 'package:on_air/core/push/push_token_source.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/account_gate/data/device_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final class _AuthRepository extends Mock implements AuthRepository {}
@@ -89,6 +90,8 @@ void main() {
         'themeMode',
         'localeCode',
         'last_search_v1',
+        // The push sheet's once-per-install flag (US5, T089).
+        PushPermissionCoordinator.askedKey,
       });
     },
   );

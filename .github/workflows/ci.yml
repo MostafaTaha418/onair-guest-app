@@ -117,7 +117,10 @@ jobs:
           echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tar.gz' | sha256sum --check --strict
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           GITLEAKS_BINARY=/tmp/gitleaks python3 -m unittest discover -s tool/tests -p 'test_gitleaks.py' -v
-          /tmp/gitleaks detect -c .gitleaks.toml --redact
+          /tmp/gitleaks detect -c .gitleaks.toml --redact --report-format json --report-path /tmp/gitleaks-report.json || {
+            python3 -c 'import json; findings=json.load(open("/tmp/gitleaks-report.json")); [print("Gitleaks finding: rule {}, file {}, commit {}".format(item["RuleID"], item["File"], item["Commit"])) for item in findings]'
+            exit 1
+          }
 
   android-device:
     name: android device (API ${{ matrix.api-level }})
@@ -125,7 +128,9 @@ jobs:
     # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
     needs: format-and-analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A slow runner can stretch one emulator cycle far beyond the usual
+    # ~25 min suite (adb stalls were observed for 30+ min at a time).
+    timeout-minutes: 150
     strategy:
       fail-fast: false
       matrix:
@@ -177,7 +182,9 @@ jobs:
     # iPhone simulator.
     needs: format-and-analyze
     runs-on: macos-15
-    timeout-minutes: 60
+    # Building each simulator integration test separately can exceed one hour
+    # on a slow macOS runner, even when tests are making progress.
+    timeout-minutes: 150
     env:
       # Firebase's Swift package requires Xcode 26.2+; macos-15 defaults to 16.4.
       DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer

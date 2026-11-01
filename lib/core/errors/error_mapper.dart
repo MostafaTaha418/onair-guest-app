@@ -44,6 +44,25 @@ abstract final class ErrorMapper {
       ErrorCode.collectorNotAuthorized,
       'stayCollectorNotAuthorized',
     ),
+    'ACCOUNT_SUSPENDED': (ErrorCode.accountSuspended, 'errorAccountSuspended'),
+    'PHONE_ALREADY_USED': (ErrorCode.phoneAlreadyUsed, 'authPhoneAlreadyUsed'),
+    'POLICY_OUT_OF_BOUNDS': (
+      ErrorCode.policyOutOfBounds,
+      'bookingPolicyOutOfBounds',
+    ),
+    'CONFLICT': (ErrorCode.conflict, 'errorConflict'),
+    'INVALID_BOOKING_STATE': (
+      ErrorCode.invalidBookingState,
+      'bookingStateChanged',
+    ),
+    'DUPLICATE_OPERATION': (
+      ErrorCode.duplicateOperation,
+      'errorDuplicateOperation',
+    ),
+    'PAYMENT_AMOUNT_MISMATCH': (
+      ErrorCode.paymentAmountMismatch,
+      'paymentVerificationIssue',
+    ),
     'INTERNAL': (ErrorCode.internal, 'errorUnexpected'),
   };
 

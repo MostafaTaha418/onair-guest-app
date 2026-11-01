@@ -135,4 +135,42 @@ void main() {
       AppRoutes.notAvailable,
     );
   });
+
+  test('the payment return link keeps only a valid booking id', () {
+    expect(
+      parser.parse(
+        Uri.parse(
+          'https://on-air.website/payment/return?booking=$bookingId&status=success',
+        ),
+        isSignedIn: true,
+      ),
+      '/payment/return?booking=$bookingId',
+    );
+    expect(
+      parser.parse(
+        Uri.parse('https://on-air.website/payment/return?booking=bad'),
+        isSignedIn: true,
+      ),
+      '/payment/return',
+    );
+    expect(
+      parser.parse(
+        Uri.parse('https://on-air.website/payment/return?status=success'),
+        isSignedIn: true,
+      ),
+      '/payment/return',
+    );
+  });
+
+  test('a signed-out guest is sent to sign-in with the return destination', () {
+    expect(
+      parser.parse(
+        Uri.parse(
+          'https://on-air.website/payment/return?booking=$bookingId',
+        ),
+        isSignedIn: false,
+      ),
+      '/auth/login?from=%2Fpayment%2Freturn%3Fbooking%3D$bookingId',
+    );
+  });
 }

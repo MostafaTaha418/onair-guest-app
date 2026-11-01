@@ -18,6 +18,7 @@ import 'package:on_air/features/search/domain/last_search_store.dart';
 
 import '../helpers/fake_app_config_repository.dart';
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_booking_backend.dart';
 import '../helpers/fake_listings_repository.dart';
 
 void main() {
@@ -54,6 +55,7 @@ void main() {
           ),
           RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          ...FakeBookingBackend().appProviders(),
         ],
         child: const OnAirApp(),
       ),
@@ -115,6 +117,7 @@ void main() {
           ),
           RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
           RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          ...FakeBookingBackend().appProviders(),
         ],
         child: OnAirApp(versionGate: gate),
       ),

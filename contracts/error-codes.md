@@ -38,6 +38,7 @@ lists the codes the Guest App can receive and the ARB key for each.
 | `DUPLICATE_OPERATION` *(new)* | G2 | `errorDuplicateOperation` | العملية دي اتعملت قبل كده. | no |
 | `CONFLICT` *(new)* | G2 | `errorConflict` | البيانات اتغيرت. حدّث الصفحة وجرّب تاني. | no |
 | `INVALID_BOOKING_STATE` *(new)* | G2 | `bookingStateChanged` | حالة الحجز اتغيرت. حدّث الصفحة. | no |
+| `POLICY_OUT_OF_BOUNDS` *(new)* | G2 | `bookingPolicyOutOfBounds` | السعر مش ثابت على التواريخ دي. جرّب تواريخ تانية أو تواصل مع الدعم. | **yes** |
 | `ACTION_NOT_ALLOWED` | G2 | `errorActionNotAllowed` | الإجراء ده مش متاح دلوقتي. | no |
 | `CANCELLATION_TERMS_CHANGED` *(new)* | G3 | `cancellationTermsChanged` | مبلغ الاسترداد اتغير. راجع التفاصيل الجديدة. | no |
 | `REMAINING_NOT_PAID` *(new)* | G3 | `stayRemainingNotPaid` | لازم تسدد المبلغ المتبقي قبل استلام الشقة. | no |
