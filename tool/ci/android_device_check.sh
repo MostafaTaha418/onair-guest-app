@@ -25,7 +25,12 @@ aapt="$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)"
 pkg="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" "$tmp/badging.txt")"
 echo "Installing $apk ($pkg)"
 
-timeout 180s adb install -r "$apk"
+if [[ "$api_level" -lt 34 ]]; then
+  # Legacy emulators can stall on ADB's streamed install path.
+  timeout 180s adb install --no-streaming -r "$apk"
+else
+  timeout 180s adb install -r "$apk"
+fi
 adb logcat -c
 adb shell monkey -p "$pkg" -c android.intent.category.LAUNCHER 1 >/dev/null
 sleep 20
