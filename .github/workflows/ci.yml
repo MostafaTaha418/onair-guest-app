@@ -128,8 +128,9 @@ jobs:
     # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
     needs: format-and-analyze
     runs-on: ubuntu-latest
-    # The API 24 run of the suite can pass 45 min on a slow runner.
-    timeout-minutes: 75
+    # A slow runner can stretch one emulator cycle far beyond the usual
+    # ~25 min suite (adb stalls were observed for 30+ min at a time).
+    timeout-minutes: 150
     strategy:
       fail-fast: false
       matrix:
