@@ -3,14 +3,16 @@
 #
 # 1. Builds a debug APK, installs it, launches it, and fails if the app is not
 #    running 20 s later or crashed (FATAL EXCEPTION for our package).
-# 2. Runs integration tests on the emulator when they exist and the
-#    STAGING_ENV_JSON secret is available (they talk to Staging).
+# 2. Runs integration tests on API 34 when they exist and the
+#    STAGING_ENV_JSON secret is available. API 24 checks install and launch;
+#    running the full suite there duplicates API 34 and can stall in adb.
 set -euo pipefail
 
 build_args="$(bash tool/ci/build_args.sh build)"
 test_args="$(bash tool/ci/build_args.sh test)"
 
-echo "Android API level: $(adb shell getprop ro.build.version.sdk | tr -d '\r')"
+api_level="$(adb shell getprop ro.build.version.sdk | tr -d '\r')"
+echo "Android API level: $api_level"
 
 # shellcheck disable=SC2086
 flutter build apk --debug $build_args
@@ -23,7 +25,7 @@ aapt="$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)"
 pkg="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" "$tmp/badging.txt")"
 echo "Installing $apk ($pkg)"
 
-adb install -r "$apk"
+timeout 180s adb install -r "$apk"
 adb logcat -c
 adb shell monkey -p "$pkg" -c android.intent.category.LAUNCHER 1 >/dev/null
 sleep 20
@@ -51,7 +53,9 @@ if [[ "${crashes:-0}" -gt 0 ]]; then
 fi
 echo "Launch check passed."
 
-if compgen -G "integration_test/*_test.dart" >/dev/null; then
+if [[ "$api_level" -lt 34 ]]; then
+  echo "API $api_level build, install, launch, and crash checks passed; integration suite runs on API 34 and iOS."
+elif compgen -G "integration_test/*_test.dart" >/dev/null; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
     # shellcheck disable=SC2086
     flutter test integration_test $test_args

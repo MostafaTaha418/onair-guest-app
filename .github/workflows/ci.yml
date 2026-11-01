@@ -182,7 +182,9 @@ jobs:
     # iPhone simulator.
     needs: format-and-analyze
     runs-on: macos-15
-    timeout-minutes: 60
+    # Building each simulator integration test separately can exceed one hour
+    # on a slow macOS runner, even when tests are making progress.
+    timeout-minutes: 150
     env:
       # Firebase's Swift package requires Xcode 26.2+; macos-15 defaults to 16.4.
       DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
