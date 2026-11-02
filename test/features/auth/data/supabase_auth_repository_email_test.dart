@@ -33,6 +33,16 @@ void main() {
     registerFallbackValue(UserAttributes(password: 'fallback-password1'));
   });
 
+  test('email users with an empty Supabase phone have no phone number', () {
+    final user = _User();
+    _stubUser(user);
+    when(() => user.phone).thenReturn('');
+
+    final mapped = PhoneAuthUser.fromSupabase(user);
+    expect(mapped.phone, isNull);
+    expect(mapped.email, 'guest@example.com');
+  });
+
   test(
     'Supabase adapter uses the required email auth APIs and OTP types',
     () async {
@@ -89,6 +99,8 @@ void main() {
         'Guest Name',
         'guest@example.com',
         'password1',
+        '+201012345678',
+        '1',
       );
       await adapter.resendSignupEmail('guest@example.com');
       await adapter.verifySignupEmailOtp('guest@example.com', '123456');
@@ -101,7 +113,13 @@ void main() {
         () => client.signUp(
           email: 'guest@example.com',
           password: 'password1',
-          data: {'full_name': 'Guest Name'},
+          data: {
+            'full_name': 'Guest Name',
+            'phone_e164': '+201012345678',
+            'phone_has_whatsapp': false,
+            'accepted_terms_version': '1',
+            'locale': 'ar',
+          },
         ),
       ).called(1);
       verify(
@@ -224,5 +242,33 @@ void main() {
         );
       },
     );
+
+    test('signup server errors are not reported as offline', () async {
+      when(
+        () => auth.signUpWithEmail(any(), any(), any(), any(), any()),
+      ).thenThrow(
+        AuthRetryableFetchException(
+          message: 'PHONE_ALREADY_USED',
+          statusCode: '500',
+        ),
+      );
+
+      await expectLater(
+        repository.signUpEmail(
+          'Guest Name',
+          'guest@example.com',
+          'password1',
+          '01012345678',
+          '1',
+        ),
+        throwsA(
+          isA<AuthRequestRejected>().having(
+            (error) => error.code,
+            'code',
+            'PHONE_ALREADY_USED',
+          ),
+        ),
+      );
+    });
   });
 }

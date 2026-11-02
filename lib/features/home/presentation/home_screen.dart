@@ -22,6 +22,7 @@ import 'package:on_air/features/home/presentation/widgets/home_section.dart';
 import 'package:on_air/features/home/presentation/widgets/upcoming_booking_card.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
+import 'package:on_air/features/property/presentation/property_navigation.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The Home tab (US3): greeting, search box, upcoming booking, areas,
@@ -75,37 +76,49 @@ final class HomeScreen extends StatelessWidget {
       else ...[
         _upcomingSliver(context, state),
         if (!_isEmpty(state)) ...[
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                Dimens.screenSide,
-                Dimens.space16,
-                Dimens.screenSide,
-                0,
+          if (_showSection(
+            state.feed?.areas,
+            state.sectionLoading[HomeSectionId.areas] ?? false,
+          ))
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  Dimens.screenSide,
+                  Dimens.space16,
+                  Dimens.screenSide,
+                  0,
+                ),
+                child: _areasSection(context, state),
               ),
-              child: _areasSection(context, state),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
+          if (_showSection(
+            state.feed?.suggested,
+            state.sectionLoading[HomeSectionId.suggested] ?? false,
+          ))
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  Dimens.screenSide,
+                  Dimens.space24,
+                  Dimens.screenSide,
+                  0,
+                ),
+                child: _suggestedSection(context, state),
+              ),
+            ),
+          if (_showSection(
+            state.feed?.newest,
+            state.sectionLoading[HomeSectionId.newest] ?? false,
+          ))
+            SliverPadding(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 Dimens.screenSide,
                 Dimens.space24,
                 Dimens.screenSide,
-                0,
+                Dimens.space32,
               ),
-              child: _suggestedSection(context, state),
+              sliver: _newestSliver(context, state),
             ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              Dimens.screenSide,
-              Dimens.space24,
-              Dimens.screenSide,
-              Dimens.space32,
-            ),
-            sliver: _newestSliver(context, state),
-          ),
         ],
         if (_isEmpty(state))
           SliverFillRemaining(
@@ -131,6 +144,14 @@ final class HomeScreen extends StatelessWidget {
       FeedSectionFailed() => false,
     };
     return empty(feed.areas) && empty(feed.suggested) && empty(feed.newest);
+  }
+
+  bool _showSection<T>(FeedSection<List<T>>? section, bool loading) {
+    if (loading || section == null) return true;
+    return switch (section) {
+      FeedSectionReady(:final value) => value.isNotEmpty,
+      FeedSectionFailed() => true,
+    };
   }
 
   Widget _upcomingSliver(BuildContext context, HomeState state) {
@@ -306,7 +327,7 @@ final class HomeScreen extends StatelessWidget {
                   const SizedBox(width: Dimens.space8),
                   Expanded(
                     child: Text(
-                      l10n.errorUnexpectedNoRef,
+                      l10n.homeSectionError(l10n.homeNewestTitle),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: context.colors.textPrimary,
                       ),
@@ -370,8 +391,10 @@ final class HomeScreen extends StatelessWidget {
       // alive, so the same apartment can carry the tag twice across the
       // route subtree. The instant photo on details still comes through
       // `extra` (SC-006); the Hero flight stays between results and details.
-      onTap: () => unawaited(
-        context.push(AppRoutes.property(card.id), extra: card.cover?.variants),
+      onTap: () => openPropertyDetails(
+        context,
+        AppRoutes.property(card.id),
+        extra: card.cover?.variants,
       ),
     );
   }

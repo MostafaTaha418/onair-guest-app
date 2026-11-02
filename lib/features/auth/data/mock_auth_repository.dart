@@ -57,14 +57,24 @@ final class MockAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
+    String phone,
+    String termsVersion,
   ) async {
+    final parsedPhone = EgyptPhone.tryParse(phone);
+    if (parsedPhone == null) {
+      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
+    }
+    if (termsVersion != currentTermsVersion) throw const ProfileTermsChanged();
     final normalized = _normalize(email);
     // Uniform result: an existing email gets the same response.
     if (_findBy((u) => u.email == normalized) == null) {
       _create()
         ..email = normalized
         ..password = password
-        ..fullName = name.trim();
+        ..fullName = name.trim()
+        ..phone = parsedPhone.e164
+        ..acceptedTermsVersion = termsVersion
+        ..acceptedTermsAt = _clock().toUtc();
     }
     return _challenge(VerificationChannel.emailSignup, normalized);
   }
@@ -78,7 +88,9 @@ final class MockAuthRepository implements AuthRepository {
     _checkCode(code);
     final user = _findBy((u) => u.email == _normalize(email));
     if (user == null) throw const AuthCodeRejected('OTP_INVALID');
-    user.emailVerified = true;
+    user
+      ..emailVerified = true
+      ..phoneVerified = true;
     return _signIn(user);
   }
 

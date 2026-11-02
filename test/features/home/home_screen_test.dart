@@ -246,6 +246,18 @@ void main() {
     expect(find.text('شقة أحدث'), findsOneWidget);
   });
 
+  testWidgets('an empty suggested section leaves no blank carousel', (
+    tester,
+  ) async {
+    listings.homeFeedResponses.add(
+      feed(suggested: const FeedSectionReady(<ListingCard>[])),
+    );
+    await pumpHome(tester, signedIn: false);
+
+    expect(find.text(l10n.homeSuggestedTitle), findsNothing);
+    expect(find.text(l10n.homeNewestTitle), findsOneWidget);
+  });
+
   testWidgets('the area tap opens the results for that location', (
     tester,
   ) async {
@@ -271,6 +283,28 @@ void main() {
     await tester.pump();
 
     expect(find.text('property:p1'), findsOneWidget);
+  });
+
+  testWidgets('two property taps leave only one details page on the stack', (
+    tester,
+  ) async {
+    listings.homeFeedResponses.add(feed());
+    await pumpHome(tester, signedIn: false);
+
+    await tester.tap(find.text('شقة مقترحة'));
+    await tester.tap(find.text('شقة أحدث'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('property:p1'), findsOneWidget);
+    GoRouter.of(tester.element(find.text('property:p1'))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('property:p2'), findsNothing);
+    expect(find.text('شقة مقترحة'), findsOneWidget);
+
+    await tester.tap(find.text('شقة أحدث'));
+    await tester.pumpAndSettle();
+    expect(find.text('property:p2'), findsOneWidget);
   });
 
   testWidgets('the greeting shows the name only when signed in', (

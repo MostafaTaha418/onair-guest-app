@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -38,6 +40,7 @@ final class _NewPasswordScreenState extends State<NewPasswordScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await context.read<AuthCubit>().setNewPassword(_password.text);
+      if (mounted) context.go(AppRoutes.home);
     } on Object catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text(authErrorMessage(error, l10n))),

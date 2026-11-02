@@ -35,7 +35,6 @@ final class AuthCubit extends Cubit<AuthState> {
   final DateTime Function() _clock;
   final SignOutCoordinator _signOutCoordinator;
   late final StreamSubscription<GuestAccount?> _subscription;
-  String? _pendingEmailSignupName;
 
   void updateTermsVersion(String version) {
     _currentTermsVersion = version;
@@ -114,10 +113,17 @@ final class AuthCubit extends Cubit<AuthState> {
     String name,
     String email,
     String password,
+    String phone,
+    String termsVersion,
   ) async {
-    _pendingEmailSignupName = name.trim();
     try {
-      final challenge = await _repository.signUpEmail(name, email, password);
+      final challenge = await _repository.signUpEmail(
+        name,
+        email,
+        password,
+        phone,
+        termsVersion,
+      );
       if (!isClosed) emit(CodeSent(challenge));
     } on AuthRateLimited catch (error) {
       if (!isClosed) {
@@ -139,18 +145,10 @@ final class AuthCubit extends Cubit<AuthState> {
     final current = state;
     if (current is! CodeSent) return;
     try {
-      var account = await _repository.verifyEmailCode(
+      final account = await _repository.verifyEmailCode(
         current.challenge.target,
         code,
       );
-      final name = _pendingEmailSignupName;
-      if (name != null && name.isNotEmpty) {
-        account = await _repository.completeProfile(
-          name,
-          _currentTermsVersion,
-        );
-        _pendingEmailSignupName = null;
-      }
       _emitAccount(account);
     } on AuthCodeRejected catch (error) {
       if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));

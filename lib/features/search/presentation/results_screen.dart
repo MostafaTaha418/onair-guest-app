@@ -17,6 +17,7 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
+import 'package:on_air/features/property/presentation/property_navigation.dart';
 import 'package:on_air/features/search/domain/search_criteria.dart';
 import 'package:on_air/features/search/presentation/filters_sheet.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
@@ -249,19 +250,17 @@ final class _ResultsScreenState extends State<ResultsScreen> {
                 heroTag: 'listing-${card.id}',
                 onTap: () {
                   final guests = state.criteria.guests;
-                  unawaited(
-                    context.push(
-                      Uri(
-                        path: AppRoutes.property(card.id),
-                        queryParameters: {
-                          if (stay != null) 'checkIn': stay.checkIn.toString(),
-                          if (stay != null)
-                            'checkOut': stay.checkOut.toString(),
-                          if (guests != null) 'guests': '$guests',
-                        },
-                      ).toString(),
-                      extra: card.cover?.variants,
-                    ),
+                  openPropertyDetails(
+                    context,
+                    Uri(
+                      path: AppRoutes.property(card.id),
+                      queryParameters: {
+                        if (stay != null) 'checkIn': stay.checkIn.toString(),
+                        if (stay != null) 'checkOut': stay.checkOut.toString(),
+                        if (guests != null) 'guests': '$guests',
+                      },
+                    ).toString(),
+                    extra: card.cover?.variants,
                   );
                 },
               ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/platform/secure_screen.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
@@ -114,7 +115,29 @@ final class _OtpScreenState extends State<OtpScreen> {
       case null:
         break;
     }
-    if (mounted) setState(() => _submitting = false);
+    if (!mounted) return;
+    final state = cubit.state;
+    final router = GoRouter.maybeOf(context);
+    if (state is RecoveryVerified) {
+      router?.go(AppRoutes.newPassword);
+      return;
+    }
+    if (state is SignedIn) {
+      if (router != null) {
+        final origin = GoRouterState.of(context).uri.queryParameters['from'];
+        final destination = resolveAuthReturnDestination(origin);
+        router.go(
+          state.isComplete
+              ? destination
+              : Uri(
+                  path: AppRoutes.completeProfile,
+                  queryParameters: {'from': destination},
+                ).toString(),
+        );
+      }
+      return;
+    }
+    setState(() => _submitting = false);
   }
 
   Future<void> _resend(CodeChallenge challenge) async {

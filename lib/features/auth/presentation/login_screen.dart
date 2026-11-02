@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/design_system/brand/on_air_logo.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
@@ -20,10 +21,16 @@ import 'package:on_air/features/auth/presentation/widgets/password_strength_hint
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class LoginScreen extends StatefulWidget {
-  const LoginScreen({this.initialPhone, this.registration = false, super.key});
+  const LoginScreen({
+    this.initialPhone,
+    this.registration = false,
+    this.phoneAuthEnabled = true,
+    super.key,
+  });
 
   final String? initialPhone;
   final bool registration;
+  final bool phoneAuthEnabled;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -36,7 +43,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   bool _showValidation = false;
   bool _loading = false;
-  bool _emailTab = false;
+  late bool _emailTab = !widget.phoneAuthEnabled;
   bool _acceptedTerms = false;
   String? _requestError;
   String? _generalError;
@@ -53,7 +60,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   bool get _validEmailForm =>
       _validEmail &&
       PasswordRule.isValid(_password.text) &&
-      (!widget.registration || (_validName && _acceptedTerms));
+      (!widget.registration || (_validName && _validPhone && _acceptedTerms));
 
   @override
   void dispose() {
@@ -81,10 +88,19 @@ final class _LoginScreenState extends State<LoginScreen> {
     }
     await _runRequest(() async {
       if (widget.registration) {
+        final config = await context.read<AppConfigSource>().load(
+          refresh: true,
+        );
+        if (!mounted) return;
+        context.read<AuthCubit>().updateTermsVersion(
+          config.currentTermsVersion,
+        );
         await context.read<AuthCubit>().requestEmailSignup(
           _name.text,
           _email.text,
           _password.text,
+          _phone.text,
+          config.currentTermsVersion,
         );
       } else {
         await context.read<AuthCubit>().signInEmail(
@@ -103,6 +119,21 @@ final class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await request();
+      if (!mounted) return;
+      final authState = context.read<AuthCubit>().state;
+      if (authState is SignedIn) {
+        final origin = GoRouterState.of(context).uri.queryParameters['from'];
+        final destination = resolveAuthReturnDestination(origin);
+        context.go(
+          authState.isComplete
+              ? destination
+              : Uri(
+                  path: AppRoutes.completeProfile,
+                  queryParameters: {'from': destination},
+                ).toString(),
+        );
+        return;
+      }
       // Only confirm when a code was really sent (not when rate-limited).
       if (mounted && context.read<AuthCubit>().state is CodeSent) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -200,18 +231,19 @@ final class _LoginScreenState extends State<LoginScreen> {
               style: context.textStyles.authTitle,
             ),
             const SizedBox(height: Dimens.space24),
-            SegmentedButton<bool>(
-              segments: [
-                ButtonSegment(value: false, label: Text(l10n.authPhoneTab)),
-                ButtonSegment(value: true, label: Text(l10n.authEmailTab)),
-              ],
-              selected: {_emailTab},
-              onSelectionChanged: (selection) => setState(() {
-                _emailTab = selection.single;
-                _showValidation = false;
-                _requestError = null;
-              }),
-            ),
+            if (widget.phoneAuthEnabled)
+              SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment(value: false, label: Text(l10n.authPhoneTab)),
+                  ButtonSegment(value: true, label: Text(l10n.authEmailTab)),
+                ],
+                selected: {_emailTab},
+                onSelectionChanged: (selection) => setState(() {
+                  _emailTab = selection.single;
+                  _showValidation = false;
+                  _requestError = null;
+                }),
+              ),
             const SizedBox(height: Dimens.space24),
             if (_emailTab)
               ..._emailFields(l10n, invalidCredentials)
@@ -246,6 +278,20 @@ final class _LoginScreenState extends State<LoginScreen> {
         textInputAction: TextInputAction.next,
         autofillHints: const [AutofillHints.name],
         errorText: _showValidation && !_validName ? l10n.authNameInvalid : null,
+        onChanged: (_) => setState(() {}),
+      ),
+      const SizedBox(height: Dimens.space16),
+      OnAirTextField(
+        key: const ValueKey('email-phone-field'),
+        controller: _phone,
+        label: l10n.phoneNumber,
+        hint: l10n.authPhoneHint,
+        keyboardType: TextInputType.phone,
+        enabled: !_loading,
+        textInputAction: TextInputAction.next,
+        errorText: _showValidation && !_validPhone
+            ? l10n.authPhoneInvalid
+            : null,
         onChanged: (_) => setState(() {}),
       ),
       const SizedBox(height: Dimens.space16),

@@ -18,8 +18,8 @@ final class AppConfigRepository implements AppConfigSource {
     final row = await _client
         .from('app_config')
         .select(
-          'min_supported_build_android,min_supported_build_ios,'
-          'support_phone,current_terms_version',
+          'min_build_guest_android,min_build_guest_ios,'
+          'support_phone,guest_terms_version',
         )
         .limit(1)
         .single();

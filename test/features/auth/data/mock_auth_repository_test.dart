@@ -48,7 +48,13 @@ void main() {
   );
 
   test('unconfirmed email sign-in asks for the code, then succeeds', () async {
-    await repository.signUpEmail('Guest', 'Guest@Example.com', 'password1');
+    await repository.signUpEmail(
+      'Guest',
+      'Guest@Example.com',
+      'password1',
+      '01012345678',
+      MockBackend.termsVersion,
+    );
     await expectLater(
       repository.signInEmail('guest@example.com', 'wrong-password1'),
       throwsA(isA<AuthRequestRejected>()),

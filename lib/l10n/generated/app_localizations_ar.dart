@@ -326,7 +326,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeUpcomingConfirmed => 'حجز مؤكد';
 
   @override
-  String get homeEmpty => 'مفيش شقق متاحة دلوقتي.';
+  String get homeEmpty =>
+      'مفيش شقق ظاهرة دلوقتي. جرّب تبحث في مكان أو تواريخ مختلفة.';
+
+  @override
+  String homeSectionError(String section) {
+    return 'تعذر تحميل $section. حاول مرة أخرى.';
+  }
 
   @override
   String get homeEmptyAction => 'ابحث عن شقة';

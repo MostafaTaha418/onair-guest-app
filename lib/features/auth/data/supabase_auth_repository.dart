@@ -18,8 +18,8 @@ final class PhoneAuthUser {
 
   factory PhoneAuthUser.fromSupabase(User user) => PhoneAuthUser(
     id: user.id,
-    phone: user.phone,
-    email: user.email,
+    phone: _nonBlank(user.phone),
+    email: _nonBlank(user.email),
     phoneVerified: user.phoneConfirmedAt != null,
     emailVerified: user.emailConfirmedAt != null,
   );
@@ -31,12 +31,21 @@ final class PhoneAuthUser {
   final bool emailVerified;
 }
 
+String? _nonBlank(String? value) =>
+    value == null || value.trim().isEmpty ? null : value;
+
 abstract interface class PhoneAuthClient {
   PhoneAuthUser? get currentUser;
   Stream<PhoneAuthUser?> get userChanges;
   Future<void> requestOtp(String phone);
   Future<PhoneAuthUser> verifySmsOtp(String phone, String token);
-  Future<void> signUpWithEmail(String name, String email, String password);
+  Future<void> signUpWithEmail(
+    String name,
+    String email,
+    String password,
+    String phone,
+    String termsVersion,
+  );
   Future<void> resendSignupEmail(String email);
   Future<PhoneAuthUser> verifySignupEmailOtp(String email, String token);
   Future<PhoneAuthUser> signInWithEmailPassword(
@@ -88,11 +97,19 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
     String name,
     String email,
     String password,
+    String phone,
+    String termsVersion,
   ) async {
     await _client.signUp(
       email: email,
       password: password,
-      data: {'full_name': name.trim()},
+      data: {
+        'full_name': name.trim(),
+        'phone_e164': phone,
+        'phone_has_whatsapp': false,
+        'accepted_terms_version': termsVersion,
+        'locale': 'ar',
+      },
     );
   }
 
@@ -230,7 +247,8 @@ final class SupabaseAuthRepository implements AuthRepository {
   }
 
   /// GoTrue wraps connection failures and timeouts in this subclass.
-  bool _isNetwork(AuthException error) => error is AuthRetryableFetchException;
+  bool _isNetwork(AuthException error) =>
+      error is AuthRetryableFetchException && error.statusCode == null;
 
   bool _isRateLimited(AuthException error) =>
       error.statusCode == '429' ||
@@ -251,8 +269,8 @@ final class SupabaseAuthRepository implements AuthRepository {
     final profile = await _profiles.loadOwnProfile(user.id);
     return GuestAccount(
       id: user.id,
-      phone: user.phone,
-      phoneVerified: user.phoneVerified,
+      phone: profile.phone ?? user.phone,
+      phoneVerified: profile.phoneVerified || user.phoneVerified,
       email: user.email,
       emailVerified: user.emailVerified,
       fullName: profile.fullName,
@@ -272,8 +290,8 @@ final class SupabaseAuthRepository implements AuthRepository {
       if (user == null) throw const AuthException('Session missing');
       return GuestAccount(
         id: user.id,
-        phone: user.phone,
-        phoneVerified: user.phoneVerified,
+        phone: profile.phone ?? user.phone,
+        phoneVerified: profile.phoneVerified || user.phoneVerified,
         email: user.email,
         emailVerified: user.emailVerified,
         fullName: profile.fullName,
@@ -297,10 +315,24 @@ final class SupabaseAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
+    String phone,
+    String termsVersion,
   ) async {
     try {
-      await _auth.signUpWithEmail(name, _normalizeEmail(email), password);
+      final parsedPhone = EgyptPhone.tryParse(phone);
+      if (parsedPhone == null) {
+        throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
+      }
+      await _auth.signUpWithEmail(
+        name,
+        _normalizeEmail(email),
+        password,
+        parsedPhone.e164,
+        termsVersion,
+      );
       return _emailChallenge(VerificationChannel.emailSignup, email);
+    } on AuthRequestRejected {
+      rethrow;
     } on AuthException catch (error) {
       throw _mapEmailRequestError(error);
     }
@@ -411,6 +443,14 @@ final class SupabaseAuthRepository implements AuthRepository {
   Exception _mapEmailRequestError(AuthException error) {
     if (_isNetwork(error)) return const AuthNetworkFailure();
     if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
+    for (final code in [
+      'PHONE_COUNTRY_NOT_SUPPORTED',
+      'PHONE_ALREADY_USED',
+      'TERMS_CHANGED',
+      'VALIDATION_FAILED',
+    ]) {
+      if (error.message.contains(code)) return AuthRequestRejected(code);
+    }
     return AuthRequestRejected(error.code ?? 'INTERNAL');
   }
 }

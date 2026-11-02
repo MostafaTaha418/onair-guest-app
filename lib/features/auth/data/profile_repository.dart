@@ -3,12 +3,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final class ProfileRecord {
   const ProfileRecord({
     this.fullName,
+    this.phone,
+    this.phoneVerified = false,
     this.acceptedTermsVersion,
     this.acceptedTermsAt,
   });
 
   factory ProfileRecord.fromJson(Map<String, dynamic>? json) => ProfileRecord(
     fullName: json?['full_name'] as String?,
+    phone: json?['phone_e164'] as String?,
+    phoneVerified: json?['phone_verified_at'] != null,
     acceptedTermsVersion: json?['accepted_terms_version'] as String?,
     acceptedTermsAt: json?['accepted_terms_at'] == null
         ? null
@@ -16,6 +20,8 @@ final class ProfileRecord {
   );
 
   final String? fullName;
+  final String? phone;
+  final bool phoneVerified;
   final String? acceptedTermsVersion;
   final DateTime? acceptedTermsAt;
 }
@@ -30,7 +36,9 @@ final class ProfileRepository implements ProfileSource {
 
   final SupabaseClient _client;
 
-  static const _columns = 'full_name,accepted_terms_version,accepted_terms_at';
+  static const _columns =
+      'full_name,phone_e164,phone_verified_at,'
+      'accepted_terms_version,accepted_terms_at';
 
   @override
   Future<ProfileRecord> loadOwnProfile(String userId) async {

@@ -334,7 +334,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeUpcomingConfirmed => 'Confirmed';
 
   @override
-  String get homeEmpty => 'No apartments are available right now.';
+  String get homeEmpty =>
+      'No apartments to show right now. Try a different destination or dates.';
+
+  @override
+  String homeSectionError(String section) {
+    return 'Couldn\'t load $section. Try again.';
+  }
 
   @override
   String get homeEmptyAction => 'Search for an apartment';

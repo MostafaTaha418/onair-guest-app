@@ -10,10 +10,10 @@ final class AppConfig {
   });
 
   factory AppConfig.fromJson(Map<String, dynamic> json) => AppConfig(
-    minSupportedBuildAndroid: json['min_supported_build_android'] as int,
-    minSupportedBuildIos: json['min_supported_build_ios'] as int,
-    supportPhone: json['support_phone'] as String,
-    currentTermsVersion: json['current_terms_version'] as String,
+    minSupportedBuildAndroid: json['min_build_guest_android'] as int,
+    minSupportedBuildIos: json['min_build_guest_ios'] as int,
+    supportPhone: json['support_phone'] as String? ?? '',
+    currentTermsVersion: json['guest_terms_version'] as String,
   );
 
   final int minSupportedBuildAndroid;

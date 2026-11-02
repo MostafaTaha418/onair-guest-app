@@ -75,7 +75,21 @@ void main() {
     expect(auth.lastPassword, 'password1');
   });
 
-  testWidgets('email registration has no phone field', (tester) async {
+  testWidgets('remote sign-in opens on email without a phone tab', (
+    tester,
+  ) async {
+    await tester.pumpOnAirApp(
+      const LoginScreen(phoneAuthEnabled: false),
+      authRepository: auth,
+      appConfigRepository: config,
+    );
+
+    expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
+    expect(find.byKey(const ValueKey('phone-field')), findsNothing);
+    expect(find.byType(SegmentedButton<bool>), findsNothing);
+  });
+
+  testWidgets('email registration collects the required phone', (tester) async {
     await tester.pumpOnAirApp(
       const RegisterScreen(),
       authRepository: auth,
@@ -87,7 +101,48 @@ void main() {
     expect(find.byKey(const ValueKey('email-name-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('password-field')), findsOneWidget);
-    expect(find.byKey(const ValueKey('phone-field')), findsNothing);
+    expect(find.byKey(const ValueKey('email-phone-field')), findsOneWidget);
+  });
+
+  testWidgets('email registration sends phone and current terms', (
+    tester,
+  ) async {
+    await tester.pumpOnAirApp(
+      const RegisterScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+    );
+    await tester.tap(find.text('البريد الإلكتروني'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('email-name-field')),
+      'Guest Name',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-phone-field')),
+      '01012345678',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-field')),
+      'guest@example.com',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('password-field')),
+      'password1',
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+    );
+    await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+    );
+    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
+    await tester.pump();
+
+    expect(auth.lastPhone, '01012345678');
+    expect(auth.lastTermsVersion, 'v1');
   });
 
   testWidgets('forgot password shows the same success for any email', (
@@ -157,6 +212,8 @@ void main() {
       'Guest',
       'guest@example.com',
       'password1',
+      '01012345678',
+      'v1',
     );
     await tester.pumpOnAirApp(
       OtpScreen(

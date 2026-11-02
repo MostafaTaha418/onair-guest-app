@@ -707,8 +707,14 @@ abstract class AppLocalizations {
   /// No description provided for @homeEmpty.
   ///
   /// In ar, this message translates to:
-  /// **'مفيش شقق متاحة دلوقتي.'**
+  /// **'مفيش شقق ظاهرة دلوقتي. جرّب تبحث في مكان أو تواريخ مختلفة.'**
   String get homeEmpty;
+
+  /// No description provided for @homeSectionError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر تحميل {section}. حاول مرة أخرى.'**
+  String homeSectionError(String section);
 
   /// No description provided for @homeEmptyAction.
   ///

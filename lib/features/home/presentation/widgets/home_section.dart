@@ -75,7 +75,7 @@ final class HomeSection extends StatelessWidget {
                 const SizedBox(width: Dimens.space8),
                 Expanded(
                   child: Text(
-                    l10n.errorUnexpectedNoRef,
+                    l10n.homeSectionError(title),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colors.textPrimary,
                     ),
