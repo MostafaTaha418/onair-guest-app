@@ -21,9 +21,17 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 /// The date step of the booking flow: pick the stay and the guests, then
 /// continue to the summary with a fresh server quote.
 final class DatesScreen extends StatefulWidget {
-  const DatesScreen({required this.propertyId, super.key});
+  const DatesScreen({
+    required this.propertyId,
+    this.today,
+    super.key,
+  });
 
   final String propertyId;
+
+  /// Overrides Cairo's current date for deterministic widget and golden tests.
+  /// Production callers leave this unset and use the real Cairo calendar day.
+  final DateOnly? today;
 
   @override
   State<DatesScreen> createState() => _DatesScreenState();
@@ -132,6 +140,7 @@ final class _DatesScreenState extends State<DatesScreen> {
             ),
             FlowLoad.ready => _ReadyBody(
               state: state,
+              today: widget.today ?? CairoTime.today(),
               pickedArrival: _pickedArrival,
               onDayTap: _onDayTap,
               onGuestsChanged: cubit.setGuests,
@@ -169,12 +178,14 @@ final class _DatesScreenState extends State<DatesScreen> {
 final class _ReadyBody extends StatelessWidget {
   const _ReadyBody({
     required this.state,
+    required this.today,
     required this.pickedArrival,
     required this.onDayTap,
     required this.onGuestsChanged,
   });
 
   final BookingFlowState state;
+  final DateOnly today;
   final DateOnly? pickedArrival;
   final void Function(DateOnly) onDayTap;
   final ValueChanged<int> onGuestsChanged;
@@ -183,7 +194,6 @@ final class _ReadyBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    final today = CairoTime.today();
     final stay = state.stay;
     return ListView(
       padding: const EdgeInsetsDirectional.all(Dimens.screenSide),

@@ -147,7 +147,11 @@ Widget _datesChild() {
         unawaited(cubit.load());
         return cubit;
       },
-      child: const DatesScreen(propertyId: _property1f),
+      child: const DatesScreen(
+        propertyId: _property1f,
+        // The committed CI baselines were generated on this Cairo day.
+        today: DateOnly(2026, 11, 1),
+      ),
     ),
   );
 }
