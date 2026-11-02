@@ -89,7 +89,10 @@ jobs:
           cache: true
 
       - run: flutter pub get
-      - run: flutter test
+      # Golden/widget tests are graphics- and memory-intensive on the hosted
+      # Windows runner. Keep a small worker pool so the runner stays healthy
+      # for the full suite instead of being starved by the default parallelism.
+      - run: flutter test --concurrency=2
       - name: Test CI security helpers
         run: python -m unittest discover -s tool/tests -v
 
