@@ -188,6 +188,9 @@ Widget _summaryChild({bool pendingChange = false}) {
               termsHash: 'mock-terms-1',
               initialStay: _threeNights,
               initialGuests: 2,
+              // Keep the UI clock aligned with FakeBookingBackend's fixed
+              // server clock so the golden's quote is not treated as stale.
+              now: () => DateTime.utc(2026, 11, 1, 10),
             );
             unawaited(() async {
               await cubit.load();
