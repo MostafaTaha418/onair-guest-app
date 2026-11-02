@@ -33,12 +33,13 @@ Widget _frame({
   required ThemeMode mode,
   required double scale,
   required double width,
+  String locale = 'ar',
 }) => SizedBox(
   width: width,
   height: 600,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: Locale(locale),
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -171,7 +172,7 @@ void main() {
     goldenTest(
       'splash palette and scaling',
       fileName: 'splash',
-      constraints: const BoxConstraints(maxWidth: 720, maxHeight: 1400),
+      constraints: const BoxConstraints(maxWidth: 720, maxHeight: 2000),
       builder: () => GoldenTestGroup(
         columns: 2,
         children: [
@@ -209,6 +210,26 @@ void main() {
               mode: ThemeMode.light,
               scale: 1,
               width: 320,
+            ),
+          ),
+          GoldenTestScenario(
+            name: 'english',
+            child: _frame(
+              home: const SplashScreen(),
+              mode: ThemeMode.light,
+              scale: 1,
+              width: 360,
+              locale: 'en',
+            ),
+          ),
+          GoldenTestScenario(
+            name: 'english dark',
+            child: _frame(
+              home: const SplashScreen(),
+              mode: ThemeMode.dark,
+              scale: 1,
+              width: 360,
+              locale: 'en',
             ),
           ),
         ],

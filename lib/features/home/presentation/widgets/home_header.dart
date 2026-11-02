@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/design_system/brand/on_air_logo.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
@@ -41,6 +42,17 @@ final class HomeHeader extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  top: Dimens.space4,
+                  end: Dimens.space12,
+                ),
+                child: OnAirLogo.mark(
+                  key: const ValueKey('home-logo'),
+                  height: 36,
+                  color: colors.onPrimary,
+                ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
