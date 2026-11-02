@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/design_system/brand/on_air_logo.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -183,7 +184,15 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: ListView(
           padding: const EdgeInsets.all(Dimens.screenSide),
           children: [
-            const SizedBox(height: Dimens.space32),
+            const SizedBox(height: Dimens.space16),
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OnAirLogo.lockup(
+                key: ValueKey('auth-logo'),
+                height: 44,
+              ),
+            ),
+            const SizedBox(height: Dimens.space24),
             Text(
               widget.registration
                   ? l10n.authRegisterTitle

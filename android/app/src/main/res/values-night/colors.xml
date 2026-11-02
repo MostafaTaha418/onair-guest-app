@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="launch_background">#002D47</color>
+    <!-- Launchers that honour night resources show the dark icon. -->
+    <color name="ic_launcher_background">#0F1419</color>
 </resources>

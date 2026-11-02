@@ -201,6 +201,38 @@ void main() {
     });
   });
 
+  test('a stale quote is automatically refreshed at most once', () {
+    fakeAsync((async) {
+      final connectivity = FakeConnectivity();
+      final listings = FakeListingsRepository()
+        ..propertyResponses.add(_property('mock-terms-1'))
+        ..unavailableNightsResponses.add(<DateOnly>{});
+      final flow = ScriptedFlow()
+        ..quotes.add(_quote(expiresAt: start))
+        ..quotes.add(_quote(id: 2, expiresAt: start));
+      final cubit = BookingFlowCubit(
+        listings: listings,
+        flow: flow,
+        connectivity: connectivity.createCubit(),
+        propertyId: _property1f,
+        termsHash: 'mock-terms-1',
+        initialStay: _threeNights(),
+        initialGuests: 2,
+        now: () => start.add(async.elapsed),
+      );
+
+      unawaited(quoteAfterLoad(cubit));
+      async.flushMicrotasks();
+
+      expect(flow.quoteCalls, 2);
+      expect(cubit.state.quote!.quoteId, 'quote-2');
+
+      unawaited(cubit.close());
+      async.flushMicrotasks();
+      connectivity.dispose();
+    });
+  });
+
   test('setStay drops the quote and cancels the old expiry refresh', () {
     fakeAsync((async) {
       final connectivity = FakeConnectivity();

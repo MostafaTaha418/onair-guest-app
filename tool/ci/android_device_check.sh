@@ -62,8 +62,11 @@ if [[ "$api_level" -lt 34 ]]; then
   echo "API $api_level build, install, launch, and crash checks passed; integration suite runs on API 34 and iOS."
 elif compgen -G "integration_test/*_test.dart" >/dev/null; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
+    # Device integration tests use a full Flutter engine per test target. Keep
+    # them serial on the hosted emulator so the runner does not exhaust the
+    # emulator's memory while multiple journeys start at once.
     # shellcheck disable=SC2086
-    flutter test integration_test $test_args
+    flutter test --concurrency=1 integration_test $test_args
   else
     echo "::warning::Integration tests skipped: STAGING_ENV_JSON secret is not set."
   fi

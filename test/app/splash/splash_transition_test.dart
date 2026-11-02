@@ -63,7 +63,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('OnAir'), findsOneWidget);
+    expect(find.byKey(const ValueKey('splash-logo')), findsOneWidget);
     expect(find.byKey(const ValueKey('nav-home')), findsNothing);
 
     restored.complete(null);

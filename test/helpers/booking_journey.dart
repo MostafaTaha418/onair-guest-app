@@ -63,10 +63,15 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   // 2. Pick three nights and pay with the mock «Succeed».
   await pickThreeNights(tester, l10n);
   await tester.tap(find.byKey(const ValueKey('dates-continue')));
-  await tester.pumpAndSettle();
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('summary-pay')),
+  );
   await tester.tap(find.byKey(const ValueKey('summary-pay')));
-  await tester.pumpAndSettle();
-  expect(find.byKey(const ValueKey('mock-pay-success')), findsOneWidget);
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('mock-pay-success')),
+  );
   await tester.tap(find.byKey(const ValueKey('mock-pay-success')));
   // The mock server applies the outcome, then signals after 2 s.
   await tester.pump();
@@ -84,17 +89,22 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   await openFirstApartmentAndSignIn(tester, l10n, firstSignIn: false);
   await pickThreeNights(tester, l10n);
   await tester.tap(find.byKey(const ValueKey('dates-continue')));
-  await tester.pumpAndSettle();
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('summary-pay')),
+  );
   await tester.tap(find.byKey(const ValueKey('summary-pay')));
-  await tester.pumpAndSettle();
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('mock-pay-failure')),
+  );
   await tester.tap(find.byKey(const ValueKey('mock-pay-failure')));
   await tester.pump();
   await tester.pump(const Duration(seconds: 3));
   await tester.pump(const Duration(seconds: 1));
   expect(find.text(l10n.paymentFailedTitle), findsOneWidget);
   await tester.tap(find.byKey(const ValueKey('return-try-again')));
-  await tester.pumpAndSettle();
-  expect(find.byType(DatesScreen), findsOneWidget);
+  await _pumpUntilVisible(tester, find.byType(DatesScreen));
   // On device, restoring the stay into the dates screen lands after the
   // first frames of the route.
   for (
@@ -109,9 +119,15 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   // 4. «Never answer»: the shortened backoff runs out and the timeout view
   // sends the guest to My Bookings, where the booking is under Current.
   await tester.tap(find.byKey(const ValueKey('dates-continue')));
-  await tester.pumpAndSettle();
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('summary-pay')),
+  );
   await tester.tap(find.byKey(const ValueKey('summary-pay')));
-  await tester.pumpAndSettle();
+  await _pumpUntilVisible(
+    tester,
+    find.byKey(const ValueKey('mock-pay-silent')),
+  );
   await tester.tap(find.byKey(const ValueKey('mock-pay-silent')));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
@@ -133,6 +149,16 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   await tester.pump(const Duration(seconds: 1));
   await tester.pump(const Duration(seconds: 1));
   expect(find.text(l10n.unfinishedPaymentBanner), findsOneWidget);
+}
+
+/// Waits for a specific screen state without requiring the whole app to have
+/// no scheduled frames. Real device plugins (such as the SMS consent reader)
+/// can keep scheduling frames after navigation has completed.
+Future<void> _pumpUntilVisible(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 40 && !tester.any(finder); attempt++) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(finder, findsOneWidget);
 }
 
 Future<void> bootApp(WidgetTester tester, FakeBookingBackend backend) async {

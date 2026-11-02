@@ -89,7 +89,10 @@ jobs:
           cache: true
 
       - run: flutter pub get
-      - run: flutter test
+      # Golden/widget tests are graphics- and memory-intensive on the hosted
+      # Windows runner. Run them in one worker: the runner otherwise exhausts
+      # its thread quota and Dart cannot start another DartWorker mid-suite.
+      - run: flutter test --concurrency=1
       - name: Test CI security helpers
         run: python -m unittest discover -s tool/tests -v
 
