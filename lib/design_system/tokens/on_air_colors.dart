@@ -18,6 +18,7 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
 
   static const light = OnAirColors({
     'primary': Color(0xFF006399),
+    'logo': Color(0xFF00639A),
     'primaryLight': Color(0xFF147DBC),
     'primaryDark': Color(0xFF0A3D62),
     'primaryLightDark': Color(0xFF1A4D6E),
@@ -124,6 +125,7 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
 
   static const dark = OnAirColors({
     'primary': Color(0xFF006399),
+    'logo': Color(0xFFFFFFFF),
     'primaryLight': Color(0xFF006399),
     'primaryDark': Color(0xFF0A3D62),
     'primaryLightDark': Color(0xFF1A4D6E),
