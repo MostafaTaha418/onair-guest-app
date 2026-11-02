@@ -138,6 +138,7 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
   final DateOnly Function() _today;
   final DateTime Function() _now;
   Timer? _expiryTimer;
+  bool _hasRetriedStaleQuote = false;
 
   Future<void> load() async {
     emit(
@@ -210,6 +211,7 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
   /// its expiry timer, and any parked change all go.
   void setStay(StayRange? stay) {
     _expiryTimer?.cancel();
+    _hasRetriedStaleQuote = false;
     emit(
       state.copyWith(
         stay: stay,
@@ -224,6 +226,7 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
     final max = state.property?.maxGuests;
     final clamped = max == null ? guests : guests.clamp(1, max);
     _expiryTimer?.cancel();
+    _hasRetriedStaleQuote = false;
     emit(
       state.copyWith(
         guests: clamped,
@@ -236,6 +239,9 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
 
   Future<bool> requestQuote() async {
     if (!state.canContinue) return false;
+    // A guest-initiated request starts a new quote cycle, so one immediate
+    // recovery attempt remains available if the server responds stale.
+    _hasRetriedStaleQuote = false;
     emit(state.copyWith(quoting: true, error: null));
     final stay = state.stay!;
     try {
@@ -352,9 +358,16 @@ final class BookingFlowCubit extends Cubit<BookingFlowState> {
     final fireAt = quote.expiresAt.subtract(const Duration(seconds: 30));
     final delay = fireAt.difference(_now());
     if (delay <= Duration.zero) {
+      // A server can return a quote that is already inside the refresh
+      // window (for example after client/server clock skew). Retry it once,
+      // but never let consecutive stale answers schedule an unbounded chain
+      // of microtasks.
+      if (_hasRetriedStaleQuote) return;
+      _hasRetriedStaleQuote = true;
       scheduleMicrotask(() => unawaited(refreshQuote()));
       return;
     }
+    _hasRetriedStaleQuote = false;
     _expiryTimer = Timer(delay, () => unawaited(refreshQuote()));
   }
 
