@@ -292,7 +292,26 @@ final class _OnAirAppState extends State<OnAirApp> {
   }
 
   Future<void> _initialize(AppConfigSource configRepository) async {
-    await _authCubit.restore();
+    final termsVersion = configRepository
+        .load()
+        .then<String?>((config) {
+          return config.currentTermsVersion;
+        })
+        .catchError((Object error) {
+          _logger.warning('App config unavailable: $error');
+          return null;
+        });
+    // Signed-in restoration waits for the terms version; visitor restoration
+    // can continue immediately. This keeps profile completion off the first
+    // frame of a complete account.
+    unawaited(
+      termsVersion.then((version) {
+        if (version != null && !_authCubit.isClosed) {
+          _authCubit.updateTermsVersion(version);
+        }
+      }),
+    );
+    await _authCubit.restore(currentTermsVersion: termsVersion);
     // The restored session opens the channel too (no state change may fire
     // for a restored sign-in).
     _onAuthStateChanged(_authCubit.state);
@@ -306,12 +325,6 @@ final class _OnAirAppState extends State<OnAirApp> {
         _router,
         _authCubit,
       )..start();
-    }
-    try {
-      final config = await configRepository.load();
-      _authCubit.updateTermsVersion(config.currentTermsVersion);
-    } on Object catch (error) {
-      _logger.warning('App config unavailable: $error');
     }
     // A cold-start push opens its screen once the router is ready; the
     // redirect handles sign-in and comes back.

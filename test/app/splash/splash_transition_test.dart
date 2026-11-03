@@ -78,4 +78,65 @@ void main() {
       ),
     );
   });
+
+  testWidgets('restored complete account never flashes profile completion', (
+    tester,
+  ) async {
+    final restored = Completer<GuestAccount?>();
+    final configResult = Completer<AppConfig>();
+    final auth = _Auth();
+    final config = _Config();
+    when(() => auth.authStateChanges).thenAnswer((_) => const Stream.empty());
+    when(auth.restoreSession).thenAnswer((_) => restored.future);
+    when(config.load).thenAnswer((_) => configResult.future);
+    final listings = FakeListingsRepository();
+    final cache = JsonFileCache(
+      directory: Directory.systemTemp.createTempSync('on_air_signed_in_splash'),
+      fileName: 'discovery_cache.json',
+      schema: 1,
+    );
+    addTearDown(() => cache.directory.deleteSync(recursive: true));
+    await tester.pumpWidget(
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<AuthRepository>.value(value: auth),
+          RepositoryProvider<AppConfigSource>.value(value: config),
+          RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
+          RepositoryProvider<ListingsRepository>.value(value: listings),
+          RepositoryProvider<JsonFileCache>.value(value: cache),
+          RepositoryProvider<ReferenceDataCache>.value(
+            value: ReferenceDataCache(listings, cache),
+          ),
+          RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
+          RepositoryProvider<HomeFeedCache>.value(value: HomeFeedCache(cache)),
+          ...FakeBookingBackend().appProviders(),
+        ],
+        child: const OnAirApp(),
+      ),
+    );
+    restored.complete(
+      GuestAccount(
+        id: 'guest-1',
+        email: 'guest@example.com',
+        fullName: 'Guest Name',
+        acceptedTermsVersion: 'v1',
+        acceptedTermsAt: DateTime.utc(2026),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('splash-logo')), findsOneWidget);
+    expect(find.text('كمّل بياناتك'), findsNothing);
+
+    configResult.complete(
+      const AppConfig(
+        minSupportedBuildAndroid: 1,
+        minSupportedBuildIos: 1,
+        supportPhone: '+201000000000',
+        currentTermsVersion: 'v1',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('nav-home')), findsOneWidget);
+    expect(find.text('كمّل بياناتك'), findsNothing);
+  });
 }

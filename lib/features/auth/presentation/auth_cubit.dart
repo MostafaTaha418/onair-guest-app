@@ -42,7 +42,7 @@ final class AuthCubit extends Cubit<AuthState> {
     if (current is SignedIn) _emitAccount(current.account);
   }
 
-  Future<void> restore() async {
+  Future<void> restore({Future<String?>? currentTermsVersion}) async {
     GuestAccount? account;
     try {
       account = await _repository.restoreSession();
@@ -50,6 +50,17 @@ final class AuthCubit extends Cubit<AuthState> {
       // Offline start with a stored session: leave the splash as a visitor.
       // The session stays stored; the next auth event signs the guest back in.
       account = null;
+    }
+    // A restored account must not be classified before the server's current
+    // terms version is known. Otherwise the router briefly opens profile
+    // completion because the initial version is empty.
+    if (account != null && currentTermsVersion != null) {
+      try {
+        final version = await currentTermsVersion;
+        if (version != null) _currentTermsVersion = version;
+      } on Object {
+        // Keep the last known version if configuration is unavailable.
+      }
     }
     if (isClosed) return;
     emit(
