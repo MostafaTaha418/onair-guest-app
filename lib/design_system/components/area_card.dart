@@ -78,7 +78,7 @@ final class AreaCard extends StatelessWidget {
                       child: Text(
                         countLabel,
                         style: context.textStyles.areaBadge.copyWith(
-                          color: colors.onPrimary,
+                          color: colors.textPrimary,
                         ),
                       ),
                     ),

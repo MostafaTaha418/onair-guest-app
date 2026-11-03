@@ -28,4 +28,42 @@ void main() {
     await tester.tap(find.text('التجمع الخامس'));
     expect(tapped, isTrue);
   });
+
+  for (final (name, theme) in [
+    ('light', OnAirTheme.light),
+    ('dark', OnAirTheme.dark),
+  ]) {
+    testWidgets('listing count stays readable in $name mode', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: AreaCard(
+              title: 'التجمع الخامس',
+              countLabel: '42 شقة',
+              imageVariants: const [],
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      final label = find.text('42 شقة');
+      final foreground = tester.widget<Text>(label).style!.color!;
+      final badge = tester.widget<Container>(
+        find.ancestor(of: label, matching: find.byType(Container)).first,
+      );
+      final background = (badge.decoration! as BoxDecoration).color!;
+      final lighter =
+          foreground.computeLuminance() > background.computeLuminance()
+          ? foreground
+          : background;
+      final darker = identical(lighter, foreground) ? background : foreground;
+      final contrast =
+          (lighter.computeLuminance() + 0.05) /
+          (darker.computeLuminance() + 0.05);
+
+      expect(contrast, greaterThanOrEqualTo(4.5));
+    });
+  }
 }
