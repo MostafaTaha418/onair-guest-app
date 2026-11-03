@@ -9,6 +9,7 @@ import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'mock_app.dart';
+import 'pump_until_found.dart';
 import 'register_mock_guest.dart';
 
 /// The SC-007 visitor-resume journey (T095), shared by the host widget test
@@ -65,11 +66,11 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.pumpAndSettle();
 
   // 5. Open the first result and remember its title.
-  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.byType(PropertyCard));
   final firstCard = find.byType(PropertyCard).first;
   final apartmentTitle = tester.widget<PropertyCard>(firstCard).title;
   await tester.tap(firstCard);
-  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.text(l10n.bookNow));
   expect(find.text(apartmentTitle), findsOneWidget);
 
   // 6–7. «احجز الآن» as a visitor → email registration → booking entry.
@@ -105,9 +106,9 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('home-search-box')));
   await tester.pumpAndSettle();
   await tester.tap(find.text(l10n.searchAction));
-  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.byType(PropertyCard));
   await tester.tap(find.byType(PropertyCard).first);
-  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.text(l10n.bookNow));
   expect(find.text(apartmentTitle), findsOneWidget);
 
   await tester.ensureVisible(find.text(l10n.bookNow));

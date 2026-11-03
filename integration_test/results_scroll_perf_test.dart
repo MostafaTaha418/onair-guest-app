@@ -5,6 +5,7 @@ import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../test/helpers/mock_app.dart';
+import '../test/helpers/pump_until_found.dart';
 
 /// T105: the frame timeline for scrolling the results list over the mock
 /// fixtures (124 published apartments). Mock mode is the default; a remote
@@ -37,7 +38,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('home-search-box')));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.searchAction));
-      await tester.pumpAndSettle();
+      await pumpUntilFound(tester, find.byType(PropertyCard));
       expect(find.byType(PropertyCard), findsWidgets);
 
       // Fling the list down ten times inside one traced action; the summary
