@@ -131,7 +131,9 @@ final class PropertyCard extends StatelessWidget {
                               maxLines: 2,
                               textAlign: TextAlign.end,
                               style: context.textStyles.price.copyWith(
-                                color: Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? colors['primaryMuted']
                                     : colors.primary,
                               ),

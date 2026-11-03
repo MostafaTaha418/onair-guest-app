@@ -75,7 +75,11 @@ final class ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(AppIcons.errorOutline, size: 48, color: context.colors.errorText),
+          Icon(
+            AppIcons.errorOutline,
+            size: 48,
+            color: context.colors.errorText,
+          ),
           Text(message, textAlign: TextAlign.center),
           if (referenceNumber != null)
             Text(l10n.referenceNumber(referenceNumber!)),
