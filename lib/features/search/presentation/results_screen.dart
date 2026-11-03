@@ -9,6 +9,8 @@ import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/share/share_service.dart';
+import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/filter_chip_bar.dart';
 import 'package:on_air/design_system/components/property_card.dart';
@@ -17,7 +19,11 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/favorites/presentation/favorite_action.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
+import 'package:on_air/features/listings/domain/listing_card.dart';
+import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/property/presentation/property_navigation.dart';
 import 'package:on_air/features/search/domain/search_criteria.dart';
 import 'package:on_air/features/search/presentation/filters_sheet.dart';
@@ -41,6 +47,27 @@ final class _ResultsScreenState extends State<ResultsScreen> {
     initialScrollOffset: _cubit.state.scrollOffset,
   );
   Map<String, String> _labels = const {};
+  final Map<String, Future<bool?>> _tonightChecks = {};
+  DateOnly? _tonightChecksDate;
+  List<ListingCard>? _tonightCheckedItems;
+
+  Future<bool?> _availableTonight(String id) {
+    final today = CairoTime.today();
+    if (_tonightChecksDate != today) {
+      _tonightChecksDate = today;
+      _tonightChecks.clear();
+    }
+    return _tonightChecks.putIfAbsent(id, () async {
+      try {
+        final unavailable = await context
+            .read<ListingsRepository>()
+            .unavailableNights(id, today, today.addDays(1));
+        return unavailable.isEmpty;
+      } on Object {
+        return null;
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -212,6 +239,10 @@ final class _ResultsScreenState extends State<ResultsScreen> {
 
   List<Widget> _readySlivers(SearchState state) {
     final l10n = AppLocalizations.of(context);
+    if (!identical(_tonightCheckedItems, state.items)) {
+      _tonightCheckedItems = state.items;
+      _tonightChecks.clear();
+    }
     return [
       SliverPadding(
         padding: const EdgeInsetsDirectional.all(Dimens.space16),
@@ -228,42 +259,60 @@ final class _ResultsScreenState extends State<ResultsScreen> {
             final stay = state.criteria.stay;
             return Padding(
               padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
-              child: PropertyCard(
-                title: card.title,
-                subtitle: '${card.areaName} • ${card.cityName}',
-                imageVariants: card.cover?.variants ?? const [],
-                priceText: l10n.nightlyPrice(
-                  MoneyFormatter().format(card.nightlyPrice),
-                ),
-                stayTotalText: card.stay == null
-                    ? null
-                    : l10n.stayTotal(
-                        card.stay!.nights,
-                        MoneyFormatter().format(card.stay!.stayTotal),
+              child: FutureBuilder<bool?>(
+                future: _availableTonight(card.id),
+                builder: (context, availability) =>
+                    BlocBuilder<FavoritesCubit, FavoritesState>(
+                      builder: (context, favorites) => PropertyCard(
+                        availabilityLabel: switch (availability.data) {
+                          true => l10n.propertyAvailableTonight,
+                          false => l10n.propertyBookedTonight,
+                          null => null,
+                        },
+                        availabilityIsBlocked: availability.data == false,
+                        isFavorite: favorites.contains(card.id),
+                        favoriteBusy:
+                            favorites.loading || favorites.isBusy(card.id),
+                        onFavoriteTap: () => toggleFavorite(context, card),
+                        title: card.title,
+                        subtitle: '${card.areaName} • ${card.cityName}',
+                        imageVariants: card.cover?.variants ?? const [],
+                        priceText: l10n.nightlyPrice(
+                          MoneyFormatter().format(card.nightlyPrice),
+                        ),
+                        stayTotalText: card.stay == null
+                            ? null
+                            : l10n.stayTotal(
+                                card.stay!.nights,
+                                MoneyFormatter().format(card.stay!.stayTotal),
+                              ),
+                        ratingText: card.ratingAvg?.toStringAsFixed(1),
+                        ratingSemantics: card.ratingAvg == null
+                            ? null
+                            : l10n.ratingSemantics(
+                                card.ratingAvg!.toStringAsFixed(1),
+                                card.reviewCount,
+                              ),
+                        heroTag: 'listing-${card.id}',
+                        onTap: () {
+                          final guests = state.criteria.guests;
+                          openPropertyDetails(
+                            context,
+                            Uri(
+                              path: AppRoutes.property(card.id),
+                              queryParameters: {
+                                if (stay != null)
+                                  'checkIn': stay.checkIn.toString(),
+                                if (stay != null)
+                                  'checkOut': stay.checkOut.toString(),
+                                if (guests != null) 'guests': '$guests',
+                              },
+                            ).toString(),
+                            extra: card.cover?.variants,
+                          );
+                        },
                       ),
-                ratingText: card.ratingAvg?.toStringAsFixed(1),
-                ratingSemantics: card.ratingAvg == null
-                    ? null
-                    : l10n.ratingSemantics(
-                        card.ratingAvg!.toStringAsFixed(1),
-                        card.reviewCount,
-                      ),
-                heroTag: 'listing-${card.id}',
-                onTap: () {
-                  final guests = state.criteria.guests;
-                  openPropertyDetails(
-                    context,
-                    Uri(
-                      path: AppRoutes.property(card.id),
-                      queryParameters: {
-                        if (stay != null) 'checkIn': stay.checkIn.toString(),
-                        if (stay != null) 'checkOut': stay.checkOut.toString(),
-                        if (guests != null) 'guests': '$guests',
-                      },
-                    ).toString(),
-                    extra: card.cover?.variants,
-                  );
-                },
+                    ),
               ),
             );
           },
@@ -425,7 +474,11 @@ final class _HintBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(AppIcons.infoOutline, size: 18, color: colors['onInfoContainer']),
+          Icon(
+            AppIcons.infoOutline,
+            size: 18,
+            color: colors['onInfoContainer'],
+          ),
           const SizedBox(width: Dimens.space8),
           Expanded(
             child: Text(

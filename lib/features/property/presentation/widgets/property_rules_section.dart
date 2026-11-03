@@ -32,11 +32,11 @@ final class PropertyRulesSection extends StatelessWidget {
       children: [
         Text(
           l10n.propertyRules,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.textPrimary,
+          style: context.textStyles.sectionTitle.copyWith(
+            color: colors['textAccent'],
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 12),
         for (final line in lines)
           Padding(
             padding: const EdgeInsetsDirectional.only(bottom: 4),

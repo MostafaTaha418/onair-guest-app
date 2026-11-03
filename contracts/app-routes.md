@@ -22,7 +22,7 @@ Source: Guest Plan §5.1–§5.3, spec FR-016–FR-021, FR-033, FR-041.
 | `/home` | Home tab | no | — | Placeholder + bell |
 | `/search` | Search tab | no | — | Placeholder |
 | `/bookings` | My Bookings tab | **yes** | — | Placeholder |
-| `/favorites` | Favorites tab | **yes** | — | Placeholder |
+| `/favorites` | Saved apartments | **yes** | — | Reads and updates the signed-in guest's favorites |
 | `/account` | My Account tab | **yes** | — | Placeholder + sign-out |
 
 Routes from later phases (e.g. `/property/:id`, `/bookings/:id`) are registered as link

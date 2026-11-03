@@ -33,13 +33,14 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -197,6 +198,7 @@ Future<void> _pumpTwoFrames(WidgetTester tester) async {
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('ar');
+    await initializeDateFormatting('en');
   });
 
   final modes = [
@@ -232,4 +234,24 @@ void main() {
       ),
     );
   }
+  unawaited(
+    goldenTest(
+      'property ready — light_LTR',
+      fileName: 'property_ready_light_LTR',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 3400),
+      pumpBeforeTest: _pumpTwoFrames,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR',
+        child: _theme(
+          ThemeMode.light,
+          TextDirection.ltr,
+          1,
+          400,
+          3300,
+          _readyChild(),
+          locale: const Locale('en'),
+        ),
+      ),
+    ),
+  );
 }

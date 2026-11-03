@@ -170,6 +170,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get favoritesEmpty => 'الأماكن المفضلة هتظهر هنا.';
 
   @override
+  String get favoriteAdd => 'إضافة إلى المفضلة';
+
+  @override
+  String get favoriteRemove => 'إزالة من المفضلة';
+
+  @override
+  String get favoriteSaveFailed => 'تعذّر تحديث المفضلة. جرّب مرة أخرى.';
+
+  @override
+  String get favoritesLoadFailed => 'تعذّر تحميل المفضلة. جرّب مرة أخرى.';
+
+  @override
   String get accountEmpty => 'بيانات حسابك هتظهر هنا.';
 
   @override
@@ -323,7 +335,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeAreasTitle => 'مناطق ووجهات';
 
   @override
-  String get homeSuggestedTitle => 'شقق مقترحة';
+  String get homeSuggestedTitle => 'متاح من اليوم';
+
+  @override
+  String get propertyViewDetails => 'عرض التفاصيل';
+
+  @override
+  String get propertyAvailableBadge => 'متاح';
+
+  @override
+  String get propertyAvailableTonight => 'متاح الليلة';
+
+  @override
+  String get propertyBookedTonight => 'محجوز الليلة';
 
   @override
   String get homeNewestTitle => 'أحدث الشقق';
@@ -1148,6 +1172,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationsMarkAllRead => 'تحديد الكل كمقروء';
 
   @override
+  String get notificationsFilterAll => 'الكل';
+
+  @override
+  String get notificationsFilterBooking => 'الحجوزات';
+
+  @override
+  String get notificationsFilterPayment => 'المدفوعات';
+
+  @override
+  String get notificationsFilterOffers => 'العروض';
+
+  @override
+  String get notificationsFilterReplies => 'الردود';
+
+  @override
+  String get notificationsFilterHint => 'تصفية الإشعارات';
+
+  @override
+  String get notificationsFilterEmpty => 'مفيش إشعارات في القسم ده.';
+
+  @override
+  String get notificationsJustNow => 'دلوقتي';
+
+  @override
+  String notificationsMinutesAgo(int count) {
+    return 'من $count د';
+  }
+
+  @override
+  String notificationsHoursAgo(int count) {
+    return 'من $count س';
+  }
+
+  @override
+  String notificationsDaysAgo(int count) {
+    return 'من $count أيام';
+  }
+
+  @override
+  String notificationsWeeksAgo(int count) {
+    return 'من $count أسابيع';
+  }
+
+  @override
   String get notificationsEmpty => 'مفيش إشعارات لسه.';
 
   @override
@@ -1182,7 +1250,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'المالك هيرد خلال 24 ساعة. اضغط للتفاصيل.';
 
   @override
-  String get notifBookingConfirmedTitle => 'تم تأكيد حجزك ✓';
+  String get notifBookingConfirmedTitle => 'تم تأكيد حجزك';
 
   @override
   String get notifBookingConfirmedBody => 'اضغط للتفاصيل.';

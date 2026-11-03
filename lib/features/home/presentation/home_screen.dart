@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
@@ -16,6 +17,8 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/bookings/presentation/widgets/unfinished_payment_banner.dart';
+import 'package:on_air/features/favorites/presentation/favorite_action.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/widgets/home_header.dart';
 import 'package:on_air/features/home/presentation/widgets/home_search_box.dart';
@@ -132,10 +135,7 @@ final class HomeScreen extends StatelessWidget {
                 child: _areasSection(context, state),
               ),
             ),
-          if (_showSection(
-            state.feed?.suggested,
-            state.sectionLoading[HomeSectionId.suggested] ?? false,
-          ))
+          if (_showSection(state.availableToday, state.availableTodayLoading))
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(
@@ -144,7 +144,7 @@ final class HomeScreen extends StatelessWidget {
                   Dimens.screenSide,
                   0,
                 ),
-                child: _suggestedSection(context, state),
+                child: _availableTodaySection(context, state),
               ),
             ),
           if (_showSection(
@@ -184,7 +184,12 @@ final class HomeScreen extends StatelessWidget {
       FeedSectionReady(:final value) => value.isEmpty,
       FeedSectionFailed() => false,
     };
-    return empty(feed.areas) && empty(feed.suggested) && empty(feed.newest);
+    final today = state.availableToday;
+    return !state.availableTodayLoading &&
+        today is FeedSectionReady<List<ListingCard>> &&
+        empty(feed.areas) &&
+        today.value.isEmpty &&
+        empty(feed.newest);
   }
 
   bool _showSection<T>(FeedSection<List<T>>? section, bool loading) {
@@ -292,55 +297,25 @@ final class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _suggestedSection(BuildContext context, HomeState state) {
+  Widget _availableTodaySection(BuildContext context, HomeState state) {
     final l10n = AppLocalizations.of(context);
     return HomeSection(
       title: l10n.homeSuggestedTitle,
-      isLoading: state.sectionLoading[HomeSectionId.suggested] ?? false,
-      error: _sectionError(state.feed?.suggested),
-      onRetry: () => unawaited(
-        context.read<HomeCubit>().retrySection(HomeSectionId.suggested),
-      ),
-      skeleton: SizedBox(
-        height: 320,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          clipBehavior: Clip.none,
-          itemCount: 2,
-          itemBuilder: (_, index) => const Padding(
-            padding: EdgeInsetsDirectional.only(end: Dimens.space12),
-            child: PropertyCardSkeleton(width: 260),
-          ),
-        ),
-      ),
-      child: _cardsList(context, state, suggested: true),
-    );
-  }
-
-  Widget _cardsList(
-    BuildContext context,
-    HomeState state, {
-    required bool suggested,
-  }) {
-    final cards = switch (suggested
-        ? state.feed?.suggested
-        : state.feed?.newest) {
-      FeedSectionReady<List<ListingCard>>(:final value) => value,
-      _ => const <ListingCard>[],
-    };
-    return SizedBox(
-      height: 320,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        clipBehavior: Clip.none,
-        itemCount: cards.length,
-        itemBuilder: (context, index) => Padding(
-          padding: const EdgeInsetsDirectional.only(end: Dimens.space12),
-          child: _propertyCard(context, cards[index], width: 260),
-        ),
+      isLoading: state.availableTodayLoading,
+      error: _sectionError(state.availableToday),
+      onRetry: () => unawaited(context.read<HomeCubit>().retryAvailableToday()),
+      skeleton: const PropertyCardSkeleton(),
+      child: Column(
+        children: [
+          for (final card in switch (state.availableToday) {
+            FeedSectionReady<List<ListingCard>>(:final value) => value,
+            _ => const <ListingCard>[],
+          })
+            Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
+              child: _propertyCard(context, card, availableToday: true),
+            ),
+        ],
       ),
     );
   }
@@ -430,30 +405,48 @@ final class HomeScreen extends StatelessWidget {
   Widget _propertyCard(
     BuildContext context,
     ListingCard card, {
-    double? width,
+    bool availableToday = false,
   }) {
     final l10n = AppLocalizations.of(context);
-    return PropertyCard(
-      width: width ?? double.infinity,
-      title: card.title,
-      subtitle: '${card.areaName} • ${card.cityName}',
-      imageVariants: card.cover?.variants ?? const [],
-      priceText: l10n.nightlyPrice(MoneyFormatter().format(card.nightlyPrice)),
-      ratingText: card.ratingAvg?.toStringAsFixed(1),
-      ratingSemantics: card.ratingAvg == null
-          ? null
-          : l10n.ratingSemantics(
-              card.ratingAvg!.toStringAsFixed(1),
-              card.reviewCount,
-            ),
-      // No Hero on Home cards: the shell's indexed stack keeps every branch
-      // alive, so the same apartment can carry the tag twice across the
-      // route subtree. The instant photo on details still comes through
-      // `extra` (SC-006); the Hero flight stays between results and details.
-      onTap: () => openPropertyDetails(
-        context,
-        AppRoutes.property(card.id),
-        extra: card.cover?.variants,
+    return BlocBuilder<FavoritesCubit, FavoritesState>(
+      builder: (context, favorites) => PropertyCard(
+        availabilityLabel: availableToday ? l10n.propertyAvailableBadge : null,
+        isFavorite: favorites.contains(card.id),
+        favoriteBusy: favorites.loading || favorites.isBusy(card.id),
+        onFavoriteTap: () => toggleFavorite(context, card),
+        title: card.title,
+        subtitle: '${card.areaName} • ${card.cityName}',
+        imageVariants: card.cover?.variants ?? const [],
+        priceText: l10n.nightlyPrice(
+          MoneyFormatter().format(card.nightlyPrice),
+        ),
+        ratingText: card.ratingAvg?.toStringAsFixed(1),
+        ratingSemantics: card.ratingAvg == null
+            ? null
+            : l10n.ratingSemantics(
+                card.ratingAvg!.toStringAsFixed(1),
+                card.reviewCount,
+              ),
+        // No Hero on Home cards: the shell's indexed stack keeps every branch
+        // alive, so the same apartment can carry the tag twice across the
+        // route subtree. The instant photo on details still comes through
+        // `extra` (SC-006); the Hero flight stays between results and details.
+        onTap: () {
+          final today = CairoTime.today();
+          openPropertyDetails(
+            context,
+            availableToday
+                ? Uri(
+                    path: AppRoutes.property(card.id),
+                    queryParameters: {
+                      'checkIn': today.toString(),
+                      'checkOut': today.addDays(1).toString(),
+                    },
+                  ).toString()
+                : AppRoutes.property(card.id),
+            extra: card.cover?.variants,
+          );
+        },
       ),
     );
   }

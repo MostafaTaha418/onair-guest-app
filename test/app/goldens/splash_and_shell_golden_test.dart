@@ -14,6 +14,8 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/design_system/components/on_air_bottom_nav.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
@@ -78,12 +80,19 @@ Widget _shell(ThemeMode mode, double scale, double width) {
   addTearDown(auth.dispose);
   final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
   addTearDown(authCubit.close);
+  final favoritesCubit = FavoritesCubit(
+    repository: MemoryFavoritesRepository(),
+    listings: listings,
+    auth: authCubit,
+  );
+  addTearDown(favoritesCubit.close);
   final homeCubit = HomeCubit(
     repo: listings,
     cache: HomeFeedCache(cache),
     reference: ReferenceDataCache(listings, cache),
     connectivity: connectivityCubit,
     auth: authCubit,
+    scheduleTodayRefresh: false,
   );
   addTearDown(homeCubit.close);
   unawaited(homeCubit.start());
@@ -105,6 +114,7 @@ Widget _shell(ThemeMode mode, double scale, double width) {
         providers: [
           BlocProvider<ConnectivityCubit>.value(value: connectivityCubit),
           BlocProvider<AuthCubit>.value(value: authCubit),
+          BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
           BlocProvider<HomeCubit>.value(value: homeCubit),
         ],
         child: Scaffold(

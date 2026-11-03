@@ -45,6 +45,8 @@ import 'package:on_air/features/bookings/data/mock_home_feed_with_bookings.dart'
 import 'package:on_air/features/bookings/data/supabase_bookings_repository.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/data/supabase_favorites_repository.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -77,6 +79,9 @@ Future<void> bootstrap(String flavor) async {
     BackendMode.remote => await _remoteBackend(environment),
     BackendMode.mock => _mockBackend(),
   };
+  final favorites = environment.backendMode == BackendMode.remote
+      ? SupabaseFavoritesRepository(Supabase.instance.client)
+      : MemoryFavoritesRepository();
   final configSource = backend.config;
   final authRepository = backend.auth;
   final pushTokens = backend.pushTokens;
@@ -169,6 +174,7 @@ Future<void> bootstrap(String flavor) async {
         ),
       ],
       child: OnAirApp(
+        favoritesRepository: favorites,
         signOutCoordinator: signOutCoordinator,
         sessionEventSource: sessionEventSource,
         personalDataResetter: CompositePersonalDataResetter([

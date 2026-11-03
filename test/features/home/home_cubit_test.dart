@@ -6,6 +6,7 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -15,6 +16,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/reference_data.dart';
+import 'package:on_air/features/listings/domain/results_page.dart';
 
 import '../../helpers/fake_auth_repository.dart';
 import '../../helpers/fake_connectivity.dart';
@@ -162,6 +164,33 @@ void main() {
       states.last.sectionLoading.values.any((loading) => loading),
       isFalse,
     );
+  });
+
+  test('available today uses a Cairo one-night availability search', () async {
+    listings.homeFeedResponses.add(_feed());
+    listings.searchResponses.add(
+      ResultsPage(
+        items: [_card('متاحة الليلة')],
+        nextCursor: null,
+        totalCount: 1,
+      ),
+    );
+    final cubit = await buildCubit();
+    addTearDown(cubit.close);
+
+    await cubit.start();
+
+    final stay = listings.searchParams.single.stay!;
+    expect(stay.checkIn, CairoTime.today());
+    expect(stay.checkOut, CairoTime.today().addDays(1));
+    expect(
+      (cubit.state.availableToday! as FeedSectionReady<List<ListingCard>>)
+          .value
+          .single
+          .title,
+      'متاحة الليلة',
+    );
+    expect(cubit.state.availableTodayLoading, isFalse);
   });
 
   test('a failed section stays failed while the others render', () async {

@@ -19,16 +19,19 @@ Future<void> pumpCalendar(
   DateOnly? selectedCheckOut,
   Set<DateOnly> unavailableNights = const {},
   void Function(DateOnly firstDayOfMonth)? onMonthShown,
+  Locale locale = const Locale('ar'),
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      locale: const Locale('ar'),
+      locale: locale,
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: OnAirTheme.light,
       home: Scaffold(
         body: Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: locale.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
           child: SizedBox(
             width: 360,
             child: RangeCalendar(
@@ -51,6 +54,7 @@ Future<void> pumpCalendar(
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('ar');
+    await initializeDateFormatting('en');
   });
 
   testWidgets('Saturday is the first column of the grid', (tester) async {
@@ -68,6 +72,25 @@ void main() {
 
     // The weekday header starts with السبت.
     expect(find.text('السبت'), findsOneWidget);
+    final sundayHeader = tester.getRect(find.text('الأحد'));
+    final firstDay = tester.getRect(find.text('1'));
+    expect((sundayHeader.center.dx - firstDay.center.dx).abs(), lessThan(2));
+  });
+
+  testWidgets('English calendar starts on Sunday and uses English month', (
+    tester,
+  ) async {
+    await pumpCalendar(
+      tester,
+      today: DateOnly(2026, 11, 10),
+      initialMonth: DateOnly(2026, 11, 1),
+      onDayTap: (_) {},
+      locale: const Locale('en'),
+    );
+    expect(find.text('November 2026'), findsOneWidget);
+    final sundayHeader = tester.getRect(find.text('Sun'));
+    final firstDay = tester.getRect(find.text('1'));
+    expect((sundayHeader.center.dx - firstDay.center.dx).abs(), lessThan(2));
   });
 
   testWidgets('a past day does not call onDayTap', (tester) async {

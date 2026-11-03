@@ -39,7 +39,7 @@ import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_cubit.dart';
 import 'package:on_air/features/bookings/presentation/bookings_screen.dart';
-import 'package:on_air/features/favorites/presentation/favorites_placeholder_screen.dart';
+import 'package:on_air/features/favorites/presentation/favorites_screen.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
@@ -326,7 +326,7 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.favorites,
       name: 'favorites',
-      builder: (_, _) => const FavoritesPlaceholderScreen(),
+      builder: (_, _) => const FavoritesScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, _, shell) => BlocProvider<SearchCubit>.value(

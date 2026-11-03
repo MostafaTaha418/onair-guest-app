@@ -18,6 +18,7 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -42,6 +43,7 @@ void main() {
   late FakeConnectivity connectivity;
   late FakeAuthRepository auth;
   Map<String, String>? bookingQuery;
+  var bookingOpenCount = 0;
 
   setUpAll(() async {
     await initializeDateFormatting('ar');
@@ -53,6 +55,7 @@ void main() {
     connectivity = FakeConnectivity();
     auth = FakeAuthRepository();
     bookingQuery = null;
+    bookingOpenCount = 0;
   });
 
   tearDown(() {
@@ -155,6 +158,7 @@ void main() {
         GoRoute(
           path: AppRoutes.bookingEntryPattern,
           builder: (_, state) {
+            bookingOpenCount++;
             bookingQuery = state.uri.queryParameters;
             return const Text('booking-stub');
           },
@@ -244,11 +248,23 @@ void main() {
     expect(find.text(l10n.propertyReviews), findsOneWidget);
   });
 
-  testWidgets('the price is the single money row (AC-010)', (tester) async {
-    listings.propertyResponses.add(details());
-    await pumpProperty(tester, signedIn: false);
+  testWidgets(
+    'only the final nightly price appears in the header and bar (AC-010)',
+    (tester) async {
+      listings.propertyResponses.add(details());
+      await pumpProperty(tester, signedIn: false);
 
-    expect(find.textContaining('EGP'), findsOneWidget);
+      expect(find.textContaining('EGP'), findsNWidgets(2));
+    },
+  );
+
+  testWidgets('rapid booking taps open one booking route', (tester) async {
+    listings.propertyResponses.add(details());
+    await pumpProperty(tester, signedIn: true);
+    await tester.tap(find.text(l10n.bookNow));
+    await tester.tap(find.text(l10n.bookNow));
+    await tester.pump();
+    expect(bookingOpenCount, 1);
   });
 
   testWidgets('the address row is hidden when addressText is null', (
@@ -424,7 +440,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     final button = tester.widget<IconButton>(
-      find.widgetWithIcon(IconButton, Icons.share_outlined),
+      find.widgetWithIcon(IconButton, AppIcons.shareOutlined),
     );
     expect(button.onPressed, isNull);
     expect(share.shared, isEmpty);

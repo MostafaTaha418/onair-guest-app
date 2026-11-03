@@ -158,4 +158,44 @@ void main() {
     expect(find.text('المفضلة'), findsWidgets);
     expect(find.byKey(const ValueKey('nav-favorites')), findsNothing);
   });
+
+  testWidgets('a visitor tapping a card heart is sent to sign-in', (
+    tester,
+  ) async {
+    await pumpVisitorApp(tester, listingsRepository: _scrollableListings());
+    await tester.drag(
+      find.byKey(const ValueKey('home-scroll')),
+      const Offset(0, -650),
+    );
+    await tester.pumpAndSettle();
+    final heart = find.byTooltip('إضافة إلى المفضلة').first;
+    await tester.tap(heart);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('close-login-button')), findsOneWidget);
+  });
+
+  testWidgets('a signed-in guest saves a card and sees it in favorites', (
+    tester,
+  ) async {
+    await pumpSignedInApp(tester, listingsRepository: _scrollableListings());
+    await tester.drag(
+      find.byKey(const ValueKey('home-scroll')),
+      const Offset(0, -650),
+    );
+    await tester.pumpAndSettle();
+    final heart = find.byTooltip('إضافة إلى المفضلة').first;
+    await tester.tap(heart);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('إزالة من المفضلة'), findsWidgets);
+
+    await tester.drag(
+      find.byKey(const ValueKey('home-scroll')),
+      const Offset(0, 900),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home-favorites-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('شقة 0'), findsWidgets);
+    expect(find.byTooltip('إزالة من المفضلة'), findsWidgets);
+  });
 }

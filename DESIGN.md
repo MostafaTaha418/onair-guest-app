@@ -90,7 +90,7 @@ Cards use 16dp corners, sheets 24dp, chips 8dp according to the current token sc
 
 - **Home header:** blue to off-white vertical gradient, Arabic greeting, circular profile and favorite controls, and a prominent white search field with a separate filter action.
 - **Area card:** large cropped location photo, followed by a white information panel with area name, category badge, and available property count.
-- **Apartment card:** large photo, availability or offer badge only when supported by data, price in EGP, concise attributes, a clear details action, and a separate favorite action.
+- **Apartment card:** large photo, availability or offer badge only when supported by data, price in EGP at the opposite edge from the title, concise attributes, a clear details action, and a separate favorite action. Mirror the title/price and action layout in RTL. In area results, label tonight's availability only after the date lookup resolves; unknown status gets no badge. The heart saves to the signed-in guest's favorites and opens sign-in for a visitor.
 - **Navigation:** floating white capsule with a light blue selected item. Keep the app's actual routes and labels; screenshots from older prototypes show a different tab set.
 - **Forms:** generous vertical rhythm, pill-like white fields on the warm background, prominent sea-blue primary action, clear focus and error states.
 - **Detail and booking:** image-first property view, restrained blue and warm offer/info panels, clear dates and itemized prices in EGP. Show only implemented payment and booking options.

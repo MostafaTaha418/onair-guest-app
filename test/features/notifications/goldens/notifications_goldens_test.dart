@@ -29,13 +29,14 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -46,7 +47,12 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(
+        textDirection: locale.languageCode == 'ar'
+            ? TextDirection.rtl
+            : TextDirection.ltr,
+        child: child!,
+      ),
     ),
     home: child,
   ),
@@ -142,6 +148,7 @@ Future<void> _pumpTwoFrames(WidgetTester tester) async {
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('ar');
+    await initializeDateFormatting('en');
     CairoTime.initialize();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
@@ -184,4 +191,42 @@ void main() {
       ),
     );
   }
+
+  unawaited(
+    goldenTest(
+      'notification center with unread items — light_LTR',
+      fileName: 'notifications_unread_light_LTR',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1300),
+      pumpBeforeTest: _pumpTwoFrames,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1200,
+          _centerChild(denied: false),
+          locale: const Locale('en'),
+        ),
+      ),
+    ),
+  );
+  unawaited(
+    goldenTest(
+      'notification center on a narrow phone — light_RTL_1_3x',
+      fileName: 'notifications_unread_narrow_light_RTL_1_3x',
+      constraints: const BoxConstraints(maxWidth: 340, maxHeight: 800),
+      pumpBeforeTest: _pumpTwoFrames,
+      builder: () => GoldenTestScenario(
+        name: 'narrow_RTL',
+        child: _theme(
+          ThemeMode.light,
+          1.3,
+          320,
+          700,
+          _centerChild(denied: false),
+        ),
+      ),
+    ),
+  );
 }

@@ -77,11 +77,11 @@ final class _PropertyAvailabilitySectionState
           children: [
             Text(
               l10n.propertyAvailability,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colors.textPrimary,
+              style: context.textStyles.sectionTitle.copyWith(
+                color: colors['textAccent'],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             RangeCalendar(
               today: today,
               initialMonth: today,

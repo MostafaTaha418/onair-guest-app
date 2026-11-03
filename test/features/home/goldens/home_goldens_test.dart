@@ -16,6 +16,8 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
@@ -23,6 +25,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/listings/domain/results_page.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
@@ -124,6 +127,19 @@ Widget _homeChild({
     listings.homeFeedResponses
       ..add(_feed(withBooking: withBooking))
       ..add(_feed(withBooking: withBooking));
+    listings.searchResponses.add(
+      ResultsPage(
+        items: [
+          _card('550e8400-e29b-41d4-a716-446655440000', 'شقة 3 غرف بإطلالة'),
+          _card(
+            'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+            'استوديو مفروش بالكامل',
+          ),
+        ],
+        nextCursor: null,
+        totalCount: 2,
+      ),
+    );
   }
   final connectivity = FakeConnectivity();
   final directory = Directory.systemTemp.createTempSync('on_air_home_golden');
@@ -147,6 +163,12 @@ Widget _homeChild({
   }
   final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
   unawaited(authCubit.restore());
+  final favoritesCubit = FavoritesCubit(
+    repository: MemoryFavoritesRepository(),
+    listings: listings,
+    auth: authCubit,
+  );
+  addTearDown(favoritesCubit.close);
   final connectivityCubit = connectivity.createCubit();
   final homeCubit = HomeCubit(
     repo: listings,
@@ -154,7 +176,9 @@ Widget _homeChild({
     reference: ReferenceDataCache(listings, cache),
     connectivity: connectivityCubit,
     auth: authCubit,
+    scheduleTodayRefresh: false,
   );
+  addTearDown(homeCubit.close);
   unawaited(homeCubit.start());
   return MultiRepositoryProvider(
     providers: [
@@ -168,6 +192,7 @@ Widget _homeChild({
     child: MultiBlocProvider(
       providers: [
         BlocProvider<AuthCubit>.value(value: authCubit),
+        BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
         BlocProvider<ConnectivityCubit>.value(value: connectivityCubit),
         BlocProvider<HomeCubit>.value(value: homeCubit),
       ],

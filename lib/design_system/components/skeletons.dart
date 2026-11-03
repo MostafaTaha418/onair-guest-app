@@ -81,8 +81,7 @@ final class _SkeletonBoxState extends State<SkeletonBox>
   }
 }
 
-/// Loading placeholder shaped like `PropertyCard`: a 16:10 image area, two
-/// text lines, and a price row.
+/// Loading placeholder shaped like the photo-led listing card.
 final class PropertyCardSkeleton extends StatelessWidget {
   const PropertyCardSkeleton({this.width = double.infinity, super.key});
 
@@ -100,36 +99,42 @@ final class PropertyCardSkeleton extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: radius,
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SkeletonBox(width: double.infinity, height: 180, radius: 0),
-            Padding(
-              padding: EdgeInsetsDirectional.all(Dimens.space12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SkeletonBox(
-                    width: double.infinity,
-                    height: Dimens.space16,
-                    radius: Dimens.radiusChip,
-                  ),
-                  SizedBox(height: Dimens.space8),
-                  SkeletonBox(
-                    width: 140,
-                    height: Dimens.space12,
-                    radius: Dimens.radiusChip,
-                  ),
-                  SizedBox(height: Dimens.space12),
-                  SkeletonBox(
-                    width: 90,
-                    height: Dimens.space16,
-                    radius: Dimens.radiusChip,
-                  ),
-                ],
+        child: LayoutBuilder(
+          builder: (context, constraints) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(
+                width: double.infinity,
+                height: constraints.maxWidth * 11 / 16,
+                radius: 0,
               ),
-            ),
-          ],
+              const Padding(
+                padding: EdgeInsetsDirectional.all(Dimens.space16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(
+                      width: double.infinity,
+                      height: Dimens.space16,
+                      radius: Dimens.radiusChip,
+                    ),
+                    SizedBox(height: Dimens.space8),
+                    SkeletonBox(
+                      width: 180,
+                      height: Dimens.space12,
+                      radius: Dimens.radiusChip,
+                    ),
+                    SizedBox(height: Dimens.space16),
+                    SkeletonBox(
+                      width: double.infinity,
+                      height: Dimens.minTouchTarget,
+                      radius: Dimens.radiusButton,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

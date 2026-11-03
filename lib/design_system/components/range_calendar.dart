@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:on_air/core/time/date_only.dart';
@@ -96,7 +98,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     final daysInMonth = _displayedMonth.daysUntil(
       _firstOfMonth(_shiftMonth(_displayedMonth, 1)),
     );
-    final leadingBlanks = _columnOf(_displayedMonth);
+    final leadingBlanks = _columnOf(_displayedMonth, l10n.localeName);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -106,11 +108,18 @@ final class _RangeCalendarState extends State<RangeCalendar> {
             IconButton(
               tooltip: l10n.calendarPrevMonth,
               onPressed: _canGo(-1) ? () => _goToMonth(-1) : null,
-              icon: const Icon(AppIcons.chevronRight),
+              icon: Icon(
+                Directionality.of(context) == ui.TextDirection.rtl
+                    ? AppIcons.chevronRight
+                    : AppIcons.chevronLeft,
+              ),
             ),
             Expanded(
               child: Text(
-                DateOnlyFormatter.monthYear(_displayedMonth),
+                DateOnlyFormatter.monthYear(
+                  _displayedMonth,
+                  locale: l10n.localeName,
+                ),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colors.textPrimary,
@@ -120,7 +129,11 @@ final class _RangeCalendarState extends State<RangeCalendar> {
             IconButton(
               tooltip: l10n.calendarNextMonth,
               onPressed: _canGo(1) ? () => _goToMonth(1) : null,
-              icon: const Icon(AppIcons.chevronLeft),
+              icon: Icon(
+                Directionality.of(context) == ui.TextDirection.rtl
+                    ? AppIcons.chevronLeft
+                    : AppIcons.chevronRight,
+              ),
             ),
           ],
         ),
@@ -132,17 +145,25 @@ final class _RangeCalendarState extends State<RangeCalendar> {
           mainAxisSpacing: Dimens.space4,
           crossAxisSpacing: Dimens.space4,
           children: [
-            for (var index = 0; index < leadingBlanks; index++)
-              const SizedBox.shrink(),
             for (var index = 0; index < 7; index++)
               Center(
-                child: Text(
-                  _weekdayInitial(index),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colors.textSecondary,
+                child: Semantics(
+                  label: _weekdayInitial(index, l10n.localeName),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _weekdayInitial(index, l10n.localeName),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
                   ),
                 ),
               ),
+            for (var index = 0; index < leadingBlanks; index++)
+              const SizedBox.shrink(),
             for (var day = 1; day <= daysInMonth; day++)
               _dayCell(
                 context,
@@ -170,13 +191,16 @@ final class _RangeCalendarState extends State<RangeCalendar> {
 
   /// Column index of a date, with Saturday first (Egypt week). Dart's
   /// weekday runs Monday = 1 … Sunday = 7.
-  int _columnOf(DateOnly date) =>
-      (DateTime.utc(date.year, date.month, date.day).weekday + 1) % 7;
+  int _columnOf(DateOnly date, String locale) {
+    final weekday = DateTime.utc(date.year, date.month, date.day).weekday;
+    return locale.startsWith('ar') ? (weekday + 1) % 7 : weekday % 7;
+  }
 
-  String _weekdayInitial(int column) {
-    // 2026-11-07 is a Saturday; stepping 0..6 covers السبت…الجمعة.
-    final saturday = DateTime.utc(2026, 11, 7).add(Duration(days: column));
-    return DateFormat.E('ar').format(saturday);
+  String _weekdayInitial(int column, String locale) {
+    final firstDay = locale.startsWith('ar')
+        ? DateTime.utc(2026, 11, 7)
+        : DateTime.utc(2026, 11, 8);
+    return DateFormat.E(locale).format(firstDay.add(Duration(days: column)));
   }
 
   Widget _dayCell(BuildContext context, DateOnly day) {
@@ -222,8 +246,10 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     }
 
     final label = unavailable
-        ? l10n.calendarUnavailableDay(DateOnlyFormatter.dayMonth(day))
-        : DateOnlyFormatter.dayMonth(day);
+        ? l10n.calendarUnavailableDay(
+            DateOnlyFormatter.dayMonth(day, locale: l10n.localeName),
+          )
+        : DateOnlyFormatter.dayMonth(day, locale: l10n.localeName);
     final text = Text(
       '${day.day}',
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(

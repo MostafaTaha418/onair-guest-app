@@ -194,15 +194,16 @@ final class _PropertyScreenState extends State<PropertyScreen> {
           heroVariants: widget.heroVariants,
         ),
         PropertyFailed(:final error) => Scaffold(
-          appBar: AppBar(),
+          appBar: AppBar(leading: _backButton(context)),
           body: ErrorView(
             message: apiErrorMessage(error, AppLocalizations.of(context)),
             referenceNumber: error.requestId,
             onRetry: context.read<PropertyCubit>().retry,
           ),
         ),
-        PropertyOffline() => const Scaffold(
-          body: _OfflineBody(),
+        PropertyOffline() => Scaffold(
+          appBar: AppBar(leading: _backButton(context)),
+          body: const _OfflineBody(),
         ),
         PropertyReady(
           :final details,
@@ -225,6 +226,16 @@ final class _PropertyScreenState extends State<PropertyScreen> {
   }
 }
 
+Widget _backButton(BuildContext context) => IconButton(
+  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+  onPressed: () => context.pop(),
+  icon: Icon(
+    Directionality.of(context) == TextDirection.rtl
+        ? AppIcons.chevronRight
+        : AppIcons.chevronLeft,
+  ),
+);
+
 final class _LoadingBody extends StatelessWidget {
   const _LoadingBody({required this.propertyId, this.heroVariants});
 
@@ -235,29 +246,79 @@ final class _LoadingBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final hero = heroVariants;
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          if (hero != null && hero.isNotEmpty)
-            AspectRatio(
-              aspectRatio: 4 / 3,
-              child: OnAirNetworkImage(
-                variants: hero,
-                heroTag: 'listing-$propertyId',
-              ),
+          AspectRatio(
+            aspectRatio: 1.08,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hero != null && hero.isNotEmpty)
+                  OnAirNetworkImage(
+                    variants: hero,
+                    heroTag: 'listing-$propertyId',
+                  )
+                else
+                  const SkeletonBox(height: 400, radius: 0),
+                SafeArea(
+                  child: Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.all(Dimens.space16),
+                      child: Material(
+                        color: context.colors.surface,
+                        shape: const CircleBorder(),
+                        child: IconButton(
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          onPressed: () => context.pop(),
+                          icon: Icon(
+                            Directionality.of(context) == TextDirection.rtl
+                                ? AppIcons.chevronRight
+                                : AppIcons.chevronLeft,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
           const Padding(
             padding: EdgeInsetsDirectional.all(Dimens.space16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 220, height: 24, radius: Dimens.radiusChip),
-                SizedBox(height: Dimens.space16),
-                SkeletonBox(height: 120),
-                SizedBox(height: Dimens.space16),
-                SkeletonBox(height: 120),
-                SizedBox(height: Dimens.space16),
-                SkeletonBox(height: 160),
+                SkeletonBox(width: 260, height: 28, radius: Dimens.radiusChip),
+                SizedBox(height: Dimens.space12),
+                SkeletonBox(width: 190, height: 18, radius: Dimens.radiusChip),
+                SizedBox(height: Dimens.space24),
+                Row(
+                  children: [
+                    Expanded(child: SkeletonBox(height: 78)),
+                    SizedBox(width: Dimens.space8),
+                    Expanded(child: SkeletonBox(height: 78)),
+                  ],
+                ),
+                SizedBox(height: Dimens.space8),
+                Row(
+                  children: [
+                    Expanded(child: SkeletonBox(height: 78)),
+                    SizedBox(width: Dimens.space8),
+                    Expanded(child: SkeletonBox(height: 78)),
+                  ],
+                ),
+                SizedBox(height: Dimens.space32),
+                SkeletonBox(width: 110, height: 22, radius: Dimens.radiusChip),
+                SizedBox(height: Dimens.space12),
+                SkeletonBox(height: 80),
+                SizedBox(height: Dimens.space32),
+                SkeletonBox(width: 120, height: 22, radius: Dimens.radiusChip),
+                SizedBox(height: Dimens.space12),
+                SkeletonBox(height: 130),
               ],
             ),
           ),
@@ -354,28 +415,35 @@ final class _ReadyBody extends StatelessWidget {
                   typeLabel:
                       typeLabels[details.propertyType] ?? details.propertyType,
                 ),
-                const SizedBox(height: Dimens.space16),
+                const SizedBox(height: Dimens.space24),
                 PropertySpecsRow(details: details),
-                const SizedBox(height: Dimens.space16),
+                const SizedBox(height: Dimens.space32),
                 _DescriptionSection(details: details),
-                const SizedBox(height: Dimens.space16),
+                const SizedBox(height: Dimens.space32),
                 PropertyAmenitiesSection(details: details),
-                const SizedBox(height: Dimens.space24),
+                const SizedBox(height: Dimens.space32),
                 PropertyAddressSection(details: details),
-                const SizedBox(height: Dimens.space24),
+                const SizedBox(height: Dimens.space32),
+                Container(
+                  padding: const EdgeInsetsDirectional.all(Dimens.space16),
+                  decoration: BoxDecoration(
+                    color: context.colors.surface,
+                    borderRadius: BorderRadius.circular(Dimens.radiusCard),
+                  ),
+                  child: PropertyAvailabilitySection(
+                    propertyId: propertyId,
+                    today: today,
+                  ),
+                ),
+                const SizedBox(height: Dimens.space32),
+                PropertyReviewsSection(details: details),
+                const SizedBox(height: Dimens.space32),
                 KeyedSubtree(
                   key: rulesKey,
                   child: PropertyRulesSection(details: details),
                 ),
                 const SizedBox(height: Dimens.space24),
                 PropertyPolicySection(details: details),
-                const SizedBox(height: Dimens.space24),
-                PropertyAvailabilitySection(
-                  propertyId: propertyId,
-                  today: today,
-                ),
-                const SizedBox(height: Dimens.space24),
-                PropertyReviewsSection(details: details),
                 const SizedBox(height: Dimens.space16),
                 Center(
                   child: TextButton(
@@ -421,7 +489,9 @@ final class _ReadyBody extends StatelessWidget {
       );
       return;
     }
-    pushVisitorLogin(context, details, stay, guests, ResumeAction.contact);
+    unawaited(
+      pushVisitorLogin(context, details, stay, guests, ResumeAction.contact),
+    );
   }
 }
 
@@ -429,13 +499,13 @@ final class _ReadyBody extends StatelessWidget {
 /// guests plus the resume action — and, for booking, the terms the guest
 /// actually saw. Cancelling returns to the same apartment without the
 /// resume keys.
-void pushVisitorLogin(
+Future<void> pushVisitorLogin(
   BuildContext context,
   PropertyDetails details,
   StayRange? stay,
   int? guests,
   ResumeAction action,
-) {
+) async {
   final query = <String, String>{
     if (stay != null) 'checkIn': stay.checkIn.toString(),
     if (stay != null) 'checkOut': stay.checkOut.toString(),
@@ -448,16 +518,14 @@ void pushVisitorLogin(
     queryParameters: query,
   );
   final cancelTo = ResumeIntent.stripFrom(from);
-  unawaited(
-    context.push(
-      Uri(
-        path: AppRoutes.login,
-        queryParameters: {
-          'from': from.toString(),
-          'cancelTo': cancelTo.toString(),
-        },
-      ).toString(),
-    ),
+  await context.push<void>(
+    Uri(
+      path: AppRoutes.login,
+      queryParameters: {
+        'from': from.toString(),
+        'cancelTo': cancelTo.toString(),
+      },
+    ).toString(),
   );
 }
 
@@ -487,11 +555,11 @@ final class _DescriptionSection extends StatelessWidget {
       children: [
         Text(
           l10n.propertyDescription,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.textPrimary,
+          style: context.textStyles.sectionTitle.copyWith(
+            color: colors['textAccent'],
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: Dimens.space8),
         ExpandableText(
           text: details.description,
           moreLabel: l10n.showMore,
@@ -502,7 +570,7 @@ final class _DescriptionSection extends StatelessWidget {
   }
 }
 
-final class _BottomBar extends StatelessWidget {
+final class _BottomBar extends StatefulWidget {
   const _BottomBar({
     required this.details,
     required this.stay,
@@ -514,36 +582,55 @@ final class _BottomBar extends StatelessWidget {
   final int? guests;
 
   @override
+  State<_BottomBar> createState() => _BottomBarState();
+}
+
+final class _BottomBarState extends State<_BottomBar> {
+  bool _opening = false;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final caption = stay == null
+    final caption = widget.stay == null
         ? null
-        : '${DateOnlyFormatter.dayMonth(stay!.checkIn)} – '
-              '${DateOnlyFormatter.dayMonth(stay!.checkOut)}';
+        : '${DateOnlyFormatter.dayMonth(widget.stay!.checkIn, locale: l10n.localeName)} – '
+              '${DateOnlyFormatter.dayMonth(widget.stay!.checkOut, locale: l10n.localeName)}';
     return BottomActionBar(
       leading: PriceText(
-        price: l10n.nightlyPrice(MoneyFormatter().format(details.nightlyPrice)),
+        price: l10n.nightlyPrice(
+          MoneyFormatter().format(widget.details.nightlyPrice),
+        ),
         caption: caption,
       ),
       action: BlocBuilder<ConnectivityCubit, ConnectivityState>(
         builder: (context, connectivity) => OnAirPrimaryButton(
           label: l10n.bookNow,
-          onPressed: connectivity.isOnline ? () => _onBookNow(context) : null,
+          onPressed: connectivity.isOnline && !_opening ? _onBookNow : null,
         ),
       ),
     );
   }
 
-  void _onBookNow(BuildContext context) {
-    final auth = context.read<AuthCubit>().state;
-    if (auth is! SignedIn) {
-      pushVisitorLogin(context, details, stay, guests, ResumeAction.book);
-      return;
+  Future<void> _onBookNow() async {
+    if (_opening) return;
+    setState(() => _opening = true);
+    try {
+      final auth = context.read<AuthCubit>().state;
+      if (auth is! SignedIn) {
+        await pushVisitorLogin(
+          context,
+          widget.details,
+          widget.stay,
+          widget.guests,
+          ResumeAction.book,
+        );
+        return;
+      }
+      await context.push<void>(
+        _bookingEntryUri(widget.details, widget.stay, widget.guests).toString(),
+      );
+    } finally {
+      if (mounted) setState(() => _opening = false);
     }
-    unawaited(
-      context.push(
-        _bookingEntryUri(details, stay, guests).toString(),
-      ),
-    );
   }
 }

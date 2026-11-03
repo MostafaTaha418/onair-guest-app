@@ -404,6 +404,30 @@ abstract class AppLocalizations {
   /// **'الأماكن المفضلة هتظهر هنا.'**
   String get favoritesEmpty;
 
+  /// No description provided for @favoriteAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة إلى المفضلة'**
+  String get favoriteAdd;
+
+  /// No description provided for @favoriteRemove.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من المفضلة'**
+  String get favoriteRemove;
+
+  /// No description provided for @favoriteSaveFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديث المفضلة. جرّب مرة أخرى.'**
+  String get favoriteSaveFailed;
+
+  /// No description provided for @favoritesLoadFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل المفضلة. جرّب مرة أخرى.'**
+  String get favoritesLoadFailed;
+
   /// No description provided for @accountEmpty.
   ///
   /// In ar, this message translates to:
@@ -701,8 +725,32 @@ abstract class AppLocalizations {
   /// No description provided for @homeSuggestedTitle.
   ///
   /// In ar, this message translates to:
-  /// **'شقق مقترحة'**
+  /// **'متاح من اليوم'**
   String get homeSuggestedTitle;
+
+  /// No description provided for @propertyViewDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض التفاصيل'**
+  String get propertyViewDetails;
+
+  /// No description provided for @propertyAvailableBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاح'**
+  String get propertyAvailableBadge;
+
+  /// No description provided for @propertyAvailableTonight.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاح الليلة'**
+  String get propertyAvailableTonight;
+
+  /// No description provided for @propertyBookedTonight.
+  ///
+  /// In ar, this message translates to:
+  /// **'محجوز الليلة'**
+  String get propertyBookedTonight;
 
   /// No description provided for @homeNewestTitle.
   ///
@@ -2054,6 +2102,78 @@ abstract class AppLocalizations {
   /// **'تحديد الكل كمقروء'**
   String get notificationsMarkAllRead;
 
+  /// No description provided for @notificationsFilterAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get notificationsFilterAll;
+
+  /// No description provided for @notificationsFilterBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجوزات'**
+  String get notificationsFilterBooking;
+
+  /// No description provided for @notificationsFilterPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدفوعات'**
+  String get notificationsFilterPayment;
+
+  /// No description provided for @notificationsFilterOffers.
+  ///
+  /// In ar, this message translates to:
+  /// **'العروض'**
+  String get notificationsFilterOffers;
+
+  /// No description provided for @notificationsFilterReplies.
+  ///
+  /// In ar, this message translates to:
+  /// **'الردود'**
+  String get notificationsFilterReplies;
+
+  /// No description provided for @notificationsFilterHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفية الإشعارات'**
+  String get notificationsFilterHint;
+
+  /// No description provided for @notificationsFilterEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش إشعارات في القسم ده.'**
+  String get notificationsFilterEmpty;
+
+  /// No description provided for @notificationsJustNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'دلوقتي'**
+  String get notificationsJustNow;
+
+  /// No description provided for @notificationsMinutesAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} د'**
+  String notificationsMinutesAgo(int count);
+
+  /// No description provided for @notificationsHoursAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} س'**
+  String notificationsHoursAgo(int count);
+
+  /// No description provided for @notificationsDaysAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} أيام'**
+  String notificationsDaysAgo(int count);
+
+  /// No description provided for @notificationsWeeksAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} أسابيع'**
+  String notificationsWeeksAgo(int count);
+
   /// No description provided for @notificationsEmpty.
   ///
   /// In ar, this message translates to:
@@ -2117,7 +2237,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifBookingConfirmedTitle.
   ///
   /// In ar, this message translates to:
-  /// **'تم تأكيد حجزك ✓'**
+  /// **'تم تأكيد حجزك'**
   String get notifBookingConfirmedTitle;
 
   /// No description provided for @notifBookingConfirmedBody.

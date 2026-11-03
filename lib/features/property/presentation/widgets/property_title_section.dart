@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/core/money/money.dart';
 import 'package:on_air/design_system/components/rating_badge.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
@@ -22,24 +24,55 @@ final class PropertyTitleSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final isNarrow = MediaQuery.sizeOf(context).width < 360;
+    final title = Text(
+      details.title,
+      style: context.textStyles.sectionTitle.copyWith(
+        fontSize: isNarrow ? 18 : 20,
+        color: colors.textPrimary,
+      ),
+    );
+    final price = Text(
+      l10n.nightlyPrice(MoneyFormatter().format(details.nightlyPrice)),
+      textAlign: TextAlign.end,
+      style: context.textStyles.price.copyWith(
+        color: colors['textAccent'],
+        fontSize: isNarrow ? 14 : 16,
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          details.title,
-          style: context.textStyles.propertyTitle.copyWith(
-            color: colors.textPrimary,
+        if (isNarrow) ...[
+          title,
+          const SizedBox(height: Dimens.space4),
+          price,
+        ] else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: title),
+              const SizedBox(width: Dimens.space8),
+              Flexible(flex: 2, child: price),
+            ],
           ),
-        ),
-        const SizedBox(height: Dimens.space4),
-        Text(
-          '$typeLabel • ${details.areaName} • ${details.cityName}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: colors.textSecondary,
-          ),
+        const SizedBox(height: Dimens.space8),
+        Row(
+          children: [
+            Icon(AppIcons.location, size: 16, color: colors['textAccent']),
+            const SizedBox(width: Dimens.space4),
+            Expanded(
+              child: Text(
+                '$typeLabel • ${details.areaName} • ${details.cityName}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ),
+          ],
         ),
         if (details.reviewCount > 0) ...[
-          const SizedBox(height: Dimens.space4),
+          const SizedBox(height: Dimens.space8),
           Row(
             children: [
               RatingBadge(

@@ -19,6 +19,7 @@ abstract final class AppIcons {
   static const IconData circle = CupertinoIcons.circle_fill;
   static const IconData close = CupertinoIcons.xmark;
   static const IconData copy = CupertinoIcons.doc_on_doc;
+  static const IconData creditcard = CupertinoIcons.creditcard;
   static const IconData dateRangeOutlined = CupertinoIcons.calendar;
   static const IconData elevator = LucideIcons.arrowUpDown;
   static const IconData errorOutline = CupertinoIcons.exclamationmark_circle;
@@ -33,6 +34,7 @@ abstract final class AppIcons {
   static const IconData infoOutline = CupertinoIcons.info_circle;
   static const IconData kitchen = LucideIcons.cookingPot;
   static const IconData localLaundryService = LucideIcons.washingMachine;
+  static const IconData location = CupertinoIcons.location;
   static const IconData localParking = CupertinoIcons.car;
   static const IconData lockOutlineRounded = CupertinoIcons.lock;
   static const IconData logout = CupertinoIcons.square_arrow_right;
@@ -57,6 +59,7 @@ abstract final class AppIcons {
   static const IconData starOutline = CupertinoIcons.star;
   static const IconData starRounded = CupertinoIcons.star_fill;
   static const IconData supportAgent = CupertinoIcons.headphones;
+  static const IconData tag = CupertinoIcons.tag;
   static const IconData systemUpdateAlt = CupertinoIcons.arrow_down_to_line;
   static const IconData tuneOutlined = CupertinoIcons.slider_horizontal_3;
   static const IconData tv = CupertinoIcons.tv;

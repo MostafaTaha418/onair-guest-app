@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -10,6 +13,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/listings/domain/results_page.dart';
 
 enum HomeSectionId { areas, suggested, newest, upcoming }
 
@@ -20,6 +24,9 @@ final class HomeState {
     this.refreshing = false,
     this.offline = false,
     this.fatalError,
+    this.availableToday,
+    this.availableTodayLoading = false,
+    this.availableTodayDate,
   });
 
   final HomeFeed? feed;
@@ -33,12 +40,20 @@ final class HomeState {
   /// The whole-feed failure when there is no cache to show.
   final ApiError? fatalError;
 
+  /// A fresh, date-filtered search result; never restored from the feed cache.
+  final FeedSection<List<ListingCard>>? availableToday;
+  final bool availableTodayLoading;
+  final DateOnly? availableTodayDate;
+
   HomeState copyWith({
     HomeFeed? feed,
     Map<HomeSectionId, bool>? sectionLoading,
     bool? refreshing,
     bool? offline,
     Object? fatalError = _unset,
+    FeedSection<List<ListingCard>>? availableToday,
+    bool? availableTodayLoading,
+    DateOnly? availableTodayDate,
   }) => HomeState(
     feed: feed ?? this.feed,
     sectionLoading: sectionLoading ?? this.sectionLoading,
@@ -47,6 +62,9 @@ final class HomeState {
     fatalError: fatalError == _unset
         ? this.fatalError
         : fatalError as ApiError?,
+    availableToday: availableToday ?? this.availableToday,
+    availableTodayLoading: availableTodayLoading ?? this.availableTodayLoading,
+    availableTodayDate: availableTodayDate ?? this.availableTodayDate,
   );
 
   static const _unset = Object();
@@ -62,6 +80,7 @@ final class HomeCubit extends Cubit<HomeState> {
     required this._reference,
     required ConnectivityCubit connectivity,
     required AuthCubit auth,
+    this.scheduleTodayRefresh = true,
   }) : _auth = auth,
        super(HomeState(offline: !connectivity.state.isOnline)) {
     _authSubscription = auth.stream.listen(_onAuthChanged);
@@ -77,6 +96,7 @@ final class HomeCubit extends Cubit<HomeState> {
   /// Kept so a feed response is checked against the *current* auth state
   /// before it reaches the UI (Constitution III).
   final AuthCubit _auth;
+  final bool scheduleTodayRefresh;
 
   /// Bumped on every signed-in/signed-out transition, so a feed response is
   /// discarded when the account it was requested for is no longer the one
@@ -88,6 +108,8 @@ final class HomeCubit extends Cubit<HomeState> {
   /// is dropped instead of overwriting newer state. Supabase RPCs cannot be
   /// cancelled, so a sequence number stands in for a CancelToken.
   int _requestSeq = 0;
+  int _todayRequestSeq = 0;
+  Timer? _todayTimer;
 
   late final StreamSubscription<AuthState> _authSubscription;
   late final StreamSubscription<ConnectivityState> _connectivitySubscription;
@@ -95,25 +117,75 @@ final class HomeCubit extends Cubit<HomeState> {
   /// Shows the cache (when there is one), then fetches fresh data and saves
   /// its public sections.
   Future<void> start() async {
+    if (scheduleTodayRefresh) {
+      _todayTimer ??= Timer.periodic(const Duration(minutes: 1), (_) {
+        if (state.availableTodayDate != CairoTime.today()) {
+          unawaited(_loadAvailableToday());
+        }
+      });
+    }
     final cached = await _cache.load();
     if (isClosed) return;
     if (cached != null) {
-      emit(state.copyWith(feed: cached, refreshing: true));
+      emit(
+        state.copyWith(
+          feed: cached,
+          refreshing: true,
+          availableTodayLoading: true,
+        ),
+      );
     } else {
       emit(
         state.copyWith(
           sectionLoading: {
             for (final id in HomeSectionId.values) id: true,
           },
+          availableTodayLoading: true,
         ),
       );
     }
-    await _loadFeed();
+    await Future.wait([_loadFeed(), _loadAvailableToday()]);
   }
 
   Future<void> refresh() async {
-    emit(state.copyWith(refreshing: true));
-    await _loadFeed();
+    emit(state.copyWith(refreshing: true, availableTodayLoading: true));
+    await Future.wait([_loadFeed(), _loadAvailableToday()]);
+  }
+
+  Future<void> retryAvailableToday() async {
+    emit(state.copyWith(availableTodayLoading: true));
+    await _loadAvailableToday();
+  }
+
+  Future<void> _loadAvailableToday() async {
+    final today = CairoTime.today();
+    final seq = ++_todayRequestSeq;
+    try {
+      final results = await _repo.searchProperties(
+        PropertySearchParams(stay: StayRange(today, today.addDays(1))),
+        limit: 10,
+      );
+      if (isClosed || seq != _todayRequestSeq) return;
+      emit(
+        state.copyWith(
+          availableToday: FeedSectionReady(results.items),
+          availableTodayLoading: false,
+          availableTodayDate: today,
+        ),
+      );
+    } on AppFailure catch (failure) {
+      if (isClosed || seq != _todayRequestSeq) return;
+      emit(
+        state.copyWith(
+          availableToday: FeedSectionFailed(
+            'INTERNAL',
+            failure.error.requestId,
+          ),
+          availableTodayLoading: false,
+          availableTodayDate: today,
+        ),
+      );
+    }
   }
 
   /// A section retry calls the feed again and replaces only that section
@@ -282,6 +354,7 @@ final class HomeCubit extends Cubit<HomeState> {
 
   @override
   Future<void> close() async {
+    _todayTimer?.cancel();
     await _authSubscription.cancel();
     await _connectivitySubscription.cancel();
     await super.close();

@@ -10,6 +10,7 @@ import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/features/notifications/domain/app_notification.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
@@ -145,10 +146,14 @@ void main() {
     expect(find.text(l10n.notifBookingConfirmedTitle), findsOneWidget);
     expect(find.text(l10n.notifRefundVerifiedTitle), findsOneWidget);
 
-    final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
-    expect(tiles, hasLength(6));
-    expect(tiles.take(3).every((t) => t.tileColor != null), isTrue);
-    expect(tiles.skip(3).every((t) => t.tileColor == null), isTrue);
+    expect(
+      find.byKey(const ValueKey('unread-e0000000-0000-4000-8000-000000000001')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('unread-e0000000-0000-4000-8000-000000000004')),
+      findsNothing,
+    );
   });
 
   testWidgets('a tap opens the booking and drops the unread count', (
@@ -175,14 +180,29 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(unread.state, 0);
-    final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
-    expect(tiles.every((t) => t.tileColor == null), isTrue);
+    expect(
+      find.byKey(const ValueKey('unread-e0000000-0000-4000-8000-000000000001')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('category chips filter real notification types', (tester) async {
+    await pumpCenter(tester);
+
+    await tester.tap(find.text(l10n.notificationsFilterPayment));
+    await tester.pump();
+    expect(find.text(l10n.notifRefundVerifiedTitle), findsOneWidget);
+    expect(find.text(l10n.notifBookingConfirmedTitle), findsNothing);
+
+    await tester.tap(find.text(l10n.notificationsFilterAll));
+    await tester.pump();
+    expect(find.text(l10n.notifBookingConfirmedTitle), findsOneWidget);
   });
 
   testWidgets('an empty center shows its empty view', (tester) async {
     await pumpCenter(tester, repo: EmptyNotifications());
     expect(find.text(l10n.notificationsEmpty), findsOneWidget);
-    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
+    expect(find.byIcon(AppIcons.notificationsNone), findsOneWidget);
   });
 
   testWidgets('a denied permission shows the off notice with an action', (

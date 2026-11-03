@@ -37,6 +37,23 @@ final class PropertyGalleryHeader extends StatefulWidget {
 
 final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
   int _current = 0;
+  bool _openingGallery = false;
+
+  Future<void> _openGallery(int index) async {
+    if (_openingGallery) return;
+    _openingGallery = true;
+    try {
+      await context.push<void>(
+        Uri(
+          path: AppRoutes.propertyGallery(widget.propertyId),
+          queryParameters: {'index': '$index'},
+        ).toString(),
+        extra: widget.images,
+      );
+    } finally {
+      _openingGallery = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +64,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
       child: Stack(
         children: [
           AspectRatio(
-            aspectRatio: 4 / 3,
+            aspectRatio: 1.08,
             child: total == 0
                 ? ColoredBox(color: colors['detailCard'])
                 : PageView.builder(
@@ -61,13 +78,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                       return GestureDetector(
                         // The images travel as `extra` so the gallery route
                         // never depends on the details screen's cubit.
-                        onTap: () => context.push(
-                          Uri(
-                            path: AppRoutes.propertyGallery(widget.propertyId),
-                            queryParameters: {'index': '$index'},
-                          ).toString(),
-                          extra: widget.images,
-                        ),
+                        onTap: () => _openGallery(index),
                         child: OnAirNetworkImage(
                           variants: variants,
                           heroTag: index == 0
@@ -79,23 +90,67 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                   ),
           ),
           SafeArea(
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: MaterialLocalizations.of(
-                    context,
-                  ).backButtonTooltip,
-                  onPressed: () => context.pop(),
-                  icon: Icon(
-                    AppIcons.arrowBackRounded,
-                    color: colors.textPrimary,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                Dimens.screenSide,
+                Dimens.space8,
+                Dimens.screenSide,
+                0,
+              ),
+              child: Row(
+                children: [
+                  Material(
+                    color: colors.surface,
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).backButtonTooltip,
+                      onPressed: () => context.pop(),
+                      icon: Icon(
+                        Directionality.of(context) == TextDirection.rtl
+                            ? AppIcons.chevronRight
+                            : AppIcons.chevronLeft,
+                        color: colors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                ...widget.actions,
-              ],
+                  const Spacer(),
+                  for (final action in widget.actions)
+                    Material(
+                      color: colors.surface,
+                      shape: const CircleBorder(),
+                      child: action,
+                    ),
+                ],
+              ),
             ),
           ),
+          if (total > 1)
+            PositionedDirectional(
+              bottom: Dimens.space16,
+              start: Dimens.space16,
+              end: Dimens.space16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var index = 0; index < total && index < 8; index++)
+                    Container(
+                      width: index == _current ? 24 : 7,
+                      height: 7,
+                      margin: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: index == _current
+                            ? colors['vipGold']
+                            : colors.surface.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           if (total > 0)
             PositionedDirectional(
               bottom: Dimens.space12,

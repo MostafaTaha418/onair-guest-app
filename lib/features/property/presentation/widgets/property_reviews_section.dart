@@ -9,7 +9,7 @@ import 'package:on_air/features/listings/domain/approved_review.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
-/// The latest three approved reviews over the reviews gradient, with a link
+/// The latest three approved reviews in a calm summary card, with a link
 /// to the full list.
 final class PropertyReviewsSection extends StatelessWidget {
   const PropertyReviewsSection({required this.details, super.key});
@@ -20,38 +20,69 @@ final class PropertyReviewsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    return Container(
-      padding: const EdgeInsetsDirectional.all(Dimens.space16),
-      decoration: BoxDecoration(gradient: colors.gradient('reviews')),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.propertyReviews,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colors.textPrimary,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.propertyReviews,
+          style: context.textStyles.sectionTitle.copyWith(
+            color: colors['textAccent'],
           ),
-          const SizedBox(height: Dimens.space8),
-          if (details.latestReviews.isEmpty)
-            Text(
-              l10n.reviewsNone,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.textPrimary,
-              ),
-            )
-          else
-            for (final review in details.latestReviews) ...[
-              ReviewTile(review: review),
-              const SizedBox(height: Dimens.space12),
+        ),
+        const SizedBox(height: Dimens.space12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsetsDirectional.all(Dimens.space16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(Dimens.radiusCard),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (details.reviewCount > 0) ...[
+                Row(
+                  children: [
+                    Icon(AppIcons.starRounded, color: colors['star'], size: 24),
+                    const SizedBox(width: Dimens.space8),
+                    Text(
+                      details.ratingAvg?.toStringAsFixed(1) ?? '',
+                      style: context.textStyles.sectionTitle.copyWith(
+                        color: colors.textPrimary,
+                        fontSize: 22,
+                      ),
+                    ),
+                    const SizedBox(width: Dimens.space8),
+                    Text(
+                      l10n.reviewsCount(details.reviewCount),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Dimens.space16),
+              ],
+              if (details.latestReviews.isEmpty)
+                Text(
+                  l10n.reviewsNone,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colors.textPrimary,
+                  ),
+                )
+              else
+                for (final review in details.latestReviews) ...[
+                  ReviewTile(review: review),
+                  const SizedBox(height: Dimens.space16),
+                ],
             ],
-          TextButton(
-            onPressed: () =>
-                context.push(AppRoutes.propertyReviews(details.id)),
-            child: Text(l10n.reviewsSeeAll),
           ),
-        ],
-      ),
+        ),
+        TextButton(
+          onPressed: () => context.push(AppRoutes.propertyReviews(details.id)),
+          child: Text(l10n.reviewsSeeAll),
+        ),
+      ],
     );
   }
 }
@@ -73,7 +104,9 @@ final class ReviewTile extends StatelessWidget {
           children: [
             for (var star = 1; star <= 5; star++)
               Icon(
-                star <= review.rating ? AppIcons.starRounded : AppIcons.starOutline,
+                star <= review.rating
+                    ? AppIcons.starRounded
+                    : AppIcons.starOutline,
                 size: 16,
                 color: colors['star'],
               ),
@@ -91,7 +124,7 @@ final class ReviewTile extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '${review.reviewerShortName} · '
-          '${DateOnlyFormatter.dayMonth(review.createdOn)}',
+          '${DateOnlyFormatter.dayMonth(review.createdOn, locale: AppLocalizations.of(context).localeName)}',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: colors.textSecondary,
           ),

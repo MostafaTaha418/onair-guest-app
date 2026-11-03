@@ -19,6 +19,8 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
@@ -26,6 +28,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/listings/domain/results_page.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_auth_repository.dart';
@@ -111,6 +114,15 @@ void main() {
     HomeFeed? cachedFeed,
     bool offline = false,
   }) async {
+    if (listings.searchResponses.isEmpty) {
+      listings.searchResponses.add(
+        ResultsPage(
+          items: [card('p1', 'شقة مقترحة')],
+          nextCursor: null,
+          totalCount: 1,
+        ),
+      );
+    }
     if (cachedFeed != null) {
       await HomeFeedCache(cache).save(cachedFeed);
     }
@@ -127,6 +139,12 @@ void main() {
     final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
     unawaited(authCubit.restore());
     addTearDown(authCubit.close);
+    final favoritesCubit = FavoritesCubit(
+      repository: MemoryFavoritesRepository(),
+      listings: listings,
+      auth: authCubit,
+    );
+    addTearDown(favoritesCubit.close);
     final connectivityCubit = connectivity.createCubit();
     addTearDown(connectivityCubit.close);
     // The cubit must be subscribed before the offline event is broadcast;
@@ -187,6 +205,7 @@ void main() {
         child: MultiBlocProvider(
           providers: [
             BlocProvider<AuthCubit>.value(value: authCubit),
+            BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
             BlocProvider<ConnectivityCubit>.value(value: connectivityCubit),
           ],
           // The global offline banner, exactly as app.dart renders it.
@@ -239,6 +258,7 @@ void main() {
         suggested: const FeedSectionFailed<List<ListingCard>>('INTERNAL', null),
       ),
     );
+    listings.searchResponses.add(AppFailure(ErrorMapper.noResponse()));
     await pumpHome(tester, signedIn: false);
 
     expect(find.text(l10n.retry), findsOneWidget);
@@ -251,6 +271,9 @@ void main() {
   ) async {
     listings.homeFeedResponses.add(
       feed(suggested: const FeedSectionReady(<ListingCard>[])),
+    );
+    listings.searchResponses.add(
+      const ResultsPage(items: [], nextCursor: null, totalCount: 0),
     );
     await pumpHome(tester, signedIn: false);
 
@@ -300,7 +323,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('property:p2'), findsNothing);
-    expect(find.text('شقة مقترحة'), findsOneWidget);
+    expect(find.text('شقة أحدث'), findsOneWidget);
 
     await tester.tap(find.text('شقة أحدث'));
     await tester.pumpAndSettle();
@@ -348,6 +371,7 @@ void main() {
     // and the offline banner are there right after the first pump.
     await HomeFeedCache(cache).save(feed());
     listings.homeFeedResponses.add(AppFailure(ErrorMapper.noResponse()));
+    listings.searchResponses.add(AppFailure(ErrorMapper.noResponse()));
     await pumpHome(
       tester,
       signedIn: false,
@@ -355,7 +379,7 @@ void main() {
       offline: true,
     );
 
-    expect(find.text('شقة مقترحة'), findsOneWidget);
+    expect(find.text('شقة أحدث'), findsOneWidget);
     expect(find.text(l10n.offline), findsOneWidget);
     expect(find.byType(SkeletonBox), findsNothing);
   });
@@ -363,6 +387,9 @@ void main() {
   testWidgets('the empty state shows when every section is empty', (
     tester,
   ) async {
+    listings.searchResponses.add(
+      const ResultsPage(items: [], nextCursor: null, totalCount: 0),
+    );
     listings.homeFeedResponses.add(
       HomeFeed(
         referenceVersion: 'mock-ref-1',

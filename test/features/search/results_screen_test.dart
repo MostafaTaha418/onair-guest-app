@@ -15,6 +15,9 @@ import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
@@ -26,6 +29,7 @@ import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../helpers/fake_auth_repository.dart';
 import '../../helpers/fake_connectivity.dart';
 import '../../helpers/fake_listings_repository.dart';
 import '../../helpers/fake_share_service.dart';
@@ -73,6 +77,16 @@ void main() {
   });
 
   Future<void> pumpHost(WidgetTester tester, {FakeShareService? share}) async {
+    final authRepository = FakeAuthRepository();
+    final authCubit = AuthCubit(authRepository, currentTermsVersion: 'v1');
+    final favoritesCubit = FavoritesCubit(
+      repository: MemoryFavoritesRepository(),
+      listings: listings,
+      auth: authCubit,
+    );
+    addTearDown(authRepository.dispose);
+    addTearDown(authCubit.close);
+    addTearDown(favoritesCubit.close);
     // A tall phone-sized window so list items beyond the first are built.
     tester.view.physicalSize = const Size(400, 1600);
     tester.view.devicePixelRatio = 1.0;
@@ -125,6 +139,8 @@ void main() {
               value: connectivity.createCubit(),
             ),
             BlocProvider<SearchCubit>.value(value: cubit),
+            BlocProvider<AuthCubit>.value(value: authCubit),
+            BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
           ],
           child: MaterialApp.router(
             locale: const Locale('ar'),
@@ -192,6 +208,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PropertyCard), findsOneWidget);
     expect(find.textContaining('إجمالي 3 ليالي'), findsNothing);
+  });
+
+  testWidgets('area cards show verified tonight availability', (tester) async {
+    listings.searchResponses.add(
+      ResultsPage(
+        items: [_card('booked'), _card('open')],
+        nextCursor: null,
+        totalCount: 2,
+      ),
+    );
+    listings.unavailableNightsResponses
+      ..add({today})
+      ..add(<DateOnly>{});
+    await pumpHost(tester);
+    unawaited(cubit.search(SearchCriteria.empty));
+    await openResults(tester);
+
+    expect(find.text(l10n.propertyBookedTonight), findsOneWidget);
+    expect(find.text(l10n.propertyAvailableTonight), findsOneWidget);
+    expect(
+      listings.calls.where((call) => call.startsWith('unavailableNights(')),
+      hasLength(2),
+    );
   });
 
   testWidgets('empty shows the empty message', (tester) async {

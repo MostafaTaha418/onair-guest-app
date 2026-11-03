@@ -7,7 +7,7 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
-/// Material icon per amenity key; unknown names fall back to a generic icon
+/// Cupertino or Lucide icon per amenity key; unknown names use a check mark
 /// (data-model "ReferenceData").
 const _amenityIcons = <String, IconData>{
   'wifi': AppIcons.wifi,
@@ -41,42 +41,55 @@ final class PropertyAmenitiesSection extends StatelessWidget {
       children: [
         Text(
           l10n.propertyAmenities,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.textPrimary,
+          style: context.textStyles.sectionTitle.copyWith(
+            color: colors['textAccent'],
           ),
         ),
-        const SizedBox(height: Dimens.space8),
+        const SizedBox(height: Dimens.space12),
         if (preview.isNotEmpty)
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: Dimens.space8,
-            crossAxisSpacing: Dimens.space8,
-            childAspectRatio: 5,
-            children: [
-              for (final amenity in preview)
-                Row(
-                  children: [
-                    Icon(
-                      amenityIcon(amenity.icon),
-                      size: 20,
-                      color: colors.textPrimary,
-                    ),
-                    const SizedBox(width: Dimens.space8),
-                    Flexible(
-                      child: Text(
-                        amenity.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colors.textPrimary,
-                        ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 540 ? 3 : 2;
+              final width =
+                  (constraints.maxWidth - (columns - 1) * Dimens.space8) /
+                  columns;
+              return Wrap(
+                spacing: Dimens.space8,
+                runSpacing: Dimens.space8,
+                children: [
+                  for (final amenity in preview)
+                    Container(
+                      width: width,
+                      constraints: const BoxConstraints(minHeight: 72),
+                      padding: const EdgeInsetsDirectional.all(Dimens.space12),
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(Dimens.radiusCard),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            amenityIcon(amenity.icon),
+                            size: 22,
+                            color: colors['textAccent'],
+                          ),
+                          const SizedBox(width: Dimens.space8),
+                          Expanded(
+                            child: Text(
+                              amenity.label,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: colors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-            ],
+                ],
+              );
+            },
           ),
         if (details.amenities.length > 6)
           TextButton(

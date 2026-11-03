@@ -33,6 +33,9 @@ import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart'
 import 'package:on_air/features/bookings/data/mock_booking_server.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
 import 'package:on_air/features/bookings/presentation/unfinished_payment_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/domain/favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/in_app_notification_banner.dart';
@@ -55,6 +58,7 @@ final class OnAirApp extends StatefulWidget {
     this.versionGate,
     this.inAppBrowser,
     this.pushMessages,
+    this.favoritesRepository,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -76,6 +80,7 @@ final class OnAirApp extends StatefulWidget {
   /// Injectable push source for tests; production resolves it from the
   /// backend mode (FCM or nothing).
   final PushMessageSource? pushMessages;
+  final FavoritesRepository? favoritesRepository;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -84,6 +89,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   late final AuthCubit _authCubit;
   late final ConnectivityCubit _connectivityCubit;
   late final SearchCubit _searchCubit;
+  late final FavoritesCubit _favoritesCubit;
   late final AuthRouterRefresh _refresh;
   late final GoRouter _router;
   late final SessionEventSource _sessionEventSource;
@@ -160,6 +166,11 @@ final class _OnAirAppState extends State<OnAirApp> {
       repo: context.read<ListingsRepository>(),
       lastSearch: context.read<LastSearchStore>(),
       connectivity: _connectivityCubit,
+    );
+    _favoritesCubit = FavoritesCubit(
+      repository: widget.favoritesRepository ?? MemoryFavoritesRepository(),
+      listings: context.read<ListingsRepository>(),
+      auth: _authCubit,
     );
     _sessionEventSource =
         widget.sessionEventSource ?? const NoopSessionEventSource();
@@ -337,6 +348,7 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(source.close());
     }
     unawaited(_authCubit.close());
+    unawaited(_favoritesCubit.close());
     unawaited(_searchCubit.close());
     if (widget.connectivityCubit == null) {
       unawaited(_connectivityCubit.close());
@@ -348,6 +360,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   Widget build(BuildContext context) => MultiBlocProvider(
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
+      BlocProvider<FavoritesCubit>.value(value: _favoritesCubit),
       BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
       BlocProvider<PaymentAttemptCubit>.value(value: _paymentAttemptCubit),
       BlocProvider<UnreadCountCubit>.value(value: _unreadCountCubit),

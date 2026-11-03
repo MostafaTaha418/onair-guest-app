@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_air/app/router/incoming_links.dart';
@@ -191,7 +192,7 @@ void main() {
 
     final closeButton = tester.widget<IconButton>(
       find.ancestor(
-        of: find.byIcon(Icons.close),
+        of: find.byIcon(AppIcons.close),
         matching: find.byType(IconButton),
       ),
     );

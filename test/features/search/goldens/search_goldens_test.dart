@@ -14,6 +14,9 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
+import 'package:on_air/features/favorites/presentation/favorites_cubit.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
@@ -29,6 +32,7 @@ import 'package:on_air/features/search/presentation/search_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_connectivity.dart';
 import '../../../helpers/fake_listings_repository.dart';
 
@@ -147,6 +151,16 @@ Widget _results(ThemeMode mode, TextDirection direction, double scale) {
   _ensureFakes();
   final repository = _repositoryWithResults();
   final connectivity = _connectivity!;
+  final authRepository = FakeAuthRepository();
+  final authCubit = AuthCubit(authRepository, currentTermsVersion: 'v1');
+  final favoritesCubit = FavoritesCubit(
+    repository: MemoryFavoritesRepository(),
+    listings: repository,
+    auth: authCubit,
+  );
+  addTearDown(authRepository.dispose);
+  addTearDown(authCubit.close);
+  addTearDown(favoritesCubit.close);
   return _theme(
     mode,
     direction,
@@ -180,6 +194,8 @@ Widget _results(ThemeMode mode, TextDirection direction, double scale) {
               today: () => DateOnly(2026, 11, 1),
             ),
           ),
+          BlocProvider<AuthCubit>.value(value: authCubit),
+          BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
         ],
         child: Builder(
           builder: (context) {

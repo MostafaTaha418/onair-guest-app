@@ -175,6 +175,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesEmpty => 'Your saved places will appear here.';
 
   @override
+  String get favoriteAdd => 'Add to favorites';
+
+  @override
+  String get favoriteRemove => 'Remove from favorites';
+
+  @override
+  String get favoriteSaveFailed => 'Couldn\'t update favorites. Try again.';
+
+  @override
+  String get favoritesLoadFailed => 'Couldn\'t load favorites. Try again.';
+
+  @override
   String get accountEmpty => 'Your account details will appear here.';
 
   @override
@@ -331,7 +343,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAreasTitle => 'Areas and destinations';
 
   @override
-  String get homeSuggestedTitle => 'Suggested apartments';
+  String get homeSuggestedTitle => 'Available today';
+
+  @override
+  String get propertyViewDetails => 'View details';
+
+  @override
+  String get propertyAvailableBadge => 'Available';
+
+  @override
+  String get propertyAvailableTonight => 'Available tonight';
+
+  @override
+  String get propertyBookedTonight => 'Booked tonight';
 
   @override
   String get homeNewestTitle => 'Newest apartments';
@@ -1157,6 +1181,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsMarkAllRead => 'Mark all as read';
 
   @override
+  String get notificationsFilterAll => 'All';
+
+  @override
+  String get notificationsFilterBooking => 'Booking';
+
+  @override
+  String get notificationsFilterPayment => 'Payment';
+
+  @override
+  String get notificationsFilterOffers => 'Offers';
+
+  @override
+  String get notificationsFilterReplies => 'Replies';
+
+  @override
+  String get notificationsFilterHint => 'Filter notifications';
+
+  @override
+  String get notificationsFilterEmpty => 'No notifications in this category.';
+
+  @override
+  String get notificationsJustNow => 'Just now';
+
+  @override
+  String notificationsMinutesAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String notificationsHoursAgo(int count) {
+    return '$count hr ago';
+  }
+
+  @override
+  String notificationsDaysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String notificationsWeeksAgo(int count) {
+    return '$count weeks ago';
+  }
+
+  @override
   String get notificationsEmpty => 'No notifications yet.';
 
   @override
@@ -1192,7 +1260,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The owner replies within 24 hours. Tap for details.';
 
   @override
-  String get notifBookingConfirmedTitle => 'Booking confirmed ✓';
+  String get notifBookingConfirmedTitle => 'Booking confirmed';
 
   @override
   String get notifBookingConfirmedBody => 'Tap for details.';
