@@ -1,0 +1,66 @@
+import 'package:flutter/cupertino.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+/// A consistent icon vocabulary: Cupertino first, Lucide for amenities and
+/// states that have no clear Cupertino equivalent.
+abstract final class AppIcons {
+  static const IconData acUnit = CupertinoIcons.snow;
+  static const IconData addCircleOutline = CupertinoIcons.add_circled;
+  static const IconData arrowBackRounded = CupertinoIcons.chevron_back;
+  static const IconData balcony = LucideIcons.fence;
+  static const IconData bathtubOutlined = LucideIcons.bath;
+  static const IconData bedOutlined = CupertinoIcons.bed_double;
+  static const IconData calendarMonth = CupertinoIcons.calendar;
+  static const IconData calendarMonthOutlined = CupertinoIcons.calendar;
+  static const IconData checkCircle = CupertinoIcons.checkmark_circle_fill;
+  static const IconData checkCircleOutline = CupertinoIcons.checkmark_circle;
+  static const IconData chevronLeft = CupertinoIcons.chevron_left;
+  static const IconData chevronRight = CupertinoIcons.chevron_right;
+  static const IconData circle = CupertinoIcons.circle_fill;
+  static const IconData close = CupertinoIcons.xmark;
+  static const IconData copy = CupertinoIcons.doc_on_doc;
+  static const IconData dateRangeOutlined = CupertinoIcons.calendar;
+  static const IconData elevator = LucideIcons.arrowUpDown;
+  static const IconData errorOutline = CupertinoIcons.exclamationmark_circle;
+  static const IconData eventBusy = CupertinoIcons.calendar_badge_minus;
+  static const IconData favorite = CupertinoIcons.heart_fill;
+  static const IconData favoriteBorder = CupertinoIcons.heart;
+  static const IconData historyEdu = LucideIcons.scrollText;
+  static const IconData home = CupertinoIcons.house_fill;
+  static const IconData homeOutlined = CupertinoIcons.house;
+  static const IconData imageNotSupportedOutlined = LucideIcons.imageOff;
+  static const IconData imageOutlined = CupertinoIcons.photo;
+  static const IconData infoOutline = CupertinoIcons.info_circle;
+  static const IconData kitchen = LucideIcons.cookingPot;
+  static const IconData localLaundryService = LucideIcons.washingMachine;
+  static const IconData localParking = CupertinoIcons.car;
+  static const IconData lockOutlineRounded = CupertinoIcons.lock;
+  static const IconData logout = CupertinoIcons.square_arrow_right;
+  static const IconData mailOutlineRounded = CupertinoIcons.mail;
+  static const IconData notificationsActiveOutlined = CupertinoIcons.bell_fill;
+  static const IconData notificationsNone = CupertinoIcons.bell;
+  static const IconData notificationsOffOutlined = CupertinoIcons.bell_slash;
+  static const IconData notificationsOutlined = CupertinoIcons.bell;
+  static const IconData peopleOutline = CupertinoIcons.person_2;
+  static const IconData person = CupertinoIcons.person_fill;
+  static const IconData personOutline = CupertinoIcons.person;
+  static const IconData personOutlineRounded = CupertinoIcons.person;
+  static const IconData phoneOutlined = CupertinoIcons.phone;
+  static const IconData pool = LucideIcons.waves;
+  static const IconData radioButtonUnchecked = CupertinoIcons.circle;
+  static const IconData removeCircleOutline = CupertinoIcons.minus_circle;
+  static const IconData schedule = CupertinoIcons.clock;
+  static const IconData search = CupertinoIcons.search;
+  static const IconData searchOff = LucideIcons.searchX;
+  static const IconData shareOutlined = CupertinoIcons.share;
+  static const IconData squareFootOutlined = LucideIcons.ruler;
+  static const IconData starOutline = CupertinoIcons.star;
+  static const IconData starRounded = CupertinoIcons.star_fill;
+  static const IconData supportAgent = CupertinoIcons.headphones;
+  static const IconData systemUpdateAlt = CupertinoIcons.arrow_down_to_line;
+  static const IconData tuneOutlined = CupertinoIcons.slider_horizontal_3;
+  static const IconData tv = CupertinoIcons.tv;
+  static const IconData waves = LucideIcons.waves;
+  static const IconData wifi = CupertinoIcons.wifi;
+  static const IconData wifiOff = LucideIcons.wifiOff;
+}

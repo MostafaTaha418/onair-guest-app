@@ -7,6 +7,7 @@ import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/on_air_bottom_nav.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
+import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class AppShell extends StatelessWidget {
@@ -18,16 +19,19 @@ final class AppShell extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: OnAirBottomNav(
-        currentIndex: navigationShell.currentIndex,
-        labels: [
-          l10n.home,
-          l10n.search,
-          l10n.bookings,
-          l10n.favorites,
-          l10n.account,
-        ],
-        onTap: (index) => _openTab(context, index),
+      bottomNavigationBar: BlocBuilder<UnreadCountCubit, int>(
+        builder: (context, unreadCount) => OnAirBottomNav(
+          currentIndex: navigationShell.currentIndex,
+          unreadCount: unreadCount,
+          labels: [
+            l10n.home,
+            l10n.search,
+            l10n.bookings,
+            l10n.notifications,
+            l10n.account,
+          ],
+          onTap: (index) => _openTab(context, index),
+        ),
       ),
     );
   }
@@ -37,7 +41,7 @@ final class AppShell extends StatelessWidget {
       AppRoutes.home,
       AppRoutes.search,
       AppRoutes.bookings,
-      AppRoutes.favorites,
+      AppRoutes.notifications,
       AppRoutes.account,
     ];
     final target = locations[index];

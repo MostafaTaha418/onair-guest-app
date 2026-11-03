@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/components/expandable_text.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -41,7 +42,7 @@ final class PropertyRulesSection extends StatelessWidget {
             padding: const EdgeInsetsDirectional.only(bottom: 4),
             child: Row(
               children: [
-                Icon(Icons.schedule, size: 18, color: colors.textSecondary),
+                Icon(AppIcons.schedule, size: 18, color: colors.textSecondary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

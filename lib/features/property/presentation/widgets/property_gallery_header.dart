@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/images/image_variants.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
@@ -86,7 +87,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                   ).backButtonTooltip,
                   onPressed: () => context.pop(),
                   icon: Icon(
-                    Icons.adaptive.arrow_back,
+                    AppIcons.arrowBackRounded,
                     color: colors.textPrimary,
                   ),
                 ),

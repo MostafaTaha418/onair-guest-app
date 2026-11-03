@@ -13,6 +13,7 @@ import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -126,7 +127,7 @@ final class _DatesScreenState extends State<DatesScreen> {
           builder: (context, state) => switch (state.load) {
             FlowLoad.loading => const _DatesSkeleton(),
             FlowLoad.notAvailable => EmptyView(
-              icon: Icons.home_outlined,
+              icon: AppIcons.homeOutlined,
               message: l10n.propertyNotAvailable,
             ),
             FlowLoad.failed => ErrorView(

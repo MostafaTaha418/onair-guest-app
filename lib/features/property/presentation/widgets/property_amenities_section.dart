@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
@@ -9,20 +10,20 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 /// Material icon per amenity key; unknown names fall back to a generic icon
 /// (data-model "ReferenceData").
 const _amenityIcons = <String, IconData>{
-  'wifi': Icons.wifi,
-  'ac': Icons.ac_unit,
-  'kitchen': Icons.kitchen,
-  'washer': Icons.local_laundry_service,
-  'parking': Icons.local_parking,
-  'pool': Icons.pool,
-  'elevator': Icons.elevator,
-  'tv': Icons.tv,
-  'balcony': Icons.balcony,
-  'sea_view': Icons.waves,
+  'wifi': AppIcons.wifi,
+  'ac': AppIcons.acUnit,
+  'kitchen': AppIcons.kitchen,
+  'washer': AppIcons.localLaundryService,
+  'parking': AppIcons.localParking,
+  'pool': AppIcons.pool,
+  'elevator': AppIcons.elevator,
+  'tv': AppIcons.tv,
+  'balcony': AppIcons.balcony,
+  'sea_view': AppIcons.waves,
 };
 
 IconData amenityIcon(String? name) =>
-    _amenityIcons[name] ?? Icons.check_circle_outline;
+    _amenityIcons[name] ?? AppIcons.checkCircleOutline;
 
 /// The first six amenities with a "see all" sheet for the rest.
 final class PropertyAmenitiesSection extends StatelessWidget {

@@ -10,6 +10,7 @@ import 'package:on_air/core/images/image_variants.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
@@ -143,7 +144,7 @@ final class _GalleryScreenState extends State<GalleryScreen> {
             ),
           if (!_loading && failed == null && total == 0)
             EmptyView(
-              icon: Icons.image_outlined,
+              icon: AppIcons.imageOutlined,
               message: l10n.galleryEmpty,
             ),
           if (!_loading && failed == null && controller != null && total > 0)
@@ -169,7 +170,7 @@ final class _GalleryScreenState extends State<GalleryScreen> {
                   tooltip: l10n.galleryClose,
                   onPressed: () => context.pop(),
                   icon: Icon(
-                    Icons.close,
+                    AppIcons.close,
                     color: colors.textPrimary,
                   ),
                 ),

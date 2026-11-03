@@ -3,6 +3,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/refund_stage_tracker.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_parts.dart';
@@ -57,7 +58,7 @@ final class RefundSection extends StatelessWidget {
         if (failed) ...[
           const SizedBox(height: Dimens.space12),
           NoticeCard(
-            icon: Icons.support_agent,
+            icon: AppIcons.supportAgent,
             message: l10n.refundProblemHint,
           ),
         ],

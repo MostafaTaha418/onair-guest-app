@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -50,7 +51,7 @@ final class PushPermissionCoordinator {
                 ),
                 const SizedBox(height: Dimens.space8),
                 NoticeCard(
-                  icon: Icons.notifications_active_outlined,
+                  icon: AppIcons.notificationsActiveOutlined,
                   message: l10n.pushPermissionBody,
                 ),
                 const SizedBox(height: Dimens.space16),

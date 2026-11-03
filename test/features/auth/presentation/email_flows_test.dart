@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
@@ -68,7 +70,13 @@ void main() {
       'password1',
     );
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
+    final button = find.byKey(const ValueKey('email-submit-button'));
+    await tester.scrollUntilVisible(
+      button,
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(button);
     await tester.pump();
 
     expect(auth.lastEmail, 'guest@example.com');
@@ -100,8 +108,13 @@ void main() {
 
     expect(find.byKey(const ValueKey('email-name-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
-    expect(find.byKey(const ValueKey('password-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('email-phone-field')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('password-field')),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.byKey(const ValueKey('password-field')), findsOneWidget);
   });
 
   testWidgets('email registration sends phone and current terms', (
@@ -126,23 +139,96 @@ void main() {
       find.byKey(const ValueKey('email-field')),
       'guest@example.com',
     );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('password-field')),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.enterText(
       find.byKey(const ValueKey('password-field')),
       'password1',
     );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(
       find.byKey(const ValueKey('email-terms-checkbox')),
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
     await tester.pump();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(
       find.byKey(const ValueKey('email-submit-button')),
     );
+    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('email-submit-button')));
     await tester.pump();
 
     expect(auth.lastPhone, '01012345678');
     expect(auth.lastTermsVersion, 'v1');
+  });
+
+  testWidgets('email registration ignores a rapid second submit', (
+    tester,
+  ) async {
+    final barrier = Completer<void>();
+    auth.signUpEmailBarrier = barrier.future;
+    await tester.pumpOnAirApp(
+      const RegisterScreen(phoneAuthEnabled: false),
+      authRepository: auth,
+      appConfigRepository: config,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-name-field')),
+      'Guest Name',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-phone-field')),
+      '01012345678',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-field')),
+      'guest@example.com',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('password-field')),
+      'password1',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+    );
+    await tester.pump();
+    final button = find.byKey(const ValueKey('email-submit-button'));
+    await tester.tap(button);
+    await tester.tap(button);
+    await tester.pump();
+
+    expect(auth.signUpEmailCalls, 1);
+    barrier.complete();
+    await tester.pump();
   });
 
   testWidgets('forgot password shows the same success for any email', (
@@ -169,6 +255,29 @@ void main() {
     }
   });
 
+  testWidgets('recovery ignores a rapid second submit', (tester) async {
+    final barrier = Completer<void>();
+    auth.requestRecoveryBarrier = barrier.future;
+    await tester.pumpOnAirApp(
+      const ForgotPasswordScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('recovery-email-field')),
+      'guest@example.com',
+    );
+    await tester.pump();
+    final button = find.byKey(const ValueKey('recovery-submit-button'));
+    await tester.tap(button);
+    await tester.tap(button);
+    await tester.pump();
+
+    expect(auth.requestRecoveryCalls, 1);
+    barrier.complete();
+    await tester.pump();
+  });
+
   testWidgets('new password enforces the password rule', (tester) async {
     auth.challenge = CodeChallenge(
       channel: VerificationChannel.emailRecovery,
@@ -190,14 +299,42 @@ void main() {
     );
     await tester.pump();
 
-    final button = tester.widget<TextButton>(
-      find.descendant(
-        of: find.byKey(const ValueKey('new-password-submit-button')),
-        matching: find.byType(TextButton),
-      ),
-    );
-    expect(button.onPressed, isNull);
+    await tester.tap(find.byKey(const ValueKey('new-password-submit-button')));
+    await tester.pump();
+    expect(auth.setNewPasswordCalls, 0);
     expect(find.textContaining('حرف ورقم'), findsWidgets);
+  });
+
+  testWidgets('new password ignores a rapid second submit', (tester) async {
+    auth.challenge = CodeChallenge(
+      channel: VerificationChannel.emailRecovery,
+      target: 'guest@example.com',
+      resendAt: DateTime.utc(2026),
+    );
+    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    await cubit.requestRecovery('guest@example.com');
+    await cubit.verifyRecovery('123456');
+    final barrier = Completer<void>();
+    auth.setNewPasswordBarrier = barrier.future;
+    await tester.pumpOnAirApp(
+      const NewPasswordScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+      authCubit: cubit,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('new-password-field')),
+      'password1',
+    );
+    await tester.pump();
+    final button = find.byKey(const ValueKey('new-password-submit-button'));
+    await tester.tap(button);
+    await tester.tap(button);
+    await tester.pump();
+
+    expect(auth.setNewPasswordCalls, 1);
+    barrier.complete();
+    await tester.pump();
   });
 
   testWidgets('email code screen offers change email', (tester) async {

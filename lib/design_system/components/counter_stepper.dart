@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 
@@ -37,7 +38,7 @@ final class CounterStepper extends StatelessWidget {
         IconButton(
           tooltip: decrementTooltip,
           onPressed: value > min ? () => onChanged(value - 1) : null,
-          icon: const Icon(Icons.remove_circle_outline),
+          icon: const Icon(AppIcons.removeCircleOutline),
           constraints: const BoxConstraints(
             minWidth: Dimens.minTouchTarget,
             minHeight: Dimens.minTouchTarget,
@@ -52,7 +53,7 @@ final class CounterStepper extends StatelessWidget {
         IconButton(
           tooltip: incrementTooltip,
           onPressed: value < max ? () => onChanged(value + 1) : null,
-          icon: const Icon(Icons.add_circle_outline),
+          icon: const Icon(AppIcons.addCircleOutline),
           constraints: const BoxConstraints(
             minWidth: Dimens.minTouchTarget,
             minHeight: Dimens.minTouchTarget,

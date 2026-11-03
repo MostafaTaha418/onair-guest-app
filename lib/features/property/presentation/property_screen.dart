@@ -21,6 +21,7 @@ import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/price_text.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
@@ -335,7 +336,7 @@ final class _ReadyBody extends StatelessWidget {
                           ? () => _onShare(context)
                           : null,
                       icon: Icon(
-                        Icons.share_outlined,
+                        AppIcons.shareOutlined,
                         color: context.colors.textPrimary,
                       ),
                     ),

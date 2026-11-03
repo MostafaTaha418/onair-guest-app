@@ -315,13 +315,16 @@ void main() {
 
     expect(find.text(l10n.homeHello), findsOneWidget);
     expect(find.text('زائر تجريبي'), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-brand-mark')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-brand-lockup')), findsNothing);
   });
 
-  testWidgets('the visitor greeting has no name', (tester) async {
+  testWidgets('a visitor sees the brand mark and name', (tester) async {
     listings.homeFeedResponses.add(feed());
     await pumpHome(tester, signedIn: false);
 
-    expect(find.text(l10n.homeHello), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-brand-lockup')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-brand-mark')), findsNothing);
     expect(find.text('زائر تجريبي'), findsNothing);
   });
 

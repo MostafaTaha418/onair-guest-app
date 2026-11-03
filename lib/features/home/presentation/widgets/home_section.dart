@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -68,7 +69,7 @@ final class HomeSection extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.error_outline,
+                  AppIcons.errorOutline,
                   size: 18,
                   color: colors.errorText,
                 ),

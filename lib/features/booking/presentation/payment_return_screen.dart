@@ -10,6 +10,7 @@ import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/booking/domain/verification_outcome.dart';
@@ -182,7 +183,7 @@ final class _Success extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_outline, size: 64),
+            const Icon(AppIcons.checkCircleOutline, size: 64),
             const SizedBox(height: Dimens.space16),
             Text(l10n.paymentSuccessTitle, textAlign: TextAlign.center),
             const SizedBox(height: Dimens.space8),
@@ -289,7 +290,7 @@ final class _Failed extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 64),
+            const Icon(AppIcons.errorOutline, size: 64),
             const SizedBox(height: Dimens.space16),
             Text(l10n.paymentFailedTitle, textAlign: TextAlign.center),
             const SizedBox(height: Dimens.space8),
@@ -337,7 +338,7 @@ final class _Conflict extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.event_busy, size: 64),
+            const Icon(AppIcons.eventBusy, size: 64),
             const SizedBox(height: Dimens.space16),
             Text(l10n.paymentConflictTitle, textAlign: TextAlign.center),
             const SizedBox(height: Dimens.space8),
@@ -375,7 +376,7 @@ final class _Timeout extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.schedule, size: 64),
+          const Icon(AppIcons.schedule, size: 64),
           const SizedBox(height: Dimens.space16),
           Text(l10n.paymentTimeoutTitle, textAlign: TextAlign.center),
           const SizedBox(height: Dimens.space8),

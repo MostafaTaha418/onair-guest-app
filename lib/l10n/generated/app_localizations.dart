@@ -554,6 +554,24 @@ abstract class AppLocalizations {
   /// **'اكتب بريد إلكتروني صحيح.'**
   String get authEmailInvalid;
 
+  /// No description provided for @authFieldRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحقل ده مطلوب.'**
+  String get authFieldRequired;
+
+  /// No description provided for @authCodeRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب كود التأكيد.'**
+  String get authCodeRequired;
+
+  /// No description provided for @authCodeIncomplete.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب الكود كاملًا من 6 أرقام.'**
+  String get authCodeIncomplete;
+
   /// No description provided for @authPasswordRule.
   ///
   /// In ar, this message translates to:

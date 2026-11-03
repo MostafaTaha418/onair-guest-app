@@ -8,6 +8,8 @@ final class OnAirPrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.gradient = false,
+    this.pill = false,
+    this.height = Dimens.minTouchTarget,
     super.key,
   });
 
@@ -15,6 +17,8 @@ final class OnAirPrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool gradient;
+  final bool pill;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,9 @@ final class OnAirPrimaryButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: gradient ? null : colors['button'],
         gradient: gradient ? colors.gradient('authButton') : null,
-        borderRadius: BorderRadius.circular(Dimens.radiusButton),
+        borderRadius: BorderRadius.circular(
+          pill ? height / 2 : Dimens.radiusButton,
+        ),
         boxShadow: gradient
             ? [
                 BoxShadow(
@@ -35,7 +41,7 @@ final class OnAirPrimaryButton extends StatelessWidget {
             : null,
       ),
       child: SizedBox(
-        height: Dimens.minTouchTarget,
+        height: height,
         width: double.infinity,
         child: TextButton(
           onPressed: isLoading ? null : onPressed,

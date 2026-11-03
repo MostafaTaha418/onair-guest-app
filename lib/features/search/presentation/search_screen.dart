@@ -9,6 +9,7 @@ import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/counter_stepper.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
@@ -138,7 +139,7 @@ final class _DatesRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              Icons.date_range_outlined,
+              AppIcons.dateRangeOutlined,
               color: colors.textSecondary,
             ),
             const SizedBox(width: Dimens.space8),
@@ -228,7 +229,7 @@ final class _FiltersButton extends StatelessWidget {
         if (edited == null || !context.mounted) return;
         cubit.setCriteria(edited);
       },
-      icon: Icon(Icons.tune_outlined, color: colors['textAccent']),
+      icon: Icon(AppIcons.tuneOutlined, color: colors['textAccent']),
       label: Text(
         label,
         style: context.textStyles.authButton.copyWith(

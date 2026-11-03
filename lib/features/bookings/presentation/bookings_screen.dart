@@ -9,6 +9,7 @@ import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
@@ -227,11 +228,11 @@ final class _TabListState extends State<_TabList> {
             ),
           ),
           TabLoad.offline => SliverToBoxAdapter(
-            child: EmptyView(icon: Icons.wifi_off, message: l10n.offline),
+            child: EmptyView(icon: AppIcons.wifiOff, message: l10n.offline),
           ),
           TabLoad.ready when data.items.isEmpty => SliverToBoxAdapter(
             child: EmptyView(
-              icon: Icons.event_busy,
+              icon: AppIcons.eventBusy,
               message: _emptyMessage(l10n),
               action: OnAirPrimaryButton(
                 label: l10n.bookingsFindApartment,

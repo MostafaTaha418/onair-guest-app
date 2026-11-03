@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -18,21 +19,26 @@ final class HomeSearchBox extends StatelessWidget {
       button: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(Dimens.radiusField),
+        borderRadius: BorderRadius.circular(999),
         child: Container(
-          padding: const EdgeInsetsDirectional.all(Dimens.space12),
+          constraints: const BoxConstraints(minHeight: 50),
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: Dimens.space16,
+          ),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(Dimens.radiusField),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(color: colors['subtleBorder']),
           ),
           child: Row(
             children: [
-              Icon(Icons.search, size: 20, color: colors.textSecondary),
+              Icon(AppIcons.search, size: 20, color: colors.textSecondary),
               const SizedBox(width: Dimens.space8),
               Expanded(
                 child: Text(
                   l10n.homeSearchHint,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: context.textStyles.homeSearch.copyWith(
                     color: colors.textSecondary,
                   ),

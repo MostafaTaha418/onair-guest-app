@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -105,7 +106,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
             IconButton(
               tooltip: l10n.calendarPrevMonth,
               onPressed: _canGo(-1) ? () => _goToMonth(-1) : null,
-              icon: const Icon(Icons.chevron_right),
+              icon: const Icon(AppIcons.chevronRight),
             ),
             Expanded(
               child: Text(
@@ -119,7 +120,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
             IconButton(
               tooltip: l10n.calendarNextMonth,
               onPressed: _canGo(1) ? () => _goToMonth(1) : null,
-              icon: const Icon(Icons.chevron_left),
+              icon: const Icon(AppIcons.chevronLeft),
             ),
           ],
         ),

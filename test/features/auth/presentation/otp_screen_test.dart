@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
@@ -72,6 +74,20 @@ void main() {
     expect(cubit.state, isA<SignedIn>());
   });
 
+  testWidgets('confirm explains empty and incomplete code under the field', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.tap(find.byKey(const ValueKey('verify-code-button')));
+    await tester.pump();
+    expect(find.text('اكتب كود التأكيد.'), findsOneWidget);
+    expect(cubit.state, isA<CodeSent>());
+    await tester.enterText(find.byType(TextField), '123');
+    await tester.pump();
+    expect(find.text('اكتب الكود كاملًا من 6 أرقام.'), findsOneWidget);
+    expect(cubit.state, isA<CodeSent>());
+  });
+
   testWidgets('wrong code is announced under the field', (tester) async {
     auth.verifyPhoneError = const AuthCodeRejected('OTP_INVALID');
     await pump(tester);
@@ -92,6 +108,28 @@ void main() {
     expect(find.textContaining('30'), findsOneWidget);
   });
 
+  testWidgets('resend ignores a rapid second tap', (tester) async {
+    auth.challenge = CodeChallenge(
+      channel: VerificationChannel.sms,
+      target: '+201012345678',
+      resendAt: now,
+    );
+    await cubit.requestPhoneCode('+201012345678');
+    final baseline = auth.requestPhoneCalls;
+    final barrier = Completer<void>();
+    auth.requestPhoneBarrier = barrier.future;
+    await pump(tester);
+
+    final resend = find.byKey(const ValueKey('resend-button'));
+    await tester.tap(resend);
+    await tester.tap(resend);
+    await tester.pump();
+
+    expect(auth.requestPhoneCalls, baseline + 1);
+    barrier.complete();
+    await tester.pump();
+  });
+
   testWidgets('rate limit disables entry and change phone clears state', (
     tester,
   ) async {
@@ -101,7 +139,13 @@ void main() {
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     expect(find.textContaining('45'), findsWidgets);
 
-    await tester.tap(find.byKey(const ValueKey('change-phone-button')));
+    final changePhone = find.byKey(const ValueKey('change-phone-button'));
+    await tester.scrollUntilVisible(
+      changePhone,
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(changePhone);
     await tester.pump();
     expect(cubit.state, isA<SignedOut>());
   });

@@ -13,6 +13,13 @@ final class FakeAuthRepository implements AuthRepository {
   Exception? verifyPhoneError;
   Exception? completeProfileError;
   Future<void>? requestPhoneBarrier;
+  int requestPhoneCalls = 0;
+  Future<void>? signUpEmailBarrier;
+  Future<void>? requestRecoveryBarrier;
+  Future<void>? setNewPasswordBarrier;
+  int signUpEmailCalls = 0;
+  int requestRecoveryCalls = 0;
+  int setNewPasswordCalls = 0;
   String? lastRequestedPhone;
   String? lastEmail;
   String? lastPassword;
@@ -35,6 +42,7 @@ final class FakeAuthRepository implements AuthRepository {
   Future<GuestAccount?> restoreSession() async => account;
   @override
   Future<CodeChallenge> requestPhoneCode(String phone) async {
+    requestPhoneCalls += 1;
     lastRequestedPhone = phone;
     await requestPhoneBarrier;
     if (requestPhoneError case final error?) throw error;
@@ -61,6 +69,8 @@ final class FakeAuthRepository implements AuthRepository {
     String phone,
     String termsVersion,
   ) async {
+    signUpEmailCalls += 1;
+    await signUpEmailBarrier;
     lastName = name;
     lastPhone = phone;
     lastTermsVersion = termsVersion;
@@ -98,6 +108,8 @@ final class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<CodeChallenge> requestRecovery(String email) async {
+    requestRecoveryCalls += 1;
+    await requestRecoveryBarrier;
     lastRecoveryEmail = email;
     if (requestRecoveryError case final error?) throw error;
     return challenge ??
@@ -111,7 +123,12 @@ final class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> verifyRecovery(String email, String code) async {}
   @override
-  Future<GuestAccount> setNewPassword(String password) async => account!;
+  Future<GuestAccount> setNewPassword(String password) async {
+    setNewPasswordCalls += 1;
+    await setNewPasswordBarrier;
+    return account!;
+  }
+
   @override
   Future<GuestAccount> completeProfile(
     String name,

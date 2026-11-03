@@ -10,6 +10,7 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_error_message.dart';
+import 'package:on_air/features/auth/presentation/widgets/rapid_submit_guard.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class CompleteProfileScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   bool _loading = false;
   bool _showErrors = false;
   bool _termsChanged = false;
+  final _submitGuard = RapidSubmitGuard();
 
   bool get _validName {
     final length = _name.text.trim().length;
@@ -37,6 +39,7 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _name.addListener(_submitGuard.reset);
     unawaited(_loadTerms());
   }
 
@@ -48,8 +51,9 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   Future<void> _submit() async {
+    if (_loading) return;
     setState(() => _showErrors = true);
-    if (!_canSubmit || _loading) return;
+    if (!_canSubmit || !_submitGuard.tryEnter()) return;
     setState(() {
       _loading = true;
       _termsChanged = false;
@@ -107,8 +111,10 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               controller: _name,
               label: l10n.fullName,
               enabled: !_loading,
-              errorText: (_showErrors || _name.text.isNotEmpty) && !_validName
-                  ? l10n.authNameInvalid
+              errorText: _showErrors && !_validName
+                  ? (_name.text.trim().isEmpty
+                        ? l10n.authFieldRequired
+                        : l10n.authNameInvalid)
                   : null,
               onChanged: (_) => setState(() {}),
             ),
@@ -121,6 +127,7 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   : (value) => setState(() {
                       _accepted = value ?? false;
                       _termsChanged = false;
+                      _submitGuard.reset();
                     }),
               title: Text(l10n.authAcceptTerms),
             ),
@@ -139,7 +146,7 @@ final class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             OnAirPrimaryButton(
               key: const ValueKey('complete-profile-button'),
               label: l10n.confirm,
-              onPressed: _canSubmit ? _submit : null,
+              onPressed: _loading ? null : _submit,
               isLoading: _loading,
               gradient: true,
             ),

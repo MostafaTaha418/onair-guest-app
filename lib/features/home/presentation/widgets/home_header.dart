@@ -4,139 +4,146 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
-import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/design_system/brand/on_air_logo.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
-import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
-/// The Home header: the greeting over the header gradient, plus the
-/// notifications bell with the live unread badge (US5).
+/// Guest identity and favorites, following the supplied home header reference.
 final class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
-  /// The app-scoped cubit; harnesses that pump the header without the app
-  /// (older tests) simply get the bare bell.
-  UnreadCountCubit? _unread(BuildContext context) {
-    try {
-      return context.read<UnreadCountCubit>();
-    } on ProviderNotFoundException {
-      return null;
+  void _openAccountRoute(BuildContext context, String target) {
+    if (context.read<AuthCubit>().state is SignedIn) {
+      context.go(target);
+      return;
     }
+    unawaited(
+      context.push<void>(
+        Uri(
+          path: AppRoutes.login,
+          queryParameters: {'from': target, 'cancelTo': AppRoutes.home},
+        ).toString(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    final unread = _unread(context);
-    return Container(
-      decoration: BoxDecoration(gradient: colors.gradient('header')),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  top: Dimens.space4,
-                  end: Dimens.space12,
-                ),
-                child: OnAirLogo.mark(
-                  key: const ValueKey('home-logo'),
-                  height: 36,
-                  color: colors.onPrimary,
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.homeHello,
-                      style: context.textStyles.homeWelcome.copyWith(
-                        color: colors.onPrimary,
-                      ),
-                    ),
-                    BlocBuilder<AuthCubit, AuthState>(
-                      builder: (context, authState) {
-                        final name = switch (authState) {
-                          SignedIn(:final account) => account.fullName,
-                          _ => null,
-                        };
-                        if (name == null || name.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return Text(
-                          name,
-                          style: context.textStyles.homeUserName.copyWith(
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          Dimens.screenSide,
+          Dimens.space16,
+          Dimens.screenSide,
+          Dimens.space8,
+        ),
+        child: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) {
+            final name = switch (authState) {
+              SignedIn(:final account) => account.fullName,
+              _ => null,
+            };
+            final signedIn = authState is SignedIn;
+            return Row(
+              children: [
+                if (signedIn) ...[
+                  const OnAirLogo.mark(
+                    key: ValueKey('home-brand-mark'),
+                    height: 42,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: Dimens.space12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.homeHello,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textStyles.homeWelcome.copyWith(
                             color: colors.onPrimary,
                           ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                builder: (context, state) => unread == null
-                    ? _Bell(
-                        online: state.isOnline,
-                      )
-                    : BlocBuilder<UnreadCountCubit, int>(
-                        builder: (context, count) => _Bell(
-                          online: state.isOnline,
-                          unreadCount: count,
                         ),
+                        if (name != null && name.isNotEmpty)
+                          Text(
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textStyles.homeUserName.copyWith(
+                              color: colors.onPrimary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ] else
+                  const Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: OnAirLogo.lockup(
+                        key: ValueKey('home-brand-lockup'),
+                        height: 38,
+                        color: Colors.white,
                       ),
-              ),
-            ],
-          ),
+                    ),
+                  ),
+                const SizedBox(width: Dimens.space12),
+                _HeaderAction(
+                  key: const ValueKey('home-favorites-button'),
+                  label: l10n.favorites,
+                  icon: AppIcons.favorite,
+                  iconColor: colors['favorite'],
+                  onTap: () => _openAccountRoute(context, AppRoutes.favorites),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-final class _Bell extends StatelessWidget {
-  const _Bell({required this.online, this.unreadCount});
+final class _HeaderAction extends StatelessWidget {
+  const _HeaderAction({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.iconColor,
+    super.key,
+  });
 
-  final bool online;
-
-  /// Null for visitors and harnesses without the cubit: no badge shows.
-  final int? unreadCount;
+  final String label;
+  final IconData icon;
+  final Color? iconColor;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    final count = unreadCount ?? 0;
-    final signedIn = unreadCount != null;
     return Semantics(
-      label: signedIn && count > 0
-          ? l10n.unreadBadge('$count')
-          : l10n.notifications,
+      label: label,
       button: true,
-      child: IconButton(
-        key: const ValueKey('notifications-button'),
-        tooltip: l10n.notifications,
-        icon: Badge(
-          isLabelVisible: signedIn && count > 0,
-          label: Text(count > 99 ? '99+' : '$count'),
-          child: Icon(
-            Icons.notifications_outlined,
-            color: colors.onPrimary,
+      child: Material(
+        color: colors.surface,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox.square(
+            dimension: 56,
+            child: Icon(icon, size: 26, color: iconColor ?? colors.primary),
           ),
         ),
-        onPressed: online
-            ? () => unawaited(context.push(AppRoutes.notifications))
-            : null,
       ),
     );
   }

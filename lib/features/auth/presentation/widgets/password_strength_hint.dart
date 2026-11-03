@@ -20,7 +20,9 @@ final class PasswordStrengthHint extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Text(
-        '${l10n.authPasswordRule} · $label',
+        password.isEmpty
+            ? l10n.authPasswordRule
+            : '${l10n.authPasswordRule} · $label',
         key: const ValueKey('password-strength'),
         style: context.textStyles.passwordHint,
       ),

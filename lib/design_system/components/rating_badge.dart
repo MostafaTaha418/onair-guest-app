@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 
@@ -22,7 +23,7 @@ final class RatingBadge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
-          Icons.star_rounded,
+          AppIcons.starRounded,
           size: Dimens.space16,
           color: context.colors['star'],
         ),

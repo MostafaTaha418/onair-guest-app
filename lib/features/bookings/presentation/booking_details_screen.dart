@@ -18,6 +18,7 @@ import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
@@ -46,7 +47,7 @@ final class BookingDetailsScreen extends StatelessWidget {
         builder: (context, state) => switch (state) {
           DetailsLoading() => const _DetailsSkeleton(),
           DetailsNotAvailable() => EmptyView(
-            icon: Icons.info_outline,
+            icon: AppIcons.infoOutline,
             message: AppLocalizations.of(context).notAvailable,
           ),
           DetailsFailed() => ErrorView(
@@ -100,7 +101,7 @@ final class _DetailsList extends StatelessWidget {
               _Header(details: details),
               const SizedBox(height: Dimens.space16),
               NoticeCard(
-                icon: Icons.info_outline,
+                icon: AppIcons.infoOutline,
                 message: bookingStatusMessage(details, l10n),
               ),
               const SizedBox(height: Dimens.space16),
@@ -360,7 +361,7 @@ final class _Header extends StatelessWidget {
               button: true,
               child: IconButton(
                 tooltip: l10n.bookingCopyCode,
-                icon: const Icon(Icons.copy),
+                icon: const Icon(AppIcons.copy),
                 onPressed: () {
                   unawaited(
                     Clipboard.setData(ClipboardData(text: details.code)),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -33,7 +34,7 @@ final class UpdateRequiredScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.system_update_alt,
+                  AppIcons.systemUpdateAlt,
                   size: 64,
                   color: colors['primary'],
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -15,19 +16,19 @@ final class PropertySpecsRow extends StatelessWidget {
     final colors = context.colors;
     final facts = [
       (
-        Icons.bed_outlined,
+        AppIcons.bedOutlined,
         l10n.propertyBedrooms(details.bedrooms),
       ),
       (
-        Icons.bathtub_outlined,
+        AppIcons.bathtubOutlined,
         l10n.propertyBathrooms(details.bathrooms),
       ),
       (
-        Icons.people_outline,
+        AppIcons.peopleOutline,
         l10n.propertyMaxGuests(details.maxGuests),
       ),
       if (details.areaSqm != null)
-        (Icons.square_foot_outlined, l10n.propertyArea(details.areaSqm!)),
+        (AppIcons.squareFootOutlined, l10n.propertyArea(details.areaSqm!)),
     ];
     return Wrap(
       spacing: 16,

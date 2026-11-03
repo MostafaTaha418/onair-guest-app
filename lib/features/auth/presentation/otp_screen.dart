@@ -7,11 +7,15 @@ import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/platform/secure_screen.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_error_message.dart';
+import 'package:on_air/features/auth/presentation/widgets/auth_brand_header.dart';
+import 'package:on_air/features/auth/presentation/widgets/auth_flow_scaffold.dart';
+import 'package:on_air/features/auth/presentation/widgets/rapid_submit_guard.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:smart_auth/smart_auth.dart';
 
@@ -57,10 +61,15 @@ final class _OtpScreenState extends State<OtpScreen> {
   final _controller = TextEditingController();
   Timer? _ticker;
   bool _submitting = false;
+  bool _resending = false;
+  bool _showValidation = false;
+  final _verifyGuard = RapidSubmitGuard();
+  final _resendGuard = RapidSubmitGuard();
 
   @override
   void initState() {
     super.initState();
+    _controller.addListener(_verifyGuard.reset);
     unawaited(widget.secureScreen.setSecure(enabled: true));
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
@@ -97,8 +106,15 @@ final class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _verify(String code) async {
-    if (_submitting) return;
-    setState(() => _submitting = true);
+    if (code.length != 6) {
+      setState(() => _showValidation = true);
+      return;
+    }
+    if (_submitting || !_verifyGuard.tryEnter()) return;
+    setState(() {
+      _showValidation = false;
+      _submitting = true;
+    });
     final cubit = context.read<AuthCubit>();
     final channel = switch (cubit.state) {
       CodeSent(:final challenge) => challenge.channel,
@@ -141,7 +157,10 @@ final class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _resend(CodeChallenge challenge) async {
+    if (_resending || _submitting || !_resendGuard.tryEnter()) return;
+    setState(() => _resending = true);
     _controller.clear();
+    _showValidation = false;
     final cubit = context.read<AuthCubit>();
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
@@ -158,6 +177,8 @@ final class _OtpScreenState extends State<OtpScreen> {
       messenger.showSnackBar(
         SnackBar(content: Text(authErrorMessage(error, l10n))),
       );
+    } finally {
+      if (mounted) setState(() => _resending = false);
     }
   }
 
@@ -174,6 +195,7 @@ final class _OtpScreenState extends State<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final compact = MediaQuery.sizeOf(context).height < 700;
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final challenge = switch (state) {
@@ -202,70 +224,114 @@ final class _OtpScreenState extends State<OtpScreen> {
           AuthCubit.unexpectedError => l10n.errorUnexpectedNoRef,
           _ => null,
         };
-        return Scaffold(
-          appBar: AppBar(),
-          body: ListView(
-            padding: const EdgeInsets.all(Dimens.screenSide),
-            children: [
-              Text(l10n.authCodeTitle, style: context.textStyles.authTitle),
-              const SizedBox(height: Dimens.space12),
-              Text(l10n.authCodeDescription(challenge.target)),
+        return AuthFlowScaffold(
+          topSpaceFactor: 0.08,
+          minTopSpace: compact ? 24 : 40,
+          maxTopSpace: 56,
+          onBack: () => _changeTarget(challenge.channel),
+          children: [
+            const AuthBrandHeader(),
+            SizedBox(height: compact ? Dimens.space24 : Dimens.space32),
+            Text(l10n.authCodeTitle, style: context.textStyles.authTitle),
+            const SizedBox(height: Dimens.space12),
+            Text(
+              l10n.authCodeDescription(challenge.target),
+              style: context.textStyles.authDescription.copyWith(
+                color: context.colors['textMuted'],
+              ),
+            ),
+            SizedBox(height: compact ? Dimens.space32 : Dimens.space48),
+            OnAirOtpField(
+              key: const ValueKey('otp-field'),
+              controller: _controller,
+              enabled: !isRateLimited && !_submitting,
+              onCompleted: _verify,
+              onChanged: (_) => setState(() {}),
+            ),
+            if (_showValidation && _controller.text.length != 6) ...[
               const SizedBox(height: Dimens.space8),
-              Text(l10n.authCodeSent),
-              const SizedBox(height: Dimens.space24),
-              OnAirOtpField(
-                key: const ValueKey('otp-field'),
-                controller: _controller,
-                enabled: !isRateLimited && !_submitting,
-                onCompleted: _verify,
-              ),
-              if (error != null) ...[
-                const SizedBox(height: Dimens.space8),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    error,
-                    key: const ValueKey('otp-error'),
-                    style: TextStyle(color: context.colors.errorText),
-                  ),
-                ),
-              ],
-              if (isRateLimited) ...[
-                const SizedBox(height: Dimens.space8),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    l10n.authRateLimited(l10n.authWaitSeconds(seconds)),
-                  ),
-                ),
-              ],
-              const SizedBox(height: Dimens.space16),
-              TextButton(
-                key: const ValueKey('resend-button'),
-                onPressed: seconds == 0 && !isRateLimited
-                    ? () => _resend(challenge)
-                    : null,
+              Semantics(
+                liveRegion: true,
                 child: Text(
-                  seconds == 0 && !isRateLimited
-                      ? l10n.authResend
-                      : l10n.authResendIn(l10n.authWaitSeconds(seconds)),
-                ),
-              ),
-              TextButton(
-                key: ValueKey(
-                  challenge.channel == VerificationChannel.sms
-                      ? 'change-phone-button'
-                      : 'change-email-button',
-                ),
-                onPressed: () => _changeTarget(challenge.channel),
-                child: Text(
-                  challenge.channel == VerificationChannel.sms
-                      ? l10n.authChangePhone
-                      : l10n.authChangeEmail,
+                  _controller.text.isEmpty
+                      ? l10n.authCodeRequired
+                      : l10n.authCodeIncomplete,
+                  key: const ValueKey('otp-local-error'),
+                  style: TextStyle(color: context.colors.errorText),
                 ),
               ),
             ],
-          ),
+            if (error != null) ...[
+              const SizedBox(height: Dimens.space8),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  error,
+                  key: const ValueKey('otp-error'),
+                  style: TextStyle(color: context.colors.errorText),
+                ),
+              ),
+            ],
+            if (isRateLimited) ...[
+              const SizedBox(height: Dimens.space8),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  l10n.authRateLimited(l10n.authWaitSeconds(seconds)),
+                ),
+              ),
+            ],
+            const SizedBox(height: Dimens.space16),
+            TextButton(
+              key: const ValueKey('resend-button'),
+              onPressed: seconds == 0 && !isRateLimited && !_resending
+                  ? () => _resend(challenge)
+                  : null,
+              style: TextButton.styleFrom(
+                foregroundColor: context.colors['textAccent'],
+              ),
+              child: Text(
+                seconds == 0 && !isRateLimited
+                    ? l10n.authResend
+                    : l10n.authResendIn(l10n.authWaitSeconds(seconds)),
+              ),
+            ),
+            const SizedBox(height: Dimens.space32),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: SizedBox(
+                width: 185,
+                child: OnAirPrimaryButton(
+                  key: const ValueKey('verify-code-button'),
+                  label: l10n.confirm,
+                  onPressed: !isRateLimited && !_submitting
+                      ? () => _verify(_controller.text)
+                      : null,
+                  isLoading: _submitting,
+                  gradient: true,
+                  pill: true,
+                  height: 62,
+                ),
+              ),
+            ),
+            const SizedBox(height: Dimens.space16),
+            TextButton(
+              key: ValueKey(
+                challenge.channel == VerificationChannel.sms
+                    ? 'change-phone-button'
+                    : 'change-email-button',
+              ),
+              onPressed: () => _changeTarget(challenge.channel),
+              style: TextButton.styleFrom(
+                foregroundColor: context.colors['textAccent'],
+              ),
+              child: Text(
+                challenge.channel == VerificationChannel.sms
+                    ? l10n.authChangePhone
+                    : l10n.authChangeEmail,
+              ),
+            ),
+          ],
         );
       },
     );

@@ -111,7 +111,7 @@ Widget _shell(ThemeMode mode, double scale, double width) {
           body: const HomeScreen(),
           bottomNavigationBar: OnAirBottomNav(
             currentIndex: 0,
-            labels: const ['الرئيسية', 'بحث', 'حجوزاتي', 'المفضلة', 'حسابي'],
+            labels: const ['الرئيسية', 'بحث', 'حجوزاتي', 'الإشعارات', 'حسابي'],
             onTap: (_) {},
           ),
         ),

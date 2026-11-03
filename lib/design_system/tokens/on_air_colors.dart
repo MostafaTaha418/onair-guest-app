@@ -231,6 +231,12 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
   });
 
   LinearGradient gradient(String name) => switch (name) {
+    'authBackground' => LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: const [0, 0.44, 0.7],
+      colors: [this['headerStart'], background, background],
+    ),
     'header' => LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

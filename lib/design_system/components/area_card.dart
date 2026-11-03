@@ -12,6 +12,8 @@ final class AreaCard extends StatelessWidget {
     required this.countLabel,
     required this.imageVariants,
     required this.onTap,
+    this.width = 140,
+    this.height = 170,
     super.key,
   });
 
@@ -19,13 +21,15 @@ final class AreaCard extends StatelessWidget {
   final String countLabel;
   final List<ImageVariant> imageVariants;
   final VoidCallback onTap;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     return SizedBox(
-      width: 140,
-      height: 170,
+      width: width,
+      height: height,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(Dimens.radiusCard),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/design_system/tokens/on_air_colors.dart';
@@ -12,7 +13,7 @@ final class InfoBanner extends StatelessWidget {
     required this.tone,
     this.actionLabel,
     this.onAction,
-    this.icon = Icons.info_outline,
+    this.icon = AppIcons.infoOutline,
     super.key,
   });
 

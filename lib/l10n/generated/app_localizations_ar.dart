@@ -251,6 +251,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authEmailInvalid => 'اكتب بريد إلكتروني صحيح.';
 
   @override
+  String get authFieldRequired => 'الحقل ده مطلوب.';
+
+  @override
+  String get authCodeRequired => 'اكتب كود التأكيد.';
+
+  @override
+  String get authCodeIncomplete => 'اكتب الكود كاملًا من 6 أرقام.';
+
+  @override
   String get authPasswordRule => '8 أحرف على الأقل، بينهم حرف ورقم';
 
   @override

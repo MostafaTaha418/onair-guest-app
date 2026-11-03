@@ -40,6 +40,11 @@ void main() {
       appConfigRepository: config,
     );
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('complete-profile-button')));
+    await tester.pump();
+    expect(find.text('الحقل ده مطلوب.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('terms-error')), findsOneWidget);
+
     await tester.enterText(
       find.byKey(const ValueKey('full-name-field')),
       ' a ',
@@ -51,7 +56,7 @@ void main() {
         matching: find.byType(TextButton),
       ),
     );
-    expect(button.onPressed, isNull);
+    expect(button.onPressed, isNotNull);
     expect(find.textContaining('حرفين'), findsOneWidget);
 
     await tester.enterText(
@@ -65,7 +70,7 @@ void main() {
         matching: find.byType(TextButton),
       ),
     );
-    expect(withoutTerms.onPressed, isNull);
+    expect(withoutTerms.onPressed, isNotNull);
   });
 
   testWidgets('TERMS_CHANGED reloads terms and requires agreement again', (

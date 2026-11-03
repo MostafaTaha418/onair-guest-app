@@ -9,6 +9,7 @@ import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/notifications/presentation/notification_texts.dart';
@@ -70,7 +71,7 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
             children: [
               if (off)
                 NoticeCard(
-                  icon: Icons.notifications_off_outlined,
+                  icon: AppIcons.notificationsOffOutlined,
                   message: l10n.notificationsOffNotice,
                   actionLabel: l10n.notificationsOpenSettings,
                   onAction: () async {
@@ -97,7 +98,7 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
                       NotificationsReady() =>
                         state.items.isEmpty
                             ? EmptyView(
-                                icon: Icons.notifications_none,
+                                icon: AppIcons.notificationsNone,
                                 message: l10n.notificationsEmpty,
                               )
                             : _NotificationList(state: state),

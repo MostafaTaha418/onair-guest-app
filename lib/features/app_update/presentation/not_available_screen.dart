@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class NotAvailableScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ final class NotAvailableScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(),
     body: EmptyView(
-      icon: Icons.info_outline,
+      icon: AppIcons.infoOutline,
       message: AppLocalizations.of(context).notAvailable,
     ),
   );

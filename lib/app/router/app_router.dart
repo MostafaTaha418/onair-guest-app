@@ -324,21 +324,9 @@ GoRouter createAppRouter({
       ),
     ),
     GoRoute(
-      path: AppRoutes.notifications,
-      name: 'notifications',
-      builder: (context, state) => BlocProvider<NotificationsCubit>(
-        create: (context) {
-          final cubit = NotificationsCubit(
-            notifications: context.read<NotificationsRepository>(),
-            signals: context.read<NotificationSignalSource>(),
-            connectivity: context.read<ConnectivityCubit>(),
-            unread: context.read<UnreadCountCubit>(),
-          );
-          unawaited(cubit.load());
-          return cubit;
-        },
-        child: const NotificationsScreen(),
-      ),
+      path: AppRoutes.favorites,
+      name: 'favorites',
+      builder: (_, _) => const FavoritesPlaceholderScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, _, shell) => BlocProvider<SearchCubit>.value(
@@ -411,9 +399,21 @@ GoRouter createAppRouter({
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: AppRoutes.favorites,
-              name: 'favorites',
-              builder: (_, _) => const FavoritesPlaceholderScreen(),
+              path: AppRoutes.notifications,
+              name: 'notifications',
+              builder: (context, _) => BlocProvider<NotificationsCubit>(
+                create: (context) {
+                  final cubit = NotificationsCubit(
+                    notifications: context.read<NotificationsRepository>(),
+                    signals: context.read<NotificationSignalSource>(),
+                    connectivity: context.read<ConnectivityCubit>(),
+                    unread: context.read<UnreadCountCubit>(),
+                  );
+                  unawaited(cubit.load());
+                  return cubit;
+                },
+                child: const NotificationsScreen(),
+              ),
             ),
           ],
         ),

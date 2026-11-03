@@ -14,6 +14,7 @@ import 'package:on_air/design_system/components/filter_chip_bar.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -155,7 +156,7 @@ final class _ResultsScreenState extends State<ResultsScreen> {
         return [
           SliverFillRemaining(
             child: EmptyView(
-              icon: Icons.search_off,
+              icon: AppIcons.searchOff,
               message: l10n.searchNoResults,
               action: TextButton(
                 onPressed: () async {
@@ -334,7 +335,7 @@ final class _ShareSearchAction extends StatelessWidget {
               ),
             );
           },
-          icon: const Icon(Icons.share_outlined),
+          icon: const Icon(AppIcons.shareOutlined),
         ),
       ),
     );
@@ -379,7 +380,7 @@ final class _SummaryBar extends StatelessWidget {
         padding: const EdgeInsetsDirectional.all(Dimens.space12),
         child: Row(
           children: [
-            Icon(Icons.tune_outlined, size: 18, color: colors.textSecondary),
+            Icon(AppIcons.tuneOutlined, size: 18, color: colors.textSecondary),
             const SizedBox(width: Dimens.space8),
             Expanded(
               child: Text(
@@ -424,7 +425,7 @@ final class _HintBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, size: 18, color: colors['onInfoContainer']),
+          Icon(AppIcons.infoOutline, size: 18, color: colors['onInfoContainer']),
           const SizedBox(width: Dimens.space8),
           Expanded(
             child: Text(

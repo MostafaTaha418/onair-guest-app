@@ -32,26 +32,12 @@ void main() {
       updates.add([ConnectivityResult.none]);
       await tester.pumpAndSettle();
       expect(find.byType(OfflineBanner), findsOneWidget);
-      expect(
-        tester
-            .widget<IconButton>(
-              find.byKey(const ValueKey('notifications-button')),
-            )
-            .onPressed,
-        isNull,
-      );
+      expect(find.byKey(const ValueKey('nav-notifications')), findsOneWidget);
 
       updates.add([ConnectivityResult.wifi]);
       await tester.pumpAndSettle();
       expect(find.byType(OfflineBanner), findsNothing);
-      expect(
-        tester
-            .widget<IconButton>(
-              find.byKey(const ValueKey('notifications-button')),
-            )
-            .onPressed,
-        isNotNull,
-      );
+      expect(find.byKey(const ValueKey('nav-notifications')), findsOneWidget);
     },
   );
 }

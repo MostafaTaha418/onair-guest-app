@@ -39,11 +39,28 @@ HomeFeed _feed() => HomeFeed(
 );
 
 void main() {
+  testWidgets('compact phone keeps the home controls and tabs visible', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await pumpVisitorApp(tester);
+
+    expect(find.byKey(const ValueKey('home-brand-lockup')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-favorites-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-filter-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-notifications')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('five tabs are RTL, highlight selection, and keep Home scroll', (
     tester,
   ) async {
     await pumpSignedInApp(tester, listingsRepository: _scrollableListings());
-    const tabs = ['home', 'search', 'bookings', 'favorites', 'account'];
+    const tabs = ['home', 'search', 'bookings', 'notifications', 'account'];
     for (final name in tabs) {
       expect(find.byKey(ValueKey('nav-$name')), findsOneWidget);
     }
@@ -116,5 +133,29 @@ void main() {
           .isSelected,
       Tristate.isTrue,
     );
+  });
+
+  testWidgets('home favorites opens sign-in for a visitor', (tester) async {
+    await pumpVisitorApp(tester);
+    expect(find.byKey(const ValueKey('nav-favorites')), findsNothing);
+    expect(find.byKey(const ValueKey('nav-notifications')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('home-favorites-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('close-login-button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('close-login-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home-favorites-button')), findsOneWidget);
+  });
+
+  testWidgets('home favorites opens its page for a signed-in guest', (
+    tester,
+  ) async {
+    await pumpSignedInApp(tester);
+    await tester.tap(find.byKey(const ValueKey('home-favorites-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('المفضلة'), findsWidgets);
+    expect(find.byKey(const ValueKey('nav-favorites')), findsNothing);
   });
 }

@@ -257,6 +257,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEmailInvalid => 'Enter a valid email address.';
 
   @override
+  String get authFieldRequired => 'This field is required.';
+
+  @override
+  String get authCodeRequired => 'Enter the verification code.';
+
+  @override
+  String get authCodeIncomplete => 'Enter all 6 digits of the code.';
+
+  @override
   String get authPasswordRule =>
       'At least 8 characters with a letter and a number';
 

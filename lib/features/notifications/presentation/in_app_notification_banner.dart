@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:on_air/core/push/push_messages.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/notifications/presentation/notification_texts.dart';
@@ -77,7 +78,7 @@ final class _InAppNotificationBannerState
               child: Row(
                 children: [
                   Icon(
-                    Icons.notifications_active_outlined,
+                    AppIcons.notificationsActiveOutlined,
                     color: context.colors.primary,
                   ),
                   const SizedBox(width: Dimens.space8),
@@ -101,7 +102,7 @@ final class _InAppNotificationBannerState
                   ),
                   IconButton(
                     tooltip: l10n.close,
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(AppIcons.close),
                     onPressed: widget.onDismiss,
                   ),
                 ],

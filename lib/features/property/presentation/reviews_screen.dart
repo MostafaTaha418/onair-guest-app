@@ -6,6 +6,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/property/presentation/reviews_cubit.dart';
@@ -71,7 +72,7 @@ final class _ReviewsViewState extends State<_ReviewsView> {
                       child: switch (state) {
                         ReviewsLoading() => _skeletons(),
                         ReviewsEmpty() => EmptyView(
-                          icon: Icons.star_outline,
+                          icon: AppIcons.starOutline,
                           message: l10n.reviewsNone,
                         ),
                         ReviewsFailed(:final error) => ErrorView(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
@@ -15,7 +16,7 @@ final class AccountPlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocBuilder<AuthCubit, AuthState>(
     builder: (context, state) => Scaffold(
       body: EmptyView(
-        icon: Icons.person_outline,
+        icon: AppIcons.personOutline,
         message: AppLocalizations.of(context).accountEmpty,
         action: state is SignedIn || state is SigningOut
             ? Padding(
@@ -63,7 +64,7 @@ final class AccountPlaceholderScreen extends StatelessWidget {
                               dimension: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.logout),
+                          : const Icon(AppIcons.logout),
                       label: Text(AppLocalizations.of(context).signOut),
                     ),
                   ],

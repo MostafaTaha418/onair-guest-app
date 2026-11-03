@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -74,7 +75,7 @@ final class ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, size: 48, color: context.colors.errorText),
+          Icon(AppIcons.errorOutline, size: 48, color: context.colors.errorText),
           Text(message, textAlign: TextAlign.center),
           if (referenceNumber != null)
             Text(l10n.referenceNumber(referenceNumber!)),
@@ -97,7 +98,7 @@ final class OfflineBanner extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off, color: context.colors['onWarningContainer']),
+            Icon(AppIcons.wifiOff, color: context.colors['onWarningContainer']),
             const SizedBox(width: Dimens.space8),
             Text(
               AppLocalizations.of(context).offline,

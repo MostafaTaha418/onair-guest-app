@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 import 'package:on_air/features/property/domain/policy_text.dart';
@@ -35,7 +36,7 @@ final class PropertyPolicySection extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsetsDirectional.only(top: 8),
                   child: Icon(
-                    Icons.circle,
+                    AppIcons.circle,
                     size: 5,
                     color: colors.textSecondary,
                   ),

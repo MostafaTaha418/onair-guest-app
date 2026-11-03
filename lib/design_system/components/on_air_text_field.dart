@@ -15,6 +15,9 @@ final class OnAirTextField extends StatelessWidget {
     this.autofillHints,
     this.onSubmitted,
     this.onChanged,
+    this.prefixIcon,
+    this.suffix,
+    this.pill = false,
     super.key,
   });
 
@@ -29,12 +32,15 @@ final class OnAirTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final IconData? prefixIcon;
+  final Widget? suffix;
+  final bool pill;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     OutlineInputBorder border(Color color) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(Dimens.radiusField),
+      borderRadius: BorderRadius.circular(pill ? 36 : Dimens.radiusField),
       borderSide: BorderSide(color: color),
     );
     return Column(
@@ -51,8 +57,18 @@ final class OnAirTextField extends StatelessWidget {
           onSubmitted: onSubmitted,
           style: context.textStyles.input.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(
-            labelText: label,
-            hintText: hint,
+            labelText: pill ? null : label,
+            hintText: pill ? (label ?? hint) : hint,
+            floatingLabelBehavior: pill
+                ? FloatingLabelBehavior.never
+                : FloatingLabelBehavior.auto,
+            prefixIcon: prefixIcon == null
+                ? null
+                : Icon(prefixIcon, color: colors.textSecondary, size: 22),
+            suffixIcon: suffix,
+            contentPadding: pill
+                ? const EdgeInsets.symmetric(horizontal: 22, vertical: 21)
+                : null,
             hintStyle: context.textStyles.placeholder.copyWith(
               color: colors['placeholder'],
             ),

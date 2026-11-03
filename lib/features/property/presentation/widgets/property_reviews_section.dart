@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/approved_review.dart';
@@ -72,7 +73,7 @@ final class ReviewTile extends StatelessWidget {
           children: [
             for (var star = 1; star <= 5; star++)
               Icon(
-                star <= review.rating ? Icons.star_rounded : Icons.star_outline,
+                star <= review.rating ? AppIcons.starRounded : AppIcons.starOutline,
                 size: 16,
                 color: colors['star'],
               ),

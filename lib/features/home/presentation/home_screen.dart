@@ -10,6 +10,7 @@ import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
@@ -34,12 +35,17 @@ final class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () => context.read<HomeCubit>().refresh(),
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) => CustomScrollView(
-            key: const ValueKey('home-scroll'),
-            slivers: _slivers(context, state),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: context.colors.gradient('authBackground'),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<HomeCubit>().refresh(),
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) => CustomScrollView(
+              key: const ValueKey('home-scroll'),
+              slivers: _slivers(context, state),
+            ),
           ),
         ),
       ),
@@ -56,13 +62,48 @@ final class HomeScreen extends StatelessWidget {
             ? const SliverToBoxAdapter(child: UnfinishedPaymentBanner())
             : const SliverToBoxAdapter(child: SizedBox.shrink()),
       ),
-      const SliverToBoxAdapter(child: HomeHeader()),
       SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
-          child: HomeSearchBox(
-            onTap: () => StatefulNavigationShell.of(context).goBranch(1),
-          ),
+        child: Column(
+          children: [
+            const HomeHeader(),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                Dimens.screenSide,
+                Dimens.space16,
+                Dimens.screenSide,
+                0,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: HomeSearchBox(
+                      onTap: () =>
+                          StatefulNavigationShell.of(context).goBranch(1),
+                    ),
+                  ),
+                  const SizedBox(width: Dimens.space12),
+                  Material(
+                    color: context.colors.surface,
+                    borderRadius: BorderRadius.circular(Dimens.radiusCard),
+                    child: InkWell(
+                      key: const ValueKey('home-filter-button'),
+                      borderRadius: BorderRadius.circular(Dimens.radiusCard),
+                      onTap: () =>
+                          StatefulNavigationShell.of(context).goBranch(1),
+                      child: SizedBox.square(
+                        dimension: 50,
+                        child: Icon(
+                          AppIcons.tuneOutlined,
+                          color: context.colors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Dimens.space40),
+          ],
         ),
       ),
       if (state.feed == null && state.fatalError != null)
@@ -123,7 +164,7 @@ final class HomeScreen extends StatelessWidget {
         if (_isEmpty(state))
           SliverFillRemaining(
             child: EmptyView(
-              icon: Icons.search_off,
+              icon: AppIcons.searchOff,
               message: l10n.homeEmpty,
               action: TextButton(
                 onPressed: () =>
@@ -181,19 +222,27 @@ final class HomeScreen extends StatelessWidget {
       onRetry: () => unawaited(
         context.read<HomeCubit>().retrySection(HomeSectionId.areas),
       ),
-      skeleton: SizedBox(
-        height: 170,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          clipBehavior: Clip.none,
-          itemCount: 2,
-          itemBuilder: (_, index) => const Padding(
-            padding: EdgeInsetsDirectional.only(end: Dimens.space12),
-            child: SkeletonBox(width: 140, height: 170),
-          ),
-        ),
+      skeleton: LayoutBuilder(
+        builder: (context, constraints) {
+          final cardWidth = ((constraints.maxWidth - Dimens.space12) / 2).clamp(
+            120.0,
+            220.0,
+          );
+          return SizedBox(
+            height: 218,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              clipBehavior: Clip.none,
+              itemCount: 2,
+              itemBuilder: (_, index) => Padding(
+                padding: const EdgeInsetsDirectional.only(end: Dimens.space12),
+                child: SkeletonBox(width: cardWidth, height: 218),
+              ),
+            ),
+          );
+        },
       ),
       child: _areasList(context, state),
     );
@@ -205,31 +254,41 @@ final class HomeScreen extends StatelessWidget {
       FeedSectionReady<List<AreaTile>>(:final value) => value,
       _ => const <AreaTile>[],
     };
-    return SizedBox(
-      height: 170,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        clipBehavior: Clip.none,
-        itemCount: tiles.length,
-        itemBuilder: (context, index) {
-          final tile = tiles[index];
-          return Padding(
-            padding: const EdgeInsetsDirectional.only(end: Dimens.space12),
-            child: AreaCard(
-              title: tile.name,
-              countLabel: l10n.areaListingCount(tile.listingCount),
-              imageVariants: tile.image?.variants ?? const [],
-              onTap: () => context.go(
-                Uri(
-                  path: AppRoutes.searchResults,
-                  queryParameters: {'loc': tile.locationId},
-                ).toString(),
-              ),
-            ),
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = ((constraints.maxWidth - Dimens.space12) / 2).clamp(
+          120.0,
+          220.0,
+        );
+        return SizedBox(
+          height: 218,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            clipBehavior: Clip.none,
+            itemCount: tiles.length,
+            itemBuilder: (context, index) {
+              final tile = tiles[index];
+              return Padding(
+                padding: const EdgeInsetsDirectional.only(end: Dimens.space12),
+                child: AreaCard(
+                  width: cardWidth,
+                  height: 218,
+                  title: tile.name,
+                  countLabel: l10n.areaListingCount(tile.listingCount),
+                  imageVariants: tile.image?.variants ?? const [],
+                  onTap: () => context.go(
+                    Uri(
+                      path: AppRoutes.searchResults,
+                      queryParameters: {'loc': tile.locationId},
+                    ).toString(),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -320,7 +379,7 @@ final class HomeScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    Icons.error_outline,
+                    AppIcons.errorOutline,
                     size: 18,
                     color: context.colors.errorText,
                   ),

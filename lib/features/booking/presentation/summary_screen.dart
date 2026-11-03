@@ -18,6 +18,7 @@ import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
@@ -51,7 +52,7 @@ final class SummaryScreen extends StatelessWidget {
           // never leaks into another apartment's summary.
           if (state.load == FlowLoad.notAvailable) {
             return EmptyView(
-              icon: Icons.home_outlined,
+              icon: AppIcons.homeOutlined,
               message: l10n.propertyNotAvailable,
               action: OnAirPrimaryButton(
                 label: l10n.bookingsFindApartment,
@@ -127,7 +128,7 @@ final class _SummaryBody extends StatelessWidget {
         ],
         if (flow.termsChanged) ...[
           NoticeCard(
-            icon: Icons.history_edu,
+            icon: AppIcons.historyEdu,
             message: l10n.termsChangedNotice,
           ),
           const SizedBox(height: Dimens.space12),

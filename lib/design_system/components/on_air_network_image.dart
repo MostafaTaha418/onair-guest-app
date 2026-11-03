@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:on_air/core/images/image_variants.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 
 /// A photo that picks the variant matching the rendered size
@@ -61,7 +62,7 @@ final class OnAirNetworkImage extends StatelessWidget {
     color: context.colors['detailCard'],
     child: Center(
       child: Icon(
-        Icons.image_not_supported_outlined,
+        AppIcons.imageNotSupportedOutlined,
         color: context.colors.textSecondary,
       ),
     ),

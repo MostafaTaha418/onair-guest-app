@@ -27,7 +27,7 @@ void main() {
     );
   });
 
-  testWidgets('invalid phone keeps send disabled and shows Arabic hint', (
+  testWidgets('invalid phone shows Arabic hint after send is tapped', (
     tester,
   ) async {
     await tester.pumpOnAirApp(
@@ -36,6 +36,8 @@ void main() {
       appConfigRepository: config,
     );
     await tester.enterText(find.byKey(const ValueKey('phone-field')), '123');
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('send-code-button')));
     await tester.pump();
 
     expect(
@@ -52,7 +54,8 @@ void main() {
         matching: find.byType(TextButton),
       ),
     );
-    expect(button.onPressed, isNull);
+    expect(button.onPressed, isNotNull);
+    expect(auth.requestPhoneCalls, 0);
   });
 
   testWidgets('send is disabled while the request is in flight', (
@@ -108,7 +111,10 @@ void main() {
       );
       await tester.enterText(find.byKey(const ValueKey('phone-field')), phone);
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('send-code-button')));
+      final button = find.byKey(const ValueKey('send-code-button'));
+      await tester.ensureVisible(button);
+      await tester.pump();
+      await tester.tap(button);
       await tester.pumpAndSettle();
       expect(auth.lastRequestedPhone, phone);
       expect(find.text('بعتنا لك كود التأكيد.'), findsOneWidget);
