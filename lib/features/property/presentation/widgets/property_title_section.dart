@@ -27,18 +27,24 @@ final class PropertyTitleSection extends StatelessWidget {
     final isNarrow = MediaQuery.sizeOf(context).width < 360;
     final title = Text(
       details.title,
-      style: context.textStyles.sectionTitle.copyWith(
-        fontSize: isNarrow ? 18 : 20,
-        color: colors.textPrimary,
-      ),
+      style:
+          (isNarrow
+                  ? context.textStyles.sectionTitle
+                  : context.textStyles.propertyDetailsTitle)
+              .copyWith(
+                color: colors.textPrimary,
+              ),
     );
     final price = Text(
       l10n.nightlyPrice(MoneyFormatter().format(details.nightlyPrice)),
       textAlign: TextAlign.end,
-      style: context.textStyles.price.copyWith(
-        color: colors['textAccent'],
-        fontSize: isNarrow ? 14 : 16,
-      ),
+      style:
+          (isNarrow
+                  ? context.textStyles.price
+                  : context.textStyles.propertyDetailsPrice)
+              .copyWith(
+                color: colors['textAccent'],
+              ),
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

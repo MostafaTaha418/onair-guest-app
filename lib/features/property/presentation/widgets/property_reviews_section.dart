@@ -47,9 +47,8 @@ final class PropertyReviewsSection extends StatelessWidget {
                     const SizedBox(width: Dimens.space8),
                     Text(
                       details.ratingAvg?.toStringAsFixed(1) ?? '',
-                      style: context.textStyles.sectionTitle.copyWith(
+                      style: context.textStyles.propertyReviewScore.copyWith(
                         color: colors.textPrimary,
-                        fontSize: 22,
                       ),
                     ),
                     const SizedBox(width: Dimens.space8),

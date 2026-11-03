@@ -26,11 +26,11 @@ final class AuthFlowScaffold extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(gradient: colors.gradient('authBackground')),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
+          backgroundColor: colors.transparent,
+          surfaceTintColor: colors.transparent,
           elevation: 0,
           leading: onBack == null
               ? null

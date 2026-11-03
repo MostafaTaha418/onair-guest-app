@@ -49,9 +49,8 @@ final class PropertyAddressSection extends StatelessWidget {
                         details.cityName,
                         details.areaName,
                       ].join(l10n.localeName == 'ar' ? '، ' : ', '),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: context.textStyles.propertyLocation.copyWith(
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (details.addressText != null) ...[

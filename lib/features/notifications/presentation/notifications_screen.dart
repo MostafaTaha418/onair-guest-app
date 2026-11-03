@@ -206,19 +206,26 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
                   Expanded(
                     child: Text(
                       l10n.notifications,
-                      style: context.textStyles.sectionTitle.copyWith(
-                        fontSize: isNarrow ? 20 : 22,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? colors['textAccent']
-                            : colors['primaryDark'],
-                      ),
+                      style:
+                          (isNarrow
+                                  ? context.textStyles.notificationsTitleNarrow
+                                  : context.textStyles.notificationsTitle)
+                              .copyWith(
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? colors['textAccent']
+                                    : colors['primaryDark'],
+                              ),
                     ),
                   ),
                   TextButton(
                     onPressed: hasUnread && !_markingAll ? _markAllRead : null,
                     child: Text(
                       l10n.notificationsMarkAllRead,
-                      style: TextStyle(fontSize: isNarrow ? 11 : 12),
+                      style: isNarrow
+                          ? context.textStyles.notificationsActionNarrow
+                          : context.textStyles.notificationsAction,
                     ),
                   ),
                 ],
@@ -376,9 +383,8 @@ final class _NotificationCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             text.title,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
+                            style: context.textStyles.notificationItemTitle
+                                .copyWith(
                                   color: colors.textPrimary,
                                 ),
                           ),

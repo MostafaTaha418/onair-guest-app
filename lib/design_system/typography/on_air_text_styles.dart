@@ -34,6 +34,17 @@ final class OnAirTextStyles extends ThemeExtension<OnAirTextStyles> {
   TextStyle get areaBadge => _style(11, FontWeight.w700);
   TextStyle get propertyTitle => _style(15, FontWeight.w800);
   TextStyle get price => _style(14, FontWeight.w800);
+  TextStyle get propertyDetailsTitle => _style(20, FontWeight.w800);
+  TextStyle get propertyDetailsPrice => _style(16, FontWeight.w800);
+  TextStyle get propertyLocation => _style(14, FontWeight.w700);
+  TextStyle get propertySpec => _style(12, FontWeight.w700);
+  TextStyle get propertyAmenity => _style(12, FontWeight.w600);
+  TextStyle get propertyReviewScore => _style(22, FontWeight.w800);
+  TextStyle get notificationsTitle => _style(22, FontWeight.w800);
+  TextStyle get notificationsTitleNarrow => _style(20, FontWeight.w800);
+  TextStyle get notificationsAction => _style(12, FontWeight.w500);
+  TextStyle get notificationsActionNarrow => _style(11, FontWeight.w500);
+  TextStyle get notificationItemTitle => _style(14, FontWeight.w800);
   TextStyle get seeAll => _style(14, FontWeight.w700);
   TextStyle get homeSearch => _style(16, FontWeight.w400);
   TextStyle get navLabel => _style(10, FontWeight.w700);

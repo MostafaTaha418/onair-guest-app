@@ -54,10 +54,10 @@ final class HomeHeader extends StatelessWidget {
             return Row(
               children: [
                 if (signedIn) ...[
-                  const OnAirLogo.mark(
-                    key: ValueKey('home-brand-mark'),
+                  OnAirLogo.mark(
+                    key: const ValueKey('home-brand-mark'),
                     height: 42,
-                    color: Colors.white,
+                    color: context.colors.onPrimary,
                   ),
                   const SizedBox(width: Dimens.space12),
                   Expanded(
@@ -86,13 +86,13 @@ final class HomeHeader extends StatelessWidget {
                     ),
                   ),
                 ] else
-                  const Expanded(
+                  Expanded(
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
                       child: OnAirLogo.lockup(
-                        key: ValueKey('home-brand-lockup'),
+                        key: const ValueKey('home-brand-lockup'),
                         height: 38,
-                        color: Colors.white,
+                        color: context.colors.onPrimary,
                       ),
                     ),
                   ),

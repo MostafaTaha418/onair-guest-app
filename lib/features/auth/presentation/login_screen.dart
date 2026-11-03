@@ -291,11 +291,11 @@ final class _LoginScreenState extends State<LoginScreen> {
     return DecoratedBox(
       decoration: BoxDecoration(gradient: colors.gradient('authBackground')),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: colors.transparent,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
+          backgroundColor: colors.transparent,
+          surfaceTintColor: colors.transparent,
           elevation: 0,
           leading: IconButton(
             key: const ValueKey('close-login-button'),

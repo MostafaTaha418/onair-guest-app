@@ -77,10 +77,9 @@ final class PropertyAmenitiesSection extends StatelessWidget {
                           Expanded(
                             child: Text(
                               amenity.label,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
+                              style: context.textStyles.propertyAmenity
+                                  .copyWith(
                                     color: colors.textPrimary,
-                                    fontWeight: FontWeight.w600,
                                   ),
                             ),
                           ),

@@ -56,9 +56,8 @@ final class PropertySpecsRow extends StatelessWidget {
                     const SizedBox(height: Dimens.space8),
                     Text(
                       label,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: context.textStyles.propertySpec.copyWith(
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],

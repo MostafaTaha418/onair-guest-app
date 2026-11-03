@@ -15,8 +15,10 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
   Color get border => this['border'];
   Color get errorText => this['errorText'];
   Color get onPrimary => this['onPrimary'];
+  Color get transparent => this['transparent'];
 
   static const light = OnAirColors({
+    'transparent': Color(0x00000000),
     'primary': Color(0xFF006399),
     'logo': Color(0xFF00639A),
     'primaryLight': Color(0xFF147DBC),
@@ -125,6 +127,7 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
   });
 
   static const dark = OnAirColors({
+    'transparent': Color(0x00000000),
     'primary': Color(0xFF006399),
     'logo': Color(0xFFFFFFFF),
     'primaryLight': Color(0xFF006399),
