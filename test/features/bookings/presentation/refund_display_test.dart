@@ -11,6 +11,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/components/refund_stage_tracker.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/booking_summary.dart';
@@ -207,7 +208,7 @@ void main() {
     expect(tracker(tester).failed, isFalse);
     expect(find.text(l10n.refundChipRequested), findsOneWidget);
     // The reached-step checks stop at the current stage (AC-042).
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(AppIcons.checkCircle), findsOneWidget);
     expect(find.text(l10n.refundChipDone), findsNothing);
     // AC-020: the message carries the full paid amount.
     expect(
@@ -224,7 +225,7 @@ void main() {
     await pumpDetails(tester, expiredId);
     expect(tracker(tester).currentIndex, 1);
     expect(find.text(l10n.refundChipInProgress), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(2));
     expect(find.text(l10n.refundChipDone), findsNothing);
     // AC-021: the message carries the full paid amount.
     expect(
@@ -237,7 +238,7 @@ void main() {
     await pumpDetails(tester, conflictId);
     expect(tracker(tester).currentIndex, 2);
     expect(find.text(l10n.refundChipInProgress), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(3));
+    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(3));
     expect(find.text(l10n.refundChipDone), findsNothing);
   });
 
@@ -247,7 +248,7 @@ void main() {
     await pumpDetails(tester, cancelledId);
     expect(tracker(tester).currentIndex, 3);
     expect(find.text(l10n.refundChipDone), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
+    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(4));
     expect(find.text(l10n.refundProblemHint), findsNothing);
   });
 

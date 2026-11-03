@@ -19,21 +19,18 @@ final class OnAirBottomNav extends StatelessWidget {
 
   static const List<String> _names = [
     'home',
-    'search',
     'bookings',
     'notifications',
     'account',
   ];
   static const List<IconData> _icons = [
     AppIcons.homeOutlined,
-    AppIcons.search,
     AppIcons.calendarMonthOutlined,
     AppIcons.notificationsOutlined,
     AppIcons.personOutline,
   ];
   static const List<IconData> _activeIcons = [
     AppIcons.home,
-    AppIcons.search,
     AppIcons.calendarMonth,
     AppIcons.notificationsActiveOutlined,
     AppIcons.person,
@@ -41,7 +38,7 @@ final class OnAirBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    assert(labels.length == _names.length, 'Exactly five labels required');
+    assert(labels.length == _names.length, 'Exactly four labels required');
     final colors = context.colors;
     return SafeArea(
       top: false,
@@ -86,7 +83,7 @@ final class OnAirBottomNav extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Badge(
-                                  isLabelVisible: index == 3 && unreadCount > 0,
+                                  isLabelVisible: index == 2 && unreadCount > 0,
                                   label: Text(
                                     unreadCount > 99 ? '99+' : '$unreadCount',
                                   ),

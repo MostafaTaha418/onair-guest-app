@@ -37,7 +37,11 @@ final class AuthFlowScaffold extends StatelessWidget {
               : IconButton(
                   tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                   onPressed: onBack,
-                  icon: const Icon(AppIcons.arrowBackRounded),
+                  icon: Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? AppIcons.chevronRight
+                        : AppIcons.chevronLeft,
+                  ),
                 ),
         ),
         body: SafeArea(

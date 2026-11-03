@@ -9,6 +9,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/property_card.dart';
+import 'package:on_air/design_system/components/section_header.dart' as shared;
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
@@ -27,6 +28,8 @@ import 'package:on_air/features/home/presentation/widgets/upcoming_booking_card.
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/property/presentation/property_navigation.dart';
+import 'package:on_air/features/search/domain/search_criteria.dart';
+import 'package:on_air/features/search/presentation/filters_sheet.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The Home tab (US3): greeting, search box, upcoming booking, areas,
@@ -80,8 +83,7 @@ final class HomeScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: HomeSearchBox(
-                      onTap: () =>
-                          StatefulNavigationShell.of(context).goBranch(1),
+                      onTap: () => context.go(AppRoutes.search),
                     ),
                   ),
                   const SizedBox(width: Dimens.space12),
@@ -91,8 +93,23 @@ final class HomeScreen extends StatelessWidget {
                     child: InkWell(
                       key: const ValueKey('home-filter-button'),
                       borderRadius: BorderRadius.circular(Dimens.radiusCard),
-                      onTap: () =>
-                          StatefulNavigationShell.of(context).goBranch(1),
+                      onTap: () async {
+                        final criteria = await showFiltersSheet(
+                          context,
+                          initial: SearchCriteria.empty,
+                        );
+                        if (criteria == null || !context.mounted) return;
+                        unawaited(
+                          context.push(
+                            Uri(
+                              path: AppRoutes.filterResults,
+                              queryParameters: criteria.toQuery().isEmpty
+                                  ? null
+                                  : criteria.toQuery(),
+                            ).toString(),
+                          ),
+                        );
+                      },
                       child: SizedBox.square(
                         dimension: 50,
                         child: Icon(
@@ -156,10 +173,11 @@ final class HomeScreen extends StatelessWidget {
                 Dimens.screenSide,
                 Dimens.space24,
                 Dimens.screenSide,
-                Dimens.space32,
+                Dimens.space16,
               ),
               sliver: _newestSliver(context, state),
             ),
+          const SliverToBoxAdapter(child: SizedBox(height: 96)),
         ],
         if (_isEmpty(state))
           SliverFillRemaining(
@@ -167,8 +185,7 @@ final class HomeScreen extends StatelessWidget {
               icon: AppIcons.searchOff,
               message: l10n.homeEmpty,
               action: TextButton(
-                onPressed: () =>
-                    StatefulNavigationShell.of(context).goBranch(1),
+                onPressed: () => context.go(AppRoutes.search),
                 child: Text(l10n.homeEmptyAction),
               ),
             ),
@@ -222,6 +239,7 @@ final class HomeScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return HomeSection(
       title: l10n.homeAreasTitle,
+      onSeeAll: () => context.push(AppRoutes.homeAreas),
       isLoading: state.sectionLoading[HomeSectionId.areas] ?? false,
       error: _sectionError(state.feed?.areas),
       onRetry: () => unawaited(
@@ -271,7 +289,7 @@ final class HomeScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.zero,
             clipBehavior: Clip.none,
-            itemCount: tiles.length,
+            itemCount: tiles.length < 5 ? tiles.length : 5,
             itemBuilder: (context, index) {
               final tile = tiles[index];
               return Padding(
@@ -301,16 +319,17 @@ final class HomeScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return HomeSection(
       title: l10n.homeSuggestedTitle,
+      onSeeAll: () => context.push(AppRoutes.homeToday),
       isLoading: state.availableTodayLoading,
       error: _sectionError(state.availableToday),
       onRetry: () => unawaited(context.read<HomeCubit>().retryAvailableToday()),
       skeleton: const PropertyCardSkeleton(),
       child: Column(
         children: [
-          for (final card in switch (state.availableToday) {
+          for (final card in (switch (state.availableToday) {
             FeedSectionReady<List<ListingCard>>(:final value) => value,
             _ => const <ListingCard>[],
-          })
+          }).take(5))
             Padding(
               padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
               child: _propertyCard(context, card, availableToday: true),
@@ -326,7 +345,12 @@ final class HomeScreen extends StatelessWidget {
     final error = _sectionError(state.feed?.newest);
     return SliverMainAxisGroup(
       slivers: [
-        SliverToBoxAdapter(child: SectionHeader(l10n.homeNewestTitle)),
+        SliverToBoxAdapter(
+          child: shared.SectionHeader(
+            title: l10n.homeNewestTitle,
+            onSeeAll: () => context.push(AppRoutes.homeNewest),
+          ),
+        ),
         if (isLoading)
           SliverToBoxAdapter(
             child: Column(
@@ -382,7 +406,8 @@ final class HomeScreen extends StatelessWidget {
         else
           SliverList.builder(
             itemCount: switch (state.feed?.newest) {
-              FeedSectionReady<List<ListingCard>>(:final value) => value.length,
+              FeedSectionReady<List<ListingCard>>(:final value) =>
+                value.length < 5 ? value.length : 5,
               _ => 0,
             },
             itemBuilder: (context, index) {

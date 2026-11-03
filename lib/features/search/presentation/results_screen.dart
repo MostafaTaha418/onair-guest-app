@@ -35,7 +35,9 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 /// (research R4). The screen stays on the Search branch stack, so Back keeps
 /// the list and scroll position (research R9).
 final class ResultsScreen extends StatefulWidget {
-  const ResultsScreen({super.key});
+  const ResultsScreen({this.filterMode = false, super.key});
+
+  final bool filterMode;
 
   @override
   State<ResultsScreen> createState() => _ResultsScreenState();
@@ -118,8 +120,8 @@ final class _ResultsScreenState extends State<ResultsScreen> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.searchTitle),
-        actions: const [_ShareSearchAction()],
+        title: Text(widget.filterMode ? l10n.searchFilters : l10n.searchTitle),
+        actions: widget.filterMode ? const [] : const [_ShareSearchAction()],
       ),
       body: BlocListener<ConnectivityCubit, ConnectivityState>(
         // Back online while the results are stuck in the offline state:
@@ -139,7 +141,15 @@ final class _ResultsScreenState extends State<ResultsScreen> {
               controller: _controller,
               slivers: [
                 const SliverToBoxAdapter(child: OfflineBannerVisibility()),
-                SliverToBoxAdapter(child: _SummaryBar(state: state)),
+                SliverToBoxAdapter(
+                  child: _SummaryBar(
+                    state: state,
+                    filterMode: widget.filterMode,
+                    onTap: widget.filterMode
+                        ? () => _editFilters(state)
+                        : () => context.go(AppRoutes.search),
+                  ),
+                ),
                 SliverToBoxAdapter(child: _chipBar(context, state)),
                 if (state.criteria.stay == null &&
                     state.status != ResultsStatus.loading)
@@ -186,20 +196,12 @@ final class _ResultsScreenState extends State<ResultsScreen> {
               icon: AppIcons.searchOff,
               message: l10n.searchNoResults,
               action: TextButton(
-                onPressed: () async {
-                  final edited = await showFiltersSheet(
-                    context,
-                    initial: state.criteria,
-                  );
-                  if (edited == null || !context.mounted) return;
-                  _cubit.setCriteria(edited);
-                  // The filters never touch the location, so its label is
-                  // carried into the new search.
-                  unawaited(
-                    _cubit.search(edited, label: _cubit.state.locationLabel),
-                  );
-                },
-                child: Text(l10n.searchFilters),
+                onPressed: widget.filterMode
+                    ? () => _editFilters(state)
+                    : () => context.go(AppRoutes.search),
+                child: Text(
+                  widget.filterMode ? l10n.searchFilters : l10n.searchAction,
+                ),
               ),
             ),
           ),
@@ -235,6 +237,17 @@ final class _ResultsScreenState extends State<ResultsScreen> {
       case ResultsStatus.ready:
         return _readySlivers(state);
     }
+  }
+
+  Future<void> _editFilters(SearchState state) async {
+    final edited = await showFiltersSheet(context, initial: state.criteria);
+    if (edited == null || !mounted) return;
+    context.pushReplacement(
+      Uri(
+        path: AppRoutes.filterResults,
+        queryParameters: edited.toQuery().isEmpty ? null : edited.toQuery(),
+      ).toString(),
+    );
   }
 
   List<Widget> _readySlivers(SearchState state) {
@@ -406,9 +419,15 @@ final class OfflineBannerVisibility extends StatelessWidget {
 }
 
 final class _SummaryBar extends StatelessWidget {
-  const _SummaryBar({required this.state});
+  const _SummaryBar({
+    required this.state,
+    required this.onTap,
+    required this.filterMode,
+  });
 
   final SearchState state;
+  final VoidCallback onTap;
+  final bool filterMode;
 
   @override
   Widget build(BuildContext context) {
@@ -423,13 +442,17 @@ final class _SummaryBar extends StatelessWidget {
         ? l10n.searchGuestsAny
         : '${state.criteria.guests}';
     return InkWell(
-      onTap: () => context.go(AppRoutes.search),
+      onTap: onTap,
       child: Container(
         color: colors.surface,
         padding: const EdgeInsetsDirectional.all(Dimens.space12),
         child: Row(
           children: [
-            Icon(AppIcons.tuneOutlined, size: 18, color: colors.textSecondary),
+            Icon(
+              filterMode ? AppIcons.tuneOutlined : AppIcons.search,
+              size: 18,
+              color: colors.textSecondary,
+            ),
             const SizedBox(width: Dimens.space8),
             Expanded(
               child: Text(

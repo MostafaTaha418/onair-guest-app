@@ -18,6 +18,10 @@ abstract final class AppRoutes {
   static const propertyGalleryPattern = '/property/:id/gallery';
   static const propertyReviewsPattern = '/property/:id/reviews';
   static const searchResults = '/search/results';
+  static const filterResults = '/filter-results';
+  static const homeAreas = '/home/areas';
+  static const homeToday = '/home/today';
+  static const homeNewest = '/home/newest';
   static const bookingEntryPattern = '/book/:propertyId/dates';
   static const bookingVerifyPattern = '/book/:propertyId/verify';
   static const bookingSummaryPattern = '/book/:propertyId/summary';
@@ -79,6 +83,10 @@ abstract final class AppRoutes {
       notAvailable,
       updateRequired,
       searchResults,
+      filterResults,
+      homeAreas,
+      homeToday,
+      homeNewest,
       supportNew,
       notifications,
       paymentReturnPath,

@@ -98,7 +98,7 @@ final class _Proposal extends StatelessWidget {
         backgroundColor: colors.background,
         bottomNavigationBar: OnAirBottomNav(
           currentIndex: 0,
-          labels: const ['الرئيسية', 'بحث', 'الحجوزات', 'الإشعارات', 'حسابي'],
+          labels: const ['الرئيسية', 'الحجوزات', 'الإشعارات', 'حسابي'],
           onTap: (_) {},
         ),
         body: DecoratedBox(

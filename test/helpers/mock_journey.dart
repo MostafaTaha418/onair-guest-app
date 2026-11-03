@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/components/property_card.dart';
@@ -10,6 +9,7 @@ import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'mock_app.dart';
+import 'register_mock_guest.dart';
 
 /// The SC-007 visitor-resume journey (T095), shared by the host widget test
 /// and the `integration_test/discovery_journey_test.dart` device run: mock
@@ -27,7 +27,7 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await bootMockApp(tester);
 
   // 1–2. Open Search, pick 2 guests.
-  await tester.tap(find.byKey(const ValueKey('nav-search')));
+  await tester.tap(find.byKey(const ValueKey('home-search-box')));
   await tester.pumpAndSettle();
   await tester.tap(find.byTooltip(l10n.guestsIncrease));
   await tester.pumpAndSettle();
@@ -67,36 +67,15 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   // 5. Open the first result and remember its title.
   await tester.pumpAndSettle();
   final firstCard = find.byType(PropertyCard).first;
-  final apartmentTitle = tester
-      .widget<Text>(
-        find.descendant(of: firstCard, matching: find.byType(Text)).first,
-      )
-      .data!;
+  final apartmentTitle = tester.widget<PropertyCard>(firstCard).title;
   await tester.tap(firstCard);
   await tester.pumpAndSettle();
   expect(find.text(apartmentTitle), findsOneWidget);
 
-  // 6–7. «احجز الآن» as a visitor → mock sign-in (code 123456) →
-  // complete the profile → the resume forwards to the booking entry.
+  // 6–7. «احجز الآن» as a visitor → email registration → booking entry.
   await tester.tap(find.text(l10n.bookNow));
   await tester.pumpAndSettle();
-  expect(find.byKey(const ValueKey('phone-field')), findsOneWidget);
-  // The phone tab hosts the only TextField on the login screen. The pump
-  // rebuilds the submit button, which was disabled with the empty field.
-  await tester.enterText(find.byType(TextField), '01012345678');
-  await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('send-code-button')));
-  await tester.pumpAndSettle();
-  await tester.enterText(find.byType(TextField), MockBackend.verificationCode);
-  await tester.pump();
-  await tester.pumpAndSettle();
-  // A fresh mock account is incomplete: finish the profile first.
-  await tester.enterText(find.byType(TextField), 'زائر تجريبي');
-  await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('terms-checkbox')));
-  await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('complete-profile-button')));
-  await tester.pumpAndSettle();
+  await registerMockGuest(tester, l10n);
   // 8. The date step carries the same stay and guests: three nights.
   expect(find.byType(DatesScreen), findsOneWidget);
   expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
@@ -123,7 +102,7 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
 
   // The Search branch form kept the criteria (guests 2 + dates), so the
   // same first result comes back.
-  await tester.tap(find.byKey(const ValueKey('nav-search')));
+  await tester.tap(find.byKey(const ValueKey('home-search-box')));
   await tester.pumpAndSettle();
   await tester.tap(find.text(l10n.searchAction));
   await tester.pumpAndSettle();
@@ -131,9 +110,10 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.pumpAndSettle();
   expect(find.text(apartmentTitle), findsOneWidget);
 
+  await tester.ensureVisible(find.text(l10n.bookNow));
   await tester.tap(find.text(l10n.bookNow));
   await tester.pumpAndSettle();
-  expect(find.byKey(const ValueKey('phone-field')), findsOneWidget);
+  expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
   await tester.tap(find.byKey(const ValueKey('close-login-button')));
   await tester.pumpAndSettle();
   expect(find.text(apartmentTitle), findsOneWidget);

@@ -301,7 +301,11 @@ final class _LoginScreenState extends State<LoginScreen> {
             key: const ValueKey('close-login-button'),
             tooltip: l10n.authClose,
             onPressed: _cancelSignIn,
-            icon: const Icon(AppIcons.arrowBackRounded),
+            icon: Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? AppIcons.chevronRight
+                  : AppIcons.chevronLeft,
+            ),
           ),
         ),
         body: SafeArea(
@@ -738,9 +742,21 @@ final class _LoginScreenState extends State<LoginScreen> {
     children: [
       Text(widget.registration ? l10n.authHasAccount : l10n.authNoAccount),
       TextButton(
-        onPressed: () => context.go(
-          widget.registration ? AppRoutes.login : AppRoutes.register,
-        ),
+        onPressed: () {
+          final current = GoRouterState.of(context).uri;
+          context.go(
+            Uri(
+              path: widget.registration ? AppRoutes.login : AppRoutes.register,
+              queryParameters: {
+                if (current.queryParameters['from'] case final String from)
+                  'from': from,
+                if (current.queryParameters['cancelTo']
+                    case final String cancelTo)
+                  'cancelTo': cancelTo,
+              },
+            ).toString(),
+          );
+        },
         style: TextButton.styleFrom(
           foregroundColor: context.colors['textAccent'],
         ),

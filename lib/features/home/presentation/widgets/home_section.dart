@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/components/section_header.dart' as shared;
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
@@ -33,6 +34,7 @@ final class HomeSection extends StatelessWidget {
     required this.onRetry,
     required this.skeleton,
     required this.child,
+    this.onSeeAll,
     super.key,
   });
 
@@ -46,6 +48,7 @@ final class HomeSection extends StatelessWidget {
   /// The loading placeholder, shaped like the section's content.
   final Widget skeleton;
   final Widget child;
+  final VoidCallback? onSeeAll;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +57,13 @@ final class HomeSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(title),
+        if (onSeeAll == null)
+          SectionHeader(title)
+        else
+          Padding(
+            padding: const EdgeInsetsDirectional.only(bottom: Dimens.space12),
+            child: shared.SectionHeader(title: title, onSeeAll: onSeeAll),
+          ),
         if (isLoading)
           skeleton
         else if (error != null)

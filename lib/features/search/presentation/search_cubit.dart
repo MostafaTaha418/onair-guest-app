@@ -81,15 +81,17 @@ final class SearchCubit extends Cubit<SearchState> {
     required this._lastSearch,
     required this._connectivity,
     DateOnly Function()? today,
+    this.rememberLastSearch = true,
   }) : _today = today ?? CairoTime.today,
        super(const SearchState()) {
-    unawaited(_restoreLastSearch());
+    if (rememberLastSearch) unawaited(_restoreLastSearch());
   }
 
   final ListingsRepository _repo;
   final LastSearchStore _lastSearch;
   final ConnectivityCubit _connectivity;
   final DateOnly Function() _today;
+  final bool rememberLastSearch;
 
   /// The query the results screen is currently showing, so re-entering the
   /// route with the same query never searches twice.
@@ -180,7 +182,7 @@ final class SearchCubit extends Cubit<SearchState> {
       ),
     );
     // A convenience for the next launch; it must never delay the request.
-    unawaited(_lastSearch.save(criteria, label));
+    if (rememberLastSearch) unawaited(_lastSearch.save(criteria, label));
     try {
       final page = await _repo.searchProperties(criteria.toParams());
       if (isClosed || generation != _generation) return;

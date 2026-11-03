@@ -23,7 +23,11 @@ final class FavoritesScreen extends StatelessWidget {
         title: Text(l10n.favorites),
         leading: IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          icon: const Icon(AppIcons.arrowBackRounded),
+          icon: Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? AppIcons.chevronRight
+                : AppIcons.chevronLeft,
+          ),
           onPressed: () => context.go(AppRoutes.home),
         ),
       ),

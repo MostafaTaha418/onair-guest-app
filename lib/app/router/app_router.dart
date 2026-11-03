@@ -41,6 +41,7 @@ import 'package:on_air/features/bookings/presentation/bookings_cubit.dart';
 import 'package:on_air/features/bookings/presentation/bookings_screen.dart';
 import 'package:on_air/features/favorites/presentation/favorites_screen.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
+import 'package:on_air/features/home/presentation/home_collection_screen.dart';
 import 'package:on_air/features/home/presentation/home_cubit.dart';
 import 'package:on_air/features/home/presentation/home_screen.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -55,6 +56,7 @@ import 'package:on_air/features/property/presentation/gallery_screen.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
 import 'package:on_air/features/property/presentation/property_screen.dart';
 import 'package:on_air/features/property/presentation/reviews_screen.dart';
+import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/search/presentation/results_screen.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/search_screen.dart';
@@ -328,6 +330,31 @@ GoRouter createAppRouter({
       name: 'favorites',
       builder: (_, _) => const FavoritesScreen(),
     ),
+    GoRoute(
+      path: AppRoutes.filterResults,
+      name: 'filter-results',
+      builder: (context, state) => BlocProvider<SearchCubit>(
+        create: (context) => SearchCubit(
+          repo: context.read<ListingsRepository>(),
+          lastSearch: context.read<LastSearchStore>(),
+          connectivity: context.read<ConnectivityCubit>(),
+          rememberLastSearch: false,
+        ),
+        child: _ResultsQueryOpener(
+          query: state.uri.queryParameters,
+          filterMode: true,
+        ),
+      ),
+    ),
+    for (final collection in HomeCollection.values)
+      GoRoute(
+        path: switch (collection) {
+          HomeCollection.areas => AppRoutes.homeAreas,
+          HomeCollection.today => AppRoutes.homeToday,
+          HomeCollection.newest => AppRoutes.homeNewest,
+        },
+        builder: (_, _) => HomeCollectionScreen(collection: collection),
+      ),
     StatefulShellRoute.indexedStack(
       builder: (context, _, shell) => BlocProvider<SearchCubit>.value(
         value: searchCubit,
@@ -434,9 +461,10 @@ GoRouter createAppRouter({
 /// Opens the results query for every new location. Repeat queries are
 /// deduplicated inside `SearchCubit.openFromQuery` itself (research R9).
 final class _ResultsQueryOpener extends StatefulWidget {
-  const _ResultsQueryOpener({required this.query});
+  const _ResultsQueryOpener({required this.query, this.filterMode = false});
 
   final Map<String, String> query;
+  final bool filterMode;
 
   @override
   State<_ResultsQueryOpener> createState() => _ResultsQueryOpenerState();
@@ -460,5 +488,6 @@ final class _ResultsQueryOpenerState extends State<_ResultsQueryOpener> {
   }
 
   @override
-  Widget build(BuildContext context) => const ResultsScreen();
+  Widget build(BuildContext context) =>
+      ResultsScreen(filterMode: widget.filterMode);
 }

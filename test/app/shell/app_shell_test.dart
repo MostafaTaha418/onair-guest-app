@@ -3,8 +3,14 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/money/money.dart';
+import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/design_system/components/area_card.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
+import 'package:on_air/features/listings/domain/results_page.dart';
+import 'package:on_air/features/search/presentation/results_screen.dart';
+import 'package:on_air/features/search/presentation/search_screen.dart';
 
 import '../../helpers/fake_listings_repository.dart';
 import '../test_app_harness.dart';
@@ -38,7 +44,130 @@ HomeFeed _feed() => HomeFeed(
   fetchedAt: DateTime.utc(2026, 10, 28, 10),
 );
 
+HomeFeed _areasFeed() {
+  final base = _feed();
+  return HomeFeed(
+    referenceVersion: base.referenceVersion,
+    areas: FeedSectionReady([
+      for (var index = 0; index < 6; index++)
+        AreaTile(
+          locationId:
+              '550e8400-e29b-41d4-a716-${index.toString().padLeft(12, '0')}',
+          name: 'منطقة $index',
+          listingCount: index + 1,
+          image: null,
+        ),
+    ]),
+    suggested: base.suggested,
+    newest: base.newest,
+    upcomingBooking: base.upcomingBooking,
+    fetchedAt: base.fetchedAt,
+  );
+}
+
 void main() {
+  testWidgets('available today previews five and View all loads every match', (
+    tester,
+  ) async {
+    final todayCards = [
+      for (var index = 0; index < 6; index++)
+        ListingCard(
+          id: '550e8400-e29b-41d4-a716-${index.toString().padLeft(12, '0')}',
+          title: 'متاح رقم $index',
+          propertyType: 'apartment',
+          areaName: 'رأس البر',
+          cityName: 'دمياط',
+          cover: null,
+          nightlyPrice: Money(150000),
+          ratingAvg: null,
+          reviewCount: 0,
+          stay: null,
+        ),
+    ];
+    final page = ResultsPage(
+      items: todayCards,
+      nextCursor: null,
+      totalCount: todayCards.length,
+    );
+    final listings = FakeListingsRepository()
+      ..homeFeedResponses.add(_feed())
+      ..searchResponses.addAll([page, page]);
+    await pumpVisitorApp(tester, listingsRepository: listings);
+    expect(find.text('متاح رقم 5', skipOffstage: false), findsNothing);
+    final seeAll = find.text('عرض الكل').first;
+    await tester.ensureVisible(seeAll);
+    await tester.tap(seeAll);
+    await tester.pumpAndSettle();
+    final list = tester.widget<ListView>(find.byType(ListView).last);
+    expect(list.childrenDelegate.estimatedChildCount, 6);
+    expect(listings.searchParams.last.stay!.checkIn, CairoTime.today());
+  });
+
+  testWidgets('areas show five on Home and all six in a narrow grid', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final listings = FakeListingsRepository()
+      ..homeFeedResponses.addAll([_areasFeed(), _areasFeed()]);
+    await pumpVisitorApp(tester, listingsRepository: listings);
+    final homeAreas = tester.widget<ListView>(
+      find
+          .ancestor(
+            of: find.byType(AreaCard).first,
+            matching: find.byType(ListView),
+          )
+          .first,
+    );
+    expect(homeAreas.childrenDelegate.estimatedChildCount, 5);
+    await tester.tap(find.text('عرض الكل').first);
+    await tester.pumpAndSettle();
+    final grid = tester.widget<GridView>(find.byType(GridView));
+    expect(grid.childrenDelegate.estimatedChildCount, 6);
+    expect(
+      (grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount)
+          .crossAxisCount,
+      2,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home search and filters open separate destinations', (
+    tester,
+  ) async {
+    await pumpVisitorApp(tester);
+    await tester.tap(find.byKey(const ValueKey('home-search-box')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SearchScreen), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-search')), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home-filter-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(OnAirPrimaryButton).last);
+    await tester.pumpAndSettle();
+    expect(find.byType(ResultsScreen), findsOneWidget);
+    expect(find.byType(SearchScreen), findsNothing);
+  });
+
+  testWidgets('newest View all requests newest sorted results', (tester) async {
+    final listings = _scrollableListings();
+    listings.searchResponses.addAll([
+      const ResultsPage(items: [], nextCursor: null, totalCount: 0),
+      const ResultsPage(items: [], nextCursor: null, totalCount: 0),
+    ]);
+    await pumpVisitorApp(tester, listingsRepository: listings);
+    final seeAll = find.text('عرض الكل').last;
+    await tester.ensureVisible(seeAll);
+    await tester.tap(seeAll);
+    await tester.pumpAndSettle();
+    expect(listings.searchParams.last.sort, SearchSort.newest);
+    expect(find.text('أحدث الشقق'), findsOneWidget);
+  });
+
   testWidgets('compact phone keeps the home controls and tabs visible', (
     tester,
   ) async {
@@ -56,11 +185,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('five tabs are RTL, highlight selection, and keep Home scroll', (
+  testWidgets('four tabs are RTL, highlight selection, and keep Home scroll', (
     tester,
   ) async {
     await pumpSignedInApp(tester, listingsRepository: _scrollableListings());
-    const tabs = ['home', 'search', 'bookings', 'notifications', 'account'];
+    const tabs = ['home', 'bookings', 'notifications', 'account'];
+    expect(find.byKey(const ValueKey('nav-search')), findsNothing);
     for (final name in tabs) {
       expect(find.byKey(ValueKey('nav-$name')), findsOneWidget);
     }
@@ -116,19 +246,16 @@ void main() {
   ) async {
     await pumpVisitorApp(tester);
 
-    await tester.tap(find.byKey(const ValueKey('nav-search')));
-    await tester.pumpAndSettle();
-
     await tester.tap(find.byKey(const ValueKey('nav-bookings')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('close-login-button')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('close-login-button')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('nav-search')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-home')), findsOneWidget);
     expect(
       tester
-          .getSemantics(find.byKey(const ValueKey('nav-search')))
+          .getSemantics(find.byKey(const ValueKey('nav-home')))
           .flagsCollection
           .isSelected,
       Tristate.isTrue,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/tokens/on_air_colors.dart';
 import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 
@@ -37,6 +38,13 @@ abstract final class OnAirTheme {
       scaffoldBackgroundColor: colors.background,
       colorScheme: scheme,
       textTheme: onAirTextTheme(colors.textPrimary),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (context) => Icon(
+          Directionality.of(context) == TextDirection.rtl
+              ? AppIcons.chevronRight
+              : AppIcons.chevronLeft,
+        ),
+      ),
       extensions: [colors, OnAirTextStyles.standard],
     );
   }

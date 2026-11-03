@@ -24,6 +24,7 @@ Future<SearchCriteria?> showFiltersSheet(
   required SearchCriteria initial,
 }) => showModalBottomSheet<SearchCriteria>(
   context: context,
+  useRootNavigator: true,
   isScrollControlled: true,
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(

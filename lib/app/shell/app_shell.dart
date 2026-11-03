@@ -18,20 +18,30 @@ final class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: BlocBuilder<UnreadCountCubit, int>(
-        builder: (context, unreadCount) => OnAirBottomNav(
-          currentIndex: navigationShell.currentIndex,
-          unreadCount: unreadCount,
-          labels: [
-            l10n.home,
-            l10n.search,
-            l10n.bookings,
-            l10n.notifications,
-            l10n.account,
-          ],
-          onTap: (index) => _openTab(context, index),
-        ),
+      body: Stack(
+        children: [
+          Positioned.fill(child: navigationShell),
+          if (navigationShell.currentIndex != 1)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: BlocBuilder<UnreadCountCubit, int>(
+                builder: (context, unreadCount) => OnAirBottomNav(
+                  currentIndex: switch (navigationShell.currentIndex) {
+                    0 => 0,
+                    final index => index - 1,
+                  },
+                  unreadCount: unreadCount,
+                  labels: [
+                    l10n.home,
+                    l10n.bookings,
+                    l10n.notifications,
+                    l10n.account,
+                  ],
+                  onTap: (index) => _openTab(context, index),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -39,7 +49,6 @@ final class AppShell extends StatelessWidget {
   void _openTab(BuildContext context, int index) {
     const locations = [
       AppRoutes.home,
-      AppRoutes.search,
       AppRoutes.bookings,
       AppRoutes.notifications,
       AppRoutes.account,
@@ -58,9 +67,10 @@ final class AppShell extends StatelessWidget {
       );
       return;
     }
+    final branchIndex = index == 0 ? 0 : index + 1;
     navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
+      branchIndex,
+      initialLocation: branchIndex == navigationShell.currentIndex,
     );
   }
 }

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:on_air/core/env/env_config.dart';
 
 import '../test/helpers/mock_journey.dart';
 
@@ -15,8 +14,7 @@ import '../test/helpers/mock_journey.dart';
 /// `test/features/journey/mock_journey_test.dart`.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  final environment = EnvConfig.fromEnvironment();
-  final remote = environment.backendMode == BackendMode.remote;
+  const remote = String.fromEnvironment('BACKEND_MODE') == 'remote';
   final seed = File('env/staging_seed.json');
 
   testWidgets(

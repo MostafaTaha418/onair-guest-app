@@ -258,6 +258,7 @@ final class _TabListState extends State<_TabList> {
               child: Center(child: CircularProgressIndicator()),
             ),
           ),
+        const SliverToBoxAdapter(child: SizedBox(height: 96)),
       ],
     );
   }

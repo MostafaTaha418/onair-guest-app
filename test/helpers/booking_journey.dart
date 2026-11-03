@@ -28,6 +28,7 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
+import 'register_mock_guest.dart';
 
 /// The T101 payment journey in mock mode (US1 + US6): pay → success, pay →
 /// fail → «Try again», pay → the server never answers → timeout → My
@@ -51,9 +52,11 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   // stores, which is exactly what survives a real process kill.
   final backend = FakeBookingBackend();
   addTearDown(backend.dispose);
+  final auth = MockAuthRepository();
+  addTearDown(auth.dispose);
 
   // 1. Boot, sign in, open the first apartment.
-  await bootApp(tester, backend);
+  await bootApp(tester, backend, auth);
   final apartmentTitle = await openFirstApartmentAndSignIn(
     tester,
     l10n,
@@ -142,7 +145,7 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
 
   // 5. Restart on the same stores: after signing in again the
   // unfinished-payment banner waits on Home.
-  await bootApp(tester, backend);
+  await bootApp(tester, backend, auth);
   await openFirstApartmentAndSignIn(tester, l10n, firstSignIn: false);
   GoRouter.of(tester.element(find.byType(Scaffold).first)).go(AppRoutes.home);
   await tester.pump();
@@ -161,7 +164,15 @@ Future<void> _pumpUntilVisible(WidgetTester tester, Finder finder) async {
   expect(finder, findsOneWidget);
 }
 
-Future<void> bootApp(WidgetTester tester, FakeBookingBackend backend) async {
+Future<void> bootApp(
+  WidgetTester tester,
+  FakeBookingBackend backend,
+  MockAuthRepository auth,
+) async {
+  // A process restart must dispose the old router; replacing providers under
+  // the same OnAirApp widget would preserve its current tab and auth state.
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump();
   final listings =
       TestWidgetsFlutterBinding.instance is AutomatedTestWidgetsFlutterBinding
       ? MockListingsRepository(
@@ -175,9 +186,6 @@ Future<void> bootApp(WidgetTester tester, FakeBookingBackend backend) async {
     fileName: 'discovery_cache.json',
     schema: 1,
   );
-  final auth = MockAuthRepository();
-  addTearDown(auth.dispose);
-
   await tester.pumpWidget(
     MultiRepositoryProvider(
       providers: [
@@ -211,16 +219,8 @@ Future<void> bootApp(WidgetTester tester, FakeBookingBackend backend) async {
   await tester.pumpAndSettle();
 }
 
-String _firstCardTitle(WidgetTester tester) => tester
-    .widget<Text>(
-      find
-          .descendant(
-            of: find.byType(PropertyCard).first,
-            matching: find.byType(Text),
-          )
-          .first,
-    )
-    .data!;
+String _firstCardTitle(WidgetTester tester) =>
+    tester.widget<PropertyCard>(find.byType(PropertyCard).first).title;
 
 /// Search → first result → «Book now», and — when the guest is signed out —
 /// the mock sign-in (the first sign-in also completes the fresh profile).
@@ -230,7 +230,7 @@ Future<String> openFirstApartmentAndSignIn(
   AppLocalizations l10n, {
   required bool firstSignIn,
 }) async {
-  await tester.tap(find.byKey(const ValueKey('nav-search')));
+  await tester.tap(find.byKey(const ValueKey('home-search-box')));
   await tester.pumpAndSettle();
   // Search needs criteria: pick the three nights on the search date sheet
   // the first time; the search branch keeps its criteria afterwards, so a
@@ -267,30 +267,7 @@ Future<String> openFirstApartmentAndSignIn(
   await tester.tap(find.text(l10n.bookNow));
   await tester.pumpAndSettle();
   if (firstSignIn) {
-    expect(find.byKey(const ValueKey('phone-field')), findsOneWidget);
-    await tester.enterText(
-      find.descendant(
-        of: find.byKey(const ValueKey('phone-field')),
-        matching: find.byType(TextField),
-      ),
-      '01012345678',
-    );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('send-code-button')));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byType(TextField),
-      MockBackend.verificationCode,
-    );
-    await tester.pump();
-    await tester.pumpAndSettle();
-    // A fresh mock account is incomplete: finish the profile first.
-    await tester.enterText(find.byType(TextField), 'زائر تجريبي');
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('terms-checkbox')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('complete-profile-button')));
-    await tester.pumpAndSettle();
+    await registerMockGuest(tester, l10n);
   }
   // On device, the dates route push waits on the real secure-storage write
   // that completes the sign-in, which outlasts pumpAndSettle.

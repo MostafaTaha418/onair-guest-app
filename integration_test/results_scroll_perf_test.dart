@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:on_air/core/env/env_config.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -16,12 +15,12 @@ import '../test/helpers/mock_app.dart';
 /// docs/perf/g1-results-scroll.md for the command and the result record.
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  final environment = EnvConfig.fromEnvironment();
+  const remote = String.fromEnvironment('BACKEND_MODE') == 'remote';
 
   testWidgets(
     'flinging the results list reports a timeline (results_scroll)',
     (tester) async {
-      if (environment.backendMode == BackendMode.remote) {
+      if (remote) {
         // The skip reason must reach the console on a device run.
         // ignore: avoid_print
         print(
@@ -35,7 +34,7 @@ void main() {
       final l10n = lookupAppLocalizations(const Locale('ar'));
 
       // Open the results for «all published apartments» (no criteria).
-      await tester.tap(find.byKey(const ValueKey('nav-search')));
+      await tester.tap(find.byKey(const ValueKey('home-search-box')));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.searchAction));
       await tester.pumpAndSettle();
@@ -46,7 +45,7 @@ void main() {
       await binding.traceAction(() async {
         for (var fling = 0; fling < 10; fling++) {
           await tester.fling(
-            find.byType(PropertyCard).first,
+            find.byType(CustomScrollView),
             const Offset(0, -800),
             3000,
           );

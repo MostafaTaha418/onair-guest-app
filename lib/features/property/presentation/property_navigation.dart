@@ -16,14 +16,34 @@ void openPropertyDetails(
   if (_propertyOpen[router] == true) return;
 
   _propertyOpen[router] = true;
+  var reachedDetails = false;
+  var cleared = false;
+  late VoidCallback onRouteChanged;
+  void clear() {
+    if (cleared) return;
+    cleared = true;
+    _propertyOpen[router] = false;
+    router.routeInformationProvider.removeListener(onRouteChanged);
+  }
+
+  onRouteChanged = () {
+    final path = router.routeInformationProvider.value.uri.path;
+    if (path.startsWith('/property/')) {
+      reachedDetails = true;
+    } else if (reachedDetails) {
+      // Auth uses go() to replace the details route, so the push Future may
+      // never complete. Release the guard when the route actually leaves.
+      clear();
+    }
+  };
+
+  router.routeInformationProvider.addListener(onRouteChanged);
   try {
     unawaited(
-      router.push<void>(location, extra: extra).whenComplete(() {
-        _propertyOpen[router] = false;
-      }),
+      router.push<void>(location, extra: extra).whenComplete(clear),
     );
   } on Object {
-    _propertyOpen[router] = false;
+    clear();
     rethrow;
   }
 }

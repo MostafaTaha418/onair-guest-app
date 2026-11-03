@@ -301,7 +301,7 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
           Dimens.screenSide,
           0,
           Dimens.screenSide,
-          Dimens.space24,
+          96,
         ),
         itemCount: filtered.length + (state.loadingMore ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: Dimens.space12),

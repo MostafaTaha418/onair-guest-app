@@ -13,7 +13,6 @@ import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
-import 'package:on_air/features/search/presentation/filters_sheet.dart';
 import 'package:on_air/features/search/presentation/location_suggest_cubit.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/widgets/date_range_sheet.dart';
@@ -35,7 +34,10 @@ final class SearchScreen extends StatelessWidget {
         builder: (context, connectivity) {
           final online = connectivity.isOnline;
           return Scaffold(
-            appBar: AppBar(title: Text(l10n.searchTitle)),
+            appBar: AppBar(
+              title: Text(l10n.searchTitle),
+              leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+            ),
             body: BlocBuilder<SearchCubit, SearchState>(
               builder: (context, state) {
                 return ListView(
@@ -55,10 +57,6 @@ final class SearchScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: Dimens.space16),
                     _GuestsRow(guests: state.criteria.guests),
-                    const SizedBox(height: Dimens.space16),
-                    _FiltersButton(
-                      activeCount: state.criteria.activeFilterChips.length,
-                    ),
                     const SizedBox(height: Dimens.space24),
                     OnAirPrimaryButton(
                       label: l10n.searchAction,
@@ -203,39 +201,6 @@ final class _GuestsRow extends StatelessWidget {
           incrementTooltip: l10n.guestsIncrease,
         ),
       ],
-    );
-  }
-}
-
-final class _FiltersButton extends StatelessWidget {
-  const _FiltersButton({required this.activeCount});
-
-  final int activeCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colors = context.colors;
-    final label = activeCount == 0
-        ? l10n.searchFilters
-        : '${l10n.searchFilters} ($activeCount)';
-    return OutlinedButton.icon(
-      onPressed: () async {
-        final cubit = context.read<SearchCubit>();
-        final edited = await showFiltersSheet(
-          context,
-          initial: cubit.state.criteria,
-        );
-        if (edited == null || !context.mounted) return;
-        cubit.setCriteria(edited);
-      },
-      icon: Icon(AppIcons.tuneOutlined, color: colors['textAccent']),
-      label: Text(
-        label,
-        style: context.textStyles.authButton.copyWith(
-          color: colors['textAccent'],
-        ),
-      ),
     );
   }
 }

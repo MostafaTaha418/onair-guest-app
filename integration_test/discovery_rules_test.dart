@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:on_air/core/env/env_config.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/stay_range.dart';
@@ -29,8 +28,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide ErrorCode;
 /// In mock mode every check is skipped with a printed reason; the same
 /// assertions run against the mock in `test/features/listings/`.
 void main() {
-  final environment = EnvConfig.fromEnvironment();
-  final remote = environment.backendMode == BackendMode.remote;
+  const remote = String.fromEnvironment('BACKEND_MODE') == 'remote';
 
   if (!remote) {
     test('AC-003 and AC-012 run against Staging only in remote mode', () {

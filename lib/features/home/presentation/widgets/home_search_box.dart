@@ -4,7 +4,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
-/// A tappable search-field look-alike; it jumps to the Search tab.
+/// A tappable search-field look-alike; it opens the dedicated Search screen.
 final class HomeSearchBox extends StatelessWidget {
   const HomeSearchBox({required this.onTap, super.key});
 
@@ -18,6 +18,7 @@ final class HomeSearchBox extends StatelessWidget {
       label: l10n.homeSearchHint,
       button: true,
       child: InkWell(
+        key: const ValueKey('home-search-box'),
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: Container(
