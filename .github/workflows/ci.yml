@@ -184,12 +184,16 @@ jobs:
     # Unsigned release build for devices, then install and launch on the newest
     # iPhone simulator.
     needs: format-and-analyze
-    runs-on: macos-15
+    # macOS 15 runners were repeatedly cancelled while queued during the
+    # 2026-11-04 Actions incident. macOS 26 is the current ARM64 image and
+    # carries the same pinned Xcode 26.2 toolchain used below.
+    runs-on: macos-26
     # Building each simulator integration test separately can exceed one hour
     # on a slow macOS runner, even when tests are making progress.
     timeout-minutes: 150
     env:
-      # Firebase's Swift package requires Xcode 26.2+; macos-15 defaults to 16.4.
+      # Pin Xcode 26.2 so the Firebase Swift package and simulator runtime stay
+      # reproducible as the macOS 26 image advances.
       DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
