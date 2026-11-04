@@ -66,7 +66,7 @@ elif compgen -G "integration_test/*_test.dart" >/dev/null; then
     # them serial on the hosted emulator so the runner does not exhaust the
     # emulator's memory while multiple journeys start at once.
     # shellcheck disable=SC2086
-    flutter test --concurrency=1 integration_test $test_args
+    flutter test --no-dds --concurrency=1 integration_test $test_args
   else
     echo "::warning::Integration tests skipped: STAGING_ENV_JSON secret is not set."
   fi

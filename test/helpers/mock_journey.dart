@@ -77,6 +77,7 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.tap(find.text(l10n.bookNow));
   await tester.pumpAndSettle();
   await registerMockGuest(tester, l10n);
+  await pumpUntilFound(tester, find.byType(DatesScreen));
   // 8. The date step carries the same stay and guests: three nights.
   expect(find.byType(DatesScreen), findsOneWidget);
   expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
