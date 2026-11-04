@@ -59,9 +59,19 @@ echo "Launch check passed."
 if compgen -G "integration_test/*_test.dart" >/dev/null; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
     # Match Android: a full Flutter engine is expensive on a hosted device,
-    # so run each integration target serially.
+    # so run each integration target serially. Run the timeline benchmark
+    # through its host driver with a direct VM service.
+    integration_targets=()
+    for target in integration_test/*_test.dart; do
+      [[ "$target" == integration_test/results_scroll_perf_test.dart ]] || integration_targets+=("$target")
+    done
     # shellcheck disable=SC2086
-    flutter test --concurrency=1 integration_test -d "$udid" $test_args
+    flutter test --concurrency=1 "${integration_targets[@]}" -d "$udid" $test_args
+    # shellcheck disable=SC2086
+    flutter drive --no-dds \
+      --driver=test_driver/perf_driver.dart \
+      --target=integration_test/results_scroll_perf_test.dart \
+      -d "$udid" $test_args
   else
     echo "::warning::Integration tests skipped: STAGING_ENV_JSON secret is not set."
   fi

@@ -64,9 +64,18 @@ elif compgen -G "integration_test/*_test.dart" >/dev/null; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
     # Device integration tests use a full Flutter engine per test target. Keep
     # them serial on the hosted emulator so the runner does not exhaust the
-    # emulator's memory while multiple journeys start at once.
+    # emulator's memory while multiple journeys start at once. The timeline
+    # benchmark has its own host driver and needs a direct VM service.
+    integration_targets=()
+    for target in integration_test/*_test.dart; do
+      [[ "$target" == integration_test/results_scroll_perf_test.dart ]] || integration_targets+=("$target")
+    done
     # shellcheck disable=SC2086
-    flutter test --concurrency=1 integration_test $test_args
+    flutter test --concurrency=1 "${integration_targets[@]}" $test_args
+    # shellcheck disable=SC2086
+    flutter drive --no-dds \
+      --driver=test_driver/perf_driver.dart \
+      --target=integration_test/results_scroll_perf_test.dart $test_args
   else
     echo "::warning::Integration tests skipped: STAGING_ENV_JSON secret is not set."
   fi
