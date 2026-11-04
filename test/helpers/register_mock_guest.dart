@@ -35,8 +35,9 @@ Future<void> registerMockGuest(
   // lower half of the registration route after enterText completes. Dismiss
   // it before scrolling to the controls below the password field so the tap
   // is delivered to the active route rather than the keyboard/route overlay.
-  tester.testTextInput.hide();
+  FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
+  await tester.pump(const Duration(milliseconds: 500));
   await _scrollToRegistrationField(tester, terms);
   await pumpUntilFound(tester, terms.hitTestable());
   await tester.tap(terms.hitTestable());
