@@ -13,7 +13,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # Keep the generation in the key so a stale queued run from the retired
+  # runner pool cannot hold every newer PR run indefinitely.
+  group: ci-v2-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
