@@ -28,6 +28,7 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
+import 'pump_until_found.dart';
 import 'register_mock_guest.dart';
 
 /// The T101 payment journey in mock mode (US1 + US6): pay → success, pay →
@@ -244,14 +245,14 @@ Future<String> openFirstApartmentAndSignIn(
   }
   await tester.tap(find.text(l10n.searchAction));
   await tester.pumpAndSettle();
-  // On device, loading fixture assets can finish after the results frame.
-  for (
-    var attempt = 0;
-    attempt < 40 && !tester.any(find.byType(PropertyCard));
-    attempt++
-  ) {
-    await tester.pump(const Duration(milliseconds: 250));
-  }
+  // A cold restart recreates the file-backed listings repository. On slower
+  // iOS runners, loading and decoding the fixtures can outlive the usual
+  // ten-second device wait even though the search is still progressing.
+  await pumpUntilFound(
+    tester,
+    find.byType(PropertyCard),
+    maxAttempts: 120,
+  );
   final apartmentTitle = _firstCardTitle(tester);
   await tester.tap(find.byType(PropertyCard).first);
   await tester.pumpAndSettle();
