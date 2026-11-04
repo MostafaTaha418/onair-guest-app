@@ -31,10 +31,19 @@ Future<void> registerMockGuest(
   await tester.enterText(emailField, 'journey@example.com');
   await _scrollToRegistrationField(tester, passwordField);
   await tester.enterText(passwordField, 'Password123!');
+  // On a real iOS simulator the software keyboard can keep covering the
+  // lower half of the registration route after enterText completes. Dismiss
+  // it before scrolling to the controls below the password field so the tap
+  // is delivered to the active route rather than the keyboard/route overlay.
+  tester.testTextInput.hide();
+  await tester.pumpAndSettle();
   await _scrollToRegistrationField(tester, terms);
-  await tester.tap(terms);
+  await pumpUntilFound(tester, terms.hitTestable());
+  await tester.tap(terms.hitTestable());
+  await tester.pump();
   await _scrollToRegistrationField(tester, submit);
-  await tester.tap(submit);
+  await pumpUntilFound(tester, submit.hitTestable());
+  await tester.tap(submit.hitTestable());
   await tester.pumpAndSettle();
   await tester.enterText(
     find.descendant(
