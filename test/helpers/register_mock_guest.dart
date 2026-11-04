@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/features/auth/presentation/widgets/auth_flow_scaffold.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+
+import 'pump_until_found.dart';
 
 /// Completes the email-only registration flow used by the full-app tests.
 Future<void> registerMockGuest(
@@ -10,29 +13,28 @@ Future<void> registerMockGuest(
 ) async {
   await tester.tap(find.text(l10n.authCreateAccount));
   await tester.pumpAndSettle();
+  final nameField = find.byKey(const ValueKey('email-name-field'));
+  final phoneField = find.byKey(const ValueKey('email-phone-field'));
+  final emailField = find.byKey(const ValueKey('email-field'));
+  final passwordField = find.byKey(const ValueKey('password-field'));
+  final terms = find.byKey(const ValueKey('email-terms-checkbox'));
+  final submit = find.byKey(const ValueKey('email-submit-button'));
+  await pumpUntilFound(tester, nameField);
+  await _scrollToRegistrationField(tester, nameField);
   await tester.enterText(
-    find.byKey(const ValueKey('email-name-field')),
+    nameField,
     'زائر تجريبي',
   );
-  await tester.enterText(
-    find.byKey(const ValueKey('email-phone-field')),
-    '01012345678',
-  );
-  await tester.enterText(
-    find.byKey(const ValueKey('email-field')),
-    'journey@example.com',
-  );
-  await tester.ensureVisible(find.byKey(const ValueKey('password-field')));
-  await tester.enterText(
-    find.byKey(const ValueKey('password-field')),
-    'Password123!',
-  );
-  await tester.ensureVisible(
-    find.byKey(const ValueKey('email-terms-checkbox')),
-  );
-  await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
-  await tester.ensureVisible(find.byKey(const ValueKey('email-submit-button')));
-  await tester.tap(find.byKey(const ValueKey('email-submit-button')));
+  await _scrollToRegistrationField(tester, phoneField);
+  await tester.enterText(phoneField, '01012345678');
+  await _scrollToRegistrationField(tester, emailField);
+  await tester.enterText(emailField, 'journey@example.com');
+  await _scrollToRegistrationField(tester, passwordField);
+  await tester.enterText(passwordField, 'Password123!');
+  await _scrollToRegistrationField(tester, terms);
+  await tester.tap(terms);
+  await _scrollToRegistrationField(tester, submit);
+  await tester.tap(submit);
   await tester.pumpAndSettle();
   await tester.enterText(
     find.descendant(
@@ -42,4 +44,17 @@ Future<void> registerMockGuest(
     MockBackend.verificationCode,
   );
   await tester.pumpAndSettle();
+}
+
+Future<void> _scrollToRegistrationField(
+  WidgetTester tester,
+  Finder field,
+) async {
+  final registrationList = find
+      .descendant(
+        of: find.byType(AuthFlowScaffold),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+  await tester.scrollUntilVisible(field, 200, scrollable: registrationList);
 }
