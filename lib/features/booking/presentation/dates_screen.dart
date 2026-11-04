@@ -257,17 +257,14 @@ final class _DatesSkeleton extends StatelessWidget {
   const _DatesSkeleton();
 
   @override
-  Widget build(BuildContext context) => const Padding(
-    padding: EdgeInsetsDirectional.all(Dimens.screenSide),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SkeletonBox(height: 32, width: 180),
-        SizedBox(height: Dimens.space16),
-        SkeletonBox(height: 360),
-        SizedBox(height: Dimens.space16),
-        SkeletonBox(height: 48),
-      ],
-    ),
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+    children: const [
+      SkeletonBox(height: 32, width: 180),
+      SizedBox(height: Dimens.space16),
+      SkeletonBox(height: 360),
+      SizedBox(height: Dimens.space16),
+      SkeletonBox(height: 48),
+    ],
   );
 }

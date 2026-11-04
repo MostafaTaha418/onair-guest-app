@@ -16,6 +16,7 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -164,6 +165,7 @@ void main() {
     WidgetTester tester, {
     Map<String, String> query = const {},
     double height = 2200,
+    bool load = true,
   }) async {
     tester.view.physicalSize = Size(400, height);
     tester.view.devicePixelRatio = 1.0;
@@ -192,7 +194,7 @@ void main() {
                 ),
                 initialGuests: int.tryParse(q['guests'] ?? ''),
               );
-              unawaited(cubit.load());
+              if (load) unawaited(cubit.load());
               return cubit;
             },
             child: const DatesScreen(propertyId: property1f),
@@ -219,7 +221,11 @@ void main() {
       bookingBackend: backend,
       connectivityCubit: connectivity.createCubit(),
     );
-    await tester.pumpAndSettle();
+    if (load) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
   }
 
   DateOnly day(int offset) => CairoTime.today().addDays(offset);
@@ -244,6 +250,21 @@ void main() {
     await tester.tap(find.text('${day(to).day}').last);
     await tester.pumpAndSettle();
   }
+
+  testWidgets('loading dates fit a short viewport and remain scrollable', (
+    tester,
+  ) async {
+    await pumpDates(tester, height: 600, load: false);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SkeletonBox), findsNWidgets(3));
+    await tester.scrollUntilVisible(
+      find.byType(SkeletonBox).last,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('unavailable days are refused with a notice', (tester) async {
     listings.propertyResponses.add(_property1f());
