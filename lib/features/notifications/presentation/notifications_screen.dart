@@ -52,7 +52,10 @@ extension on _NotificationFilter {
 
 /// The real notification feed, styled to the supplied notification reference.
 final class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  const NotificationsScreen({this.now, super.key});
+
+  /// Keeps relative timestamps stable in snapshot tests.
+  final DateTime Function()? now;
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -317,6 +320,7 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
             : _NotificationCard(
                 item: filtered[index],
                 onTap: () => _open(filtered[index]),
+                now: widget.now?.call() ?? DateTime.now(),
               ),
       ),
     );
@@ -324,10 +328,15 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
 }
 
 final class _NotificationCard extends StatelessWidget {
-  const _NotificationCard({required this.item, required this.onTap});
+  const _NotificationCard({
+    required this.item,
+    required this.onTap,
+    required this.now,
+  });
 
   final AppNotification item;
   final VoidCallback onTap;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
@@ -391,7 +400,7 @@ final class _NotificationCard extends StatelessWidget {
                         ),
                         const SizedBox(width: Dimens.space8),
                         Text(
-                          _relativeTime(item.createdAt, l10n),
+                          _relativeTime(item.createdAt, now, l10n),
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: colors.textSecondary,
@@ -457,8 +466,8 @@ final class _NotificationCard extends StatelessWidget {
   );
 }
 
-String _relativeTime(DateTime date, AppLocalizations l10n) {
-  final elapsed = DateTime.now().difference(date);
+String _relativeTime(DateTime date, DateTime now, AppLocalizations l10n) {
+  final elapsed = now.difference(date);
   if (elapsed.isNegative || elapsed.inMinutes < 1) {
     return l10n.notificationsJustNow;
   }

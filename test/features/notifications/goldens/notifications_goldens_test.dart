@@ -133,7 +133,7 @@ Widget _centerChild({required bool denied}) {
             ),
             devices: null,
           ),
-          child: const NotificationsScreen(),
+          child: NotificationsScreen(now: () => DateTime.utc(2026, 11, 3, 14)),
         ),
       ),
     ),
