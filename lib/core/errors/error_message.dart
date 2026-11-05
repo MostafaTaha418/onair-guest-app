@@ -29,6 +29,13 @@ String apiErrorMessage(ApiError error, AppLocalizations l10n) =>
       ErrorCode.otpExpired => l10n.authOtpExpired,
       ErrorCode.phoneCountryNotSupported => l10n.authPhoneCountryNotSupported,
       ErrorCode.actionNotAllowed => l10n.errorActionNotAllowed,
+      ErrorCode.collectorNotAuthorized => l10n.stayCollectorNotAuthorized,
+      ErrorCode.cancellationTermsChanged => l10n.cancellationTermsChanged,
+      ErrorCode.remainingNotPaid => l10n.stayRemainingNotPaid,
+      ErrorCode.cashNotAllowed => l10n.stayCashNotAllowed,
+      ErrorCode.cashAmountChanged => l10n.stayCashAmountChanged,
+      ErrorCode.claimAlreadyAnswered => l10n.claimAlreadyAnswered,
+      ErrorCode.offerNotAvailable => l10n.offerNotAvailable,
       ErrorCode.rateLimited => l10n.authRateLimited(
         _waitText(error.retryAfter),
       ),

@@ -19,6 +19,7 @@ final class BookingSummary {
     required this.refundStage,
     required this.ownerResponseDeadline,
     required this.createdAt,
+    this.availableActions = const [],
   });
 
   factory BookingSummary.fromJson(Map<String, dynamic> json) => BookingSummary(
@@ -46,6 +47,10 @@ final class BookingSummary {
         ? null
         : DateTime.parse(json['owner_response_deadline'] as String),
     createdAt: DateTime.parse(json['created_at'] as String),
+    availableActions: [
+      for (final action in json['available_actions'] as List? ?? const [])
+        action as String,
+    ],
   );
 
   final String id;
@@ -58,6 +63,7 @@ final class BookingSummary {
   final RefundStage? refundStage;
   final DateTime? ownerResponseDeadline;
   final DateTime createdAt;
+  final List<String> availableActions;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -79,6 +85,7 @@ final class BookingSummary {
     'refund_status': refundStage?.wire,
     'owner_response_deadline': ownerResponseDeadline?.toIso8601String(),
     'created_at': createdAt.toIso8601String(),
+    'available_actions': availableActions,
   };
 
   @override
@@ -93,10 +100,11 @@ final class BookingSummary {
       other.status == status &&
       other.refundStage == refundStage &&
       other.ownerResponseDeadline == ownerResponseDeadline &&
-      other.createdAt == createdAt;
+      other.createdAt == createdAt &&
+      listEquals(other.availableActions, availableActions);
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     code,
     propertyId,
@@ -107,7 +115,8 @@ final class BookingSummary {
     refundStage,
     ownerResponseDeadline,
     createdAt,
-  );
+    Object.hashAll(availableActions),
+  ]);
 }
 
 /// One server page of a tab (contract delta D2).

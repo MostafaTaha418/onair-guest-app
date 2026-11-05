@@ -252,7 +252,7 @@ this phase.
 
 ### Tests first (write them, run them, see them fail, then implement)
 
-- [ ] T005 [P] Write `test/core/errors/error_mapper_g3_test.dart`. For each row, assert `ErrorMapper.fromCode(code).code` and `.messageKey`, and `ErrorMapper.hasCode(code) == true`:
+- [X] T005 [P] Write `test/core/errors/error_mapper_g3_test.dart`. For each row, assert `ErrorMapper.fromCode(code).code` and `.messageKey`, and `ErrorMapper.hasCode(code) == true`:
   - `CANCELLATION_TERMS_CHANGED` → `ErrorCode.cancellationTermsChanged`, `cancellationTermsChanged`
   - `REMAINING_NOT_PAID` → `ErrorCode.remainingNotPaid`, `stayRemainingNotPaid`
   - `CASH_NOT_ALLOWED` → `ErrorCode.cashNotAllowed`, `stayCashNotAllowed`
@@ -262,7 +262,7 @@ this phase.
   - `COLLECTOR_NOT_AUTHORIZED` → `ErrorCode.collectorNotAuthorized`, `stayCollectorNotAuthorized` (already mapped; keep the assertion)
 
   In a second `group('apiErrorMessage')`, load `AppLocalizations` for `ar` with `await AppLocalizations.delegate.load(const Locale('ar'))`. Assert that `apiErrorMessage` returns the matching l10n getter for each of the seven codes above. For example, `apiErrorMessage(ErrorMapper.fromCode('CASH_NOT_ALLOWED'), l10n) == l10n.stayCashNotAllowed`.
-- [ ] T006 [P] Write `test/features/bookings/domain/booking_action_g3_test.dart`:
+- [X] T006 [P] Write `test/features/bookings/domain/booking_action_g3_test.dart`:
   - (a) `BookingActionRegistry.g3().visible([...])` keeps server order and drops unknown codes and `write_review`. Input `['write_review','request_cancellation','pay_remaining','x_unknown','contact_support','pay_remaining']` → values `['request_cancellation','pay_remaining','contact_support']`.
   - (b) `BookingActionRegistry.g2()` still returns only `contact_support` for the same input.
   - (c) `firstGuestAction(registry.visible(codes))` returns the first code that is not `contact_support`, `request_cancellation`, or `respond_damage_claim`. Expected results:
@@ -273,7 +273,7 @@ this phase.
     - `['contact_support','request_cancellation']` → `request_cancellation`;
     - `['respond_damage_claim','contact_support']` → `respond_damage_claim`;
     - `['contact_support']` → `null`.
-- [ ] T007 [P] Write `test/features/bookings/domain/booking_details_g3_test.dart`. Build a JSON map by copying the first object of `lib/features/bookings/data/fixtures/bookings.json`, then add these G3 fields, copied from Appendix B.1:
+- [X] T007 [P] Write `test/features/bookings/domain/booking_details_g3_test.dart`. Build a JSON map by copying the first object of `lib/features/bookings/data/fixtures/bookings.json`, then add these G3 fields, copied from Appendix B.1:
   - `acknowledgements` from `…022`;
   - `pending_cash` from `…028`;
   - `damage_claims` from `…025`;
@@ -286,12 +286,12 @@ this phase.
   - (c) `toCacheJson()` keeps all G3 fields **except** `pending_cash.challenge_id` (assert the key is absent), and `BookingDetails.fromJson(details.toCacheJson())` gives `pendingCash!.challengeId == ''`;
   - (d) `ReplacementOffer` with `price_difference_minor: 50000` gives `direction == OfferDirection.guestPays` and `difference == const Money(50000)`; `-50000` gives `OfferDirection.guestRefunded` and `Money(50000)`; `0` gives `OfferDirection.none`;
   - (e) `DamageClaimStatus.fromWire('in_mediation') == DamageClaimStatus.inMediation`, and `'??'` gives `unknown`.
-- [ ] T008 [P] Write `test/features/stay/data/action_attempt_store_test.dart` using `InMemorySecureStore` (`lib/core/storage/secure_store.dart`) and a counter-based `newKey`:
+- [X] T008 [P] Write `test/features/stay/data/action_attempt_store_test.dart` using `InMemorySecureStore` (`lib/core/storage/secure_store.dart`) and a counter-based `newKey`:
   - (a) `keyFor('cancel','b1')` twice returns the same key, and `newKey` was called once;
   - (b) after `clear('cancel','b1')`, `keyFor` returns a new key;
   - (c) `keyFor('cancel','b1')` and `keyFor('cancel','b2')` differ;
   - (d) `clearAll()` deletes every key starting with `action_attempt.` and leaves a key `payment_attempt.current` untouched.
-- [ ] T009 [P] Write `test/app/router/notification_router_g3_test.dart`. Use `const id = 'b0000000-0000-4000-8000-000000000020'` and `const claim = 'e0000000-0000-4000-8000-000000000001'`, and assert `NotificationRouter.locationFor(type, entityType, entityId, params: …)`:
+- [X] T009 [P] Write `test/app/router/notification_router_g3_test.dart`. Use `const id = 'b0000000-0000-4000-8000-000000000020'` and `const claim = 'e0000000-0000-4000-8000-000000000001'`, and assert `NotificationRouter.locationFor(type, entityType, entityId, params: …)`:
   - `('payment.remaining_due','booking',id)` → `/bookings/$id/remaining-payment`
   - `('cash.confirmation_requested','booking',id)` → `/bookings/$id/cash-confirm`
   - `('cash.payment_confirmed','payment',pay, params: {'booking_id': id})` → `/bookings/$id/receipts/$pay` (with `pay = 'c0000000-0000-4000-8000-000000000099'`)
@@ -302,7 +302,7 @@ this phase.
   - `('refund.verified','booking',id)` → `/bookings/$id?focus=payments`
   - `('stay.completed','booking',id)` → `/bookings/$id`
   - `('damage.claim_opened','damage_claim','not-a-uuid')` → `/bookings`
-- [ ] T010 [P] Write `test/app/router/routes_g3_test.dart`. Using a valid UUID v4 `id`, `pay`, and `claim`, assert:
+- [X] T010 [P] Write `test/app/router/routes_g3_test.dart`. Using a valid UUID v4 `id`, `pay`, and `claim`, assert:
   - `isRegisteredLocation`, `requiresAccount`, and `isLinkablePath` are true for `/bookings/$id/cash-confirm`, `/bookings/$id/receipts/$pay`, and `/damage-claims/$claim`;
   - `/bookings/$id/cancel` is registered and requires an account, but `isLinkablePath` is **false**;
   - each of these paths with `not-a-uuid` in an ID position is not registered;
@@ -310,17 +310,17 @@ this phase.
 
 ### Implementation
 
-- [ ] T011 Add the G3 error codes (needs T003; makes T005 pass):
+- [X] T011 Add the G3 error codes (needs T003; makes T005 pass):
   - in `lib/core/errors/api_error.dart`, add to `enum ErrorCode` (before `internal`): `cancellationTermsChanged, remainingNotPaid, cashNotAllowed, cashAmountChanged, claimAlreadyAnswered, offerNotAvailable`;
   - in `lib/core/errors/error_mapper.dart`, add `_keys` entries for the six codes in T005 with those ARB keys;
   - in `lib/core/errors/error_message.dart`, add switch arms before `_ =>`: each new code → its l10n getter, and `ErrorCode.collectorNotAuthorized => l10n.stayCollectorNotAuthorized`.
-- [ ] T012 Extend the action registry in `lib/features/bookings/domain/booking_action.dart` (makes T006 pass):
+- [X] T012 Extend the action registry in `lib/features/bookings/domain/booking_action.dart` (makes T006 pass):
   - add constants on `BookingActionCode`: `payRemaining('pay_remaining')`, `confirmCashPayment('confirm_cash_payment')`, `requestCancellation('request_cancellation')`, `confirmCheckin('confirm_checkin')`, `confirmCheckout('confirm_checkout')`, `respondDamageClaim('respond_damage_claim')`;
   - add `factory BookingActionRegistry.g3() => const BookingActionRegistry({'contact_support','pay_remaining','confirm_cash_payment','request_cancellation','confirm_checkin','confirm_checkout','respond_damage_claim'});`;
   - add top-level functions:
     - `BookingActionCode? firstGuestAction(List<BookingActionCode> visible)`: the first element whose value is not `contact_support`, `request_cancellation`, or `respond_damage_claim`, else `null`;
     - `BookingActionCode? needsActionCode(List<BookingActionCode> visible)`: the first element whose value is not `contact_support`, else `null`.
-- [ ] T013 Create `lib/features/bookings/domain/booking_stay_parts.dart` with the G3 parts of a booking, exactly as data-model §1–§4, §7, and §8 describe. Copy the model style of `booking_parts.dart`. Every class gets `fromJson`, `toJson`, `==`, and `hashCode`.
+- [X] T013 Create `lib/features/bookings/domain/booking_stay_parts.dart` with the G3 parts of a booking, exactly as data-model §1–§4, §7, and §8 describe. Copy the model style of `booking_parts.dart`. Every class gets `fromJson`, `toJson`, `==`, and `hashCode`.
 
   | Class | Fields | JSON keys and notes |
   |---|---|---|
@@ -332,7 +332,7 @@ this phase.
   | `CancellationInfo` | `cancelledAt`, `byScope` (`String`), `reasonCode` (`String?`) | `cancelled_at`, `by_scope`, `reason_code` |
 
   Also add `CashReceipt? receipt` to `PaymentLine` in `booking_parts.dart`: parse `json['receipt']` when present, write it in `toJson`, and include it in `==` / `hashCode`.
-- [ ] T014 Extend `BookingDetails` in `lib/features/bookings/domain/booking_details.dart` (needs T013; makes T007 pass):
+- [X] T014 Extend `BookingDetails` in `lib/features/bookings/domain/booking_details.dart` (needs T013; makes T007 pass):
   - add fields `StayAcknowledgements acknowledgements`, `CashRequest? pendingCash`, `String? pendingRemainingPaymentId`, `List<DamageClaimSummary> damageClaims`, `ReplacementOffer? replacementOffer`, `CancellationInfo? cancellation`;
   - **`fromJson`:** missing → `StayAcknowledgements.empty`, null, empty list, null, null;
   - **`toCacheJson`:** writes them with the same JSON keys, and `pending_cash` through `CashRequest.toCacheJson()`;
@@ -342,7 +342,7 @@ this phase.
   Then extend `BookingSummary` in `lib/features/bookings/domain/booking_summary.dart` with `List<String> availableActions`. Read `json['available_actions']` (missing → `const []`), write it in `toJson`, and add it to `==` / `hashCode`. In `MockBookingServer._summaryOf` (`lib/features/bookings/data/mock_booking_server.dart`), pass `'available_actions': json['available_actions']`.
 
   Run `flutter test test/features/bookings`. All old tests must still pass.
-- [ ] T015 Create `lib/features/stay/domain/` files with the exact types in **Appendix C** (copy the code there exactly):
+- [X] T015 Create `lib/features/stay/domain/` files with the exact types in **Appendix C** (copy the code there exactly):
   - `cancellation_preview.dart`: `PolicyCase`, `CancellationPreview`, `PreviewChange`, `CancellationReason`;
   - `damage_claim.dart`: `EvidenceRef`, `ClaimResponse`, `ClaimResolution`, `DamageClaim`, `ClaimDecision`, `ClaimLimits`;
   - `stay_results.dart`: `CancellationResult`, `ClaimAnswerResult`, `OfferAnswerResult`, `FileUrl`;
@@ -352,7 +352,7 @@ this phase.
   - `fromJson` of each model, using the JSON in Appendix C comments;
   - `PreviewChange.between(old, new)` flags only the changed fields;
   - `ClaimLimits.validDisputeNote`: `'   short  '` → false, 10 characters → true, 1001 characters → false.
-- [ ] T016 [P] Create `lib/features/stay/data/action_attempt_store.dart` (makes T008 pass):
+- [X] T016 [P] Create `lib/features/stay/data/action_attempt_store.dart` (makes T008 pass):
   ```dart
   final class ActionAttemptStore {
     ActionAttemptStore(this._store, {String Function()? newKey}) : _newKey = newKey ?? (() => const Uuid().v4());
@@ -365,24 +365,24 @@ this phase.
   }
   ```
   Action names used later: `cancel`, `claim_answer`, `offer_answer`, `cash_start`.
-- [ ] T017 Make two `MockBookingServer` helpers public in `lib/features/bookings/data/mock_booking_server.dart`, so the stay mock (T019) can reuse them:
+- [X] T017 Make two `MockBookingServer` helpers public in `lib/features/bookings/data/mock_booking_server.dart`, so the stay mock (T019) can reuse them:
   - rename `_appendEvent` to `appendEvent` (same body);
   - change `_notify(String typeKey, String bookingId, Duration signalDelay)` into a public `Future<void> notifyGuest(String typeKey, String entityId, {String entityType = 'booking', Map<String, dynamic> params = const {}, Duration signalDelay = Duration.zero})`. The inserted row uses `entityType` and `params`, and the emitted `NotificationSignal` uses `entityType` and `entityId`. Update every old call site to the new name.
   - add a constructor parameter `this.includeG3Fixtures = true` (field `final bool includeG3Fixtures;`). In the `bookings` getter, after loading `bookings.json`, also load `$_fixturesRoot/bookings_g3.json` the same way when `includeG3Fixtures` is true, and add its entries to the same map.
 
   Run `flutter test test/features/bookings`. It must pass unchanged.
-- [ ] T018 [P] Create the mock fixtures:
+- [X] T018 [P] Create the mock fixtures:
   - `lib/features/bookings/data/fixtures/bookings_g3.json`, with the JSON array in **Appendix B.1** copied exactly;
   - `lib/features/stay/data/fixtures/claims.json`, with **Appendix B.2** copied exactly.
 
   Validate both with `python -m json.tool <file>` (or any JSON validator).
-- [ ] T019 Create `lib/features/stay/data/mock_stay_server.dart` (needs T015–T018):
+- [X] T019 Create `lib/features/stay/data/mock_stay_server.dart` (needs T015–T018):
   - **Declaration:** `final class MockStayServer implements StayRepository` with constructor `MockStayServer({required MockBookingServer bookings, Future<String> Function(String path)? loader, this.latency = const Duration(milliseconds: 300), DateTime Function()? now})`. Copy the `loader` / `latency` / `now` pattern of `MockBookingServer`.
   - **Claims:** loads `lib/features/stay/data/fixtures/claims.json` lazily into `Map<String, Map<String, dynamic>>` keyed by `id`.
   - **Behaviour:** every method follows **Appendix D** exactly: mock constants, the JSON fields it changes on the booking map from `await bookings.bookings`, and the notification it emits via `bookings.notifyGuest`.
   - **Owner-side helpers:** add the public methods listed in Appendix D §8 for tests and the mock tools.
   - **Tests:** write `test/features/stay/data/mock_stay_server_test.dart`. Build the server like `FakeBookingBackend` does (zero latency, fixed clock `DateTime.utc(2026, 11, 1, 10)`, file loader) and test one success and one error case per method in Appendix D.
-- [ ] T020 Create `lib/features/stay/data/supabase_stay_repository.dart` (needs T015):
+- [X] T020 Create `lib/features/stay/data/supabase_stay_repository.dart` (needs T015):
   - **Declaration:** `final class SupabaseStayRepository implements StayRepository` with the same constructor shape as `SupabaseBookingFlowRepository` (`rpc` + `FallbackClient node`). Copy its `_guard` method exactly.
   - **Calls:** each method calls exactly the RPC or Node route in [contracts/supabase-stay.md §1](contracts/supabase-stay.md), with parameter names `p_booking_id`, `p_expected_refund_minor`, `p_reason`, `p_reason_note`, `p_idempotency_key`, `p_collector_phone`, `p_expected_amount_minor`, `p_payment_id`, `p_challenge_id`, `p_code`, `p_claim_id`, `p_decision`, `p_note`, `p_attachment_ids` (always `<String>[]`), `p_offer_id`, `p_accept`.
   - **Responses:** parse each with the Appendix C `fromJson`.
@@ -390,12 +390,12 @@ this phase.
   - **`fileUrl`:** calls `_node.getFileUrl(xRequestId: const Uuid().v4(), attachmentId: id)` and returns `FileUrl(url: Uri.parse(r.url), expiresAt: r.expiresAt)`.
   - **Node errors:** catch `DioException` exactly as `startPayment` does.
   - **Not here:** `confirmCheckIn` / `confirmCheckOut` call `guest_confirm_checkin` / `guest_confirm_checkout` with `p_booking_id` and return the response string. No unit test is needed for this class (network). It is covered by the Staging journey in T090.
-- [ ] T021 [P] Add G3 routes in `lib/app/router/routes.dart` (makes T010 pass):
+- [X] T021 [P] Add G3 routes in `lib/app/router/routes.dart` (makes T010 pass):
   - patterns: `cashConfirmPattern = '/bookings/:id/cash-confirm'`, `receiptPattern = '/bookings/:id/receipts/:paymentId'`, `cancelBookingPattern = '/bookings/:id/cancel'`, `damageClaimResolverPattern = '/damage-claims/:claimId'`;
   - matching private `RegExp`s, copying `_remainingPayment`;
   - wire them into `_validDynamicPath` and `requiresAccount`, and into `isLinkablePath` for every new pattern **except** `cancel`;
   - builders: `remainingPayment(String id)`, `cashConfirm(String id)`, `receipt(String id, String paymentId)`, `cancelBooking(String id)`, `damageClaim(String id, String claimId)`, `damageClaimResolver(String claimId)`, `bookingDetailsFocus(String id, String focus) => '/bookings/$id?focus=$focus'`.
-- [ ] T022 [P] Update `lib/app/router/notification_router.dart` (makes T009 pass):
+- [X] T022 [P] Update `lib/app/router/notification_router.dart` (makes T009 pass):
   - add a named parameter `Map<String, dynamic> params = const {}` to `locationFor`;
   - before the generic booking-prefix branch, add these rules **in this order** (every ID must pass `AppRoutes.isUuidV4`, else return `AppRoutes.bookings`):
     1. `typeKey.startsWith('damage.')` → `AppRoutes.damageClaimResolver(entityId)`;
@@ -407,14 +407,14 @@ this phase.
   - In `lib/features/notifications/presentation/notifications_cubit.dart`, pass `params: notification.params`. Leave the push call sites in `lib/app/app.dart` unchanged (push has no params).
 
   Run `flutter test test/app test/features/notifications`.
-- [ ] T023 Register the G3 routes in `lib/app/router/app_router.dart` (needs T021). For now each builder returns `const NotAvailableScreen()`, and each story replaces its own builder later:
+- [X] T023 Register the G3 routes in `lib/app/router/app_router.dart` (needs T021). For now each builder returns `const NotAvailableScreen()`, and each story replaces its own builder later:
   - `AppRoutes.cashConfirmPattern` (name `cash-confirm`);
   - `AppRoutes.receiptPattern` (name `cash-receipt`);
   - `AppRoutes.cancelBookingPattern` (name `cancel-booking`);
   - `AppRoutes.damageClaimResolverPattern` (name `damage-claim-resolver`).
 
   Place them right after the existing `AppRoutes.damageClaimPattern` route. Do not change the existing remaining-payment and damage-claim routes yet.
-- [ ] T024 Wire the stay layer (needs T016, T019, T020):
+- [X] T024 Wire the stay layer (needs T016, T019, T020):
   - **Bootstrap types:** in `lib/bootstrap.dart`, add `StayRepository stay` and `MockStayServer? mockStay` to the `_Backend` record typedef.
   - **Remote backend:** `_remoteBackend` sets `stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio))` and `mockStay: null`.
   - **Mock backend:** `_mockBackend` creates `final stay = MockStayServer(bookings: server);` and sets `stay: stay, mockStay: stay`.
@@ -426,8 +426,8 @@ this phase.
   - **Pump helper:** in `test/helpers/pump_app.dart`, add the same three providers from `backend`, and make the `BookingActionRegistry` provider use `backend.actionRegistry ?? BookingActionRegistry.g2()` (store `actionRegistry` as a public field on `FakeBookingBackend`).
 
   Run `flutter test`. Every existing test must still pass, because the old tests keep `g2()` and no G3 fixtures.
-- [ ] T025 [P] Write `test/design_system/goldens/stay_components_golden_test.dart` (copy `booking_components_golden_test.dart`, tag `golden`). Cover `OnAirConfirmSheet`, `OnAirConfirmDialog` (normal and `destructive: true`), and `AcknowledgementTracker` (states: guest-only, host-only, both, with `note`) in light/dark × RTL/LTR × 1.0/1.3. Use literal Arabic strings in the test file only (tests may contain text).
-- [ ] T026 [P] Create `lib/design_system/components/on_air_confirm_sheet.dart`:
+- [X] T025 [P] Write `test/design_system/goldens/stay_components_golden_test.dart` (copy `booking_components_golden_test.dart`, tag `golden`). Cover `OnAirConfirmSheet`, `OnAirConfirmDialog` (normal and `destructive: true`), and `AcknowledgementTracker` (states: guest-only, host-only, both, with `note`) in light/dark × RTL/LTR × 1.0/1.3. Use literal Arabic strings in the test file only (tests may contain text).
+- [X] T026 [P] Create `lib/design_system/components/on_air_confirm_sheet.dart`:
   - **Class:** `final class OnAirConfirmSheet extends StatelessWidget` with constructor `({required this.title, required this.body, required this.confirmLabel, required this.cancelLabel, required this.onConfirm, this.isLoading = false, this.extraActionLabel, this.onExtraAction, super.key})`.
   - **Layout:** `SafeArea` → `Padding(EdgeInsetsDirectional.fromSTEB(Dimens.screenSide, Dimens.space8, Dimens.screenSide, Dimens.space16))` → `Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch)`. The column contains:
     1. a centered drag handle `SizedBox(width: 40, height: 4)` with `DecoratedBox(color: context.colors.border, borderRadius: BorderRadius.circular(Dimens.radiusChip))`;
@@ -441,11 +441,11 @@ this phase.
     9. `TextButton(onPressed: isLoading ? null : () => Navigator.of(context).pop(), child: Text(cancelLabel))`;
     10. when `extraActionLabel != null`, another `TextButton` for it.
   - **Helper:** `static Future<T?> show<T>(BuildContext context, {required WidgetBuilder builder})`. It calls `showModalBottomSheet<T>(context: context, isScrollControlled: true, useSafeArea: true, showDragHandle: false, shape: const RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.vertical(top: Radius.circular(Dimens.radiusSheet))), backgroundColor: context.colors.surface, builder: builder)`.
-- [ ] T027 [P] Create `lib/design_system/components/on_air_confirm_dialog.dart` (pattern: reference image 15, restyled):
+- [X] T027 [P] Create `lib/design_system/components/on_air_confirm_dialog.dart` (pattern: reference image 15, restyled):
   - **Class:** `final class OnAirConfirmDialog extends StatelessWidget` with `({required this.title, required this.body, required this.confirmLabel, required this.cancelLabel, this.destructive = false, super.key})`.
   - **`build`:** returns `AlertDialog(backgroundColor: context.colors.surface, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimens.radiusCard)), title: Text(title), content: Text(body), actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: Text(cancelLabel)), TextButton(style: destructive ? TextButton.styleFrom(foregroundColor: context.colors.errorText) : null, onPressed: () => Navigator.pop(context, true), child: Text(confirmLabel))])`.
   - **Helper:** `static Future<bool> ask(BuildContext context, {required String title, required String body, required String confirmLabel, required String cancelLabel, bool destructive = false})`. It returns `await showDialog<bool>(...) ?? false`.
-- [ ] T028 [P] Create `lib/design_system/components/acknowledgement_tracker.dart`:
+- [X] T028 [P] Create `lib/design_system/components/acknowledgement_tracker.dart`:
   - **Classes:** `final class AckStep { const AckStep({required this.label, required this.statusText, required this.done}); final String label; final String statusText; final bool done; }` and `final class AcknowledgementTracker extends StatelessWidget` with `({required this.title, required this.steps, this.note, super.key})`.
   - **Layout:** a `Card` → `Padding(all: Dimens.space16)` → `Column`:
     - the title in `titleMedium`;
@@ -457,7 +457,7 @@ this phase.
     - when `note != null`, a final `Row` with `AppIcons.keyOutline` and the note in `bodySmall`.
   - **Semantics:** wrap the whole card in `MergeSemantics`.
   - **Done when:** T025 passes after `flutter test --tags golden --update-goldens test/design_system/goldens/stay_components_golden_test.dart`. Review every generated picture and check that nothing overflows at 1.3×.
-- [ ] T029 Create `lib/features/bookings/presentation/booking_action_ui.dart` with:
+- [X] T029 Create `lib/features/bookings/presentation/booking_action_ui.dart` with:
   - `String bookingActionLabel(BookingActionCode code, AppLocalizations l10n)`, mapping:
     - `pay_remaining` → `actionPayRemaining`;
     - `confirm_cash_payment` → `actionConfirmCash`;
@@ -473,7 +473,7 @@ this phase.
     - `respond_damage_claim` → the first claim in `details.damageClaims` with `status == DamageClaimStatus.open`, or `false` if none;
     - `confirm_checkin` / `confirm_checkout` → call `showCheckInSheet(context, details)` / `showCheckOutSheet(context, details)`. These functions are created in US3 (T060). Until then, make them top-level stubs in `lib/features/stay/presentation/stay_ack/stay_ack_sheets.dart` that return `Future.value(false)`.
   - Write `test/features/bookings/presentation/booking_action_ui_test.dart` covering every label mapping.
-- [ ] T030 Restructure the action area of `lib/features/bookings/presentation/booking_details_screen.dart` (needs T012, T029). Read the whole file first. Change only what is listed:
+- [X] T030 Restructure the action area of `lib/features/bookings/presentation/booking_details_screen.dart` (needs T012, T029). Read the whole file first. Change only what is listed:
   - (a) Convert `BookingDetailsScreen` to a `StatefulWidget`. Add an optional constructor parameter `String? focus`. In `app_router.dart`, pass `focus: state.uri.queryParameters['focus']` for the details route, accepting only `offer`, `claims`, and `payments`, else `null`.
   - (b) Create three `GlobalKey`s (`_offerKey`, `_claimsKey`, `_paymentsKey`) and pass them down to `_DetailsList`. After the **first** `DetailsReady` frame, if `focus` matches, call `Scrollable.ensureVisible(key.currentContext!, duration: Duration.zero)` once (guard with a `bool _focused`).
   - (c) Compute `final visible = registry.visible(details.availableActions);` and `final primary = firstGuestAction(visible);`.
@@ -498,7 +498,7 @@ this phase.
   - (f) Leave every other section unchanged. Stories add their sections in their own tasks.
 
   Run `flutter test test/features/bookings` and `flutter test --tags golden test/features/bookings`. The existing details goldens must **not** change, because fixture booking 1 has only `contact_support` and the tests use `g2()`. If they change, you broke (e) — fix it, and do not update the goldens.
-- [ ] T031 Add the "Needs your action" line to `lib/features/bookings/presentation/widgets/booking_card.dart` (needs T012, T014):
+- [X] T031 Add the "Needs your action" line to `lib/features/bookings/presentation/widgets/booking_card.dart` (needs T012, T014):
   - read `context.read<BookingActionRegistry>()` and compute `final code = needsActionCode(registry.visible(booking.availableActions));`;
   - when `code != null`, insert after the dates `Text` (before the `Dimens.space8` gap) a `Padding(top: Dimens.space4)` → `Row` with `Icon(AppIcons.infoOutline, size: 16, color: context.colors['warning'])`, `Dimens.space4`, and `Flexible(child: Text(l10n.bookingNeedsAction(bookingActionLabel(code, l10n)), style: textTheme.labelMedium?.copyWith(color: context.colors['warning'])))`;
   - append `، ${l10n.bookingNeedsAction(...)}` to the card's `Semantics.label` when the line is shown;

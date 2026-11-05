@@ -14,12 +14,19 @@ import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/stay/data/action_attempt_store.dart';
+import 'package:on_air/features/stay/data/mock_stay_server.dart';
+import 'package:on_air/features/stay/domain/stay_repository.dart';
 
 /// The whole mock backend for booking tests: a [MockBookingServer] over the
 /// real JSON fixtures on disk, a controllable signal source, and the three
 /// local stores, all deterministic (fixed clock, zero latency).
 final class FakeBookingBackend {
-  FakeBookingBackend({bool startVerified = true}) {
+  FakeBookingBackend({
+    bool startVerified = true,
+    bool includeG3Fixtures = false,
+    this.actionRegistry,
+  }) {
     listings = MockListingsRepository(
       // Sync IO wrapped in an async signature: real async file reads never
       // complete under the fake async zone of a widget test.
@@ -38,8 +45,18 @@ final class FakeBookingBackend {
       latency: Duration.zero,
       now: () => DateTime.utc(2026, 11, 1, 10),
       startVerified: startVerified,
+      includeG3Fixtures: includeG3Fixtures,
+    );
+    stay = MockStayServer(
+      bookings: server,
+      loader: (path) => File(path).existsSync()
+          ? Future.value(File(path).readAsStringSync())
+          : rootBundle.loadString(path),
+      latency: Duration.zero,
+      now: () => DateTime.utc(2026, 11, 1, 10),
     );
     secureStore = InMemorySecureStore();
+    actionAttempts = ActionAttemptStore(secureStore);
     paymentAttempts = PaymentAttemptStore(secureStore);
     arrivalInstructions = ArrivalInstructionsStore(secureStore);
     _tempDirectory = Directory.systemTemp.createTempSync('on_air_g2_test');
@@ -55,7 +72,10 @@ final class FakeBookingBackend {
   late final MockListingsRepository listings;
   late final ControllableNotificationSignalSource signals;
   late final MockBookingServer server;
+  late final MockStayServer stay;
   late final InMemorySecureStore secureStore;
+  late final ActionAttemptStore actionAttempts;
+  final BookingActionRegistry? actionRegistry;
   late final PaymentAttemptStore paymentAttempts;
   late final ArrivalInstructionsStore arrivalInstructions;
   late final BookingsCache cache;
@@ -82,8 +102,11 @@ final class FakeBookingBackend {
     ),
     RepositoryProvider<BookingsCache>.value(value: cache),
     RepositoryProvider<BookingActionRegistry>.value(
-      value: BookingActionRegistry.g2(),
+      value: actionRegistry ?? BookingActionRegistry.g2(),
     ),
     RepositoryProvider<MockBookingServer?>.value(value: server),
+    RepositoryProvider<StayRepository>.value(value: stay),
+    RepositoryProvider<MockStayServer?>.value(value: stay),
+    RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
   ];
 }

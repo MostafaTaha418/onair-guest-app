@@ -294,7 +294,15 @@ GoRouter createAppRouter({
             unawaited(cubit.load());
             return cubit;
           },
-          child: BookingDetailsScreen(bookingId: bookingId),
+          child: BookingDetailsScreen(
+            bookingId: bookingId,
+            focus: switch (state.uri.queryParameters['focus']) {
+              'offer' => 'offer',
+              'claims' => 'claims',
+              'payments' => 'payments',
+              _ => null,
+            },
+          ),
         );
       },
     ),
@@ -306,6 +314,26 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.damageClaimPattern,
       name: 'linked-damage-claim',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.cashConfirmPattern,
+      name: 'cash-confirm',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.receiptPattern,
+      name: 'cash-receipt',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.cancelBookingPattern,
+      name: 'cancel-booking',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.damageClaimResolverPattern,
+      name: 'damage-claim-resolver',
       builder: (_, _) => const NotAvailableScreen(),
     ),
     GoRoute(

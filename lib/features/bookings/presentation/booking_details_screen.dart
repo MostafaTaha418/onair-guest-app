@@ -13,8 +13,10 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/booking_timeline.dart';
+import 'package:on_air/design_system/components/bottom_action_bar.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
@@ -24,6 +26,7 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/booking_parts.dart';
+import 'package:on_air/features/bookings/presentation/booking_action_ui.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
 import 'package:on_air/features/bookings/presentation/widgets/refund_section.dart';
@@ -33,46 +36,136 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// One booking's full view (US3): status message, payments, saved terms,
 /// timeline, arrival instructions, and only the server-allowed actions.
-final class BookingDetailsScreen extends StatelessWidget {
-  const BookingDetailsScreen({required this.bookingId, super.key});
+final class BookingDetailsScreen extends StatefulWidget {
+  const BookingDetailsScreen({
+    required this.bookingId,
+    this.focus,
+    super.key,
+  });
 
   final String bookingId;
+  final String? focus;
+
+  @override
+  State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
+}
+
+final class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
+  final GlobalKey _offerKey = GlobalKey();
+  final GlobalKey _claimsKey = GlobalKey();
+  final GlobalKey _paymentsKey = GlobalKey();
+  var _focused = false;
+
+  void _focusAfterFirstReady() {
+    if (_focused || widget.focus == null) return;
+    _focused = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = switch (widget.focus) {
+        'offer' => _offerKey,
+        'claims' => _claimsKey,
+        'payments' => _paymentsKey,
+        _ => null,
+      };
+      final target = key?.currentContext;
+      if (target != null) {
+        unawaited(
+          Scrollable.ensureVisible(target),
+        );
+      }
+    });
+  }
+
+  Future<void> _run(
+    BookingDetails details,
+    BookingActionCode action,
+  ) async {
+    final changed = await launchBookingAction(context, details, action);
+    if (!mounted || !changed) return;
+    await context.read<BookingDetailsCubit>().refresh();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).stayActionDone)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<BookingDetailsCubit>();
-    return Scaffold(
-      appBar: AppBar(),
-      body: BlocBuilder<BookingDetailsCubit, BookingDetailsState>(
-        builder: (context, state) => switch (state) {
-          DetailsLoading() => const _DetailsSkeleton(),
-          DetailsNotAvailable() => EmptyView(
-            icon: AppIcons.infoOutline,
-            message: AppLocalizations.of(context).notAvailable,
-          ),
-          DetailsFailed() => ErrorView(
-            message: apiErrorMessage(state.error, AppLocalizations.of(context)),
-            onRetry: cubit.load,
-            referenceNumber: state.error.requestId,
-          ),
-          DetailsOffline() => ErrorView(
-            message: AppLocalizations.of(context).offline,
-            onRetry: cubit.load,
-          ),
-          DetailsReady() => RefreshIndicator(
-            onRefresh: cubit.refresh,
-            child: _DetailsList(state: state),
-          ),
-        },
-      ),
+    final l10n = AppLocalizations.of(context);
+    final online = context.watch<ConnectivityCubit>().state.isOnline;
+    final registry = context.read<BookingActionRegistry>();
+    return BlocBuilder<BookingDetailsCubit, BookingDetailsState>(
+      builder: (context, state) {
+        final ready = state is DetailsReady ? state : null;
+        final visible = ready == null
+            ? const <BookingActionCode>[]
+            : registry.visible(ready.details.availableActions);
+        final primary = firstGuestAction(visible);
+        if (ready != null) _focusAfterFirstReady();
+        return Scaffold(
+          appBar: AppBar(),
+          bottomNavigationBar: ready != null && primary != null
+              ? BottomActionBar(
+                  leading: const SizedBox.shrink(),
+                  action: OnAirPrimaryButton(
+                    key: ValueKey('primary-${primary.value}'),
+                    label: bookingActionLabel(primary, l10n),
+                    onPressed: online
+                        ? () => _run(ready.details, primary)
+                        : null,
+                  ),
+                )
+              : null,
+          body: switch (state) {
+            DetailsLoading() => const _DetailsSkeleton(),
+            DetailsNotAvailable() => EmptyView(
+              icon: AppIcons.infoOutline,
+              message: l10n.notAvailable,
+            ),
+            DetailsFailed() => ErrorView(
+              message: apiErrorMessage(state.error, l10n),
+              onRetry: cubit.load,
+              referenceNumber: state.error.requestId,
+            ),
+            DetailsOffline() => ErrorView(
+              message: l10n.offline,
+              onRetry: cubit.load,
+            ),
+            DetailsReady() => RefreshIndicator(
+              onRefresh: cubit.refresh,
+              child: _DetailsList(
+                state: state,
+                primary: primary,
+                offerKey: _offerKey,
+                claimsKey: _claimsKey,
+                paymentsKey: _paymentsKey,
+                onRun: (action) => _run(state.details, action),
+              ),
+            ),
+          },
+        );
+      },
     );
   }
 }
 
 final class _DetailsList extends StatelessWidget {
-  const _DetailsList({required this.state});
+  const _DetailsList({
+    required this.state,
+    required this.primary,
+    required this.offerKey,
+    required this.claimsKey,
+    required this.paymentsKey,
+    required this.onRun,
+  });
 
   final DetailsReady state;
+  final BookingActionCode? primary;
+  final GlobalKey offerKey;
+  final GlobalKey claimsKey;
+  final GlobalKey paymentsKey;
+  final ValueChanged<BookingActionCode> onRun;
 
   @override
   Widget build(BuildContext context) {
@@ -139,10 +232,13 @@ final class _DetailsList extends StatelessWidget {
                   value: details.property.checkOutTime!,
                 ),
               const SizedBox(height: Dimens.space16),
-              Text(
-                l10n.bookingPaymentsTitle,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: context.colors.textPrimary,
+              KeyedSubtree(
+                key: paymentsKey,
+                child: Text(
+                  l10n.bookingPaymentsTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: context.colors.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(height: Dimens.space8),
@@ -246,16 +342,35 @@ final class _DetailsList extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Dimens.space16),
+              SizedBox.shrink(key: offerKey),
+              SizedBox.shrink(key: claimsKey),
               for (final action
                   in context.read<BookingActionRegistry>().visible(
                     details.availableActions,
                   ))
+                if (action != primary &&
+                    action != BookingActionCode.requestCancellation &&
+                    action != BookingActionCode.contactSupport)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      bottom: Dimens.space8,
+                    ),
+                    child: OutlinedButton(
+                      key: ValueKey('action-${action.value}'),
+                      onPressed: online ? () => onRun(action) : null,
+                      child: Text(bookingActionLabel(action, l10n)),
+                    ),
+                  ),
+              if (context
+                  .read<BookingActionRegistry>()
+                  .visible(details.availableActions)
+                  .contains(BookingActionCode.contactSupport))
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
                     bottom: Dimens.space8,
                   ),
                   child: OutlinedButton(
-                    key: ValueKey('action-${action.value}'),
+                    key: const ValueKey('action-contact_support'),
                     onPressed: online
                         ? () => context.push(
                             '${AppRoutes.supportNew}?booking=${details.id}',
@@ -263,6 +378,20 @@ final class _DetailsList extends StatelessWidget {
                         : null,
                     child: Text(l10n.bookingContactSupport),
                   ),
+                ),
+              if (context
+                  .read<BookingActionRegistry>()
+                  .visible(details.availableActions)
+                  .contains(BookingActionCode.requestCancellation))
+                TextButton(
+                  key: const ValueKey('action-request_cancellation'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: context.colors.errorText,
+                  ),
+                  onPressed: online
+                      ? () => onRun(BookingActionCode.requestCancellation)
+                      : null,
+                  child: Text(l10n.actionCancelBooking),
                 ),
             ],
           ),

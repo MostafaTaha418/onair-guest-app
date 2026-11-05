@@ -10,15 +10,48 @@ abstract final class NotificationRouter {
   static String locationFor(
     String typeKey,
     String entityType,
-    String entityId,
-  ) {
+    String entityId, {
+    Map<String, dynamic> params = const {},
+  }) {
+    if (typeKey.startsWith('damage.')) {
+      return AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.damageClaimResolver(entityId)
+          : AppRoutes.bookings;
+    }
+    if (typeKey == 'cash.payment_confirmed') {
+      final bookingId = params['booking_id'];
+      return bookingId is String &&
+              AppRoutes.isUuidV4(bookingId) &&
+              AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.receipt(bookingId, entityId)
+          : AppRoutes.bookings;
+    }
+    if (typeKey == 'payment.remaining_due') {
+      return AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.remainingPayment(entityId)
+          : AppRoutes.bookings;
+    }
+    if (typeKey == 'cash.confirmation_requested') {
+      return AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.cashConfirm(entityId)
+          : AppRoutes.bookings;
+    }
+    if (typeKey == 'booking.replacement_offered') {
+      return AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.bookingDetailsFocus(entityId, 'offer')
+          : AppRoutes.bookings;
+    }
+    if (typeKey.startsWith('refund.')) {
+      return AppRoutes.isUuidV4(entityId)
+          ? AppRoutes.bookingDetailsFocus(entityId, 'payments')
+          : AppRoutes.bookings;
+    }
     const bookingPrefixes = [
       'booking.',
       'payment.',
       'cash.',
       'stay.',
       'refund.',
-      'damage.',
       'review.',
     ];
     final isBookingScoped = bookingPrefixes.any(typeKey.startsWith);

@@ -26,6 +26,9 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
+import 'package:on_air/features/stay/data/action_attempt_store.dart';
+import 'package:on_air/features/stay/data/mock_stay_server.dart';
+import 'package:on_air/features/stay/domain/stay_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'controllable_push_message_source.dart';
@@ -100,7 +103,12 @@ extension PumpOnAirApp on WidgetTester {
           ),
           RepositoryProvider<BookingsCache>.value(value: backend.cache),
           RepositoryProvider<BookingActionRegistry>.value(
-            value: BookingActionRegistry.g2(),
+            value: backend.actionRegistry ?? BookingActionRegistry.g2(),
+          ),
+          RepositoryProvider<StayRepository>.value(value: backend.stay),
+          RepositoryProvider<MockStayServer?>.value(value: backend.stay),
+          RepositoryProvider<ActionAttemptStore>.value(
+            value: backend.actionAttempts,
           ),
           RepositoryProvider<NotificationPermission>.value(
             value: FakeNotificationPermission(),

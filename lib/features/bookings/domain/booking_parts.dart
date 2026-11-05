@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
+import 'package:on_air/features/bookings/domain/booking_stay_parts.dart';
 import 'package:on_air/features/listings/domain/listing_image.dart';
 
 /// One payment row of a booking (data-model §9). Labels avoid accounting
@@ -14,6 +15,7 @@ final class PaymentLine {
     required this.status,
     required this.amount,
     this.paidAt,
+    this.receipt,
   });
 
   factory PaymentLine.fromJson(Map<String, dynamic> json) => PaymentLine(
@@ -25,6 +27,11 @@ final class PaymentLine {
     paidAt: json['paid_at'] == null
         ? null
         : DateTime.parse(json['paid_at'] as String),
+    receipt: json['receipt'] == null
+        ? null
+        : CashReceipt.fromJson(
+            Map<String, dynamic>.from(json['receipt'] as Map),
+          ),
   );
 
   final String id;
@@ -33,6 +40,7 @@ final class PaymentLine {
   final String status;
   final Money amount;
   final DateTime? paidAt;
+  final CashReceipt? receipt;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -41,6 +49,7 @@ final class PaymentLine {
     'status': status,
     'amount_minor': amount.amountMinor,
     'paid_at': paidAt?.toIso8601String(),
+    'receipt': receipt?.toJson(),
   };
 
   @override
@@ -51,10 +60,12 @@ final class PaymentLine {
       other.method == method &&
       other.status == status &&
       other.amount == amount &&
-      other.paidAt == paidAt;
+      other.paidAt == paidAt &&
+      other.receipt == receipt;
 
   @override
-  int get hashCode => Object.hash(id, purpose, method, status, amount, paidAt);
+  int get hashCode =>
+      Object.hash(id, purpose, method, status, amount, paidAt, receipt);
 }
 
 /// The latest refund of a booking (data-model §9). "Refunded" copy is shown

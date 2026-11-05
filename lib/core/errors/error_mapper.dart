@@ -63,6 +63,27 @@ abstract final class ErrorMapper {
       ErrorCode.paymentAmountMismatch,
       'paymentVerificationIssue',
     ),
+    'CANCELLATION_TERMS_CHANGED': (
+      ErrorCode.cancellationTermsChanged,
+      'cancellationTermsChanged',
+    ),
+    'REMAINING_NOT_PAID': (
+      ErrorCode.remainingNotPaid,
+      'stayRemainingNotPaid',
+    ),
+    'CASH_NOT_ALLOWED': (ErrorCode.cashNotAllowed, 'stayCashNotAllowed'),
+    'CASH_AMOUNT_CHANGED': (
+      ErrorCode.cashAmountChanged,
+      'stayCashAmountChanged',
+    ),
+    'CLAIM_ALREADY_ANSWERED': (
+      ErrorCode.claimAlreadyAnswered,
+      'claimAlreadyAnswered',
+    ),
+    'OFFER_NOT_AVAILABLE': (
+      ErrorCode.offerNotAvailable,
+      'offerNotAvailable',
+    ),
     'INTERNAL': (ErrorCode.internal, 'errorUnexpected'),
   };
 

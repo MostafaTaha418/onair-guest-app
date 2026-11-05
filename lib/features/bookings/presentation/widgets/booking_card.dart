@@ -1,16 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/booking_summary.dart';
+import 'package:on_air/features/bookings/presentation/booking_action_ui.dart';
 import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -104,6 +108,13 @@ final class _BookingCardState extends State<BookingCard> {
     final l10n = AppLocalizations.of(context);
     final booking = widget.booking;
     final statusLabel = bookingStatusLabel(booking.status, l10n);
+    final registry = _registryFor(context);
+    final action = needsActionCode(
+      registry.visible(booking.availableActions),
+    );
+    final actionLabel = action == null
+        ? null
+        : l10n.bookingNeedsAction(bookingActionLabel(action, l10n));
     final countdown = _countdownFor(booking);
     // One static announcement with the absolute Cairo deadline (FR-038):
     // the ticking CountdownText is excluded from the card's merged
@@ -124,9 +135,12 @@ final class _BookingCardState extends State<BookingCard> {
         borderRadius: BorderRadius.circular(Dimens.radiusCard),
         child: Semantics(
           button: true,
-          label: deadlineLabel == null
-              ? '${booking.title}، $statusLabel'
-              : '${booking.title}، $statusLabel، $deadlineLabel',
+          label: [
+            booking.title,
+            statusLabel,
+            ?deadlineLabel,
+            ?actionLabel,
+          ].join('، '),
           child: Padding(
             padding: const EdgeInsetsDirectional.all(Dimens.space12),
             child: Row(
@@ -159,6 +173,31 @@ final class _BookingCardState extends State<BookingCard> {
                           color: context.colors.textSecondary,
                         ),
                       ),
+                      if (actionLabel != null)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(
+                            top: Dimens.space4,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                AppIcons.infoOutline,
+                                size: 16,
+                                color: context.colors['warning'],
+                              ),
+                              const SizedBox(width: Dimens.space4),
+                              Flexible(
+                                child: Text(
+                                  actionLabel,
+                                  style: Theme.of(context).textTheme.labelMedium
+                                      ?.copyWith(
+                                        color: context.colors['warning'],
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       const SizedBox(height: Dimens.space8),
                       Wrap(
                         spacing: Dimens.space8,
@@ -205,5 +244,14 @@ final class _BookingCardState extends State<BookingCard> {
         ),
       ),
     );
+  }
+
+  BookingActionRegistry _registryFor(BuildContext context) {
+    try {
+      return context.read<BookingActionRegistry>();
+    } on Object {
+      // Isolated legacy widget/golden harnesses have no repository stack.
+      return BookingActionRegistry.g2();
+    }
   }
 }

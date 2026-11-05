@@ -137,6 +137,7 @@ final class NotificationsCubit extends Cubit<NotificationsState> {
       notification.typeKey,
       notification.entityType,
       notification.entityId,
+      params: notification.params,
     );
   }
 

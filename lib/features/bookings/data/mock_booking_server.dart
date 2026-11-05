@@ -43,6 +43,7 @@ final class MockBookingServer
     this.latency = const Duration(milliseconds: 300),
     DateTime Function()? now,
     this.startVerified = true,
+    this.includeG3Fixtures = true,
   }) : _loader = loader ?? rootBundle.loadString,
        _now = now ?? _defaultNow;
 
@@ -54,6 +55,7 @@ final class MockBookingServer
   final Duration latency;
   final DateTime Function() _now;
   final bool startVerified;
+  final bool includeG3Fixtures;
 
   /// Test hook: shorten the quote TTL to exercise expiry (quickstart 13).
   Duration? quoteTtl;
@@ -79,15 +81,20 @@ final class MockBookingServer
 
   DateOnly _today() => CairoTime.today(now: _now());
 
-  Future<Map<String, Map<String, dynamic>>> get bookings async =>
-      _bookings ??= {
-        for (final raw
-            in (jsonDecode(
-                  await _loader('$_fixturesRoot/bookings.json'),
-                )
-                as List))
-          if (raw is Map) raw['id'] as String: Map<String, dynamic>.from(raw),
-      };
+  Future<Map<String, Map<String, dynamic>>> get bookings async {
+    final cached = _bookings;
+    if (cached != null) return cached;
+    final decoded = <dynamic>[
+      ...(jsonDecode(await _loader('$_fixturesRoot/bookings.json')) as List),
+      if (includeG3Fixtures)
+        ...(jsonDecode(await _loader('$_fixturesRoot/bookings_g3.json'))
+            as List),
+    ];
+    return _bookings = {
+      for (final raw in decoded)
+        if (raw is Map) raw['id'] as String: Map<String, dynamic>.from(raw),
+    };
+  }
 
   Future<List<Map<String, dynamic>>> get notifications async =>
       _notifications ??= [
@@ -181,6 +188,7 @@ final class MockBookingServer
       'refund_status': refund?['status'],
       'owner_response_deadline': json['owner_response_deadline'],
       'created_at': json['created_at'],
+      'available_actions': json['available_actions'],
     });
   }
 
@@ -425,8 +433,12 @@ final class MockBookingServer
             'paid_at': now.toIso8601String(),
           },
         ];
-        _appendEvent(json, 'booking.request_received', 'awaiting_owner');
-        await _notify('booking.request_received', bookingId, signalDelay);
+        appendEvent(json, 'booking.request_received', 'awaiting_owner');
+        await notifyGuest(
+          'booking.request_received',
+          bookingId,
+          signalDelay: signalDelay,
+        );
       case MockPaymentResult.failure:
         json['status'] = 'payment_pending';
         json['payment_state'] = 'failed';
@@ -440,8 +452,12 @@ final class MockBookingServer
             'paid_at': null,
           },
         ];
-        _appendEvent(json, 'payment.failed', 'payment_pending');
-        await _notify('payment.failed', bookingId, signalDelay);
+        appendEvent(json, 'payment.failed', 'payment_pending');
+        await notifyGuest(
+          'payment.failed',
+          bookingId,
+          signalDelay: signalDelay,
+        );
       case MockPaymentResult.conflict:
         json['status'] = 'payment_conflict';
         json['payment_state'] = 'succeeded';
@@ -452,8 +468,12 @@ final class MockBookingServer
           'status': 'requested',
           'updated_at': now.toIso8601String(),
         };
-        _appendEvent(json, 'booking.payment_conflict', 'payment_conflict');
-        await _notify('booking.payment_conflict', bookingId, signalDelay);
+        appendEvent(json, 'booking.payment_conflict', 'payment_conflict');
+        await notifyGuest(
+          'booking.payment_conflict',
+          bookingId,
+          signalDelay: signalDelay,
+        );
       case MockPaymentResult.silent:
         json['status'] = 'payment_verifying';
     }
@@ -463,7 +483,7 @@ final class MockBookingServer
     }
   });
 
-  void _appendEvent(Map<String, dynamic> json, String type, String toStatus) {
+  void appendEvent(Map<String, dynamic> json, String type, String toStatus) {
     json['events'] = [
       ...?((json['events'] as List?)?.cast<Map<String, dynamic>>()),
       <String, dynamic>{
@@ -475,21 +495,23 @@ final class MockBookingServer
     ];
   }
 
-  Future<void> _notify(
+  Future<void> notifyGuest(
     String typeKey,
-    String bookingId,
-    Duration signalDelay,
-  ) async {
+    String entityId, {
+    String entityType = 'booking',
+    Map<String, dynamic> params = const {},
+    Duration signalDelay = Duration.zero,
+  }) async {
     (await notifications).insert(0, {
       'id': _randomId('e'),
       'type_key': typeKey,
       'category': 'booking',
       'priority': 'normal',
-      'entity_type': 'booking',
-      'entity_id': bookingId,
+      'entity_type': entityType,
+      'entity_id': entityId,
       'title_key': typeKey,
       'body_key': typeKey,
-      'params': <String, dynamic>{},
+      'params': params,
       'read_at': null,
       'created_at': _now().toIso8601String(),
     });
@@ -501,8 +523,8 @@ final class MockBookingServer
         NotificationSignal(
           id: typeKey,
           typeKey: typeKey,
-          entityType: 'booking',
-          entityId: bookingId,
+          entityType: entityType,
+          entityId: entityId,
         ),
       );
     }

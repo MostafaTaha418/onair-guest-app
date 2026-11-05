@@ -27,6 +27,7 @@ MockBookingServer _server({
   loader: (path) => File(path).readAsString(),
   latency: Duration.zero,
   now: () => _clockStart,
+  includeG3Fixtures: false,
 );
 
 void main() {

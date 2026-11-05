@@ -8,6 +8,18 @@ final class BookingActionCode {
   final String value;
 
   static const contactSupport = BookingActionCode('contact_support');
+  static const payRemaining = BookingActionCode('pay_remaining');
+  static const confirmCashPayment = BookingActionCode(
+    'confirm_cash_payment',
+  );
+  static const requestCancellation = BookingActionCode(
+    'request_cancellation',
+  );
+  static const confirmCheckin = BookingActionCode('confirm_checkin');
+  static const confirmCheckout = BookingActionCode('confirm_checkout');
+  static const respondDamageClaim = BookingActionCode(
+    'respond_damage_claim',
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -26,6 +38,16 @@ final class BookingActionRegistry {
   factory BookingActionRegistry.g2() =>
       const BookingActionRegistry({'contact_support'});
 
+  factory BookingActionRegistry.g3() => const BookingActionRegistry({
+    'contact_support',
+    'pay_remaining',
+    'confirm_cash_payment',
+    'request_cancellation',
+    'confirm_checkin',
+    'confirm_checkout',
+    'respond_damage_claim',
+  });
+
   final Set<String> supported;
 
   /// Keeps the server order, removes unsupported codes and duplicates.
@@ -38,4 +60,22 @@ final class BookingActionRegistry {
     }
     return result;
   }
+}
+
+BookingActionCode? firstGuestAction(List<BookingActionCode> visible) {
+  for (final code in visible) {
+    if (code != BookingActionCode.contactSupport &&
+        code != BookingActionCode.requestCancellation &&
+        code != BookingActionCode.respondDamageClaim) {
+      return code;
+    }
+  }
+  return null;
+}
+
+BookingActionCode? needsActionCode(List<BookingActionCode> visible) {
+  for (final code in visible) {
+    if (code != BookingActionCode.contactSupport) return code;
+  }
+  return null;
 }

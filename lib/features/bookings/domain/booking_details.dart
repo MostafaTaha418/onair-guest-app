@@ -4,6 +4,7 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/bookings/domain/booking_parts.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
+import 'package:on_air/features/bookings/domain/booking_stay_parts.dart';
 import 'package:on_air/features/listings/domain/property_details.dart';
 
 /// Everything the booking details screen shows, straight from
@@ -33,6 +34,12 @@ final class BookingDetails {
     required this.availableActions,
     required this.events,
     required this.createdAt,
+    this.acknowledgements = StayAcknowledgements.empty,
+    this.pendingCash,
+    this.pendingRemainingPaymentId,
+    this.damageClaims = const [],
+    this.replacementOffer,
+    this.cancellation,
   });
 
   factory BookingDetails.fromJson(Map<String, dynamic> json) => BookingDetails(
@@ -84,6 +91,31 @@ final class BookingDetails {
         BookingEvent.fromJson(Map<String, dynamic>.from(raw as Map)),
     ],
     createdAt: DateTime.parse(json['created_at'] as String),
+    acknowledgements: json['acknowledgements'] == null
+        ? StayAcknowledgements.empty
+        : StayAcknowledgements.fromJson(
+            Map<String, dynamic>.from(json['acknowledgements'] as Map),
+          ),
+    pendingCash: json['pending_cash'] == null
+        ? null
+        : CashRequest.fromJson(
+            Map<String, dynamic>.from(json['pending_cash'] as Map),
+          ),
+    pendingRemainingPaymentId: json['pending_remaining_payment_id'] as String?,
+    damageClaims: [
+      for (final raw in json['damage_claims'] as List? ?? const [])
+        DamageClaimSummary.fromJson(Map<String, dynamic>.from(raw as Map)),
+    ],
+    replacementOffer: json['replacement_offer'] == null
+        ? null
+        : ReplacementOffer.fromJson(
+            Map<String, dynamic>.from(json['replacement_offer'] as Map),
+          ),
+    cancellation: json['cancellation'] == null
+        ? null
+        : CancellationInfo.fromJson(
+            Map<String, dynamic>.from(json['cancellation'] as Map),
+          ),
   );
 
   static PolicySummary? _termsFromJson(Map<String, dynamic> terms) =>
@@ -117,6 +149,12 @@ final class BookingDetails {
   final List<String> availableActions;
   final List<BookingEvent> events;
   final DateTime createdAt;
+  final StayAcknowledgements acknowledgements;
+  final CashRequest? pendingCash;
+  final String? pendingRemainingPaymentId;
+  final List<DamageClaimSummary> damageClaims;
+  final ReplacementOffer? replacementOffer;
+  final CancellationInfo? cancellation;
 
   /// The JSON cache never receives the arrival instructions (hard rule 11);
   /// they go only to the secure store.
@@ -152,6 +190,12 @@ final class BookingDetails {
     'available_actions': availableActions,
     'events': [for (final event in events) event.toJson()],
     'created_at': createdAt.toIso8601String(),
+    'acknowledgements': acknowledgements.toJson(),
+    'pending_cash': pendingCash?.toCacheJson(),
+    'pending_remaining_payment_id': pendingRemainingPaymentId,
+    'damage_claims': [for (final claim in damageClaims) claim.toJson()],
+    'replacement_offer': replacementOffer?.toJson(),
+    'cancellation': cancellation?.toJson(),
   };
 
   BookingDetails copyWithoutInstructions() => BookingDetails(
@@ -177,6 +221,12 @@ final class BookingDetails {
     availableActions: availableActions,
     events: events,
     createdAt: createdAt,
+    acknowledgements: acknowledgements,
+    pendingCash: pendingCash,
+    pendingRemainingPaymentId: pendingRemainingPaymentId,
+    damageClaims: damageClaims,
+    replacementOffer: replacementOffer,
+    cancellation: cancellation,
   );
 
   @override
@@ -203,7 +253,13 @@ final class BookingDetails {
       other.accessInstructions == accessInstructions &&
       listEquals(other.availableActions, availableActions) &&
       listEquals(other.events, events) &&
-      other.createdAt == createdAt;
+      other.createdAt == createdAt &&
+      other.acknowledgements == acknowledgements &&
+      other.pendingCash == pendingCash &&
+      other.pendingRemainingPaymentId == pendingRemainingPaymentId &&
+      listEquals(other.damageClaims, damageClaims) &&
+      other.replacementOffer == replacementOffer &&
+      other.cancellation == cancellation;
 
   @override
   int get hashCode => Object.hashAll([
@@ -229,5 +285,11 @@ final class BookingDetails {
     Object.hashAll(availableActions),
     Object.hashAll(events),
     createdAt,
+    acknowledgements,
+    pendingCash,
+    pendingRemainingPaymentId,
+    Object.hashAll(damageClaims),
+    replacementOffer,
+    cancellation,
   ]);
 }

@@ -56,6 +56,10 @@ import 'package:on_air/features/notifications/data/supabase_notifications_reposi
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:on_air/features/stay/data/action_attempt_store.dart';
+import 'package:on_air/features/stay/data/mock_stay_server.dart';
+import 'package:on_air/features/stay/data/supabase_stay_repository.dart';
+import 'package:on_air/features/stay/domain/stay_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> bootstrap(String flavor) async {
@@ -115,6 +119,7 @@ Future<void> bootstrap(String flavor) async {
   );
   final paymentAttemptStore = PaymentAttemptStore(backend.secureStore);
   final arrivalInstructions = ArrivalInstructionsStore(backend.secureStore);
+  final actionAttempts = ActionAttemptStore(backend.secureStore);
   final bookingsCache = BookingsCache(bookingsFileCache);
   final notificationPermission = backend.permission;
   final pushPermissionCoordinator = PushPermissionCoordinator(
@@ -160,11 +165,14 @@ Future<void> bootstrap(String flavor) async {
         ),
         RepositoryProvider<BookingsCache>.value(value: bookingsCache),
         RepositoryProvider<BookingActionRegistry>.value(
-          value: BookingActionRegistry.g2(),
+          value: BookingActionRegistry.g3(),
         ),
         RepositoryProvider<MockBookingServer?>.value(
           value: backend.mockServer,
         ),
+        RepositoryProvider<StayRepository>.value(value: backend.stay),
+        RepositoryProvider<MockStayServer?>.value(value: backend.mockStay),
+        RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
         RepositoryProvider<NotificationPermission>.value(
           value: notificationPermission,
         ),
@@ -181,6 +189,7 @@ Future<void> bootstrap(String flavor) async {
           bookingsCache.clear,
           paymentAttemptStore.clear,
           arrivalInstructions.clearAll,
+          actionAttempts.clearAll,
           backend.signals.stop,
         ]),
         deviceRegistrationService: deviceRegistrationService,
@@ -206,6 +215,8 @@ typedef _Backend = ({
   NotificationSignalSource signals,
   SecureStore secureStore,
   MockBookingServer? mockServer,
+  StayRepository stay,
+  MockStayServer? mockStay,
   PushMessageSource pushes,
   NotificationPermission permission,
 });
@@ -248,6 +259,8 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     signals: SupabaseNotificationSignalSource(client),
     secureStore: FlutterSecureStore(),
     mockServer: null,
+    stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
+    mockStay: null,
     pushes: FirebasePushMessageSource(),
     permission: FirebaseNotificationPermission(),
   );
@@ -261,6 +274,8 @@ _Backend _mockBackend() {
   // mock with the Home feed's upcoming booking filled from the bookings
   // fixtures (FR-026).
   final server = MockBookingServer(listings: rawListings, signals: signals);
+  final stay = MockStayServer(bookings: server);
+  final secureStore = InMemorySecureStore();
   final listings = MockHomeFeedWithBookings(
     inner: rawListings,
     server: server,
@@ -276,8 +291,10 @@ _Backend _mockBackend() {
     bookingFlow: server,
     notifications: server,
     signals: signals,
-    secureStore: InMemorySecureStore(),
+    secureStore: secureStore,
     mockServer: server,
+    stay: stay,
+    mockStay: stay,
     pushes: const NoopPushMessageSource(),
     permission: FakeNotificationPermission(),
   );

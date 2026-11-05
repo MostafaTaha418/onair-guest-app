@@ -29,7 +29,11 @@ abstract final class AppRoutes {
   static const supportNew = '/support/new';
   static const bookingDetailsPattern = '/bookings/:id';
   static const remainingPaymentPattern = '/bookings/:id/remaining-payment';
+  static const cashConfirmPattern = '/bookings/:id/cash-confirm';
+  static const receiptPattern = '/bookings/:id/receipts/:paymentId';
+  static const cancelBookingPattern = '/bookings/:id/cancel';
   static const damageClaimPattern = '/bookings/:id/damage-claim/:claimId';
+  static const damageClaimResolverPattern = '/damage-claims/:claimId';
   static const bookingReviewPattern = '/bookings/:id/review';
   static const supportCasePattern = '/support/:caseId';
 
@@ -51,9 +55,15 @@ abstract final class AppRoutes {
   static final _remainingPayment = RegExp(
     r'^/bookings/([^/]+)/remaining-payment$',
   );
+  static final _cashConfirm = RegExp(r'^/bookings/([^/]+)/cash-confirm$');
+  static final _receipt = RegExp(
+    r'^/bookings/([^/]+)/receipts/([^/]+)$',
+  );
+  static final _cancelBooking = RegExp(r'^/bookings/([^/]+)/cancel$');
   static final _damageClaim = RegExp(
     r'^/bookings/([^/]+)/damage-claim/([^/]+)$',
   );
+  static final _damageClaimResolver = RegExp(r'^/damage-claims/([^/]+)$');
   static final _bookingReview = RegExp(r'^/bookings/([^/]+)/review$');
   static final _supportCase = RegExp(r'^/support/([^/]+)$');
 
@@ -112,7 +122,11 @@ abstract final class AppRoutes {
     return path != null &&
         (_validMatch(_bookingDetails, path) ||
             _validMatch(_remainingPayment, path) ||
+            _validMatch(_cashConfirm, path) ||
+            _validMatch(_receipt, path, idCount: 2) ||
+            _validMatch(_cancelBooking, path) ||
             _validMatch(_damageClaim, path, idCount: 2) ||
+            _validMatch(_damageClaimResolver, path) ||
             _validMatch(_bookingReview, path) ||
             _validMatch(_supportCase, path) ||
             _validMatch(_bookingEntry, path) ||
@@ -127,7 +141,10 @@ abstract final class AppRoutes {
       _validMatch(_property, path) ||
       _validMatch(_bookingDetails, path) ||
       _validMatch(_remainingPayment, path) ||
+      _validMatch(_cashConfirm, path) ||
+      _validMatch(_receipt, path, idCount: 2) ||
       _validMatch(_damageClaim, path, idCount: 2) ||
+      _validMatch(_damageClaimResolver, path) ||
       _validMatch(_bookingReview, path) ||
       _validMatch(_supportCase, path);
 
@@ -140,7 +157,11 @@ abstract final class AppRoutes {
       _validMatch(_bookingSummary, path) ||
       _validMatch(_bookingDetails, path) ||
       _validMatch(_remainingPayment, path) ||
+      _validMatch(_cashConfirm, path) ||
+      _validMatch(_receipt, path, idCount: 2) ||
+      _validMatch(_cancelBooking, path) ||
       _validMatch(_damageClaim, path, idCount: 2) ||
+      _validMatch(_damageClaimResolver, path) ||
       _validMatch(_bookingReview, path) ||
       _validMatch(_supportCase, path);
 
@@ -157,6 +178,18 @@ abstract final class AppRoutes {
   static String bookingSummary(String propertyId) =>
       '/book/$propertyId/summary';
   static String bookingDetails(String id) => '/bookings/$id';
+  static String remainingPayment(String id) =>
+      '/bookings/$id/remaining-payment';
+  static String cashConfirm(String id) => '/bookings/$id/cash-confirm';
+  static String receipt(String id, String paymentId) =>
+      '/bookings/$id/receipts/$paymentId';
+  static String cancelBooking(String id) => '/bookings/$id/cancel';
+  static String damageClaim(String id, String claimId) =>
+      '/bookings/$id/damage-claim/$claimId';
+  static String damageClaimResolver(String claimId) =>
+      '/damage-claims/$claimId';
+  static String bookingDetailsFocus(String id, String focus) =>
+      '/bookings/$id?focus=$focus';
   static String paymentReturn({String? bookingId}) => bookingId == null
       ? paymentReturnPath
       : '$paymentReturnPath?booking=$bookingId';

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "e0000000-0000-4000-8000-000000000001",
+    "booking_id": "b0000000-0000-4000-8000-000000000025",
+    "description": "كسر في باب البلكونة وبقعة على الكنبة.",
+    "amount_minor": 50000,
+    "status": "open",
+    "created_at": "2026-10-24T09:00:00Z",
+    "evidence": [
+      {"attachment_id": "a1000000-0000-4000-8000-000000000001", "kind": "image", "width": 1600, "height": 1200},
+      {"attachment_id": "a1000000-0000-4000-8000-000000000002", "kind": "image", "width": 1200, "height": 1600}
+    ],
+    "guest_response": null,
+    "support_case_number": null,
+    "resolution": null
+  },
+  {
+    "id": "e0000000-0000-4000-8000-000000000002",
+    "booking_id": "b0000000-0000-4000-8000-000000000025",
+    "description": "كوباية مكسورة.",
+    "amount_minor": 30000,
+    "status": "resolved",
+    "created_at": "2026-10-23T15:00:00Z",
+    "evidence": [],
+    "guest_response": {"decision": "dispute", "note": "الكوباية كانت مكسورة من الأول.", "responded_at": "2026-10-23T16:00:00Z"},
+    "support_case_number": "SC-1000",
+    "resolution": {"outcome_code": "no_charge", "amount_minor": null, "decided_at": "2026-10-25T10:00:00Z"}
+  }
+]
