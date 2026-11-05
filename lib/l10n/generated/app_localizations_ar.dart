@@ -129,7 +129,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get stayCollectorNotAuthorized =>
-      'المحصّل غير مفوّض. تواصل مع خدمة العملاء.';
+      'الشخص ده مش مفوّض يستلم فلوس للشقة دي. متسلّمش كاش وكلّم OnAir.';
 
   @override
   String errorUnexpected(String ref) {
@@ -1437,4 +1437,463 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notifGenericBody => 'اضغط للتفاصيل.';
+
+  @override
+  String get stayCashNotAllowed => 'الدفع الكاش مش متاح للشقة دي.';
+
+  @override
+  String get stayCashAmountChanged =>
+      'المبلغ المتبقي اتغير. راجع المبلغ الجديد.';
+
+  @override
+  String get stayRemainingNotPaid =>
+      'لازم تسدد المبلغ المتبقي قبل استلام الشقة.';
+
+  @override
+  String get cancellationTermsChanged =>
+      'مبلغ الاسترداد اتغير. راجع التفاصيل الجديدة.';
+
+  @override
+  String get claimAlreadyAnswered => 'المطالبة دي اتردّ عليها قبل كده.';
+
+  @override
+  String get offerNotAvailable => 'العرض ده مبقاش متاح.';
+
+  @override
+  String get stayNeedsConnection => 'الخطوة دي محتاجة اتصال بالإنترنت.';
+
+  @override
+  String get stayStepNotAvailable => 'الخطوة دي مش متاحة دلوقتي.';
+
+  @override
+  String get stayActionDone => 'تمام، اتسجّل.';
+
+  @override
+  String get dialogConfirm => 'تأكيد';
+
+  @override
+  String get dialogBack => 'رجوع';
+
+  @override
+  String get actionPayRemaining => 'ادفع المبلغ المتبقي';
+
+  @override
+  String get actionConfirmCash => 'تأكيد دفع كاش';
+
+  @override
+  String get actionCancelBooking => 'إلغاء الحجز';
+
+  @override
+  String get actionConfirmCheckin => 'استلمت الشقة';
+
+  @override
+  String get actionConfirmCheckout => 'غادرت الشقة';
+
+  @override
+  String get actionRespondClaim => 'الرد على المطالبة';
+
+  @override
+  String bookingNeedsAction(String action) {
+    return 'مطلوب منك: $action';
+  }
+
+  @override
+  String get bookingMsgWaitingHandover =>
+      'أكّدت استلامك. مستنيين المالك يأكّد تسليم الشقة.';
+
+  @override
+  String get bookingMsgHostHandedOver =>
+      'المالك أكّد تسليم الشقة. أكّد إنك استلمتها.';
+
+  @override
+  String get bookingMsgWaitingCheckout =>
+      'أكّدت مغادرتك. مستنيين المالك يأكّد استلام الشقة.';
+
+  @override
+  String get bookingMsgCancelledByGuest => 'لغيت الحجز. تفاصيل الاسترداد تحت.';
+
+  @override
+  String get bookingMsgCancelledByPlatform =>
+      'OnAir لغت الحجز. تفاصيل الاسترداد تحت.';
+
+  @override
+  String get bookingMsgReopened =>
+      'حجزك اتفتح تاني. كمّل سداد المتبقي قبل الاستلام.';
+
+  @override
+  String get ackTitleCheckin => 'تسليم الشقة';
+
+  @override
+  String get ackTitleCheckout => 'مغادرة الشقة';
+
+  @override
+  String get ackYou => 'أنت';
+
+  @override
+  String get ackOwner => 'المالك';
+
+  @override
+  String ackConfirmedAt(String time) {
+    return 'أكّد $time';
+  }
+
+  @override
+  String get ackWaiting => 'مستني التأكيد';
+
+  @override
+  String get ackKeyLeftSafe => 'المفتاح اتساب في المكان المتفق عليه';
+
+  @override
+  String get checkinSheetTitle => 'استلمت الشقة فعلًا؟';
+
+  @override
+  String get checkinSheetBody => 'أكّد بس لو استلمت الشقة والمفاتيح.';
+
+  @override
+  String get checkinSheetConfirm => 'أيوه، استلمتها';
+
+  @override
+  String get checkoutSheetTitle => 'غادرت الشقة؟';
+
+  @override
+  String get checkoutSheetBody => 'أكّد بعد ما تسيب الشقة وتسلّم المفاتيح.';
+
+  @override
+  String get checkoutSheetConfirm => 'أيوه، غادرت';
+
+  @override
+  String get sheetNotYet => 'لسه';
+
+  @override
+  String get checkinProblem => 'عندي مشكلة في الاستلام';
+
+  @override
+  String get remainingTitle => 'سداد المتبقي';
+
+  @override
+  String get remainingNote => 'لازم تسدد المتبقي قبل ما تستلم الشقة.';
+
+  @override
+  String get remainingDueLabel => 'آخر ميعاد للسداد';
+
+  @override
+  String get remainingChooseMethod => 'هتدفع إزاي؟';
+
+  @override
+  String get remainingOptionOnline => 'ادفع أونلاين';
+
+  @override
+  String get remainingOptionCash => 'دفعت أو هدفع كاش';
+
+  @override
+  String remainingPayButton(String amount) {
+    return 'ادفع $amount';
+  }
+
+  @override
+  String get remainingCashButton => 'كمّل تأكيد الكاش';
+
+  @override
+  String get remainingPaidTitle => 'تم سداد المتبقي';
+
+  @override
+  String get remainingPaidBody => 'حجزك مدفوع بالكامل دلوقتي.';
+
+  @override
+  String get remainingFailedBody =>
+      'الدفع ما كملش ومفيش أي مبلغ اتخصم. تقدر تحاول تاني.';
+
+  @override
+  String get cashTitle => 'تأكيد دفع كاش';
+
+  @override
+  String get cashAmountLabel => 'المبلغ';
+
+  @override
+  String get cashAmountLocked => 'المبلغ ثابت ومش ممكن يتغير';
+
+  @override
+  String get cashPhoneLabel => 'رقم موبايل اللي استلم الفلوس';
+
+  @override
+  String get cashPhoneHint => '01xxxxxxxxx';
+
+  @override
+  String get cashPhoneInvalid => 'اكتب رقم موبايل مصري صحيح.';
+
+  @override
+  String get cashWarning => 'متسلّمش فلوس غير لشخص مفوّض من OnAir.';
+
+  @override
+  String get cashSendCode => 'ابعت الكود على بريدي';
+
+  @override
+  String cashCodeSent(String email) {
+    return 'بعتنا كود على $email';
+  }
+
+  @override
+  String get cashCollectorLabel => 'المستلم';
+
+  @override
+  String cashStatement(String amount, String name) {
+    return 'أؤكد إني سلّمت $amount كاش لـ $name';
+  }
+
+  @override
+  String get cashResend => 'ابعت الكود تاني';
+
+  @override
+  String cashResendIn(String time) {
+    return 'ابعت تاني بعد $time';
+  }
+
+  @override
+  String get cashConfirmButton => 'أكّد الدفع';
+
+  @override
+  String get cashContactSupport => 'كلّم الدعم';
+
+  @override
+  String get receiptTitle => 'تم تأكيد الدفع الكاش';
+
+  @override
+  String get receiptNumber => 'رقم الإيصال';
+
+  @override
+  String get receiptDate => 'التاريخ';
+
+  @override
+  String get receiptBack => 'رجوع للحجز';
+
+  @override
+  String get receiptShow => 'عرض الإيصال';
+
+  @override
+  String get receiptCopied => 'اتنسخ رقم الإيصال';
+
+  @override
+  String get cancelTitle => 'إلغاء الحجز';
+
+  @override
+  String get cancelRefund => 'هيترجعلك';
+
+  @override
+  String get cancelNonRefundable => 'مش هيترجع';
+
+  @override
+  String cancelReasonFree(String amount) {
+    return 'الإلغاء مجاني. هيترجعلك المبلغ كله ($amount).';
+  }
+
+  @override
+  String cancelReasonDepositLost(String refund, String deposit, String date) {
+    return 'هيترجعلك $refund. العربون $deposit مش هيترجع لأن ميعاد الإلغاء المجاني خلص يوم $date.';
+  }
+
+  @override
+  String cancelReasonDepositLostNoDate(String refund, String deposit) {
+    return 'هيترجعلك $refund. العربون $deposit مش هيترجع لأن ميعاد الإلغاء المجاني خلص.';
+  }
+
+  @override
+  String get cancelReasonNoRefund =>
+      'مفيش استرداد، لأن الحجز مدفوع بالكامل وعدّى أكتر من 24 ساعة على ميعاد الاستلام.';
+
+  @override
+  String get cancelReasonTitle => 'سبب الإلغاء (اختياري)';
+
+  @override
+  String get cancelReasonChangeOfPlans => 'خططي اتغيرت';
+
+  @override
+  String get cancelReasonFoundOther => 'لقيت مكان تاني';
+
+  @override
+  String get cancelReasonTravelProblem => 'مشكلة في السفر';
+
+  @override
+  String get cancelReasonOther => 'سبب تاني';
+
+  @override
+  String get cancelReasonOtherHint => 'اكتب السبب';
+
+  @override
+  String get cancelKeep => 'خليني محتفظ بالحجز';
+
+  @override
+  String get cancelDialogTitle => 'متأكد إنك عايز تلغي؟';
+
+  @override
+  String cancelDialogBody(String amount) {
+    return 'هيترجعلك $amount.';
+  }
+
+  @override
+  String get cancelDialogConfirm => 'أيوه، ألغي';
+
+  @override
+  String get claimTitle => 'مطالبة ضرر';
+
+  @override
+  String get claimsSectionTitle => 'مطالبات الضرر';
+
+  @override
+  String get claimProtection =>
+      'مفيش أي مبلغ هيتخصم من غير موافقتك أو قرار من OnAir.';
+
+  @override
+  String get claimAmount => 'المبلغ المطلوب';
+
+  @override
+  String get claimEvidence => 'الصور';
+
+  @override
+  String claimEvidencePhoto(String index, String count) {
+    return 'صورة $index من $count';
+  }
+
+  @override
+  String get claimPhotoFailed => 'الصورة ما اتحملتش. اضغط للمحاولة تاني.';
+
+  @override
+  String get claimAgree => 'موافق';
+
+  @override
+  String get claimDispute => 'معترض';
+
+  @override
+  String get claimAgreeDialogTitle => 'توافق على المطالبة؟';
+
+  @override
+  String claimAgreeDialogBody(String amount) {
+    return 'انت موافق على مبلغ $amount.';
+  }
+
+  @override
+  String get claimDisputeReason => 'سبب الاعتراض';
+
+  @override
+  String get claimDisputeReasonHint => 'اكتب اللي حصل بالتفصيل';
+
+  @override
+  String get claimDisputeTooShort => 'اكتب 10 حروف على الأقل.';
+
+  @override
+  String get claimDisputeSend => 'ابعت الاعتراض';
+
+  @override
+  String claimCaseNumber(String number) {
+    return 'رقم الحالة: $number';
+  }
+
+  @override
+  String get claimYourAnswer => 'ردك';
+
+  @override
+  String get claimStatusOpen => 'مستنية ردك';
+
+  @override
+  String get claimStatusAccepted => 'وافقت';
+
+  @override
+  String get claimStatusDisputed => 'اعترضت';
+
+  @override
+  String get claimStatusMediation => 'عند OnAir للمراجعة';
+
+  @override
+  String get claimStatusResolved => 'اتقفلت';
+
+  @override
+  String get claimStatusWithdrawn => 'اتسحبت';
+
+  @override
+  String get claimStatusUnknown => 'فيه تحديث';
+
+  @override
+  String claimOutcomeGuestPays(String amount) {
+    return 'القرار: تدفع $amount.';
+  }
+
+  @override
+  String claimOutcomePartial(String amount) {
+    return 'القرار: تدفع جزء من المبلغ ($amount).';
+  }
+
+  @override
+  String get claimOutcomeNoCharge => 'القرار: مفيش أي مبلغ عليك.';
+
+  @override
+  String get claimOutcomeWithdrawn => 'المالك سحب المطالبة.';
+
+  @override
+  String get offerTitle => 'عرض بديل من OnAir';
+
+  @override
+  String offerPayMore(String amount) {
+    return 'هتدفع $amount زيادة.';
+  }
+
+  @override
+  String offerRefundDiff(String amount) {
+    return 'هيترجعلك $amount.';
+  }
+
+  @override
+  String get offerNoDiff => 'مفيش فرق في السعر.';
+
+  @override
+  String offerExpires(String time) {
+    return 'رد قبل $time';
+  }
+
+  @override
+  String get offerAccept => 'موافق على العرض';
+
+  @override
+  String get offerDecline => 'لا، عايز استرداد فلوسي';
+
+  @override
+  String get offerAcceptDialogTitle => 'توافق على العرض البديل؟';
+
+  @override
+  String get offerDeclineDialogTitle => 'ترفض العرض البديل؟';
+
+  @override
+  String get offerDeclineDialogBody => 'الاسترداد هيكمل زي ما هو.';
+
+  @override
+  String get offerStatusAccepted => 'وافقت على العرض';
+
+  @override
+  String get offerStatusDeclined => 'رفضت العرض';
+
+  @override
+  String get offerStatusExpired => 'العرض انتهى';
+
+  @override
+  String get mockToolsTitle => 'أدوات المحاكاة';
+
+  @override
+  String get mockOwnerHandover => 'المالك أكّد التسليم';
+
+  @override
+  String get mockOwnerCheckout => 'المالك أكّد الاستلام';
+
+  @override
+  String get mockOwnerCheckoutKey =>
+      'المالك أكّد الاستلام (المفتاح في مكان آمن)';
+
+  @override
+  String get mockCollectorCash => 'المحصّل سجّل كاش';
+
+  @override
+  String get mockOpenClaim => 'فتح مطالبة';
+
+  @override
+  String get mockAdvanceRefund => 'تقديم مرحلة الاسترداد';
+
+  @override
+  String get mockChangeTerms => 'تغيير شروط الإلغاء مرة';
 }

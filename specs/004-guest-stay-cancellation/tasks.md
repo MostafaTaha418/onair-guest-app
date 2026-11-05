@@ -190,7 +190,7 @@ Additional commands:
 
 **Purpose**: contract copies, folders, strings, and icons used by every later task.
 
-- [ ] T001 [P] Copy the G3 drafts for the backend owner into the repo's `contracts/` folder:
+- [X] T001 [P] Copy the G3 drafts for the backend owner into the repo's `contracts/` folder:
   - copy `specs/004-guest-stay-cancellation/contracts/supabase-stay.md` to `contracts/supabase-stay.md`;
   - copy `specs/004-guest-stay-cancellation/contracts/app-routes.md` to `contracts/app-routes-g3.md`;
   - copy `specs/004-guest-stay-cancellation/contracts/ui-screens.md` to `contracts/ui-screens-g3.md`;
@@ -204,7 +204,7 @@ Additional commands:
       - `| \`OFFER_NOT_AVAILABLE\` *(new)* | G3 | \`offerNotAvailable\` | العرض ده مبقاش متاح. | no |`
 
   Done when the three files exist and every link opens.
-- [ ] T002 [P] Create these folders, each with an empty `.gitkeep` file:
+- [X] T002 [P] Create these folders, each with an empty `.gitkeep` file:
   - `lib/features/stay/domain/`, `lib/features/stay/data/`, `lib/features/stay/data/fixtures/`;
   - `lib/features/stay/presentation/remaining_payment/`, `lib/features/stay/presentation/cash/`,
     `lib/features/stay/presentation/stay_ack/`, `lib/features/stay/presentation/cancellation/`,
@@ -213,7 +213,7 @@ Additional commands:
     `test/features/stay/goldens/`.
 
   Then add `- lib/features/stay/data/fixtures/` to the `assets:` list in `pubspec.yaml`, right after `- lib/features/bookings/data/fixtures/`. Run `flutter pub get`.
-- [ ] T003 Add every key in **Appendix A**:
+- [X] T003 Add every key in **Appendix A**:
   - `lib/l10n/app_ar.arb` gets the Arabic text exactly as listed, and `lib/l10n/app_en.arb` gets
     the English text.
   - **Placement:** add keys at the end of each file, before the final `}`. Keep valid JSON
@@ -226,7 +226,7 @@ Additional commands:
   - Run `flutter gen-l10n`.
 
   Done when `lib/l10n/generated/app_localizations.dart` has a member for every Appendix A key and `flutter analyze` is clean.
-- [ ] T004 [P] In `lib/design_system/icons/app_icons.dart`, add these constants, keeping the file's alphabetical order:
+- [X] T004 [P] In `lib/design_system/icons/app_icons.dart`, add these constants, keeping the file's alphabetical order:
   - `static const IconData cash = LucideIcons.banknote;`
   - `static const IconData cancelOutline = CupertinoIcons.xmark_circle;`
   - `static const IconData keyOutline = LucideIcons.keyRound;`

@@ -60,6 +60,7 @@ flutter:
   assets:
     - lib/features/listings/data/fixtures/
     - lib/features/bookings/data/fixtures/
+    - lib/features/stay/data/fixtures/
   fonts:
     - family: Cairo
       fonts:

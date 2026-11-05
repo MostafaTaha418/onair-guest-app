@@ -9,3 +9,6 @@ These contracts are drafts for the backend implementer to review and confirm. Th
 - `supabase-backend.md` §8 lists the changes the G0 app code needs after the 28 Oct 2026 update.
 - `supabase-booking.md` is a G2 draft whose reviewed source is `specs/003-guest-booking-payment/contracts/`.
 - `app-routes-g2.md` is a G2 draft whose reviewed source is `specs/003-guest-booking-payment/contracts/`.
+- `supabase-stay.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.
+- `app-routes-g3.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.
+- `ui-screens-g3.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.

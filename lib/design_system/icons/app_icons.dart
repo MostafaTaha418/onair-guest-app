@@ -12,6 +12,8 @@ abstract final class AppIcons {
   static const IconData bedOutlined = CupertinoIcons.bed_double;
   static const IconData calendarMonth = CupertinoIcons.calendar;
   static const IconData calendarMonthOutlined = CupertinoIcons.calendar;
+  static const IconData cancelOutline = CupertinoIcons.xmark_circle;
+  static const IconData cash = LucideIcons.banknote;
   static const IconData checkCircle = CupertinoIcons.checkmark_circle_fill;
   static const IconData checkCircleOutline = CupertinoIcons.checkmark_circle;
   static const IconData chevronLeft = CupertinoIcons.chevron_left;
@@ -32,6 +34,7 @@ abstract final class AppIcons {
   static const IconData imageNotSupportedOutlined = LucideIcons.imageOff;
   static const IconData imageOutlined = CupertinoIcons.photo;
   static const IconData infoOutline = CupertinoIcons.info_circle;
+  static const IconData keyOutline = LucideIcons.keyRound;
   static const IconData kitchen = LucideIcons.cookingPot;
   static const IconData localLaundryService = LucideIcons.washingMachine;
   static const IconData location = CupertinoIcons.location;
@@ -48,8 +51,11 @@ abstract final class AppIcons {
   static const IconData personOutline = CupertinoIcons.person;
   static const IconData personOutlineRounded = CupertinoIcons.person;
   static const IconData phoneOutlined = CupertinoIcons.phone;
+  static const IconData photoStack = CupertinoIcons.photo_on_rectangle;
   static const IconData pool = LucideIcons.waves;
   static const IconData radioButtonUnchecked = CupertinoIcons.circle;
+  static const IconData radioChecked = CupertinoIcons.largecircle_fill_circle;
+  static const IconData receipt = LucideIcons.receipt;
   static const IconData removeCircleOutline = CupertinoIcons.minus_circle;
   static const IconData schedule = CupertinoIcons.clock;
   static const IconData search = CupertinoIcons.search;
@@ -63,6 +69,8 @@ abstract final class AppIcons {
   static const IconData systemUpdateAlt = CupertinoIcons.arrow_down_to_line;
   static const IconData tuneOutlined = CupertinoIcons.slider_horizontal_3;
   static const IconData tv = CupertinoIcons.tv;
+  static const IconData warningOutline =
+      CupertinoIcons.exclamationmark_triangle;
   static const IconData waves = LucideIcons.waves;
   static const IconData wifi = CupertinoIcons.wifi;
   static const IconData wifiOff = LucideIcons.wifiOff;

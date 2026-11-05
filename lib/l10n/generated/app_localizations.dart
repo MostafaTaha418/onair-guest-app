@@ -329,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @stayCollectorNotAuthorized.
   ///
   /// In ar, this message translates to:
-  /// **'المحصّل غير مفوّض. تواصل مع خدمة العملاء.'**
+  /// **'الشخص ده مش مفوّض يستلم فلوس للشقة دي. متسلّمش كاش وكلّم OnAir.'**
   String get stayCollectorNotAuthorized;
 
   /// No description provided for @errorUnexpected.
@@ -2605,6 +2605,828 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اضغط للتفاصيل.'**
   String get notifGenericBody;
+
+  /// No description provided for @stayCashNotAllowed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع الكاش مش متاح للشقة دي.'**
+  String get stayCashNotAllowed;
+
+  /// No description provided for @stayCashAmountChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المتبقي اتغير. راجع المبلغ الجديد.'**
+  String get stayCashAmountChanged;
+
+  /// No description provided for @stayRemainingNotPaid.
+  ///
+  /// In ar, this message translates to:
+  /// **'لازم تسدد المبلغ المتبقي قبل استلام الشقة.'**
+  String get stayRemainingNotPaid;
+
+  /// No description provided for @cancellationTermsChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ الاسترداد اتغير. راجع التفاصيل الجديدة.'**
+  String get cancellationTermsChanged;
+
+  /// No description provided for @claimAlreadyAnswered.
+  ///
+  /// In ar, this message translates to:
+  /// **'المطالبة دي اتردّ عليها قبل كده.'**
+  String get claimAlreadyAnswered;
+
+  /// No description provided for @offerNotAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'العرض ده مبقاش متاح.'**
+  String get offerNotAvailable;
+
+  /// No description provided for @stayNeedsConnection.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة دي محتاجة اتصال بالإنترنت.'**
+  String get stayNeedsConnection;
+
+  /// No description provided for @stayStepNotAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة دي مش متاحة دلوقتي.'**
+  String get stayStepNotAvailable;
+
+  /// No description provided for @stayActionDone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمام، اتسجّل.'**
+  String get stayActionDone;
+
+  /// No description provided for @dialogConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get dialogConfirm;
+
+  /// No description provided for @dialogBack.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع'**
+  String get dialogBack;
+
+  /// No description provided for @actionPayRemaining.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع المبلغ المتبقي'**
+  String get actionPayRemaining;
+
+  /// No description provided for @actionConfirmCash.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد دفع كاش'**
+  String get actionConfirmCash;
+
+  /// No description provided for @actionCancelBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الحجز'**
+  String get actionCancelBooking;
+
+  /// No description provided for @actionConfirmCheckin.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمت الشقة'**
+  String get actionConfirmCheckin;
+
+  /// No description provided for @actionConfirmCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'غادرت الشقة'**
+  String get actionConfirmCheckout;
+
+  /// No description provided for @actionRespondClaim.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرد على المطالبة'**
+  String get actionRespondClaim;
+
+  /// No description provided for @bookingNeedsAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطلوب منك: {action}'**
+  String bookingNeedsAction(String action);
+
+  /// No description provided for @bookingMsgWaitingHandover.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّدت استلامك. مستنيين المالك يأكّد تسليم الشقة.'**
+  String get bookingMsgWaitingHandover;
+
+  /// No description provided for @bookingMsgHostHandedOver.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك أكّد تسليم الشقة. أكّد إنك استلمتها.'**
+  String get bookingMsgHostHandedOver;
+
+  /// No description provided for @bookingMsgWaitingCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّدت مغادرتك. مستنيين المالك يأكّد استلام الشقة.'**
+  String get bookingMsgWaitingCheckout;
+
+  /// No description provided for @bookingMsgCancelledByGuest.
+  ///
+  /// In ar, this message translates to:
+  /// **'لغيت الحجز. تفاصيل الاسترداد تحت.'**
+  String get bookingMsgCancelledByGuest;
+
+  /// No description provided for @bookingMsgCancelledByPlatform.
+  ///
+  /// In ar, this message translates to:
+  /// **'OnAir لغت الحجز. تفاصيل الاسترداد تحت.'**
+  String get bookingMsgCancelledByPlatform;
+
+  /// No description provided for @bookingMsgReopened.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجزك اتفتح تاني. كمّل سداد المتبقي قبل الاستلام.'**
+  String get bookingMsgReopened;
+
+  /// No description provided for @ackTitleCheckin.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسليم الشقة'**
+  String get ackTitleCheckin;
+
+  /// No description provided for @ackTitleCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'مغادرة الشقة'**
+  String get ackTitleCheckout;
+
+  /// No description provided for @ackYou.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنت'**
+  String get ackYou;
+
+  /// No description provided for @ackOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك'**
+  String get ackOwner;
+
+  /// No description provided for @ackConfirmedAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد {time}'**
+  String ackConfirmedAt(String time);
+
+  /// No description provided for @ackWaiting.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستني التأكيد'**
+  String get ackWaiting;
+
+  /// No description provided for @ackKeyLeftSafe.
+  ///
+  /// In ar, this message translates to:
+  /// **'المفتاح اتساب في المكان المتفق عليه'**
+  String get ackKeyLeftSafe;
+
+  /// No description provided for @checkinSheetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمت الشقة فعلًا؟'**
+  String get checkinSheetTitle;
+
+  /// No description provided for @checkinSheetBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد بس لو استلمت الشقة والمفاتيح.'**
+  String get checkinSheetBody;
+
+  /// No description provided for @checkinSheetConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'أيوه، استلمتها'**
+  String get checkinSheetConfirm;
+
+  /// No description provided for @checkoutSheetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'غادرت الشقة؟'**
+  String get checkoutSheetTitle;
+
+  /// No description provided for @checkoutSheetBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد بعد ما تسيب الشقة وتسلّم المفاتيح.'**
+  String get checkoutSheetBody;
+
+  /// No description provided for @checkoutSheetConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'أيوه، غادرت'**
+  String get checkoutSheetConfirm;
+
+  /// No description provided for @sheetNotYet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه'**
+  String get sheetNotYet;
+
+  /// No description provided for @checkinProblem.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندي مشكلة في الاستلام'**
+  String get checkinProblem;
+
+  /// No description provided for @remainingTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سداد المتبقي'**
+  String get remainingTitle;
+
+  /// No description provided for @remainingNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'لازم تسدد المتبقي قبل ما تستلم الشقة.'**
+  String get remainingNote;
+
+  /// No description provided for @remainingDueLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر ميعاد للسداد'**
+  String get remainingDueLabel;
+
+  /// No description provided for @remainingChooseMethod.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتدفع إزاي؟'**
+  String get remainingChooseMethod;
+
+  /// No description provided for @remainingOptionOnline.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع أونلاين'**
+  String get remainingOptionOnline;
+
+  /// No description provided for @remainingOptionCash.
+  ///
+  /// In ar, this message translates to:
+  /// **'دفعت أو هدفع كاش'**
+  String get remainingOptionCash;
+
+  /// No description provided for @remainingPayButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع {amount}'**
+  String remainingPayButton(String amount);
+
+  /// No description provided for @remainingCashButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'كمّل تأكيد الكاش'**
+  String get remainingCashButton;
+
+  /// No description provided for @remainingPaidTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم سداد المتبقي'**
+  String get remainingPaidTitle;
+
+  /// No description provided for @remainingPaidBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجزك مدفوع بالكامل دلوقتي.'**
+  String get remainingPaidBody;
+
+  /// No description provided for @remainingFailedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع ما كملش ومفيش أي مبلغ اتخصم. تقدر تحاول تاني.'**
+  String get remainingFailedBody;
+
+  /// No description provided for @cashTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد دفع كاش'**
+  String get cashTitle;
+
+  /// No description provided for @cashAmountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ'**
+  String get cashAmountLabel;
+
+  /// No description provided for @cashAmountLocked.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ ثابت ومش ممكن يتغير'**
+  String get cashAmountLocked;
+
+  /// No description provided for @cashPhoneLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم موبايل اللي استلم الفلوس'**
+  String get cashPhoneLabel;
+
+  /// No description provided for @cashPhoneHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'01xxxxxxxxx'**
+  String get cashPhoneHint;
+
+  /// No description provided for @cashPhoneInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب رقم موبايل مصري صحيح.'**
+  String get cashPhoneInvalid;
+
+  /// No description provided for @cashWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'متسلّمش فلوس غير لشخص مفوّض من OnAir.'**
+  String get cashWarning;
+
+  /// No description provided for @cashSendCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت الكود على بريدي'**
+  String get cashSendCode;
+
+  /// No description provided for @cashCodeSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعتنا كود على {email}'**
+  String cashCodeSent(String email);
+
+  /// No description provided for @cashCollectorLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستلم'**
+  String get cashCollectorLabel;
+
+  /// No description provided for @cashStatement.
+  ///
+  /// In ar, this message translates to:
+  /// **'أؤكد إني سلّمت {amount} كاش لـ {name}'**
+  String cashStatement(String amount, String name);
+
+  /// No description provided for @cashResend.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت الكود تاني'**
+  String get cashResend;
+
+  /// No description provided for @cashResendIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت تاني بعد {time}'**
+  String cashResendIn(String time);
+
+  /// No description provided for @cashConfirmButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد الدفع'**
+  String get cashConfirmButton;
+
+  /// No description provided for @cashContactSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلّم الدعم'**
+  String get cashContactSupport;
+
+  /// No description provided for @receiptTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد الدفع الكاش'**
+  String get receiptTitle;
+
+  /// No description provided for @receiptNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الإيصال'**
+  String get receiptNumber;
+
+  /// No description provided for @receiptDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get receiptDate;
+
+  /// No description provided for @receiptBack.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع للحجز'**
+  String get receiptBack;
+
+  /// No description provided for @receiptShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض الإيصال'**
+  String get receiptShow;
+
+  /// No description provided for @receiptCopied.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتنسخ رقم الإيصال'**
+  String get receiptCopied;
+
+  /// No description provided for @cancelTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الحجز'**
+  String get cancelTitle;
+
+  /// No description provided for @cancelRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترجعلك'**
+  String get cancelRefund;
+
+  /// No description provided for @cancelNonRefundable.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش هيترجع'**
+  String get cancelNonRefundable;
+
+  /// No description provided for @cancelReasonFree.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإلغاء مجاني. هيترجعلك المبلغ كله ({amount}).'**
+  String cancelReasonFree(String amount);
+
+  /// No description provided for @cancelReasonDepositLost.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترجعلك {refund}. العربون {deposit} مش هيترجع لأن ميعاد الإلغاء المجاني خلص يوم {date}.'**
+  String cancelReasonDepositLost(String refund, String deposit, String date);
+
+  /// No description provided for @cancelReasonDepositLostNoDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترجعلك {refund}. العربون {deposit} مش هيترجع لأن ميعاد الإلغاء المجاني خلص.'**
+  String cancelReasonDepositLostNoDate(String refund, String deposit);
+
+  /// No description provided for @cancelReasonNoRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش استرداد، لأن الحجز مدفوع بالكامل وعدّى أكتر من 24 ساعة على ميعاد الاستلام.'**
+  String get cancelReasonNoRefund;
+
+  /// No description provided for @cancelReasonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الإلغاء (اختياري)'**
+  String get cancelReasonTitle;
+
+  /// No description provided for @cancelReasonChangeOfPlans.
+  ///
+  /// In ar, this message translates to:
+  /// **'خططي اتغيرت'**
+  String get cancelReasonChangeOfPlans;
+
+  /// No description provided for @cancelReasonFoundOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'لقيت مكان تاني'**
+  String get cancelReasonFoundOther;
+
+  /// No description provided for @cancelReasonTravelProblem.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة في السفر'**
+  String get cancelReasonTravelProblem;
+
+  /// No description provided for @cancelReasonOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب تاني'**
+  String get cancelReasonOther;
+
+  /// No description provided for @cancelReasonOtherHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب السبب'**
+  String get cancelReasonOtherHint;
+
+  /// No description provided for @cancelKeep.
+  ///
+  /// In ar, this message translates to:
+  /// **'خليني محتفظ بالحجز'**
+  String get cancelKeep;
+
+  /// No description provided for @cancelDialogTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'متأكد إنك عايز تلغي؟'**
+  String get cancelDialogTitle;
+
+  /// No description provided for @cancelDialogBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترجعلك {amount}.'**
+  String cancelDialogBody(String amount);
+
+  /// No description provided for @cancelDialogConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'أيوه، ألغي'**
+  String get cancelDialogConfirm;
+
+  /// No description provided for @claimTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطالبة ضرر'**
+  String get claimTitle;
+
+  /// No description provided for @claimsSectionTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطالبات الضرر'**
+  String get claimsSectionTitle;
+
+  /// No description provided for @claimProtection.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش أي مبلغ هيتخصم من غير موافقتك أو قرار من OnAir.'**
+  String get claimProtection;
+
+  /// No description provided for @claimAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المطلوب'**
+  String get claimAmount;
+
+  /// No description provided for @claimEvidence.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصور'**
+  String get claimEvidence;
+
+  /// No description provided for @claimEvidencePhoto.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة {index} من {count}'**
+  String claimEvidencePhoto(String index, String count);
+
+  /// No description provided for @claimPhotoFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة ما اتحملتش. اضغط للمحاولة تاني.'**
+  String get claimPhotoFailed;
+
+  /// No description provided for @claimAgree.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافق'**
+  String get claimAgree;
+
+  /// No description provided for @claimDispute.
+  ///
+  /// In ar, this message translates to:
+  /// **'معترض'**
+  String get claimDispute;
+
+  /// No description provided for @claimAgreeDialogTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'توافق على المطالبة؟'**
+  String get claimAgreeDialogTitle;
+
+  /// No description provided for @claimAgreeDialogBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'انت موافق على مبلغ {amount}.'**
+  String claimAgreeDialogBody(String amount);
+
+  /// No description provided for @claimDisputeReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الاعتراض'**
+  String get claimDisputeReason;
+
+  /// No description provided for @claimDisputeReasonHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب اللي حصل بالتفصيل'**
+  String get claimDisputeReasonHint;
+
+  /// No description provided for @claimDisputeTooShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب 10 حروف على الأقل.'**
+  String get claimDisputeTooShort;
+
+  /// No description provided for @claimDisputeSend.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت الاعتراض'**
+  String get claimDisputeSend;
+
+  /// No description provided for @claimCaseNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحالة: {number}'**
+  String claimCaseNumber(String number);
+
+  /// No description provided for @claimYourAnswer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ردك'**
+  String get claimYourAnswer;
+
+  /// No description provided for @claimStatusOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستنية ردك'**
+  String get claimStatusOpen;
+
+  /// No description provided for @claimStatusAccepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'وافقت'**
+  String get claimStatusAccepted;
+
+  /// No description provided for @claimStatusDisputed.
+  ///
+  /// In ar, this message translates to:
+  /// **'اعترضت'**
+  String get claimStatusDisputed;
+
+  /// No description provided for @claimStatusMediation.
+  ///
+  /// In ar, this message translates to:
+  /// **'عند OnAir للمراجعة'**
+  String get claimStatusMediation;
+
+  /// No description provided for @claimStatusResolved.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتقفلت'**
+  String get claimStatusResolved;
+
+  /// No description provided for @claimStatusWithdrawn.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتسحبت'**
+  String get claimStatusWithdrawn;
+
+  /// No description provided for @claimStatusUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'فيه تحديث'**
+  String get claimStatusUnknown;
+
+  /// No description provided for @claimOutcomeGuestPays.
+  ///
+  /// In ar, this message translates to:
+  /// **'القرار: تدفع {amount}.'**
+  String claimOutcomeGuestPays(String amount);
+
+  /// No description provided for @claimOutcomePartial.
+  ///
+  /// In ar, this message translates to:
+  /// **'القرار: تدفع جزء من المبلغ ({amount}).'**
+  String claimOutcomePartial(String amount);
+
+  /// No description provided for @claimOutcomeNoCharge.
+  ///
+  /// In ar, this message translates to:
+  /// **'القرار: مفيش أي مبلغ عليك.'**
+  String get claimOutcomeNoCharge;
+
+  /// No description provided for @claimOutcomeWithdrawn.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك سحب المطالبة.'**
+  String get claimOutcomeWithdrawn;
+
+  /// No description provided for @offerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض بديل من OnAir'**
+  String get offerTitle;
+
+  /// No description provided for @offerPayMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتدفع {amount} زيادة.'**
+  String offerPayMore(String amount);
+
+  /// No description provided for @offerRefundDiff.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيترجعلك {amount}.'**
+  String offerRefundDiff(String amount);
+
+  /// No description provided for @offerNoDiff.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش فرق في السعر.'**
+  String get offerNoDiff;
+
+  /// No description provided for @offerExpires.
+  ///
+  /// In ar, this message translates to:
+  /// **'رد قبل {time}'**
+  String offerExpires(String time);
+
+  /// No description provided for @offerAccept.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافق على العرض'**
+  String get offerAccept;
+
+  /// No description provided for @offerDecline.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا، عايز استرداد فلوسي'**
+  String get offerDecline;
+
+  /// No description provided for @offerAcceptDialogTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'توافق على العرض البديل؟'**
+  String get offerAcceptDialogTitle;
+
+  /// No description provided for @offerDeclineDialogTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ترفض العرض البديل؟'**
+  String get offerDeclineDialogTitle;
+
+  /// No description provided for @offerDeclineDialogBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسترداد هيكمل زي ما هو.'**
+  String get offerDeclineDialogBody;
+
+  /// No description provided for @offerStatusAccepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'وافقت على العرض'**
+  String get offerStatusAccepted;
+
+  /// No description provided for @offerStatusDeclined.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفضت العرض'**
+  String get offerStatusDeclined;
+
+  /// No description provided for @offerStatusExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'العرض انتهى'**
+  String get offerStatusExpired;
+
+  /// No description provided for @mockToolsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدوات المحاكاة'**
+  String get mockToolsTitle;
+
+  /// No description provided for @mockOwnerHandover.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك أكّد التسليم'**
+  String get mockOwnerHandover;
+
+  /// No description provided for @mockOwnerCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك أكّد الاستلام'**
+  String get mockOwnerCheckout;
+
+  /// No description provided for @mockOwnerCheckoutKey.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك أكّد الاستلام (المفتاح في مكان آمن)'**
+  String get mockOwnerCheckoutKey;
+
+  /// No description provided for @mockCollectorCash.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحصّل سجّل كاش'**
+  String get mockCollectorCash;
+
+  /// No description provided for @mockOpenClaim.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح مطالبة'**
+  String get mockOpenClaim;
+
+  /// No description provided for @mockAdvanceRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقديم مرحلة الاسترداد'**
+  String get mockAdvanceRefund;
+
+  /// No description provided for @mockChangeTerms.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير شروط الإلغاء مرة'**
+  String get mockChangeTerms;
 }
 
 class _AppLocalizationsDelegate

@@ -132,7 +132,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stayCollectorNotAuthorized =>
-      'The collector is not authorized. Contact support.';
+      'This person isn\'t authorized to collect payments for this apartment. Don\'t hand over cash; contact OnAir.';
 
   @override
   String errorUnexpected(String ref) {
@@ -1451,4 +1451,468 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifGenericBody => 'Tap for details.';
+
+  @override
+  String get stayCashNotAllowed =>
+      'Cash payment isn\'t available for this apartment.';
+
+  @override
+  String get stayCashAmountChanged =>
+      'The remaining amount changed. Check the new amount.';
+
+  @override
+  String get stayRemainingNotPaid =>
+      'Pay the remaining amount before receiving the apartment.';
+
+  @override
+  String get cancellationTermsChanged =>
+      'The refund amount changed. Review the new details.';
+
+  @override
+  String get claimAlreadyAnswered => 'This claim was already answered.';
+
+  @override
+  String get offerNotAvailable => 'This offer is no longer available.';
+
+  @override
+  String get stayNeedsConnection => 'This step needs an internet connection.';
+
+  @override
+  String get stayStepNotAvailable => 'This step isn\'t available right now.';
+
+  @override
+  String get stayActionDone => 'Done, it\'s saved.';
+
+  @override
+  String get dialogConfirm => 'Confirm';
+
+  @override
+  String get dialogBack => 'Back';
+
+  @override
+  String get actionPayRemaining => 'Pay the remaining amount';
+
+  @override
+  String get actionConfirmCash => 'Confirm a cash payment';
+
+  @override
+  String get actionCancelBooking => 'Cancel booking';
+
+  @override
+  String get actionConfirmCheckin => 'I received the apartment';
+
+  @override
+  String get actionConfirmCheckout => 'I left the apartment';
+
+  @override
+  String get actionRespondClaim => 'Respond to the claim';
+
+  @override
+  String bookingNeedsAction(String action) {
+    return 'Needs your action: $action';
+  }
+
+  @override
+  String get bookingMsgWaitingHandover =>
+      'You confirmed. Waiting for the owner to confirm the handover.';
+
+  @override
+  String get bookingMsgHostHandedOver =>
+      'The owner confirmed the handover. Confirm you received the apartment.';
+
+  @override
+  String get bookingMsgWaitingCheckout =>
+      'You confirmed leaving. Waiting for the owner to confirm receiving the apartment.';
+
+  @override
+  String get bookingMsgCancelledByGuest =>
+      'You cancelled this booking. Refund details are below.';
+
+  @override
+  String get bookingMsgCancelledByPlatform =>
+      'OnAir cancelled this booking. Refund details are below.';
+
+  @override
+  String get bookingMsgReopened =>
+      'Your booking was reopened. Pay the remaining amount before check-in.';
+
+  @override
+  String get ackTitleCheckin => 'Apartment handover';
+
+  @override
+  String get ackTitleCheckout => 'Leaving the apartment';
+
+  @override
+  String get ackYou => 'You';
+
+  @override
+  String get ackOwner => 'Owner';
+
+  @override
+  String ackConfirmedAt(String time) {
+    return 'Confirmed $time';
+  }
+
+  @override
+  String get ackWaiting => 'Waiting';
+
+  @override
+  String get ackKeyLeftSafe => 'Key left in the agreed place';
+
+  @override
+  String get checkinSheetTitle => 'Did you actually receive the apartment?';
+
+  @override
+  String get checkinSheetBody =>
+      'Confirm only if you received the apartment and the keys.';
+
+  @override
+  String get checkinSheetConfirm => 'Yes, I received it';
+
+  @override
+  String get checkoutSheetTitle => 'Did you leave the apartment?';
+
+  @override
+  String get checkoutSheetBody =>
+      'Confirm after you leave the apartment and hand over the keys.';
+
+  @override
+  String get checkoutSheetConfirm => 'Yes, I left';
+
+  @override
+  String get sheetNotYet => 'Not yet';
+
+  @override
+  String get checkinProblem => 'I have a problem with the handover';
+
+  @override
+  String get remainingTitle => 'Pay the remaining amount';
+
+  @override
+  String get remainingNote =>
+      'The remaining amount must be paid before you receive the apartment.';
+
+  @override
+  String get remainingDueLabel => 'Due by';
+
+  @override
+  String get remainingChooseMethod => 'How will you pay?';
+
+  @override
+  String get remainingOptionOnline => 'Pay online';
+
+  @override
+  String get remainingOptionCash => 'I paid / will pay in cash';
+
+  @override
+  String remainingPayButton(String amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get remainingCashButton => 'Continue to cash confirmation';
+
+  @override
+  String get remainingPaidTitle => 'Remaining amount paid';
+
+  @override
+  String get remainingPaidBody => 'Your booking is now fully paid.';
+
+  @override
+  String get remainingFailedBody =>
+      'The payment wasn\'t completed and nothing was charged. You can try again.';
+
+  @override
+  String get cashTitle => 'Confirm a cash payment';
+
+  @override
+  String get cashAmountLabel => 'Amount';
+
+  @override
+  String get cashAmountLocked => 'Amount, not editable';
+
+  @override
+  String get cashPhoneLabel =>
+      'Mobile number of the person who received the cash';
+
+  @override
+  String get cashPhoneHint => '01xxxxxxxxx';
+
+  @override
+  String get cashPhoneInvalid => 'Enter a valid Egyptian mobile number.';
+
+  @override
+  String get cashWarning => 'Only hand cash to a person authorized by OnAir.';
+
+  @override
+  String get cashSendCode => 'Send the code to my email';
+
+  @override
+  String cashCodeSent(String email) {
+    return 'We sent a code to $email';
+  }
+
+  @override
+  String get cashCollectorLabel => 'Received by';
+
+  @override
+  String cashStatement(String amount, String name) {
+    return 'I confirm I handed $amount in cash to $name';
+  }
+
+  @override
+  String get cashResend => 'Resend code';
+
+  @override
+  String cashResendIn(String time) {
+    return 'Resend in $time';
+  }
+
+  @override
+  String get cashConfirmButton => 'Confirm payment';
+
+  @override
+  String get cashContactSupport => 'Contact support';
+
+  @override
+  String get receiptTitle => 'Cash payment confirmed';
+
+  @override
+  String get receiptNumber => 'Receipt number';
+
+  @override
+  String get receiptDate => 'Date';
+
+  @override
+  String get receiptBack => 'Back to booking';
+
+  @override
+  String get receiptShow => 'Show receipt';
+
+  @override
+  String get receiptCopied => 'Receipt number copied';
+
+  @override
+  String get cancelTitle => 'Cancel booking';
+
+  @override
+  String get cancelRefund => 'Refunded to you';
+
+  @override
+  String get cancelNonRefundable => 'Not refundable';
+
+  @override
+  String cancelReasonFree(String amount) {
+    return 'Free cancellation. You\'ll get the full amount back ($amount).';
+  }
+
+  @override
+  String cancelReasonDepositLost(String refund, String deposit, String date) {
+    return '$refund will be refunded. The $deposit deposit isn\'t refundable because free cancellation ended on $date.';
+  }
+
+  @override
+  String cancelReasonDepositLostNoDate(String refund, String deposit) {
+    return '$refund will be refunded. The $deposit deposit isn\'t refundable because free cancellation has ended.';
+  }
+
+  @override
+  String get cancelReasonNoRefund =>
+      'No refund, because the booking is fully paid and more than 24 hours have passed since the scheduled check-in.';
+
+  @override
+  String get cancelReasonTitle => 'Reason (optional)';
+
+  @override
+  String get cancelReasonChangeOfPlans => 'My plans changed';
+
+  @override
+  String get cancelReasonFoundOther => 'I found another place';
+
+  @override
+  String get cancelReasonTravelProblem => 'Travel problem';
+
+  @override
+  String get cancelReasonOther => 'Other';
+
+  @override
+  String get cancelReasonOtherHint => 'Write the reason';
+
+  @override
+  String get cancelKeep => 'Keep my booking';
+
+  @override
+  String get cancelDialogTitle => 'Are you sure you want to cancel?';
+
+  @override
+  String cancelDialogBody(String amount) {
+    return '$amount will be refunded.';
+  }
+
+  @override
+  String get cancelDialogConfirm => 'Yes, cancel';
+
+  @override
+  String get claimTitle => 'Damage claim';
+
+  @override
+  String get claimsSectionTitle => 'Damage claims';
+
+  @override
+  String get claimProtection =>
+      'No amount will be deducted without your agreement or a decision from OnAir.';
+
+  @override
+  String get claimAmount => 'Amount claimed';
+
+  @override
+  String get claimEvidence => 'Photos';
+
+  @override
+  String claimEvidencePhoto(String index, String count) {
+    return 'Photo $index of $count';
+  }
+
+  @override
+  String get claimPhotoFailed => 'The photo didn\'t load. Tap to retry.';
+
+  @override
+  String get claimAgree => 'I agree';
+
+  @override
+  String get claimDispute => 'I dispute';
+
+  @override
+  String get claimAgreeDialogTitle => 'Agree to the claim?';
+
+  @override
+  String claimAgreeDialogBody(String amount) {
+    return 'You agree to $amount.';
+  }
+
+  @override
+  String get claimDisputeReason => 'Reason for the dispute';
+
+  @override
+  String get claimDisputeReasonHint => 'Describe what happened';
+
+  @override
+  String get claimDisputeTooShort => 'Write at least 10 characters.';
+
+  @override
+  String get claimDisputeSend => 'Send dispute';
+
+  @override
+  String claimCaseNumber(String number) {
+    return 'Case number: $number';
+  }
+
+  @override
+  String get claimYourAnswer => 'Your answer';
+
+  @override
+  String get claimStatusOpen => 'Waiting for you';
+
+  @override
+  String get claimStatusAccepted => 'You agreed';
+
+  @override
+  String get claimStatusDisputed => 'You disputed';
+
+  @override
+  String get claimStatusMediation => 'Under review by OnAir';
+
+  @override
+  String get claimStatusResolved => 'Resolved';
+
+  @override
+  String get claimStatusWithdrawn => 'Withdrawn';
+
+  @override
+  String get claimStatusUnknown => 'Updated';
+
+  @override
+  String claimOutcomeGuestPays(String amount) {
+    return 'Decision: you pay $amount.';
+  }
+
+  @override
+  String claimOutcomePartial(String amount) {
+    return 'Decision: you pay part of the amount ($amount).';
+  }
+
+  @override
+  String get claimOutcomeNoCharge => 'Decision: you don\'t pay anything.';
+
+  @override
+  String get claimOutcomeWithdrawn => 'The owner withdrew the claim.';
+
+  @override
+  String get offerTitle => 'Alternative offer from OnAir';
+
+  @override
+  String offerPayMore(String amount) {
+    return 'You will pay $amount more.';
+  }
+
+  @override
+  String offerRefundDiff(String amount) {
+    return '$amount will be refunded to you.';
+  }
+
+  @override
+  String get offerNoDiff => 'No price difference.';
+
+  @override
+  String offerExpires(String time) {
+    return 'Answer before $time';
+  }
+
+  @override
+  String get offerAccept => 'I accept';
+
+  @override
+  String get offerDecline => 'No, I want my refund';
+
+  @override
+  String get offerAcceptDialogTitle => 'Accept the alternative offer?';
+
+  @override
+  String get offerDeclineDialogTitle => 'Decline the alternative offer?';
+
+  @override
+  String get offerDeclineDialogBody => 'Your refund will continue as before.';
+
+  @override
+  String get offerStatusAccepted => 'You accepted the offer';
+
+  @override
+  String get offerStatusDeclined => 'You declined the offer';
+
+  @override
+  String get offerStatusExpired => 'The offer expired';
+
+  @override
+  String get mockToolsTitle => 'Mock tools';
+
+  @override
+  String get mockOwnerHandover => 'Owner confirms handover';
+
+  @override
+  String get mockOwnerCheckout => 'Owner confirms checkout';
+
+  @override
+  String get mockOwnerCheckoutKey => 'Owner confirms checkout (key left safe)';
+
+  @override
+  String get mockCollectorCash => 'Collector records cash';
+
+  @override
+  String get mockOpenClaim => 'Open a claim';
+
+  @override
+  String get mockAdvanceRefund => 'Advance the refund stage';
+
+  @override
+  String get mockChangeTerms => 'Change cancellation terms once';
 }

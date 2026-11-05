@@ -42,8 +42,11 @@ lists the codes the Guest App can receive and the ARB key for each.
 | `ACTION_NOT_ALLOWED` | G2 | `errorActionNotAllowed` | الإجراء ده مش متاح دلوقتي. | no |
 | `CANCELLATION_TERMS_CHANGED` *(new)* | G3 | `cancellationTermsChanged` | مبلغ الاسترداد اتغير. راجع التفاصيل الجديدة. | no |
 | `REMAINING_NOT_PAID` *(new)* | G3 | `stayRemainingNotPaid` | لازم تسدد المبلغ المتبقي قبل استلام الشقة. | no |
-| `COLLECTOR_NOT_AUTHORIZED` | G3 | `stayCollectorNotAuthorized` | المحصّل غير مفوّض. تواصل مع خدمة العملاء. | no |
+| `COLLECTOR_NOT_AUTHORIZED` | G3 | `stayCollectorNotAuthorized` | الشخص ده مش مفوّض يستلم فلوس للشقة دي. متسلّمش كاش وكلّم OnAir. | no |
 | `CASH_NOT_ALLOWED` *(new)* | G3 | `stayCashNotAllowed` | الدفع النقدي مش متاح للشقة دي. | no |
+| `CASH_AMOUNT_CHANGED` *(new)* | G3 | `stayCashAmountChanged` | المبلغ المتبقي اتغير. راجع المبلغ الجديد. | no |
+| `CLAIM_ALREADY_ANSWERED` *(new)* | G3 | `claimAlreadyAnswered` | المطالبة دي اتردّ عليها قبل كده. | no |
+| `OFFER_NOT_AVAILABLE` *(new)* | G3 | `offerNotAvailable` | العرض ده مبقاش متاح. | no |
 | `REVIEW_NOT_ALLOWED` *(new)* | G5 | `reviewNotAllowed` | التقييم متاح بعد انتهاء الإقامة، ومرة واحدة بس. | no |
 | `INTERNAL` | G0 | `errorUnexpected` | حصلت مشكلة غير متوقعة. رقم المرجع: {ref} | **yes** |
 | *(network)* | G0 | `errorNoConnection` | مفيش اتصال بالإنترنت. | no |
