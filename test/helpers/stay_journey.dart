@@ -9,6 +9,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -402,4 +403,88 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
   await backend.stay.advanceRefund(booking21);
   await tester.pumpAndSettle();
   expect(find.text(l10n.refundChipDone), findsWidgets);
+}
+
+/// The US5 claim journey (the Independent Test): two claim cards on
+/// booking `…025`, the open claim with its protection notice and evidence
+/// placeholders, a too-short dispute error, a valid dispute with the
+/// support case number, and the resolved claim with no buttons.
+Future<void> runClaimJourney(WidgetTester tester) async {
+  const booking25 = 'b0000000-0000-4000-8000-000000000025';
+  final l10n = lookupAppLocalizations(const Locale('ar'));
+  if (TestWidgetsFlutterBinding.instance
+      is AutomatedTestWidgetsFlutterBinding) {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+  }
+  CairoTime.initialize();
+  SharedPreferences.setMockInitialValues({});
+
+  final backend = FakeBookingBackend(
+    includeG3Fixtures: true,
+    actionRegistry: BookingActionRegistry.g3(),
+  );
+  addTearDown(backend.dispose);
+  final auth = MockAuthRepository();
+  addTearDown(auth.dispose);
+  await auth.signUpEmail(
+    'مستأجر تجريبي',
+    'guest@mock.onair.test',
+    'Password123!',
+    '01000000001',
+    MockBackend.termsVersion,
+  );
+  await auth.verifyEmailCode(
+    'guest@mock.onair.test',
+    MockBackend.verificationCode,
+  );
+
+  await bootApp(tester, backend, auth);
+  GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+    AppRoutes.bookingDetails(booking25),
+  );
+  await pumpUntilFound(tester, find.text('OA-G3025'));
+  await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
+
+  // The open claim: protection notice, evidence placeholders, and a bar.
+  await tester.tap(find.textContaining('500.00'));
+  await pumpUntilFound(tester, find.text(l10n.claimProtection));
+  expect(find.text(l10n.claimStatusOpen), findsOneWidget);
+  // The mock image URLs always fail, so the placeholders show.
+  await pumpUntilFound(
+    tester,
+    find.byIcon(AppIcons.imageNotSupportedOutlined),
+  );
+  expect(find.byIcon(AppIcons.imageNotSupportedOutlined), findsNWidgets(2));
+  expect(find.byKey(const ValueKey('claim-agree')), findsOneWidget);
+
+  // A 5-character dispute shows the length error and sends nothing.
+  await tester.tap(find.byKey(const ValueKey('claim-dispute')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextField), '01234');
+  await tester.tap(find.byKey(const ValueKey('claim-send-dispute')));
+  await tester.pumpAndSettle();
+  expect(find.text(l10n.claimDisputeTooShort), findsOneWidget);
+  expect(backend.stay.claimAnswers, 0);
+
+  // A valid dispute returns the support case number.
+  await tester.enterText(
+    find.byType(TextField),
+    'الكوباية كانت مكسورة من قبل ما استلم الشقة.',
+  );
+  await tester.tap(find.byKey(const ValueKey('claim-send-dispute')));
+  await pumpUntilFound(tester, find.text(l10n.claimCaseNumber('SC-1001')));
+  expect(backend.stay.claimAnswers, 1);
+
+  // The resolved claim shows its outcome and has no answer buttons.
+  GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+    AppRoutes.bookingDetails(booking25),
+  );
+  await pumpUntilFound(tester, find.text('OA-G3025'));
+  await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
+  await tester.tap(find.textContaining('300.00'));
+  await pumpUntilFound(tester, find.text(l10n.claimOutcomeNoCharge));
+  expect(find.byKey(const ValueKey('claim-agree')), findsNothing);
+  expect(find.byKey(const ValueKey('claim-dispute')), findsNothing);
 }

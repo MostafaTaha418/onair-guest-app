@@ -1014,13 +1014,13 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
 
 ### Tests for User Story 5
 
-- [ ] T072 [P] [US5] Write `test/features/stay/presentation/evidence_url_cache_test.dart` for `EvidenceUrlCache` (T074), using a fake `StayRepository` that counts `fileUrl` calls and returns `expiresAt = now + 5 min`:
+- [X] T072 [P] [US5] Write `test/features/stay/presentation/evidence_url_cache_test.dart` for `EvidenceUrlCache` (T074), using a fake `StayRepository` that counts `fileUrl` calls and returns `expiresAt = now + 5 min`:
   - (a) the first `urlFor(id)` makes one call, and a second call reuses it;
   - (b) with a fake clock moved to `expiresAt - 20 s`, `urlFor` refetches;
   - (c) `invalidate(id)` forces a refetch;
   - (d) `clear()` empties the cache;
   - (e) read the source file `lib/features/stay/presentation/claims/evidence_url_cache.dart` as text and assert it does not contain `JsonFileCache`, `BookingsCache`, `CacheManager`, or `path_provider`.
-- [ ] T073 [P] [US5] Write `test/features/stay/presentation/damage_claim_cubit_test.dart` (backend `includeG3Fixtures: true`, `g3()`):
+- [X] T073 [P] [US5] Write `test/features/stay/presentation/damage_claim_cubit_test.dart` (backend `includeG3Fixtures: true`, `g3()`):
   - (a) `load()` for booking `…025`, claim `e0000000-0000-4000-8000-000000000001` emits `ClaimReady` with 2 evidence refs and `canRespond == true`;
   - (b) the same claim loaded with booking `…021` emits `ClaimNotAvailable`;
   - (c) `agree()` emits `ClaimSubmitting`, then `ClaimReady` with `claim.status == DamageClaimStatus.guestAccepted`;
@@ -1041,7 +1041,7 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
 
 ### Implementation for User Story 5
 
-- [ ] T074 [US5] Create `lib/features/stay/presentation/claims/evidence_url_cache.dart` (makes T072 pass):
+- [X] T074 [US5] Create `lib/features/stay/presentation/claims/evidence_url_cache.dart` (makes T072 pass):
   ```dart
   final class EvidenceUrlCache {
     EvidenceUrlCache(this._stay, {DateTime Function()? now}) : _now = now ?? (() => DateTime.now().toUtc());
@@ -1053,7 +1053,7 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
     void clear();                            // _urls.clear
   }
   ```
-- [ ] T075 [US5] Create `lib/features/stay/presentation/claims/damage_claim_cubit.dart` (makes the T073 cubit tests pass):
+- [X] T075 [US5] Create `lib/features/stay/presentation/claims/damage_claim_cubit.dart` (makes the T073 cubit tests pass):
   - **States:** `ClaimLoading`, `ClaimReady({required DamageClaim claim, required bool canRespond, bool disputeOpen = false, bool noteError = false, ApiError? error})`, `ClaimSubmitting({required ClaimReady from})`, `ClaimNotAvailable`, `ClaimOffline`, `ClaimFailed(ApiError)`.
   - **Constructor:** `({required this._stay, required this._bookings, required this._attempts, required this._registry, required this._connectivity, required this._logger, required this._bookingId, required this._claimId})`.
   - **`load()`:**
@@ -1082,7 +1082,7 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
     | `claimAlreadyAnswered` | clear the key, `await load()` |
     | `network` | keep the key, emit the ready copy with `error` |
     | anything else | clear the key, emit the ready copy with `error` |
-- [ ] T076 [US5] Create `lib/features/stay/presentation/claims/claim_texts.dart` and `damage_claim_screen.dart` (layout: [contracts/ui-screens.md §8](contracts/ui-screens.md)):
+- [X] T076 [US5] Create `lib/features/stay/presentation/claims/claim_texts.dart` and `damage_claim_screen.dart` (layout: [contracts/ui-screens.md §8](contracts/ui-screens.md)):
   - **`claim_texts.dart`** has three functions:
     - `String claimStatusLabel(DamageClaimStatus s, AppLocalizations l10n)` → the `claimStatus*` keys;
     - `StatusTone claimStatusTone(DamageClaimStatus s)`, following data-model §7: `open` → `warning`, `guestAccepted` / `resolved` → `completed`, `guestDisputed` / `inMediation` → `pending`, `withdrawn` / `unknown` → `cancelled`;
@@ -1106,20 +1106,20 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
 
     `_agree`: `if (await OnAirConfirmDialog.ask(context, title: l10n.claimAgreeDialogTitle, body: l10n.claimAgreeDialogBody(fmt(amount)), confirmLabel: l10n.dialogConfirm, cancelLabel: l10n.dialogBack)) cubit.agree();`.
   - **Other states:** offline → `ErrorView(l10n.stayNeedsConnection)`; not available → `EmptyView(l10n.notAvailable)`; failed → `ErrorView` with a reference.
-- [ ] T077 [US5] Create `lib/features/stay/presentation/claims/evidence_viewer.dart`:
+- [X] T077 [US5] Create `lib/features/stay/presentation/claims/evidence_viewer.dart`:
   - **Widget:** `EvidenceViewer({required List<EvidenceRef> evidence, required int initialIndex, required EvidenceUrlCache cache})`.
   - **How to open:** from `_Thumb`, `Navigator.of(context).push(MaterialPageRoute<void>(fullscreenDialog: true, builder: (_) => EvidenceViewer(...)))`.
   - **Layout:** a `Scaffold` whose `AppBar` has `title: Text(l10n.claimEvidencePhoto('${page + 1}', '$n'))` and `leading: IconButton(icon: const Icon(AppIcons.close), tooltip: MaterialLocalizations.of(context).closeButtonTooltip, onPressed: () => Navigator.pop(context))`.
   - **Body:** `PageView.builder(controller: PageController(initialPage: initialIndex), onPageChanged: setState page, itemBuilder: (_, i) => FutureBuilder<Uri>(future: cache.urlFor(evidence[i].attachmentId), builder: → InteractiveViewer(child: Center(child: Image.network(uri.toString(), fit: BoxFit.contain, errorBuilder: → Icon(AppIcons.imageNotSupportedOutlined))))))`.
   - **Rule:** no download or share action.
-- [ ] T078 [US5] Routes:
+- [X] T078 [US5] Routes:
   - (a) In `app_router.dart`, replace the `damageClaimPattern` builder (`NotAvailableScreen`) with a `BlocProvider<DamageClaimCubit>` (+ `load()`) around `DamageClaimScreen(bookingId: id, claimId: state.pathParameters['claimId']!)`.
   - (b) Create `lib/features/stay/presentation/claims/damage_claim_resolver_screen.dart`, with `DamageClaimResolverScreen({required String claimId})`:
     - **Data:** a `StatefulWidget` that, in `initState`, calls `unawaited(_resolve())`. `_resolve` does `final claim = await context.read<StayRepository>().getDamageClaim(widget.claimId)` and then, if mounted, `context.replace(AppRoutes.damageClaim(claim.bookingId, claim.id))`.
     - **On `AppFailure`:** sets `_missing = true`.
     - **`build`:** `_missing ? const NotAvailableScreen() : Scaffold(body: Center(child: CircularProgressIndicator()))`.
   - (c) Replace the `damageClaimResolverPattern` placeholder with `DamageClaimResolverScreen(claimId: state.pathParameters['claimId']!)`.
-- [ ] T079 [US5] In `booking_details_screen.dart`, right after the refund section, add the claims section when `details.damageClaims.isNotEmpty`:
+- [X] T079 [US5] In `booking_details_screen.dart`, right after the refund section, add the claims section when `details.damageClaims.isNotEmpty`:
   ```dart
   KeyedSubtree(key: _claimsKey, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     const SizedBox(height: Dimens.space16),
@@ -1137,8 +1137,8 @@ characters → "رقم الحالة: SC-1001". The resolved claim shows its outc
   ]))
   ```
   Add a widget test with `…025`: two cards are shown, and tapping the first opens the claim screen.
-- [ ] T080 [P] [US5] Write `test/features/stay/goldens/claim_golden_test.dart` covering `damage_claim_open` (thumbnails in the error-placeholder state), `damage_claim_dispute_form` (form open with the short-note error), `damage_claim_resolved` (`e…02`), and `booking_details_claims` (`…025`) in the four standard variants. Generate and review the images.
-- [ ] T081 [US5] Add `runClaimJourney` to `test/helpers/stay_journey.dart` (the Independent Test above), and call it from the host and device journey files.
+- [X] T080 [P] [US5] Write `test/features/stay/goldens/claim_golden_test.dart` covering `damage_claim_open` (thumbnails in the error-placeholder state), `damage_claim_dispute_form` (form open with the short-note error), `damage_claim_resolved` (`e…02`), and `booking_details_claims` (`…025`) in the four standard variants. Generate and review the images.
+- [X] T081 [US5] Add `runClaimJourney` to `test/helpers/stay_journey.dart` (the Independent Test above), and call it from the host and device journey files.
 
 **Checkpoint**: US1–US5 pass. Searching `lib/features/stay/presentation/claims/` for
 `JsonFileCache`, `BookingsCache`, `CacheManager`, and `CachedNetworkImage` finds nothing.

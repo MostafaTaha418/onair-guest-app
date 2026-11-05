@@ -34,6 +34,7 @@ import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
 import 'package:on_air/features/bookings/presentation/widgets/refund_section.dart';
 import 'package:on_air/features/property/domain/policy_text.dart';
 import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
+import 'package:on_air/features/stay/presentation/claims/claim_texts.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// One booking's full view (US3): status message, payments, saved terms,
@@ -332,6 +333,74 @@ final class _DetailsList extends StatelessWidget {
                 const SizedBox(height: Dimens.space16),
                 RefundSection(refund: details.refund!),
               ],
+              // Section 6: the damage claims (US5).
+              if (details.damageClaims.isNotEmpty)
+                KeyedSubtree(
+                  key: claimsKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: Dimens.space16),
+                      Text(
+                        l10n.claimsSectionTitle,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: context.colors.textPrimary),
+                      ),
+                      const SizedBox(height: Dimens.space8),
+                      for (final claim in details.damageClaims)
+                        Card(
+                          child: InkWell(
+                            onTap: () => context.push(
+                              AppRoutes.damageClaim(details.id, claim.id),
+                            ),
+                            child: Semantics(
+                              button: true,
+                              label:
+                                  '${l10n.claimTitle} '
+                                  '${MoneyFormatter().format(claim.amount)} '
+                                  '${claimStatusLabel(claim.status, l10n)}',
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.all(
+                                  Dimens.space12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        MoneyFormatter().format(claim.amount),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              color: context.colors.textPrimary,
+                                            ),
+                                      ),
+                                    ),
+                                    StatusChip(
+                                      label: claimStatusLabel(
+                                        claim.status,
+                                        l10n,
+                                      ),
+                                      tone: claimStatusTone(claim.status),
+                                    ),
+                                    const SizedBox(width: Dimens.space8),
+                                    Icon(
+                                      Directionality.of(context) ==
+                                              TextDirection.rtl
+                                          ? AppIcons.chevronLeft
+                                          : AppIcons.chevronRight,
+                                      size: 16,
+                                      color: context.colors.textSecondary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: Dimens.space16),
               Text(
                 l10n.bookingAddressTitle,
@@ -397,8 +466,9 @@ final class _DetailsList extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Dimens.space16),
+              // The offer anchor stays a placeholder until US6; the claims
+              // anchor now lives on the real claims section above.
               SizedBox.shrink(key: offerKey),
-              SizedBox.shrink(key: claimsKey),
               for (final action
                   in context.read<BookingActionRegistry>().visible(
                     details.availableActions,

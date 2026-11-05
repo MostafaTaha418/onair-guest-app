@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
+import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/cairo_time.dart';
@@ -18,6 +19,8 @@ import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart';
+import 'package:on_air/features/stay/presentation/claims/damage_claim_cubit.dart';
+import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
@@ -77,6 +80,31 @@ void main() {
                 return cubit;
               },
               child: BookingDetailsScreen(bookingId: id),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.damageClaimPattern,
+          name: 'linked-damage-claim',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            final claimId = state.pathParameters['claimId']!;
+            return BlocProvider<DamageClaimCubit>(
+              create: (context) {
+                final cubit = DamageClaimCubit(
+                  stay: backend.stay,
+                  bookings: backend.server,
+                  attempts: backend.actionAttempts,
+                  registry: BookingActionRegistry.g3(),
+                  connectivity: context.read<ConnectivityCubit>(),
+                  logger: AppLogger(sink: (_) {}),
+                  bookingId: id,
+                  claimId: claimId,
+                );
+                unawaited(cubit.load());
+                return cubit;
+              },
+              child: DamageClaimScreen(bookingId: id, claimId: claimId),
             );
           },
         ),
@@ -453,5 +481,35 @@ void main() {
     expect(find.text(l10n.ackYou), findsOneWidget);
     expect(find.text(l10n.ackOwner), findsOneWidget);
     expect(find.text(l10n.ackWaiting), findsOneWidget);
+  });
+
+  testWidgets('G3 booking with claims shows the claims section', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000025');
+
+    expect(find.text(l10n.claimsSectionTitle), findsOneWidget);
+    // Two claim cards: EGP 500.00 (open) and EGP 300.00 (resolved).
+    expect(find.textContaining('500.00'), findsWidgets);
+    expect(find.text(l10n.claimStatusOpen), findsOneWidget);
+    expect(find.text(l10n.claimStatusResolved), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text(l10n.claimsSectionTitle),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.textContaining('500.00'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(l10n.claimTitle), findsOneWidget);
+    expect(find.text(l10n.claimStatusOpen), findsOneWidget);
   });
 }

@@ -70,6 +70,9 @@ import 'package:on_air/features/stay/presentation/cash/cash_confirm_cubit.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_confirm_screen.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart';
+import 'package:on_air/features/stay/presentation/claims/damage_claim_cubit.dart';
+import 'package:on_air/features/stay/presentation/claims/damage_claim_resolver_screen.dart';
+import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
@@ -341,7 +344,27 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.damageClaimPattern,
       name: 'linked-damage-claim',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        final claimId = state.pathParameters['claimId']!;
+        return BlocProvider<DamageClaimCubit>(
+          create: (context) {
+            final cubit = DamageClaimCubit(
+              stay: context.read<StayRepository>(),
+              bookings: context.read<BookingsRepository>(),
+              attempts: context.read<ActionAttemptStore>(),
+              registry: context.read<BookingActionRegistry>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              logger: context.read<AppLogger>(),
+              bookingId: bookingId,
+              claimId: claimId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: DamageClaimScreen(bookingId: bookingId, claimId: claimId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.cashConfirmPattern,
@@ -412,7 +435,8 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.damageClaimResolverPattern,
       name: 'damage-claim-resolver',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (_, state) =>
+          DamageClaimResolverScreen(claimId: state.pathParameters['claimId']!),
     ),
     GoRoute(
       path: AppRoutes.bookingReviewPattern,

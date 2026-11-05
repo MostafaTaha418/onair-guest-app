@@ -10,4 +10,6 @@ void main() {
   testWidgets('stay acknowledgements', runStayAckJourney);
 
   testWidgets('cancellation', runCancellationJourney);
+
+  testWidgets('damage claims', runClaimJourney);
 }
