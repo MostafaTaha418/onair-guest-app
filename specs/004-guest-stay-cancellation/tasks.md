@@ -805,13 +805,13 @@ server reports it (AC-025 to AC-027, AC-036).
 
 ### Tests for User Story 3
 
-- [ ] T057 [P] [US3] Write `test/features/stay/presentation/stay_ack_cubit_test.dart` for `StayAckCubit` (T059):
+- [X] T057 [P] [US3] Write `test/features/stay/presentation/stay_ack_cubit_test.dart` for `StayAckCubit` (T059):
   - (a) `confirmCheckIn()` on `…021` emits `AckSubmitting`, then `AckDone(newStatus: 'confirmed')`, and the mock booking map now has `acknowledgements.guest_checkin_at` set;
   - (b) a second call while submitting does nothing;
   - (c) on `…020` (remaining unpaid), it emits `AckFailed` with `ErrorCode.remainingNotPaid`;
   - (d) `confirmCheckOut()` on `…022` emits `AckDone`;
   - (e) a network error (`backend.stay.failNextWithNetwork = true`) emits `AckFailed(network)`, and the next call reaches the repository again.
-- [ ] T058 [P] [US3] Extend `test/features/bookings/presentation/booking_status_ui_test.dart`. For `bookingStatusMessage(details, l10n)`:
+- [X] T058 [P] [US3] Extend `test/features/bookings/presentation/booking_status_ui_test.dart`. For `bookingStatusMessage(details, l10n)`:
 
   | Status | Acknowledgements | Expected message |
   |---|---|---|
@@ -832,18 +832,18 @@ server reports it (AC-025 to AC-027, AC-036).
 
 ### Implementation for User Story 3
 
-- [ ] T059 [US3] Create `lib/features/stay/presentation/stay_ack/stay_ack_cubit.dart` (makes T057 pass):
+- [X] T059 [US3] Create `lib/features/stay/presentation/stay_ack/stay_ack_cubit.dart` (makes T057 pass):
   - **States:** `AckIdle`, `AckSubmitting`, `AckDone(String newStatus)`, `AckFailed(ApiError error)`.
   - **Constructor:** `StayAckCubit({required this._stay, required this._logger, required this._bookingId})`.
   - **Methods:** `confirmCheckIn()` and `confirmCheckOut()`. Each guards `_busy`, emits `AckSubmitting`, calls the repository, logs `'checkin_confirmed booking=$_bookingId'` / `'checkout_confirmed booking=$_bookingId'`, and emits `AckDone` or `AckFailed`.
-- [ ] T060 [US3] Replace the stubs in `lib/features/stay/presentation/stay_ack/stay_ack_sheets.dart` with real `Future<bool> showCheckInSheet(BuildContext context, BookingDetails details)` and `Future<bool> showCheckOutSheet(...)`:
+- [X] T060 [US3] Replace the stubs in `lib/features/stay/presentation/stay_ack/stay_ack_sheets.dart` with real `Future<bool> showCheckInSheet(BuildContext context, BookingDetails details)` and `Future<bool> showCheckOutSheet(...)`:
   - **Sheet:** each returns `await OnAirConfirmSheet.show<bool>(context, builder: (_) => BlocProvider(create: (_) => StayAckCubit(stay: context.read(), logger: context.read(), bookingId: details.id), child: _AckSheetBody(checkIn: true|false, bookingId: details.id))) ?? false`. Read the providers from the **outer** `context` before opening the sheet.
   - **`_AckSheetBody`:** uses a `BlocConsumer<StayAckCubit, StayAckState>`:
     - **Content:** `OnAirConfirmSheet` with title, body, and confirm from Appendix A (`checkinSheetTitle` / `checkinSheetBody` / `checkinSheetConfirm`, or the `checkout…` keys), `cancelLabel: l10n.sheetNotYet`, `isLoading: state is AckSubmitting`, and `onConfirm: checkIn ? cubit.confirmCheckIn : cubit.confirmCheckOut`.
     - **Check-in only:** `extraActionLabel: l10n.checkinProblem`, `onExtraAction: () { final router = GoRouter.of(context); Navigator.pop(context, false); router.push('${AppRoutes.supportNew}?booking=$bookingId'); }`.
     - **`AckFailed`:** add an optional `String? errorText` parameter to `OnAirConfirmSheet` (T026's file). When it is not null, it renders under the body in `bodySmall` / `errorText` with `Semantics(liveRegion: true)`. Pass `apiErrorMessage(error, l10n)`.
     - **Listener:** `AckDone` → `Navigator.pop(context, true)`.
-- [ ] T061 [US3] Update `lib/features/bookings/presentation/booking_status_ui.dart` (makes T058 pass):
+- [X] T061 [US3] Update `lib/features/bookings/presentation/booking_status_ui.dart` (makes T058 pass):
   - (a) In `bookingStatusMessage`, before the `switch`:
     1. if status is `confirmed`, `acknowledgements.guestCheckInAt != null`, and `hostCheckInAt == null` → `bookingMsgWaitingHandover`;
     2. if status is `confirmed`, `hostCheckInAt != null`, and `guestCheckInAt == null` → `bookingMsgHostHandedOver`;
@@ -864,7 +864,7 @@ server reports it (AC-025 to AC-027, AC-036).
       - **Fallback:** when `completed` with both times null, return `null`.
     - **Check-in tracker:** used when `(status == confirmed || status == checkedIn)` and `guestCheckInAt != null || hostCheckInAt != null`. Title `l10n.ackTitleCheckin`, with the check-in fields and `note: null`.
     - Otherwise return `null`.
-- [ ] T062 [US3] In `booking_details_screen.dart`, right after the status `NoticeCard`, add:
+- [X] T062 [US3] In `booking_details_screen.dart`, right after the status `NoticeCard`, add:
   ```dart
   if (ackStepsFor(details, l10n) case final ack?) ...[
     const SizedBox(height: Dimens.space16),
@@ -877,13 +877,13 @@ server reports it (AC-025 to AC-027, AC-036).
   - "لسه" closes it with no repository call (`backend.stay.checkIns == 0`);
   - "أيوه، استلمتها" calls it once, closes the sheet, refreshes, and shows the tracker with `l10n.ackYou` and `l10n.ackOwner`;
   - `…020` shows **no** `primary-confirm_checkin`.
-- [ ] T063 [P] [US3] Write `test/features/stay/goldens/stay_ack_golden_test.dart` covering:
+- [X] T063 [P] [US3] Write `test/features/stay/goldens/stay_ack_golden_test.dart` covering:
   - the check-in sheet over `…021`;
   - booking details with the waiting-handover tracker (`…021` after `backend.stay.confirmCheckIn`);
   - the in-stay booking with the checkout tracker and the key note (`…022` after `backend.stay.ownerConfirmsCheckout(id, keyLeftSafe: true)`, with no guest checkout).
 
   Use the four standard variants. Generate and review the images.
-- [ ] T064 [US3] Add `runStayAckJourney` to `test/helpers/stay_journey.dart`:
+- [X] T064 [US3] Add `runStayAckJourney` to `test/helpers/stay_journey.dart`:
   1. Check in on `…021`.
   2. `await backend.stay.ownerConfirmsHandover(id)`, then pump.
   3. Expect `l10n.bookingStatusCheckedIn`.

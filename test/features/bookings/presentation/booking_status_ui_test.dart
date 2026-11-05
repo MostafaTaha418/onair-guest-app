@@ -242,4 +242,235 @@ void main() {
       );
     },
   );
+
+  // --- G3 (US3): acknowledgements refine the status message.
+
+  Map<String, dynamic> g3Json({
+    required String status,
+    Map<String, dynamic>? acknowledgements,
+    Map<String, dynamic>? cancellation,
+    List<Map<String, dynamic>> events = const [],
+  }) {
+    final json = {
+      'id': 'b0000000-0000-4000-8000-000000000001',
+      'code': 'OA-MOCK001',
+      'status': status,
+      'property': const <String, dynamic>{
+        'id': 'p',
+        'title': 'شقة',
+        'cover_image': null,
+        'area_name': 'المعادي',
+        'city_name': 'القاهرة',
+        'address_text': null,
+        'check_in_time': '14:00',
+        'check_out_time': '12:00',
+      },
+      'check_in': '2026-11-20',
+      'check_out': '2026-11-23',
+      'nights': 3,
+      'guests_count': 2,
+      'nightly_minor': 150000,
+      'total_minor': 450000,
+      'pay_now_minor': 450000,
+      'paid_minor': 450000,
+      'remaining_minor': 0,
+      'remaining_due_at': null,
+      'owner_response_deadline': null,
+      'payment_state': 'succeeded',
+      'payments': const <Object>[],
+      'refund': null,
+      'terms_snapshot': null,
+      'available_actions': const <String>['contact_support'],
+      'events': events,
+      'created_at': '2026-10-28T08:55:00Z',
+    };
+    if (acknowledgements != null) json['acknowledgements'] = acknowledgements;
+    if (cancellation != null) json['cancellation'] = cancellation;
+    return json;
+  }
+
+  test('an acknowledged guest waits for the owner handover', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'confirmed',
+        acknowledgements: const {
+          'guest_checkin_at': '2026-11-01T10:00:00Z',
+          'host_checkin_at': null,
+          'guest_checkout_at': null,
+          'host_checkout_at': null,
+          'key_left_safe': false,
+        },
+      ),
+    );
+    expect(bookingStatusMessage(details, l10n), l10n.bookingMsgWaitingHandover);
+  });
+
+  test('a handed-over booking asks the guest to confirm receipt', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'confirmed',
+        acknowledgements: const {
+          'guest_checkin_at': null,
+          'host_checkin_at': '2026-11-01T10:00:00Z',
+          'guest_checkout_at': null,
+          'host_checkout_at': null,
+          'key_left_safe': false,
+        },
+      ),
+    );
+    expect(bookingStatusMessage(details, l10n), l10n.bookingMsgHostHandedOver);
+  });
+
+  test('a confirmed checkout waits for the owner', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'checked_in',
+        acknowledgements: const {
+          'guest_checkin_at': '2026-11-01T14:00:00Z',
+          'host_checkin_at': '2026-11-01T14:00:00Z',
+          'guest_checkout_at': '2026-11-02T10:00:00Z',
+          'host_checkout_at': null,
+          'key_left_safe': false,
+        },
+      ),
+    );
+    expect(bookingStatusMessage(details, l10n), l10n.bookingMsgWaitingCheckout);
+  });
+
+  test('cancellations name who cancelled', () {
+    final byPlatform = BookingDetails.fromJson(
+      g3Json(
+        status: 'cancelled',
+        cancellation: const {
+          'cancelled_at': '2026-11-01T10:00:00Z',
+          'by_scope': 'platform',
+          'reason_code': null,
+        },
+      ),
+    );
+    final byGuest = BookingDetails.fromJson(
+      g3Json(
+        status: 'cancelled',
+        cancellation: const {
+          'cancelled_at': '2026-11-01T10:00:00Z',
+          'by_scope': 'guest',
+          'reason_code': 'change_of_plans',
+        },
+      ),
+    );
+    expect(
+      bookingStatusMessage(byPlatform, l10n),
+      l10n.bookingMsgCancelledByPlatform,
+    );
+    expect(
+      bookingStatusMessage(byGuest, l10n),
+      l10n.bookingMsgCancelledByGuest,
+    );
+  });
+
+  test('a reopened booking asks for the remaining payment again', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'confirmed',
+        events: const [
+          {
+            'event_type': 'booking.reopened',
+            'to_status': 'confirmed',
+            'created_at': '2026-11-01T10:00:00Z',
+            'note': null,
+          },
+        ],
+      ),
+    );
+    expect(bookingStatusMessage(details, l10n), l10n.bookingMsgReopened);
+  });
+
+  test('the old messages survive for bookings without acknowledgements', () {
+    // A plain confirmed booking (no G3 fields) keeps the G2 wording.
+    final confirmed = BookingDetails.fromJson(g3Json(status: 'confirmed'));
+    expect(bookingStatusMessage(confirmed, l10n), l10n.bookingMsgConfirmed);
+    // A cancellation payload the server did not scope keeps the generic
+    // message (cancellation == null falls through the G3 rules).
+    final cancelled = BookingDetails.fromJson(g3Json(status: 'cancelled'));
+    expect(bookingStatusMessage(cancelled, l10n), l10n.bookingMsgCancelled);
+  });
+
+  // --- G3 (US3): ackStepsFor.
+
+  test('ackStepsFor returns null without any acknowledgement', () {
+    final details = BookingDetails.fromJson(g3Json(status: 'confirmed'));
+    expect(ackStepsFor(details, l10n), isNull);
+  });
+
+  test('a confirmed booking with a check-in shows the handover tracker', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'confirmed',
+        acknowledgements: const {
+          'guest_checkin_at': '2026-11-01T10:00:00Z',
+          'host_checkin_at': null,
+          'guest_checkout_at': null,
+          'host_checkout_at': null,
+          'key_left_safe': false,
+        },
+      ),
+    );
+    final steps = ackStepsFor(details, l10n);
+    expect(steps, isNotNull);
+    expect(steps!.title, l10n.ackTitleCheckin);
+    expect(steps.steps, hasLength(2));
+    expect(steps.steps[0].done, isTrue);
+    expect(
+      steps.steps[0].statusText,
+      l10n.ackConfirmedAt(
+        formatCairoDayMonthTime(DateTime.parse('2026-11-01T10:00:00Z')),
+      ),
+    );
+    expect(steps.steps[1].done, isFalse);
+    expect(steps.steps[1].statusText, l10n.ackWaiting);
+    expect(steps.note, isNull);
+  });
+
+  test('a checked-in booking with a checkout shows the leaving tracker', () {
+    final details = BookingDetails.fromJson(
+      g3Json(
+        status: 'checked_in',
+        acknowledgements: const {
+          'guest_checkin_at': '2026-11-01T14:00:00Z',
+          'host_checkin_at': '2026-11-01T14:00:00Z',
+          'guest_checkout_at': null,
+          'host_checkout_at': '2026-11-03T12:00:00Z',
+          'key_left_safe': true,
+        },
+      ),
+    );
+    final steps = ackStepsFor(details, l10n);
+    expect(steps, isNotNull);
+    expect(steps!.title, l10n.ackTitleCheckout);
+    expect(steps.steps[0].done, isFalse);
+    expect(steps.steps[1].done, isTrue);
+    expect(steps.note, l10n.ackKeyLeftSafe);
+  });
+
+  test('the key note appears only when the key was left safe', () {
+    final unsafe = BookingDetails.fromJson(
+      g3Json(
+        status: 'checked_in',
+        acknowledgements: const {
+          'guest_checkin_at': null,
+          'host_checkin_at': null,
+          'guest_checkout_at': '2026-11-03T12:00:00Z',
+          'host_checkout_at': null,
+          'key_left_safe': false,
+        },
+      ),
+    );
+    final steps = ackStepsFor(unsafe, l10n);
+    expect(steps!.note, isNull);
+  });
+
+  test('a completed booking with no checkout times has no tracker', () {
+    final details = BookingDetails.fromJson(g3Json(status: 'completed'));
+    expect(ackStepsFor(details, l10n), isNull);
+  });
 }

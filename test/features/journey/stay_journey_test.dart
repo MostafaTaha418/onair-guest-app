@@ -6,4 +6,6 @@ void main() {
   testWidgets('remaining payment', runRemainingPaymentJourney);
 
   testWidgets('cash confirmation', runCashJourney);
+
+  testWidgets('stay acknowledgements', runStayAckJourney);
 }

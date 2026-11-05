@@ -371,4 +371,87 @@ void main() {
 
     expect(find.text('R-2026-000123'), findsOneWidget);
   });
+
+  // --- G3 (US3): the check-in flow on the details screen.
+
+  testWidgets('G3 stay booking shows the check-in primary action', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000021');
+
+    expect(
+      find.byKey(const ValueKey('primary-confirm_checkin')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('G3 remaining-due booking shows no check-in action', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000020');
+
+    expect(
+      find.byKey(const ValueKey('primary-confirm_checkin')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('the check-in sheet opens and «لسه» sends nothing', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000021');
+
+    await tester.tap(find.byKey(const ValueKey('primary-confirm_checkin')));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.checkinSheetTitle), findsOneWidget);
+    expect(find.text(l10n.checkinProblem), findsOneWidget);
+
+    await tester.tap(find.text(l10n.sheetNotYet));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.checkinSheetTitle), findsNothing);
+    expect(backend.stay.checkIns, 0);
+  });
+
+  testWidgets('confirming check-in refreshes and shows the tracker', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000021');
+
+    await tester.tap(find.byKey(const ValueKey('primary-confirm_checkin')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.checkinSheetConfirm));
+    await tester.pumpAndSettle();
+
+    expect(backend.stay.checkIns, 1);
+    expect(find.text(l10n.checkinSheetTitle), findsNothing);
+    // The refreshed details show the handover tracker.
+    expect(find.text(l10n.ackTitleCheckin), findsOneWidget);
+    expect(find.text(l10n.ackYou), findsOneWidget);
+    expect(find.text(l10n.ackOwner), findsOneWidget);
+    expect(find.text(l10n.ackWaiting), findsOneWidget);
+  });
 }

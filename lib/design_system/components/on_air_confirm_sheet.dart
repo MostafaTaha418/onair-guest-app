@@ -11,6 +11,7 @@ final class OnAirConfirmSheet extends StatelessWidget {
     required this.cancelLabel,
     required this.onConfirm,
     this.isLoading = false,
+    this.errorText,
     this.extraActionLabel,
     this.onExtraAction,
     super.key,
@@ -22,6 +23,9 @@ final class OnAirConfirmSheet extends StatelessWidget {
   final String cancelLabel;
   final VoidCallback onConfirm;
   final bool isLoading;
+
+  /// An error announced to screen readers and rendered under the body.
+  final String? errorText;
   final String? extraActionLabel;
   final VoidCallback? onExtraAction;
 
@@ -84,6 +88,18 @@ final class OnAirConfirmSheet extends StatelessWidget {
               color: context.colors.textSecondary,
             ),
           ),
+          if (errorText != null) ...[
+            const SizedBox(height: Dimens.space8),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                errorText!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: context.colors.errorText,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: Dimens.space24),
           OnAirPrimaryButton(
             label: confirmLabel,

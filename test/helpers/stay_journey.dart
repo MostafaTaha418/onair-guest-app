@@ -195,3 +195,73 @@ Future<void> runCashJourney(WidgetTester tester) async {
   // The pending cash reuses the already-sent code: nothing new is sent.
   expect(backend.stay.codesSent, codesSentBefore);
 }
+
+/// The US3 stay-acknowledgement journey: check in on booking `…021`, the
+/// mock owner confirms the handover, then the guest checks out and the
+/// mock owner confirms receiving the apartment.
+Future<void> runStayAckJourney(WidgetTester tester) async {
+  const booking21 = 'b0000000-0000-4000-8000-000000000021';
+  final l10n = lookupAppLocalizations(const Locale('ar'));
+  if (TestWidgetsFlutterBinding.instance
+      is AutomatedTestWidgetsFlutterBinding) {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+  }
+  CairoTime.initialize();
+  SharedPreferences.setMockInitialValues({});
+
+  final backend = FakeBookingBackend(
+    includeG3Fixtures: true,
+    actionRegistry: BookingActionRegistry.g3(),
+  );
+  addTearDown(backend.dispose);
+  final auth = MockAuthRepository();
+  addTearDown(auth.dispose);
+  await auth.signUpEmail(
+    'مستأجر تجريبي',
+    'guest@mock.onair.test',
+    'Password123!',
+    '01000000001',
+    MockBackend.termsVersion,
+  );
+  await auth.verifyEmailCode(
+    'guest@mock.onair.test',
+    MockBackend.verificationCode,
+  );
+
+  await bootApp(tester, backend, auth);
+  GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+    AppRoutes.bookingDetails(booking21),
+  );
+
+  // 1. The guest confirms receiving the apartment.
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('primary-confirm_checkin')),
+  );
+  await tester.tap(find.byKey(const ValueKey('primary-confirm_checkin')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(l10n.checkinSheetConfirm));
+  await tester.pumpAndSettle();
+  expect(backend.stay.checkIns, 1);
+
+  // 2. The mock owner confirms the handover; the signal refreshes details.
+  await backend.stay.ownerConfirmsHandover(booking21);
+  await pumpUntilFound(tester, find.text(l10n.bookingStatusCheckedIn));
+
+  // 3. The guest confirms leaving.
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('primary-confirm_checkout')),
+  );
+  await tester.tap(find.byKey(const ValueKey('primary-confirm_checkout')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(l10n.checkoutSheetConfirm));
+  await tester.pumpAndSettle();
+  expect(backend.stay.checkOuts, 1);
+
+  // 4. The mock owner confirms receiving the apartment.
+  await backend.stay.ownerConfirmsCheckout(booking21);
+  await pumpUntilFound(tester, find.text(l10n.bookingStatusCompleted));
+}

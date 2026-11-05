@@ -11,6 +11,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/components/acknowledgement_tracker.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/booking_timeline.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
@@ -202,6 +203,14 @@ final class _DetailsList extends StatelessWidget {
                 icon: AppIcons.infoOutline,
                 message: bookingStatusMessage(details, l10n),
               ),
+              if (ackStepsFor(details, l10n) case final ack?) ...[
+                const SizedBox(height: Dimens.space16),
+                AcknowledgementTracker(
+                  title: ack.title,
+                  steps: ack.steps,
+                  note: ack.note,
+                ),
+              ],
               const SizedBox(height: Dimens.space16),
               Text(
                 l10n.bookingStayTitle,
