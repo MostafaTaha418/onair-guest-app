@@ -12,4 +12,6 @@ void main() {
   testWidgets('cancellation', runCancellationJourney);
 
   testWidgets('damage claims', runClaimJourney);
+
+  testWidgets('replacement offer', runOfferJourney);
 }

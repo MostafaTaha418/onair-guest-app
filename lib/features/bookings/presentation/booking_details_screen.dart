@@ -35,6 +35,7 @@ import 'package:on_air/features/bookings/presentation/widgets/refund_section.dar
 import 'package:on_air/features/property/domain/policy_text.dart';
 import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
 import 'package:on_air/features/stay/presentation/claims/claim_texts.dart';
+import 'package:on_air/features/stay/presentation/offer/offer_card.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// One booking's full view (US3): status message, payments, saved terms,
@@ -210,6 +211,18 @@ final class _DetailsList extends StatelessWidget {
                   title: ack.title,
                   steps: ack.steps,
                   note: ack.note,
+                ),
+              ],
+              if (details.replacementOffer case final offer?) ...[
+                const SizedBox(height: Dimens.space16),
+                KeyedSubtree(
+                  key: offerKey,
+                  child: OfferCard(
+                    offer: offer,
+                    onAnswered: () => unawaited(
+                      context.read<BookingDetailsCubit>().refresh(),
+                    ),
+                  ),
                 ),
               ],
               const SizedBox(height: Dimens.space16),
@@ -466,9 +479,6 @@ final class _DetailsList extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Dimens.space16),
-              // The offer anchor stays a placeholder until US6; the claims
-              // anchor now lives on the real claims section above.
-              SizedBox.shrink(key: offerKey),
               for (final action
                   in context.read<BookingActionRegistry>().visible(
                     details.availableActions,

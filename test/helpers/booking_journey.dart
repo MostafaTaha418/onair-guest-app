@@ -10,6 +10,7 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
@@ -23,6 +24,7 @@ import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -204,6 +206,17 @@ Future<void> bootApp(
         RepositoryProvider<LastSearchStore>.value(value: LastSearchStore()),
         RepositoryProvider<NotificationSignalSource>.value(
           value: backend.signals,
+        ),
+        RepositoryProvider<NotificationPermission>.value(
+          value: FakeNotificationPermission(),
+        ),
+        // The notifications tab needs the push coordinator even when the
+        // journey never answers a permission ask.
+        RepositoryProvider<PushPermissionCoordinator>.value(
+          value: PushPermissionCoordinator(
+            permission: FakeNotificationPermission(),
+            devices: null,
+          ),
         ),
         // Test-only: the «never answers» journey reaches the timeout fast.
         RepositoryProvider<PaymentVerificationBackoff>.value(

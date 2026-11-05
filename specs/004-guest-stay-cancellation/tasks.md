@@ -1157,13 +1157,13 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
 
 ### Tests for User Story 6
 
-- [ ] T082 [P] [US6] Write `test/features/stay/presentation/replacement_offer_cubit_test.dart` for `ReplacementOfferCubit` (T084):
+- [X] T082 [P] [US6] Write `test/features/stay/presentation/replacement_offer_cubit_test.dart` for `ReplacementOfferCubit` (T084):
   - (a) `accept()` on offer `f0000000-0000-4000-8000-000000000001` emits `OfferSubmitting(true)`, then `OfferAnswered(accepted: true)`, using the key `offer_answer`;
   - (b) `decline()` emits `OfferAnswered(accepted: false)`;
   - (c) the expired offer `f…02` gives `OFFER_NOT_AVAILABLE` → `OfferGone`;
   - (d) a double tap makes one call (`backend.stay.offerAnswers == 1`);
   - (e) a network error keeps the key and emits `OfferIdle(error: network)`.
-- [ ] T083 [P] [US6] Write `test/features/stay/presentation/offer_card_test.dart`:
+- [X] T083 [P] [US6] Write `test/features/stay/presentation/offer_card_test.dart`:
   - (a) a pending `guestPays` offer of `Money(50000)` shows `l10n.offerPayMore(fmt(Money(50000)))`; build an offer with `-50000` in the test and expect `l10n.offerRefundDiff(...)`; `0` gives `l10n.offerNoDiff`;
   - (b) `expiresAt` shows `l10n.offerExpires(formatCairoDayMonthTime(expiresAt))`;
   - (c) `l10n.offerAccept` opens a dialog with `l10n.offerAcceptDialogTitle`, and its body is the same difference sentence;
@@ -1172,7 +1172,7 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
 
 ### Implementation for User Story 6
 
-- [ ] T084 [US6] Create `lib/features/stay/presentation/offer/replacement_offer_cubit.dart` (makes T082 pass):
+- [X] T084 [US6] Create `lib/features/stay/presentation/offer/replacement_offer_cubit.dart` (makes T082 pass):
   - **States:** `OfferIdle({ApiError? error})`, `OfferSubmitting(bool accept)`, `OfferAnswered({required bool accepted})`, `OfferGone`.
   - **Constructor:** `({required this._stay, required this._attempts, required this._logger, required this._offerId})`.
   - **Methods:** `accept()` and `decline()` call `_answer(bool accept)`:
@@ -1185,7 +1185,7 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
     7. emit `OfferAnswered(accepted: accept)`.
 
     Errors: `offerNotAvailable` → clear the key, emit `OfferGone`; `network` → keep the key, emit `OfferIdle(error:)`; anything else → clear the key, emit `OfferIdle(error:)`.
-- [ ] T085 [US6] Create `lib/features/stay/presentation/offer/offer_card.dart` (layout: [contracts/ui-screens.md §9](contracts/ui-screens.md)):
+- [X] T085 [US6] Create `lib/features/stay/presentation/offer/offer_card.dart` (layout: [contracts/ui-screens.md §9](contracts/ui-screens.md)):
   - **Widget:** `OfferCard({required ReplacementOffer offer, required VoidCallback onAnswered})`. It wraps itself in `BlocProvider(create: (c) => ReplacementOfferCubit(stay: c.read(), attempts: c.read(), logger: c.read(), offerId: offer.id))`.
   - **Helper:** `String offerDifferenceText(ReplacementOffer o, AppLocalizations l10n)` in the same file: `guestPays` → `offerPayMore(fmt(o.difference))`, `guestRefunded` → `offerRefundDiff(fmt(o.difference))`, `none` → `offerNoDiff`.
   - **Content:** a `Card` → `Padding(all: Dimens.space16)` → `Column(crossAxisAlignment: start)` holding:
@@ -1206,7 +1206,7 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
 
     `_accept` asks `OnAirConfirmDialog.ask(title: l10n.offerAcceptDialogTitle, body: offerDifferenceText(...), confirmLabel: l10n.dialogConfirm, cancelLabel: l10n.dialogBack)`. `_decline` asks `(title: l10n.offerDeclineDialogTitle, body: l10n.offerDeclineDialogBody, …)`.
   - **Listener:** `OfferAnswered` → `onAnswered()`. `OfferGone` → `SnackBar(l10n.offerNotAvailable)` and `onAnswered()`.
-- [ ] T086 [US6] In `booking_details_screen.dart`, right after the tracker block from T062 (if US3 is not done yet, right after the status `NoticeCard`), add:
+- [X] T086 [US6] In `booking_details_screen.dart`, right after the tracker block from T062 (if US3 is not done yet, right after the status `NoticeCard`), add:
   ```dart
   if (details.replacementOffer case final offer?) ...[
     const SizedBox(height: Dimens.space16),
@@ -1214,8 +1214,8 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
   ],
   ```
   Run T083 (e).
-- [ ] T087 [P] [US6] Write `test/features/stay/goldens/offer_golden_test.dart` covering details with a pending pay-more offer (`…026`), an expired offer (`…027`), and the accept dialog, in the four standard variants. Generate and review the images.
-- [ ] T088 [US6] Add `runOfferJourney` to `test/helpers/stay_journey.dart`:
+- [X] T087 [P] [US6] Write `test/features/stay/goldens/offer_golden_test.dart` covering details with a pending pay-more offer (`…026`), an expired offer (`…027`), and the accept dialog, in the four standard variants. Generate and review the images.
+- [X] T088 [US6] Add `runOfferJourney` to `test/helpers/stay_journey.dart`:
   1. `await backend.server.notifyGuest('booking.replacement_offered', '…026')`.
   2. Open `/notifications` and tap the new row.
   3. Expect `offer-accept` to be visible.

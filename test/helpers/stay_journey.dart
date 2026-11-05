@@ -488,3 +488,64 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   expect(find.byKey(const ValueKey('claim-agree')), findsNothing);
   expect(find.byKey(const ValueKey('claim-dispute')), findsNothing);
 }
+
+/// The US6 offer journey (the Independent Test): a «عندك عرض بديل»
+/// notification opens the details scrolled to the offer card; accepting
+/// shows «وافقت على العرض».
+Future<void> runOfferJourney(WidgetTester tester) async {
+  const booking26 = 'b0000000-0000-4000-8000-000000000026';
+  final l10n = lookupAppLocalizations(const Locale('ar'));
+  if (TestWidgetsFlutterBinding.instance
+      is AutomatedTestWidgetsFlutterBinding) {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+  }
+  CairoTime.initialize();
+  SharedPreferences.setMockInitialValues({});
+
+  final backend = FakeBookingBackend(
+    includeG3Fixtures: true,
+    actionRegistry: BookingActionRegistry.g3(),
+  );
+  addTearDown(backend.dispose);
+  final auth = MockAuthRepository();
+  addTearDown(auth.dispose);
+  await auth.signUpEmail(
+    'مستأجر تجريبي',
+    'guest@mock.onair.test',
+    'Password123!',
+    '01000000001',
+    MockBackend.termsVersion,
+  );
+  await auth.verifyEmailCode(
+    'guest@mock.onair.test',
+    MockBackend.verificationCode,
+  );
+
+  await bootApp(tester, backend, auth);
+
+  // 1. The mock inserts the «عندك عرض بديل» row.
+  await backend.server.notifyGuest('booking.replacement_offered', booking26);
+
+  // 2. The notifications list carries the new row.
+  GoRouter.of(tester.element(find.byType(Scaffold).first)).go(
+    AppRoutes.notifications,
+  );
+  await pumpUntilFound(
+    tester,
+    find.text(l10n.notifBookingReplacementOfferedTitle),
+  );
+  await tester.tap(find.text(l10n.notifBookingReplacementOfferedTitle));
+
+  // 3. The details page is scrolled to the offer card.
+  await pumpUntilFound(tester, find.byKey(const ValueKey('offer-accept')));
+  expect(backend.stay.offerAnswers, 0);
+
+  // 4. Accept through the confirmation dialog.
+  await tester.tap(find.byKey(const ValueKey('offer-accept')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(l10n.dialogConfirm));
+  await pumpUntilFound(tester, find.text(l10n.offerStatusAccepted));
+  expect(backend.stay.offerAnswers, 1);
+}
