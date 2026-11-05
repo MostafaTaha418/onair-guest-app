@@ -13,6 +13,7 @@ import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
+import 'package:on_air/features/booking/domain/payment_attempt.dart';
 import 'package:on_air/features/booking/domain/verification_outcome.dart';
 import 'package:on_air/features/booking/presentation/payment_attempt_cubit.dart';
 import 'package:on_air/features/booking/presentation/payment_verification_cubit.dart';
@@ -31,11 +32,14 @@ final class PaymentReturnScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final attemptState = context.read<PaymentAttemptCubit>().state;
-    final fromAttempt = switch (attemptState) {
-      AttemptOpened(:final attempt) => attempt.bookingId,
-      AttemptReturned(:final attempt) => attempt.bookingId,
+    final attempt = switch (attemptState) {
+      AttemptOpened(:final attempt) => attempt,
+      AttemptReturned(:final attempt) => attempt,
       _ => null,
     };
+    final fromAttempt = attempt?.bookingId;
+    final isRemaining =
+        attempt?.kind == PaymentKind.remaining && attempt?.paymentId != null;
     final bookingId = AppRoutes.isUuidV4(bookingIdFromLink ?? '')
         ? bookingIdFromLink
         : fromAttempt;
@@ -55,6 +59,9 @@ final class PaymentReturnScreen extends StatelessWidget {
           signals: context.read(),
           bookingId: bookingId,
           logger: context.read<AppLogger>(),
+          outcomeFor: isRemaining
+              ? remainingOutcomeFor(attempt!.paymentId!)
+              : null,
           // Test-only shortening; production never binds the override.
           backoff: context.read<PaymentVerificationBackoff?>()?.intervals,
         )..start();
@@ -63,13 +70,15 @@ final class PaymentReturnScreen extends StatelessWidget {
         context.read<PaymentAttemptCubit>().markReturned();
         return cubit;
       },
-      child: const _ReturnBody(),
+      child: _ReturnBody(isRemaining: isRemaining),
     );
   }
 }
 
 final class _ReturnBody extends StatefulWidget {
-  const _ReturnBody();
+  const _ReturnBody({required this.isRemaining});
+
+  final bool isRemaining;
 
   @override
   State<_ReturnBody> createState() => _ReturnBodyState();
@@ -101,6 +110,7 @@ final class _ReturnBodyState extends State<_ReturnBody> {
           }
           if (state is VerifyResolved &&
               state.outcome == VerificationOutcome.success &&
+              !widget.isRemaining &&
               !_asked) {
             _asked = true;
             // US5: the push sheet shows once, after the first successful
@@ -115,17 +125,34 @@ final class _ReturnBodyState extends State<_ReturnBody> {
         },
         builder: (context, state) => switch (state) {
           VerifyWaiting() => _Waiting(l10n: l10n),
+          VerifyResolved(:final outcome, :final details)
+              when !widget.isRemaining =>
+            switch (outcome) {
+              VerificationOutcome.success => _Success(
+                l10n: l10n,
+                details: details,
+                onCountdown: (countdown) => _countdown = countdown,
+              ),
+              VerificationOutcome.failed => _Failed(
+                l10n: l10n,
+                details: details,
+              ),
+              VerificationOutcome.conflict => _Conflict(
+                l10n: l10n,
+                details: details,
+              ),
+              VerificationOutcome.waiting => _Waiting(l10n: l10n),
+            },
           VerifyResolved(:final outcome, :final details) => switch (outcome) {
-            VerificationOutcome.success => _Success(
-              l10n: l10n,
-              details: details,
-              onCountdown: (countdown) => _countdown = countdown,
-            ),
-            VerificationOutcome.failed => _Failed(l10n: l10n, details: details),
-            VerificationOutcome.conflict => _Conflict(
+            VerificationOutcome.success => _RemainingSuccess(
               l10n: l10n,
               details: details,
             ),
+            VerificationOutcome.failed => _RemainingFailed(
+              l10n: l10n,
+              details: details,
+            ),
+            VerificationOutcome.conflict ||
             VerificationOutcome.waiting => _Waiting(l10n: l10n),
           },
           VerifyTimeout() => _Timeout(l10n: l10n),
@@ -211,6 +238,76 @@ final class _Success extends StatelessWidget {
       ),
     );
   }
+}
+
+final class _RemainingSuccess extends StatelessWidget {
+  const _RemainingSuccess({required this.l10n, required this.details});
+
+  final AppLocalizations l10n;
+  final BookingDetails details;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsetsDirectional.all(Dimens.space24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(AppIcons.checkCircleOutline, size: 64),
+          const SizedBox(height: Dimens.space16),
+          Text(l10n.remainingPaidTitle, textAlign: TextAlign.center),
+          const SizedBox(height: Dimens.space8),
+          Text(l10n.remainingPaidBody, textAlign: TextAlign.center),
+          const SizedBox(height: Dimens.space24),
+          OnAirPrimaryButton(
+            key: const ValueKey('return-view-booking'),
+            label: l10n.paymentViewBooking,
+            onPressed: () async {
+              await context.read<PaymentAttemptCubit>().finish();
+              if (context.mounted) {
+                context.go(AppRoutes.bookingDetails(details.id));
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+final class _RemainingFailed extends StatelessWidget {
+  const _RemainingFailed({required this.l10n, required this.details});
+
+  final AppLocalizations l10n;
+  final BookingDetails details;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsetsDirectional.all(Dimens.space24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(AppIcons.errorOutline, size: 64),
+          const SizedBox(height: Dimens.space16),
+          Text(l10n.paymentFailedTitle, textAlign: TextAlign.center),
+          const SizedBox(height: Dimens.space8),
+          Text(l10n.remainingFailedBody, textAlign: TextAlign.center),
+          const SizedBox(height: Dimens.space24),
+          OnAirPrimaryButton(
+            key: const ValueKey('return-try-again'),
+            label: l10n.paymentTryAgain,
+            onPressed: () async {
+              await context.read<PaymentAttemptCubit>().newAttempt();
+              if (context.mounted) {
+                context.go(AppRoutes.remainingPayment(details.id));
+              }
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 final class _DeadlineCountdown extends StatefulWidget {

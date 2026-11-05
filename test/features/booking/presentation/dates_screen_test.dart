@@ -114,6 +114,15 @@ final class FlakyFlow implements BookingFlowRepository {
   );
 
   @override
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  }) => _inner.startRemainingPayment(
+    bookingId: bookingId,
+    attemptKey: attemptKey,
+  );
+
+  @override
   Future<PhoneChallenge> requestPhoneChange({
     required String phoneE164,
     required bool hasWhatsapp,

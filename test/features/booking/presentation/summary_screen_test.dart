@@ -89,6 +89,15 @@ final class HoldingFlow implements BookingFlowRepository {
   }
 
   @override
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  }) => _inner.startRemainingPayment(
+    bookingId: bookingId,
+    attemptKey: attemptKey,
+  );
+
+  @override
   Future<VerificationStatus> verificationStatus() =>
       _inner.verificationStatus();
 

@@ -28,3 +28,16 @@ VerificationOutcome verificationOutcomeFor(BookingDetails details) =>
       // The attempt was never completed and nothing is charged: a restart.
       BookingStatus.abandoned => VerificationOutcome.failed,
     };
+
+VerificationOutcome Function(BookingDetails) remainingOutcomeFor(
+  String paymentId,
+) => (details) {
+  final line = details.payments
+      .where((item) => item.id == paymentId)
+      .firstOrNull;
+  return switch (line?.status) {
+    'succeeded' => VerificationOutcome.success,
+    'failed' || 'cancelled' || 'expired' => VerificationOutcome.failed,
+    _ => VerificationOutcome.waiting,
+  };
+};

@@ -523,12 +523,12 @@ so (AC-025).
 
 ### Tests for User Story 1 (write first, see them fail)
 
-- [ ] T032 [P] [US1] Write `test/features/booking/domain/payment_attempt_remaining_test.dart`:
+- [X] T032 [P] [US1] Write `test/features/booking/domain/payment_attempt_remaining_test.dart`:
   - (a) `PaymentAttempt.remaining(attemptKey: 'k', bookingId: 'b', startedAt: t)` has `kind == PaymentKind.remaining`, `quoteId == ''`, `propertyId == ''`, `termsHash == ''`, `paymentId == null`;
   - (b) its `toJson()` has `'kind': 'remaining'`, and `fromJson(toJson())` gives an equal object;
   - (c) a JSON **without** `kind` (copy the map from `test/core/storage/secure_stores_test.dart` `_attempt()`) parses with `kind == PaymentKind.initial`;
   - (d) `copyWith(paymentId: 'p')` keeps `kind`.
-- [ ] T033 [P] [US1] Write `test/features/booking/domain/remaining_outcome_test.dart` for `remainingOutcomeFor(String paymentId)`, which returns a `VerificationOutcome Function(BookingDetails)`. Build details from fixture booking `…020` with one `payments` line whose `id == 'p1'` and set its `status` to each value:
+- [X] T033 [P] [US1] Write `test/features/booking/domain/remaining_outcome_test.dart` for `remainingOutcomeFor(String paymentId)`, which returns a `VerificationOutcome Function(BookingDetails)`. Build details from fixture booking `…020` with one `payments` line whose `id == 'p1'` and set its `status` to each value:
 
   | Status of line `p1` | Expected outcome |
   |---|---|
@@ -538,19 +538,19 @@ so (AC-025).
   | no line with id `p1` | `waiting` |
 
   Also assert that the booking `status` is ignored: `confirmed` with a `succeeded` line still gives `success`.
-- [ ] T034 [P] [US1] Extend `test/features/booking/presentation/payment_attempt_cubit_test.dart` with a new `group('payRemaining')`, copying the existing `pay` tests' fakes:
+- [X] T034 [P] [US1] Extend `test/features/booking/presentation/payment_attempt_cubit_test.dart` with a new `group('payRemaining')`, copying the existing `pay` tests' fakes:
   - (a) the record is saved **before** the repository call, with `kind: remaining` and `bookingId`;
   - (b) a second call while starting does nothing (one repository call);
   - (c) a stored remaining attempt for the **same** booking reuses its `attemptKey`, while a stored attempt for another booking or kind gets a new key;
   - (d) success saves `paymentId`, `paymentUrl`, and `paymentUrlExpiresAt`, emits `AttemptOpened`, and opens the browser once;
   - (e) an `AppFailure(CONFLICT)` emits `AttemptFailed` with code `conflict`.
-- [ ] T035 [P] [US1] Write `test/features/stay/presentation/remaining_payment_cubit_test.dart` for `RemainingPaymentCubit` (T042), using `FakeBookingBackend(includeG3Fixtures: true)`:
+- [X] T035 [P] [US1] Write `test/features/stay/presentation/remaining_payment_cubit_test.dart` for `RemainingPaymentCubit` (T042), using `FakeBookingBackend(includeG3Fixtures: true)`:
   - (a) `load()` for `…020` emits `RemainingLoading`, then `RemainingReady(details, cashAllowed: true)`, where `cashAllowed` is whether `confirm_cash_payment` is visible;
   - (b) for booking `…023` (no `pay_remaining`), it emits `RemainingNotAllowed`;
   - (c) when the details have `pendingRemainingPaymentId != null` (set it on the fixture map in the test through `await backend.server.bookings`), it emits `RemainingGoVerify(bookingId)`;
   - (d) offline with no cache emits `RemainingOffline`;
   - (e) `NOT_FOUND` (unknown UUID) emits `RemainingNotAvailable`.
-- [ ] T036 [P] [US1] Write `test/features/stay/presentation/remaining_payment_screen_test.dart` (pump with `pumpOnAirApp`, a backend with `includeG3Fixtures: true` and `actionRegistry: BookingActionRegistry.g3()`):
+- [X] T036 [P] [US1] Write `test/features/stay/presentation/remaining_payment_screen_test.dart` (pump with `pumpOnAirApp`, a backend with `includeG3Fixtures: true` and `actionRegistry: BookingActionRegistry.g3()`):
   - (a) Ready shows the property title, `AmountRow`s for `l10n.bookingTotal`, `l10n.bookingPaid`, `l10n.bookingRemaining`, and `l10n.remainingDueLabel` with the fixture values, plus the `InfoBanner` text `l10n.remainingNote`;
   - (b) with cash allowed, two option cards are shown (`l10n.remainingOptionOnline`, `l10n.remainingOptionCash`), the online option is selected by default, and the bar button reads `l10n.remainingPayButton(<formatted remaining>)`;
   - (c) selecting cash changes the button to `l10n.remainingCashButton`;
@@ -559,7 +559,7 @@ so (AC-025).
 
 ### Implementation for User Story 1
 
-- [ ] T037 [US1] Extend `PaymentAttempt` in `lib/features/booking/domain/payment_attempt.dart` (makes T032 pass):
+- [X] T037 [US1] Extend `PaymentAttempt` in `lib/features/booking/domain/payment_attempt.dart` (makes T032 pass):
   - add `enum PaymentKind { initial, remaining }` in the same file;
   - add constructor parameters `this.kind = PaymentKind.initial` and `this.paymentId` (type `String?`);
   - add `factory PaymentAttempt.remaining({required String attemptKey, required String bookingId, required DateTime startedAt}) => PaymentAttempt(attemptKey: attemptKey, quoteId: '', propertyId: '', termsHash: '', bookingId: bookingId, startedAt: startedAt, kind: PaymentKind.remaining);`;
@@ -569,19 +569,19 @@ so (AC-025).
   - add `kind` and `paymentId` to `==` and `hashCode`.
 
   Old call sites keep compiling, because the new parameters are optional. Run `flutter test test/features/booking test/core/storage`.
-- [ ] T038 [US1] Add the remaining-payment start:
+- [X] T038 [US1] Add the remaining-payment start:
   - (a) In `lib/features/booking/domain/booking_flow_repository.dart`, add to the interface: `Future<PaymentSessionInfo> startRemainingPayment({required String bookingId, required String attemptKey});` with the doc comment "Sends only the booking and the attempt key — never an amount (Constitution III)."
   - (b) In `lib/features/booking/data/supabase_booking_flow_repository.dart`, implement it by copying `startPayment`. Call `_node.startRemainingPayment(xRequestId: const Uuid().v4(), bookingId: bookingId, body: V1GuestBookingsBookingIdRemainingPaymentRequestBody(idempotencyKey: attemptKey))`.
   - (c) In `lib/features/bookings/data/mock_booking_server.dart`, add `int remainingStarts = 0;` and implement `startRemainingPayment` following **Appendix D §1**.
   - (d) In the same file, at the **top** of `completePayment`, add the remaining branch from Appendix D §1. If the booking has a `payments` line with `purpose == 'remaining'` and `status == 'pending'`, complete **that** line and return without running the initial-payment switch.
   - (e) Any other class that `implements BookingFlowRepository` under `test/helpers/` must get the method (throw `UnimplementedError()` if it is unused).
-- [ ] T039 [US1] In `lib/features/booking/domain/verification_outcome.dart`, add `VerificationOutcome Function(BookingDetails) remainingOutcomeFor(String paymentId)` exactly as the table in T033 (makes T033 pass). Do not change `verificationOutcomeFor`.
-- [ ] T040 [US1] Add `Future<void> payRemaining(String bookingId)` to `PaymentAttemptCubit` in `lib/features/booking/presentation/payment_attempt_cubit.dart` (makes T034 pass). Copy the body of `pay(...)` with these differences:
+- [X] T039 [US1] In `lib/features/booking/domain/verification_outcome.dart`, add `VerificationOutcome Function(BookingDetails) remainingOutcomeFor(String paymentId)` exactly as the table in T033 (makes T033 pass). Do not change `verificationOutcomeFor`.
+- [X] T040 [US1] Add `Future<void> payRemaining(String bookingId)` to `PaymentAttemptCubit` in `lib/features/booking/presentation/payment_attempt_cubit.dart` (makes T034 pass). Copy the body of `pay(...)` with these differences:
   - **Reused record:** a stored attempt is reused only when `stored.kind == PaymentKind.remaining && stored.bookingId == bookingId`. Otherwise create `PaymentAttempt.remaining(attemptKey: _newKey(), bookingId: bookingId, startedAt: _now())`.
   - **Start call:** call `_flow.startRemainingPayment(bookingId: bookingId, attemptKey: attempt.attemptKey)`.
   - **After success:** save `attempt.copyWith(paymentId: session.paymentId, paymentUrl: session.paymentUrl.toString(), paymentUrlExpiresAt: session.paymentUrlExpiresAt)`.
   - **Log line:** `'remaining_payment_started booking=$bookingId key=${attempt.attemptKey.substring(0, 8)}'`.
-- [ ] T041 [US1] Teach the verification screen about remaining payments:
+- [X] T041 [US1] Teach the verification screen about remaining payments:
   - (a) In `lib/features/booking/presentation/payment_verification_cubit.dart`, add an optional constructor parameter `VerificationOutcome Function(BookingDetails)? outcomeFor`, stored as `_outcomeFor = outcomeFor ?? verificationOutcomeFor`. Use `_outcomeFor(details)` instead of `verificationOutcomeFor(details)` in `_fetch`.
   - (b) In `lib/features/booking/presentation/payment_return_screen.dart`, read the attempt from `attemptState` (`AttemptOpened` or `AttemptReturned`). If `attempt.kind == PaymentKind.remaining && attempt.paymentId != null`, pass `outcomeFor: remainingOutcomeFor(attempt.paymentId!)` to the cubit. Also pass a new `isRemaining` flag down to `_ReturnBody`.
   - (c) In `_ReturnBodyState.build`, when `isRemaining`:
@@ -592,7 +592,7 @@ so (AC-025).
   - (e) Add tests:
     - in `test/features/booking/presentation/payment_return_screen_test.dart`, a remaining attempt whose line becomes `succeeded` shows `l10n.remainingPaidTitle` and no deadline text, and a `failed` line shows `l10n.remainingFailedBody`, with "Try again" navigating to `/bookings/<id>/remaining-payment`;
     - in `test/features/bookings/presentation/unfinished_payment_cubit_test.dart`, a remaining attempt with a `pending` line is **not** cleared.
-- [ ] T042 [US1] Create `lib/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart` (makes T035 pass):
+- [X] T042 [US1] Create `lib/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart` (makes T035 pass):
   - **States:** `RemainingLoading`, `RemainingReady({required BookingDetails details, required bool cashAllowed})`, `RemainingGoVerify(String bookingId)`, `RemainingNotAllowed`, `RemainingNotAvailable`, `RemainingOffline`, `RemainingFailed(ApiError error)`.
   - **Constructor:** `RemainingPaymentCubit({required this._bookings, required this._registry, required this._connectivity, required this._bookingId})` (types: `BookingsRepository`, `BookingActionRegistry`, `ConnectivityCubit`, `String`).
   - **`load()`:**
@@ -603,7 +603,7 @@ so (AC-025).
     5. Else emit `RemainingReady(details: details, cashAllowed: visible.contains(BookingActionCode.confirmCashPayment))`.
 
     `ErrorCode.notFound` → `RemainingNotAvailable`, and other errors → `RemainingFailed`.
-- [ ] T043 [US1] Create `lib/features/stay/presentation/remaining_payment/remaining_payment_screen.dart` (layout: [contracts/ui-screens.md §3](contracts/ui-screens.md); makes T036 pass):
+- [X] T043 [US1] Create `lib/features/stay/presentation/remaining_payment/remaining_payment_screen.dart` (layout: [contracts/ui-screens.md §3](contracts/ui-screens.md); makes T036 pass):
   - **Class:** `RemainingPaymentScreen({required String bookingId})`, a `StatefulWidget` holding `bool _cash = false`.
   - **App bar:** `AppBar(title: Text(l10n.remainingTitle))`.
   - **Body, `RemainingReady`:** a `ListView` with padding `EdgeInsetsDirectional.all(Dimens.screenSide)` containing, separated by `Dimens.space16`:
@@ -629,13 +629,13 @@ so (AC-025).
     - `RemainingOffline` → `ErrorView(message: l10n.stayNeedsConnection, onRetry: cubit.load)`;
     - `RemainingNotAvailable` → `EmptyView(icon: AppIcons.infoOutline, message: l10n.notAvailable)`.
   - **Route:** in `app_router.dart`, replace the `remainingPaymentPattern` builder (`NotAvailableScreen`) with a `BlocProvider<RemainingPaymentCubit>` (create + `unawaited(cubit.load())`) around `RemainingPaymentScreen(bookingId: id)`, copying the booking-details route.
-- [ ] T044 [US1] In `booking_details_screen.dart`, inside the payments section right after the remaining `AmountRow`s, add `const SizedBox(height: Dimens.space8)` and `InfoBanner(message: l10n.remainingNote, tone: StatusTone.info)`. Show them **only** when `registry.visible(details.availableActions).contains(BookingActionCode.payRemaining)`. Add widget tests in `test/features/bookings/presentation/booking_details_screen_test.dart`: with `g3()` and booking `…020`, the banner and the primary button `primary-pay_remaining` are shown; with `g2()`, neither is.
-- [ ] T045 [P] [US1] Write `test/features/stay/goldens/remaining_payment_golden_test.dart` (copy `test/features/bookings/goldens/bookings_goldens_test.dart`). It renders:
+- [X] T044 [US1] In `booking_details_screen.dart`, inside the payments section right after the remaining `AmountRow`s, add `const SizedBox(height: Dimens.space8)` and `InfoBanner(message: l10n.remainingNote, tone: StatusTone.info)`. Show them **only** when `registry.visible(details.availableActions).contains(BookingActionCode.payRemaining)`. Add widget tests in `test/features/bookings/presentation/booking_details_screen_test.dart`: with `g3()` and booking `…020`, the banner and the primary button `primary-pay_remaining` are shown; with `g2()`, neither is.
+- [X] T045 [P] [US1] Write `test/features/stay/goldens/remaining_payment_golden_test.dart` (copy `test/features/bookings/goldens/bookings_goldens_test.dart`). It renders:
   - `RemainingPaymentScreen` for `…020` (cash allowed, online selected) in the four standard variants, plus `light_RTL` at widths 320 and 800 (files `remaining_payment_<variant>`, `remaining_payment_light_RTL_w320`, `remaining_payment_light_RTL_w800`);
   - booking details for `…020` with `g3()` (files `booking_details_deposit_<variant>`).
 
   Generate with `--update-goldens` and review each image against [contracts/ui-screens.md §1 and §3](contracts/ui-screens.md): no overflow, one filled button, and the same paddings as the G2 `booking_details_confirmed` golden.
-- [ ] T046 [US1] Create `test/helpers/stay_journey.dart` with `Future<void> runRemainingPaymentJourney(WidgetTester tester)`, copying the style and app setup of `test/helpers/booking_journey.dart`, with `FakeBookingBackend(includeG3Fixtures: true, actionRegistry: BookingActionRegistry.g3())`. The steps:
+- [X] T046 [US1] Create `test/helpers/stay_journey.dart` with `Future<void> runRemainingPaymentJourney(WidgetTester tester)`, copying the style and app setup of `test/helpers/booking_journey.dart`, with `FakeBookingBackend(includeG3Fixtures: true, actionRegistry: BookingActionRegistry.g3())`. The steps:
   1. Open `/bookings/b0000000-0000-4000-8000-000000000020`.
   2. Tap `primary-pay_remaining`.
   3. Tap `remaining-pay`.

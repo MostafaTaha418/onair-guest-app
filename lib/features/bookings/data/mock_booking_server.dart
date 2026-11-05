@@ -70,6 +70,7 @@ final class MockBookingServer
   ({bool email, bool phone}) _verified = (email: false, phone: false);
   var _bookingCounter = 0;
   var _challengeCounter = 0;
+  int remainingStarts = 0;
 
   Future<void> _delay() async {
     if (latency > Duration.zero) {
@@ -325,6 +326,52 @@ final class MockBookingServer
     return session;
   });
 
+  @override
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  }) => _delayed(() async {
+    remainingStarts++;
+    final all = await bookings;
+    final json = all[bookingId];
+    if (json == null) _fail('NOT_FOUND');
+    if (json['status'] != 'confirmed' ||
+        (json['remaining_minor'] as int) <= 0) {
+      _fail('INVALID_BOOKING_STATE');
+    }
+    final existing = _sessionForKey[attemptKey];
+    if (existing != null) return existing;
+    final payments = (json['payments'] as List<dynamic>?) ?? <dynamic>[];
+    if (payments.any((raw) {
+      final line = raw as Map;
+      return line['purpose'] == 'remaining' && line['status'] == 'pending';
+    })) {
+      _fail('CONFLICT');
+    }
+    final paymentId = _randomId('r');
+    payments.add(<String, dynamic>{
+      'id': paymentId,
+      'purpose': 'remaining',
+      'method': 'kashier',
+      'status': 'pending',
+      'amount_minor': json['remaining_minor'],
+      'paid_at': null,
+    });
+    json['payments'] = payments;
+    json['pending_remaining_payment_id'] = paymentId;
+    final session = PaymentSessionInfo(
+      bookingId: bookingId,
+      paymentId: paymentId,
+      paymentUrl: Uri.parse(
+        'https://pay.mock.onair.test/remaining/$bookingId',
+      ),
+      paymentUrlExpiresAt: _now().add(const Duration(minutes: 30)),
+    );
+    _sessionForKey[attemptKey] = session;
+    _sessionForBooking[bookingId] = session;
+    return session;
+  });
+
   /// How many payment sessions one attempt key created; always 0 or 1
   /// (AC-023: retries reuse the same session).
   int sessionCount(String key) => _sessionsPerKey[key] ?? 0;
@@ -415,6 +462,49 @@ final class MockBookingServer
     if (json == null) _fail('NOT_FOUND');
     final now = _now();
     final session = _sessionForBooking[bookingId];
+    final payments = (json['payments'] as List<dynamic>?) ?? <dynamic>[];
+    Map<dynamic, dynamic>? remainingLine;
+    for (final raw in payments) {
+      final line = raw as Map<dynamic, dynamic>;
+      if (line['purpose'] == 'remaining' && line['status'] == 'pending') {
+        remainingLine = line;
+        break;
+      }
+    }
+    if (remainingLine != null) {
+      switch (result) {
+        case MockPaymentResult.success:
+          remainingLine['status'] = 'succeeded';
+          remainingLine['paid_at'] = now.toIso8601String();
+          json['paid_minor'] = json['total_minor'];
+          json['remaining_minor'] = 0;
+          json['remaining_due_at'] = null;
+          json['pending_remaining_payment_id'] = null;
+          final actions =
+              List<String>.from(
+                (json['available_actions'] as List<dynamic>?) ?? const [],
+              )..removeWhere(
+                (action) =>
+                    action == 'pay_remaining' ||
+                    action == 'confirm_cash_payment',
+              );
+          final checkIn = DateOnly.parse(json['check_in'] as String);
+          if (!checkIn.isAfter(_today()) &&
+              !actions.contains('confirm_checkin')) {
+            actions.insert(0, 'confirm_checkin');
+          }
+          json['available_actions'] = actions;
+          appendEvent(json, 'payment.remaining_paid', 'confirmed');
+          await notifyGuest('payment.remaining_paid', bookingId);
+        case MockPaymentResult.failure:
+          remainingLine['status'] = 'failed';
+          json['pending_remaining_payment_id'] = null;
+          await notifyGuest('payment.failed', bookingId);
+        case MockPaymentResult.conflict || MockPaymentResult.silent:
+          break;
+      }
+      return;
+    }
     switch (result) {
       case MockPaymentResult.success:
         json['status'] = 'awaiting_owner';

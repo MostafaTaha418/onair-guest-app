@@ -60,6 +60,8 @@ import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/search/presentation/results_screen.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/search_screen.dart';
+import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
+import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 
 bool _defaultUpdateRequired() => false;
@@ -309,7 +311,22 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.remainingPaymentPattern,
       name: 'linked-remaining-payment',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return BlocProvider<RemainingPaymentCubit>(
+          create: (context) {
+            final cubit = RemainingPaymentCubit(
+              bookings: context.read<BookingsRepository>(),
+              registry: context.read(),
+              connectivity: context.read<ConnectivityCubit>(),
+              bookingId: bookingId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: RemainingPaymentScreen(bookingId: bookingId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.damageClaimPattern,

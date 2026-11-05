@@ -208,4 +208,32 @@ void main() {
     expect(cubit.state, isA<UnfinishedNone>());
     await cubit.close();
   });
+
+  test('a pending remaining payment attempt is not cleared', () async {
+    backend.dispose();
+    backend = FakeBookingBackend(includeG3Fixtures: true);
+    const bookingId = 'b0000000-0000-4000-8000-000000000020';
+    final session = await backend.server.startRemainingPayment(
+      bookingId: bookingId,
+      attemptKey: 'remaining-key',
+    );
+    await backend.paymentAttempts.save(
+      PaymentAttempt.remaining(
+        attemptKey: 'remaining-key',
+        bookingId: bookingId,
+        startedAt: DateTime.utc(2026, 11, 1, 10),
+      ).copyWith(paymentId: session.paymentId),
+    );
+    final bookings = ScriptedBookings(backend.server)
+      ..bookingDetails = await backend.server.getBooking(bookingId);
+    final cubit = UnfinishedPaymentCubit(
+      bookings: bookings,
+      attempts: backend.paymentAttempts,
+    );
+
+    await cubit.refresh();
+
+    expect(await backend.paymentAttempts.read(), isNotNull);
+    await cubit.close();
+  });
 }

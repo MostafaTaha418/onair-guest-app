@@ -13,6 +13,7 @@ import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -279,5 +280,47 @@ void main() {
   ) async {
     await pumpDetails(tester, unknownId);
     expect(find.text(l10n.notAvailable), findsOneWidget);
+  });
+
+  testWidgets('G3 deposit booking shows remaining banner and primary action', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(
+      tester,
+      'b0000000-0000-4000-8000-000000000020',
+    );
+
+    expect(find.text(l10n.remainingNote), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('primary-pay_remaining')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('G2 registry hides G3 remaining banner and action', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g2(),
+    );
+
+    await pumpDetails(
+      tester,
+      'b0000000-0000-4000-8000-000000000020',
+    );
+
+    expect(find.text(l10n.remainingNote), findsNothing);
+    expect(
+      find.byKey(const ValueKey('primary-pay_remaining')),
+      findsNothing,
+    );
   });
 }

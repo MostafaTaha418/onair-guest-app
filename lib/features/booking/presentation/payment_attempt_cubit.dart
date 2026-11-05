@@ -145,6 +145,55 @@ final class PaymentAttemptCubit extends Cubit<PaymentAttemptState> {
     }
   }
 
+  Future<void> payRemaining(String bookingId) async {
+    if (state is AttemptStarting ||
+        state is AttemptOpened ||
+        state is AttemptReturned ||
+        _starting) {
+      return;
+    }
+    _starting = true;
+    try {
+      final stored = await _store.read();
+      final attempt =
+          stored != null &&
+              stored.kind == PaymentKind.remaining &&
+              stored.bookingId == bookingId
+          ? stored
+          : PaymentAttempt.remaining(
+              attemptKey: _newKey(),
+              bookingId: bookingId,
+              startedAt: _now(),
+            );
+      await _store.save(attempt);
+      if (isClosed) return;
+      emit(AttemptStarting(attempt));
+      final session = await _flow.startRemainingPayment(
+        bookingId: bookingId,
+        attemptKey: attempt.attemptKey,
+      );
+      final opened = attempt.copyWith(
+        paymentId: session.paymentId,
+        paymentUrl: session.paymentUrl.toString(),
+        paymentUrlExpiresAt: session.paymentUrlExpiresAt,
+      );
+      await _store.save(opened);
+      if (isClosed) return;
+      _logger.info(
+        'remaining_payment_started booking=$bookingId '
+        'key=${attempt.attemptKey.substring(0, 8)}',
+      );
+      emit(AttemptOpened(opened));
+      await _browser().open(session.paymentUrl, bookingId: bookingId);
+    } on AppFailure catch (failure) {
+      if (isClosed) return;
+      final attempt = await _store.read();
+      emit(AttemptFailed(failure.error, attempt));
+    } finally {
+      _starting = false;
+    }
+  }
+
   /// Reopens the Kashier page while the session is still valid (iOS
   /// fallback, research R4).
   Future<void> reopenPage() async {

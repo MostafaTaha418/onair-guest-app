@@ -39,7 +39,7 @@ void main() {
   });
 
   setUp(() {
-    backend = FakeBookingBackend();
+    backend = FakeBookingBackend(includeG3Fixtures: true);
     connectivity = FakeConnectivity();
     browser = FakeInAppBrowser();
     attemptCubit = PaymentAttemptCubit(
@@ -116,6 +116,10 @@ void main() {
         GoRoute(
           path: AppRoutes.bookingDetailsPattern,
           builder: (_, _) => const Text('details-stub'),
+        ),
+        GoRoute(
+          path: AppRoutes.remainingPaymentPattern,
+          builder: (_, _) => const Text('remaining-stub'),
         ),
       ],
     );
@@ -299,5 +303,48 @@ void main() {
 
     expect(find.text(l10n.paymentTimeoutTitle), findsOneWidget);
     expect(await backend.paymentAttempts.read(), isNotNull);
+  });
+
+  Future<String> remainingBookingFor(MockPaymentResult result) async {
+    const bookingId = 'b0000000-0000-4000-8000-000000000020';
+    final session = await backend.server.startRemainingPayment(
+      bookingId: bookingId,
+      attemptKey: 'remaining-outcome-${++attemptCounter}'.padRight(36, '0'),
+    );
+    final attempt = PaymentAttempt.remaining(
+      attemptKey: 'stored-remaining-${++attemptCounter}'.padRight(36, '0'),
+      bookingId: bookingId,
+      startedAt: DateTime.utc(2026, 11, 1, 9),
+    ).copyWith(paymentId: session.paymentId);
+    await backend.paymentAttempts.save(attempt);
+    await attemptCubit.restore();
+    await backend.server.completePayment(bookingId, result);
+    return bookingId;
+  }
+
+  testWidgets('remaining success shows paid copy without owner deadline', (
+    tester,
+  ) async {
+    final bookingId = await remainingBookingFor(MockPaymentResult.success);
+    await pumpReturn(tester, bookingId: bookingId);
+    await tester.pump();
+
+    expect(find.text(l10n.remainingPaidTitle), findsOneWidget);
+    final countdownPrefix = l10n.ownerDeadlineCountdown('x').split('x').first;
+    expect(find.textContaining(countdownPrefix), findsNothing);
+    expect(find.byKey(const ValueKey('return-view-booking')), findsOneWidget);
+  });
+
+  testWidgets('remaining failure retries the remaining payment route', (
+    tester,
+  ) async {
+    final bookingId = await remainingBookingFor(MockPaymentResult.failure);
+    await pumpReturn(tester, bookingId: bookingId);
+    await tester.pump();
+
+    expect(find.text(l10n.remainingFailedBody), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('return-try-again')));
+    await tester.pumpAndSettle();
+    expect(find.text('remaining-stub'), findsOneWidget);
   });
 }

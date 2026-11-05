@@ -87,6 +87,33 @@ final class SupabaseBookingFlowRepository implements BookingFlowRepository {
   }
 
   @override
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  }) async {
+    try {
+      final session = await _node.startRemainingPayment(
+        xRequestId: const Uuid().v4(),
+        bookingId: bookingId,
+        body: V1GuestBookingsBookingIdRemainingPaymentRequestBody(
+          idempotencyKey: attemptKey,
+        ),
+      );
+      return PaymentSessionInfo(
+        bookingId: session.bookingId,
+        paymentId: session.paymentId,
+        paymentUrl: Uri.parse(session.paymentUrl),
+        paymentUrlExpiresAt: session.paymentUrlExpiresAt,
+      );
+    } on DioException catch (error) {
+      final inner = error.error;
+      throw AppFailure(
+        inner is ApiError ? inner : ErrorMapper.noResponse(),
+      );
+    }
+  }
+
+  @override
   Future<PhoneChallenge> requestPhoneChange({
     required String phoneE164,
     required bool hasWhatsapp,

@@ -93,6 +93,12 @@ final class ScriptedFlow implements BookingFlowRepository {
   }) => throw UnimplementedError();
 
   @override
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  }) => throw UnimplementedError();
+
+  @override
   Future<PhoneChallenge> requestPhoneChange({
     required String phoneE164,
     required bool hasWhatsapp,

@@ -106,6 +106,13 @@ abstract interface class BookingFlowRepository {
     required String attemptKey,
   });
 
+  /// Sends only the booking and the attempt key — never an amount
+  /// (Constitution III).
+  Future<PaymentSessionInfo> startRemainingPayment({
+    required String bookingId,
+    required String attemptKey,
+  });
+
   Future<PhoneChallenge> requestPhoneChange({
     required String phoneE164,
     required bool hasWhatsapp,

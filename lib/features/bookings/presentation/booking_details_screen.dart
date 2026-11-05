@@ -14,6 +14,7 @@ import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/booking_timeline.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
+import 'package:on_air/design_system/components/info_banner.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -172,6 +173,10 @@ final class _DetailsList extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final online = context.watch<ConnectivityCubit>().state.isOnline;
     final details = state.details;
+    final canPayRemaining = context
+        .read<BookingActionRegistry>()
+        .visible(details.availableActions)
+        .contains(BookingActionCode.payRemaining);
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
@@ -264,6 +269,13 @@ final class _DetailsList extends StatelessWidget {
                       ),
                     ),
                   ),
+              ],
+              if (canPayRemaining) ...[
+                const SizedBox(height: Dimens.space8),
+                InfoBanner(
+                  message: l10n.remainingNote,
+                  tone: StatusTone.info,
+                ),
               ],
               for (final line in details.payments) ...[
                 const SizedBox(height: Dimens.space4),

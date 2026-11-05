@@ -2,6 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
+import 'package:on_air/features/booking/domain/payment_attempt.dart';
+import 'package:on_air/features/booking/domain/verification_outcome.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/booking_summary.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
@@ -55,7 +57,12 @@ final class UnfinishedPaymentCubit extends Cubit<UnfinishedPaymentState> {
     if (pendingPage.items.any((booking) => booking.id == bookingId)) return;
     try {
       final details = await _bookings.getBooking(bookingId);
-      if (details.status != BookingStatus.paymentVerifying) {
+      if (attempt!.kind == PaymentKind.remaining) {
+        final outcome = remainingOutcomeFor(attempt.paymentId ?? '')(details);
+        if (outcome != VerificationOutcome.waiting) {
+          await _attempts.clear();
+        }
+      } else if (details.status != BookingStatus.paymentVerifying) {
         await _attempts.clear();
       }
     } on AppFailure catch (failure) {

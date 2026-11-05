@@ -51,8 +51,10 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     required this._signals,
     required this._bookingId,
     required this._logger,
+    VerificationOutcome Function(BookingDetails)? outcomeFor,
     List<Duration>? backoff,
-  }) : _backoff =
+  }) : _outcomeFor = outcomeFor ?? verificationOutcomeFor,
+       _backoff =
            backoff ??
            const [
              Duration(seconds: 2),
@@ -69,6 +71,7 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
   final NotificationSignalSource _signals;
   final String _bookingId;
   final AppLogger _logger;
+  final VerificationOutcome Function(BookingDetails) _outcomeFor;
   final List<Duration> _backoff;
 
   StreamSubscription<NotificationSignal>? _signalSubscription;
@@ -106,7 +109,7 @@ final class PaymentVerificationCubit extends Cubit<VerifyState> {
     try {
       final details = await _bookings.getBooking(_bookingId);
       if (isClosed) return;
-      final outcome = verificationOutcomeFor(details);
+      final outcome = _outcomeFor(details);
       if (outcome == VerificationOutcome.waiting) {
         // Only poll-triggered fetches advance the schedule: a signal just
         // got a fresher answer — the pending poll timer stays as it is, so
