@@ -8,4 +8,6 @@ void main() {
   testWidgets('cash confirmation', runCashJourney);
 
   testWidgets('stay acknowledgements', runStayAckJourney);
+
+  testWidgets('cancellation', runCancellationJourney);
 }

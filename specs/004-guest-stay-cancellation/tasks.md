@@ -910,7 +910,7 @@ again. Then use "تقديم مرحلة الاسترداد" until the chip reads 
 
 ### Tests for User Story 4
 
-- [ ] T065 [P] [US4] Write `test/features/stay/presentation/cancellation_cubit_test.dart` for `CancellationCubit` (T067):
+- [X] T065 [P] [US4] Write `test/features/stay/presentation/cancellation_cubit_test.dart` for `CancellationCubit` (T067):
   - (a) `load()` on `…023` emits `CancelLoading`, then `CancelReady(preview, changes: PreviewChange.none)`;
   - (b) `selectReason(CancellationReason.other)` then `setNote('x' * 301)` keeps 300 characters;
   - (c) `submit()` emits `CancelSubmitting`, sends `expectedRefund == preview.refund` (assert `backend.stay.lastExpectedRefund`) and the key from `ActionAttemptStore`, then emits `CancelDone`, and the key is cleared;
@@ -919,7 +919,7 @@ again. Then use "تقديم مرحلة الاسترداد" until the chip reads 
   - (f) a network error keeps the key, emits `CancelReady(error: network)`, and the retry uses the same key (`backend.stay.lastCancelKey` is equal both times);
   - (g) cancelling `…020` twice gives `CancelNotAllowed` on the second attempt (the mock returns `INVALID_BOOKING_STATE` once cancelled);
   - (h) offline `load()` emits `CancelOffline`.
-- [ ] T066 [P] [US4] Write `test/features/stay/presentation/cancellation_screen_test.dart`:
+- [X] T066 [P] [US4] Write `test/features/stay/presentation/cancellation_screen_test.dart`:
   - (a) for `…023` / `…021` / `…024`, the `NoticeCard` shows `l10n.cancelReasonFree(...)` / `l10n.cancelReasonDepositLost(...)` / `l10n.cancelReasonNoRefund` with the Appendix B amounts and date;
   - (b) the `l10n.cancelNonRefundable` row is hidden for `…023` (zero);
   - (c) after a terms change, the refund row is `AmountRow(highlighted: true)` with `previousValue` set;
@@ -930,7 +930,7 @@ again. Then use "تقديم مرحلة الاسترداد" until the chip reads 
 
 ### Implementation for User Story 4
 
-- [ ] T067 [US4] Create `lib/features/stay/presentation/cancellation/cancellation_cubit.dart` (makes T065 pass):
+- [X] T067 [US4] Create `lib/features/stay/presentation/cancellation/cancellation_cubit.dart` (makes T065 pass):
   - **States:**
     - `CancelLoading`;
     - `CancelReady({required CancellationPreview preview, CancellationPreview? previous, required PreviewChange changes, CancellationReason? reason, String note = '', ApiError? error})`;
@@ -957,7 +957,7 @@ again. Then use "تقديم مرحلة الاسترداد" until the chip reads 
     | `invalidBookingState` / `actionNotAllowed` | clear the key, emit `CancelNotAllowed` |
     | `network` | keep the key, emit `ready` copied with `error: failure.error` |
     | anything else | clear the key, emit `ready` copied with `error` |
-- [ ] T068 [US4] Create `lib/features/stay/presentation/cancellation/cancellation_texts.dart` and `cancellation_screen.dart` (layout: [contracts/ui-screens.md §7](contracts/ui-screens.md); makes T066 pass):
+- [X] T068 [US4] Create `lib/features/stay/presentation/cancellation/cancellation_texts.dart` and `cancellation_screen.dart` (layout: [contracts/ui-screens.md §7](contracts/ui-screens.md); makes T066 pass):
   - **`cancellationSentence(CancellationPreview p, AppLocalizations l10n)`** in `cancellation_texts.dart`:
     - `free` → `l10n.cancelReasonFree(fmt(p.refund))`;
     - `depositLost` → `p.freeCancellationUntil == null ? l10n.cancelReasonDepositLostNoDate(fmt(p.refund), fmt(p.nonRefundable)) : l10n.cancelReasonDepositLost(fmt(p.refund), fmt(p.nonRefundable), formatCairoDayMonthTime(p.freeCancellationUntil!))`;
@@ -986,15 +986,15 @@ again. Then use "تقديم مرحلة الاسترداد" until the chip reads 
     - `CancelNotAllowed` → `context.go(AppRoutes.bookingDetails(id))` plus `SnackBar(l10n.stayStepNotAvailable)`.
   - **Other states:** offline → `ErrorView(l10n.stayNeedsConnection)`; failed → `ErrorView` with a reference; not available → `EmptyView`.
   - **Route:** replace the `cancelBookingPattern` placeholder in `app_router.dart` with a `BlocProvider<CancellationCubit>` (+ `load()`).
-- [ ] T069 [US4] Add a widget test in `test/features/stay/presentation/cancellation_flow_test.dart`. Using the full router (`routerConfig` in `pumpOnAirApp`, a backend with `includeG3Fixtures: true` and `g3()`):
+- [X] T069 [US4] Add a widget test in `test/features/stay/presentation/cancellation_flow_test.dart`. Using the full router (`routerConfig` in `pumpOnAirApp`, a backend with `includeG3Fixtures: true` and `g3()`):
   1. Open `…023`.
   2. Tap `action-request_cancellation`.
   3. Tap `cancel-confirm`, then confirm the dialog.
   4. Expect details to show `l10n.bookingStatusCancelled`, `l10n.refundChipRequested`, and `l10n.bookingMsgCancelledByGuest`.
   5. Call `await backend.stay.advanceRefund(id)` twice (pumping each time). The chip shows `l10n.refundChipInProgress`, **not** done.
   6. After the third call, it shows `l10n.refundChipDone` (AC-042).
-- [ ] T070 [P] [US4] Write `test/features/stay/goldens/cancellation_golden_test.dart` covering `cancellation_free` (`…023`), `cancellation_deposit_lost` (`…021`), `cancellation_no_refund` (`…024`), and `cancellation_changed` (`…021` after `forceTermsChangeOnce` + submit) in the four standard variants, plus `light_RTL` at widths 320 and 800 for `deposit_lost`. Generate and review the images.
-- [ ] T071 [US4] Add `runCancellationJourney` to `test/helpers/stay_journey.dart` (the Independent Test above), and call it from the host and device journey files.
+- [X] T070 [P] [US4] Write `test/features/stay/goldens/cancellation_golden_test.dart` covering `cancellation_free` (`…023`), `cancellation_deposit_lost` (`…021`), `cancellation_no_refund` (`…024`), and `cancellation_changed` (`…021` after `forceTermsChangeOnce` + submit) in the four standard variants, plus `light_RTL` at widths 320 and 800 for `deposit_lost`. Generate and review the images.
+- [X] T071 [US4] Add `runCancellationJourney` to `test/helpers/stay_journey.dart` (the Independent Test above), and call it from the host and device journey files.
 
 **Checkpoint**: US1–US4 pass. The refund shown before confirming always equals the refund
 applied, or the guest is asked again.

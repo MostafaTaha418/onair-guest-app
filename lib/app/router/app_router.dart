@@ -64,6 +64,8 @@ import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/search_screen.dart';
 import 'package:on_air/features/stay/data/action_attempt_store.dart';
 import 'package:on_air/features/stay/domain/stay_repository.dart';
+import 'package:on_air/features/stay/presentation/cancellation/cancellation_cubit.dart';
+import 'package:on_air/features/stay/presentation/cancellation/cancellation_screen.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_confirm_cubit.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_confirm_screen.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
@@ -389,7 +391,23 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.cancelBookingPattern,
       name: 'cancel-booking',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return BlocProvider<CancellationCubit>(
+          create: (context) {
+            final cubit = CancellationCubit(
+              stay: context.read<StayRepository>(),
+              attempts: context.read<ActionAttemptStore>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              logger: context.read<AppLogger>(),
+              bookingId: bookingId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: CancellationScreen(bookingId: bookingId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.damageClaimResolverPattern,

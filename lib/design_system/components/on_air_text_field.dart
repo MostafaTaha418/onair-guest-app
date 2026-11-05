@@ -18,6 +18,8 @@ final class OnAirTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffix,
     this.pill = false,
+    this.maxLength,
+    this.maxLines = 1,
     super.key,
   });
 
@@ -35,6 +37,8 @@ final class OnAirTextField extends StatelessWidget {
   final IconData? prefixIcon;
   final Widget? suffix;
   final bool pill;
+  final int? maxLength;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +59,8 @@ final class OnAirTextField extends StatelessWidget {
           autofillHints: autofillHints,
           onChanged: onChanged,
           onSubmitted: onSubmitted,
+          maxLength: maxLength,
+          maxLines: maxLines,
           style: context.textStyles.input.copyWith(color: colors.textPrimary),
           decoration: InputDecoration(
             labelText: pill ? null : label,
