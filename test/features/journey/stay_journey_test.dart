@@ -4,4 +4,6 @@ import '../../helpers/stay_journey.dart';
 
 void main() {
   testWidgets('remaining payment', runRemainingPaymentJourney);
+
+  testWidgets('cash confirmation', runCashJourney);
 }

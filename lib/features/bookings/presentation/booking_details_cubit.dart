@@ -63,7 +63,15 @@ final class BookingDetailsCubit extends Cubit<BookingDetailsState> {
   }) : _now = now ?? (() => DateTime.now().toUtc()),
        super(const DetailsLoading()) {
     _signalSubscription = _signals.signals
-        .where((signal) => signal.entityId == _bookingId)
+        .where(
+          (signal) =>
+              // Booking-scoped events carry the booking id directly. The
+              // cash confirmation is payment-scoped (its id routes to the
+              // receipt), yet it still changes this booking's state.
+              signal.entityId == _bookingId ||
+              (signal.entityType == 'payment' &&
+                  signal.typeKey == 'cash.payment_confirmed'),
+        )
         .listen((_) => unawaited(refresh()));
   }
 

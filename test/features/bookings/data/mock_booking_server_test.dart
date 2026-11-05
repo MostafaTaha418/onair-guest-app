@@ -250,34 +250,39 @@ void main() {
     expect(types, isEmpty);
   });
 
-  test('remaining payment reuses its key and success fully pays booking', () async {
-    final signals = ControllableNotificationSignalSource();
-    final server = _server(signals: signals, includeG3Fixtures: true);
-    const bookingId = 'b0000000-0000-4000-8000-000000000020';
-    const key = 'remaining-key';
+  test(
+    'remaining payment reuses its key and success fully pays booking',
+    () async {
+      final signals = ControllableNotificationSignalSource();
+      final server = _server(signals: signals, includeG3Fixtures: true);
+      const bookingId = 'b0000000-0000-4000-8000-000000000020';
+      const key = 'remaining-key';
 
-    final first = await server.startRemainingPayment(
-      bookingId: bookingId,
-      attemptKey: key,
-    );
-    final second = await server.startRemainingPayment(
-      bookingId: bookingId,
-      attemptKey: key,
-    );
-    expect(second.paymentId, first.paymentId);
-    expect(server.remainingStarts, 2);
+      final first = await server.startRemainingPayment(
+        bookingId: bookingId,
+        attemptKey: key,
+      );
+      final second = await server.startRemainingPayment(
+        bookingId: bookingId,
+        attemptKey: key,
+      );
+      expect(second.paymentId, first.paymentId);
+      expect(server.remainingStarts, 2);
 
-    await server.completePayment(bookingId, MockPaymentResult.success);
-    final details = await server.getBooking(bookingId);
-    expect(details.paid, details.total);
-    expect(details.remaining, Money(0));
-    expect(details.pendingRemainingPaymentId, isNull);
-    expect(details.availableActions, isNot(contains('pay_remaining')));
-    expect(
-      details.payments.singleWhere((line) => line.id == first.paymentId).status,
-      'succeeded',
-    );
-  });
+      await server.completePayment(bookingId, MockPaymentResult.success);
+      final details = await server.getBooking(bookingId);
+      expect(details.paid, details.total);
+      expect(details.remaining, Money(0));
+      expect(details.pendingRemainingPaymentId, isNull);
+      expect(details.availableActions, isNot(contains('pay_remaining')));
+      expect(
+        details.payments
+            .singleWhere((line) => line.id == first.paymentId)
+            .status,
+        'succeeded',
+      );
+    },
+  );
 
   test('another key conflicts while remaining payment is pending', () async {
     final signals = ControllableNotificationSignalSource();

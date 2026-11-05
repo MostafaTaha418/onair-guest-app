@@ -239,51 +239,85 @@ final class _DetailsList extends StatelessWidget {
               const SizedBox(height: Dimens.space16),
               KeyedSubtree(
                 key: paymentsKey,
-                child: Text(
-                  l10n.bookingPaymentsTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: context.colors.textPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: Dimens.space8),
-              AmountRow(
-                label: l10n.bookingTotal,
-                value: MoneyFormatter().format(details.total),
-              ),
-              AmountRow(
-                label: l10n.bookingPaid,
-                value: MoneyFormatter().format(details.paid),
-              ),
-              if (details.remaining.amountMinor > 0) ...[
-                AmountRow(
-                  label: l10n.bookingRemaining,
-                  value: MoneyFormatter().format(details.remaining),
-                ),
-                if (details.remainingDueAt != null)
-                  AmountRow(
-                    label: l10n.bookingRemaining,
-                    value: l10n.bookingRemainingDue(
-                      DateOnlyFormatter.dayMonth(
-                        DateOnly.fromDateTime(details.remainingDueAt!),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.bookingPaymentsTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: context.colors.textPrimary,
                       ),
                     ),
-                  ),
-              ],
-              if (canPayRemaining) ...[
-                const SizedBox(height: Dimens.space8),
-                InfoBanner(
-                  message: l10n.remainingNote,
-                  tone: StatusTone.info,
+                    const SizedBox(height: Dimens.space8),
+                    AmountRow(
+                      label: l10n.bookingTotal,
+                      value: MoneyFormatter().format(details.total),
+                    ),
+                    AmountRow(
+                      label: l10n.bookingPaid,
+                      value: MoneyFormatter().format(details.paid),
+                    ),
+                    if (details.remaining.amountMinor > 0) ...[
+                      AmountRow(
+                        label: l10n.bookingRemaining,
+                        value: MoneyFormatter().format(details.remaining),
+                      ),
+                      if (details.remainingDueAt != null)
+                        AmountRow(
+                          label: l10n.bookingRemaining,
+                          value: l10n.bookingRemainingDue(
+                            DateOnlyFormatter.dayMonth(
+                              DateOnly.fromDateTime(details.remainingDueAt!),
+                            ),
+                          ),
+                        ),
+                    ],
+                    if (canPayRemaining) ...[
+                      const SizedBox(height: Dimens.space8),
+                      InfoBanner(
+                        message: l10n.remainingNote,
+                        tone: StatusTone.info,
+                      ),
+                    ],
+                    for (final line in details.payments) ...[
+                      const SizedBox(height: Dimens.space4),
+                      if (line.method == 'cash' && line.receipt != null)
+                        Semantics(
+                          button: true,
+                          label: l10n.receiptShow,
+                          child: InkWell(
+                            onTap: () => context.push(
+                              AppRoutes.receipt(details.id, line.id),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: AmountRow(
+                                    label: _methodLabel(line, l10n),
+                                    value: _lineValue(line, l10n),
+                                  ),
+                                ),
+                                Icon(
+                                  Directionality.of(context) ==
+                                          TextDirection.rtl
+                                      ? AppIcons.chevronLeft
+                                      : AppIcons.chevronRight,
+                                  size: 16,
+                                  color: context.colors.textSecondary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        AmountRow(
+                          label: _methodLabel(line, l10n),
+                          value: _lineValue(line, l10n),
+                        ),
+                    ],
+                  ],
                 ),
-              ],
-              for (final line in details.payments) ...[
-                const SizedBox(height: Dimens.space4),
-                AmountRow(
-                  label: _methodLabel(line, l10n),
-                  value: _lineValue(line, l10n),
-                ),
-              ],
+              ),
               // Section 5: the refund's own progress (US4).
               if (details.refund != null) ...[
                 const SizedBox(height: Dimens.space16),

@@ -7,4 +7,6 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('remaining payment', runRemainingPaymentJourney);
+
+  testWidgets('cash confirmation', runCashJourney);
 }

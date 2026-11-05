@@ -9,6 +9,7 @@ import 'package:on_air/app/shell/app_shell.dart';
 import 'package:on_air/app/splash/splash_screen.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/images/image_variants.dart';
+import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
@@ -33,6 +34,7 @@ import 'package:on_air/features/booking/presentation/verify_identity_cubit.dart'
 import 'package:on_air/features/booking/presentation/verify_identity_screen.dart';
 import 'package:on_air/features/bookings/data/arrival_instructions_store.dart';
 import 'package:on_air/features/bookings/data/bookings_cache.dart';
+import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
@@ -60,6 +62,12 @@ import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/search/presentation/results_screen.dart';
 import 'package:on_air/features/search/presentation/search_cubit.dart';
 import 'package:on_air/features/search/presentation/search_screen.dart';
+import 'package:on_air/features/stay/data/action_attempt_store.dart';
+import 'package:on_air/features/stay/domain/stay_repository.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_confirm_cubit.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_confirm_screen.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
@@ -336,12 +344,47 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.cashConfirmPattern,
       name: 'cash-confirm',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        return BlocProvider<CashConfirmCubit>(
+          create: (context) {
+            final cubit = CashConfirmCubit(
+              bookings: context.read<BookingsRepository>(),
+              stay: context.read<StayRepository>(),
+              attempts: context.read<ActionAttemptStore>(),
+              registry: context.read<BookingActionRegistry>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              logger: context.read<AppLogger>(),
+              bookingId: bookingId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: CashConfirmScreen(bookingId: bookingId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.receiptPattern,
       name: 'cash-receipt',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final bookingId = state.pathParameters['id']!;
+        final paymentId = state.pathParameters['paymentId']!;
+        return BlocProvider<CashReceiptCubit>(
+          create: (context) {
+            final cubit = CashReceiptCubit(
+              bookings: context.read<BookingsRepository>(),
+              cache: context.read<BookingsCache>(),
+              connectivity: context.read<ConnectivityCubit>(),
+              bookingId: bookingId,
+              paymentId: paymentId,
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: CashReceiptScreen(bookingId: bookingId, paymentId: paymentId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.cancelBookingPattern,

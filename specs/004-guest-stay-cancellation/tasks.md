@@ -510,7 +510,7 @@ this phase.
 
 ---
 
-## Phase 3: User Story 1 - Pay the remaining amount online (Priority: P1) 🎯 MVP
+ ## Phase 3: User Story 1 - Pay the remaining amount online (Priority: P1) 🎯 MVP
 
 **Goal**: A guest with a confirmed, deposit-only booking pays the rest online through the same
 payment page and verification screen as G2. The booking shows "paid" only after the server says
@@ -671,7 +671,7 @@ Back in details, the cash line opens the same receipt. For the collector-started
 
 ### Tests for User Story 2
 
-- [ ] T047 [P] [US2] Write `test/features/stay/presentation/cash_confirm_cubit_test.dart` for `CashConfirmCubit` (T050), using `FakeBookingBackend(includeG3Fixtures: true, actionRegistry: BookingActionRegistry.g3())`. Cover every transition of data-model §2:
+- [X] T047 [P] [US2] Write `test/features/stay/presentation/cash_confirm_cubit_test.dart` for `CashConfirmCubit` (T050), using `FakeBookingBackend(includeG3Fixtures: true, actionRegistry: BookingActionRegistry.g3())`. Cover every transition of data-model §2:
   - (a) `load()` for `…020` (no pending cash, cash allowed) emits `CashPhoneEntry(amount: Money(337500))`;
   - (b) for `…028` (pending cash), it emits `CashCodeEntry` with `request.collectorDisplayName == 'أحمد م.'`, and **no** `sendCashCode` call happens (assert `backend.stay.codesSent == 0`);
   - (c) `submitPhone('0100')` emits `CashPhoneEntry(phoneError: true)` with no repository call;
@@ -683,7 +683,7 @@ Back in details, the cash line opens the same receipt. For the collector-started
   - (i) `resend()` when `backend.stay.rateLimitNextSend = true` emits `CashCodeEntry` with `resendAvailableAt == now + 30 s`;
   - (j) after `backend.stay.changeAmountOnce('…020')`, `submitPhone(valid)` reloads and emits `CashPhoneEntry` with the new amount;
   - (k) a network error on start (`backend.stay.failNextWithNetwork = true`) keeps the key, and the retry sends the same `idempotencyKey` (assert `backend.stay.lastCashStartKey` is equal both times).
-- [ ] T048 [P] [US2] Write `test/features/stay/presentation/cash_confirm_screen_test.dart`:
+- [X] T048 [P] [US2] Write `test/features/stay/presentation/cash_confirm_screen_test.dart`:
   - (a) the phone step shows the amount read-only, inside `Semantics` with label `l10n.cashAmountLocked`, with no editable field for the amount (`find.byType(TextField)` finds exactly one, the phone);
   - (b) an invalid phone shows `l10n.cashPhoneInvalid`;
   - (c) not authorized shows the `InfoBanner` text `l10n.stayCollectorNotAuthorized` and an `OutlinedButton` with `l10n.cashContactSupport`;
@@ -697,8 +697,8 @@ Back in details, the cash line opens the same receipt. For the collector-started
 
 ### Implementation for User Story 2
 
-- [ ] T049 [US2] Create `lib/features/stay/presentation/cash/cash_texts.dart` with `String formatWait(Duration d)`, copying `_waitText` in `lib/core/errors/error_message.dart` (`m:ss`, for example 90 s → `1:30`).
-- [ ] T050 [US2] Create `lib/features/stay/presentation/cash/cash_confirm_cubit.dart` (makes T047 pass):
+- [X] T049 [US2] Create `lib/features/stay/presentation/cash/cash_texts.dart` with `String formatWait(Duration d)`, copying `_waitText` in `lib/core/errors/error_message.dart` (`m:ss`, for example 90 s → `1:30`).
+- [X] T050 [US2] Create `lib/features/stay/presentation/cash/cash_confirm_cubit.dart` (makes T047 pass):
   - **States:**
     - `CashLoading`;
     - `CashPhoneEntry({required Money amount, bool phoneError = false, ApiError? error})`;
@@ -744,7 +744,7 @@ Back in details, the cash line opens the same receipt. For the collector-started
     5. emit `CashDone(paymentId: request.paymentId)`.
 
     Any `AppFailure` → `CashCodeEntry(request:, error: failure.error)`.
-- [ ] T051 [US2] Create `lib/features/stay/presentation/cash/cash_confirm_screen.dart` (layout: [contracts/ui-screens.md §4](contracts/ui-screens.md); makes T048 pass):
+- [X] T051 [US2] Create `lib/features/stay/presentation/cash/cash_confirm_screen.dart` (layout: [contracts/ui-screens.md §4](contracts/ui-screens.md); makes T048 pass):
   - **App bar:** `l10n.cashTitle`.
   - **Phone step (`CashPhoneEntry` / `CashStarting` / `CashNotAuthorized`):** a `ListView` holding:
     1. a `Card` with `Semantics(label: l10n.cashAmountLocked, child: Padding(all: Dimens.space16, child: Row([Icon(AppIcons.lockOutlineRounded, size: 20), SizedBox(width: Dimens.space8), Expanded(child: AmountRow(label: l10n.cashAmountLabel, value: fmt(amount), emphasized: true))])))`;
@@ -768,7 +768,7 @@ Back in details, the cash line opens the same receipt. For the collector-started
     - `CashNotAllowed` → `context.go(AppRoutes.bookingDetails(id))` plus `SnackBar(l10n.stayStepNotAvailable)`.
   - **Other states:** offline, failed, and not available use the same widgets as T043.
   - **Code handling:** keep the code in a private field only, never log it, and clear `_code` in `dispose`.
-- [ ] T052 [US2] Create the receipt:
+- [X] T052 [US2] Create the receipt:
   - **Cubit:** `lib/features/stay/presentation/cash/cash_receipt_cubit.dart` with states `ReceiptLoading`, `ReceiptReady({required PaymentLine line})`, `ReceiptMissing`, and constructor `({required this._bookings, required this._cache, required this._connectivity, required this._bookingId, required this._paymentId})`. `load()` reads `_cache.readDetails(id)` first; if online, it calls `getBooking` instead. It then finds the line with `id == paymentId && receipt != null`, and emits `ReceiptMissing` if there is none.
   - **Screen:** `lib/features/stay/presentation/cash/cash_receipt_screen.dart` (layout: [contracts/ui-screens.md §5](contracts/ui-screens.md)), a `ListView` holding:
     1. a centered `Icon(AppIcons.checkCircle, size: 64, color: context.colors['success'])`;
@@ -776,17 +776,17 @@ Back in details, the cash line opens the same receipt. For the collector-started
     3. a `Card` with `AmountRow`s for `l10n.cashAmountLabel` / `fmt(line.amount)`, `l10n.cashCollectorLabel` / `receipt.collectorDisplayName`, `l10n.receiptDate` / `formatCairoDayMonthTime(receipt.confirmedAt)`, and a `Row` with `Expanded(AmountRow(l10n.receiptNumber, receipt.receiptNo))` plus `IconButton(icon: const Icon(AppIcons.copy), tooltip: l10n.bookingCopyCode, onPressed: copy + SnackBar(l10n.receiptCopied))`.
 
     Bar: `OnAirPrimaryButton(label: l10n.receiptBack, onPressed: () => context.go(AppRoutes.bookingDetails(id)))`. `ReceiptMissing` → `context.go(AppRoutes.bookingDetails(id))`.
-- [ ] T053 [US2] In `app_router.dart`, replace the T023 placeholders:
+- [X] T053 [US2] In `app_router.dart`, replace the T023 placeholders:
   - `cashConfirmPattern` → `BlocProvider<CashConfirmCubit>` (+ `unawaited(cubit.load())`) around `CashConfirmScreen(bookingId: id)`;
   - `receiptPattern` → `BlocProvider<CashReceiptCubit>` (+ `load()`) around `CashReceiptScreen(bookingId: id, paymentId: state.pathParameters['paymentId']!)`.
 
   Read every dependency with `context.read<…>()`.
-- [ ] T054 [US2] In `booking_details_screen.dart`:
+- [X] T054 [US2] In `booking_details_screen.dart`:
   - (a) Wrap the whole payments section (from the `bookingPaymentsTitle` text to the last payment line) in `KeyedSubtree(key: _paymentsKey, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [...]))`.
   - (b) For each payment line where `line.method == 'cash' && line.receipt != null`, wrap its `AmountRow` in `Semantics(button: true, label: l10n.receiptShow, child: InkWell(onTap: () => context.push(AppRoutes.receipt(details.id, line.id)), child: Row([Expanded(AmountRow(...)), const Icon(AppIcons.chevronLeft, size: 16)])))`. Use `AppIcons.chevronLeft` because in RTL "forward" points left. In LTR (English), use `AppIcons.chevronRight`, choosing by `Directionality.of(context) == TextDirection.rtl`.
   - (c) Add a widget test: booking `…022` → tap the cash line → the receipt screen shows `R-2026-000123`.
-- [ ] T055 [P] [US2] Write `test/features/stay/goldens/cash_golden_test.dart` covering the phone step (`…020`), the not-authorized state, the code step (`…028`, with a 30 s resend wait), and the receipt (`…022`) in the four standard variants. Generate and review the images against [contracts/ui-screens.md §4–§5](contracts/ui-screens.md).
-- [ ] T056 [US2] Add `runCashJourney` to `test/helpers/stay_journey.dart` (the Independent Test above, both entries), and call it from `test/features/journey/stay_journey_test.dart` and `integration_test/stay_journey_mock_test.dart`.
+- [X] T055 [P] [US2] Write `test/features/stay/goldens/cash_golden_test.dart` covering the phone step (`…020`), the not-authorized state, the code step (`…028`, with a 30 s resend wait), and the receipt (`…022`) in the four standard variants. Generate and review the images against [contracts/ui-screens.md §4–§5](contracts/ui-screens.md).
+- [X] T056 [US2] Add `runCashJourney` to `test/helpers/stay_journey.dart` (the Independent Test above, both entries), and call it from `test/features/journey/stay_journey_test.dart` and `integration_test/stay_journey_mock_test.dart`.
 
 **Checkpoint**: US1 + US2 pass. A cash payment is recorded only after the guest enters the code.
 

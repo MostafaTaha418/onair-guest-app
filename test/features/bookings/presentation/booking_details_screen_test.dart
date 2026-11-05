@@ -16,6 +16,8 @@ import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
+import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
@@ -81,6 +83,28 @@ void main() {
         GoRoute(
           path: AppRoutes.supportNew,
           builder: (_, _) => const Text('support-stub'),
+        ),
+        GoRoute(
+          path: AppRoutes.receiptPattern,
+          name: 'cash-receipt',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            final paymentId = state.pathParameters['paymentId']!;
+            return BlocProvider<CashReceiptCubit>(
+              create: (context) {
+                final cubit = CashReceiptCubit(
+                  bookings: backend.server,
+                  cache: backend.cache,
+                  connectivity: context.read<ConnectivityCubit>(),
+                  bookingId: id,
+                  paymentId: paymentId,
+                );
+                unawaited(cubit.load());
+                return cubit;
+              },
+              child: CashReceiptScreen(bookingId: id, paymentId: paymentId),
+            );
+          },
         ),
       ],
     );
@@ -322,5 +346,29 @@ void main() {
       find.byKey(const ValueKey('primary-pay_remaining')),
       findsNothing,
     );
+  });
+
+  testWidgets('G3 cash line opens its receipt', (tester) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000022');
+
+    // The cash line row opens the receipt; the label text sits inside
+    // its InkWell.
+    final cashLine = find.text(l10n.paymentMethodCash);
+    await tester.scrollUntilVisible(
+      cashLine,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(cashLine);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('R-2026-000123'), findsOneWidget);
   });
 }
