@@ -17,6 +17,7 @@ import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
+import 'package:on_air/features/stay/data/mock_stay_server.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_cubit.dart';
 import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart';
 import 'package:on_air/features/stay/presentation/claims/damage_claim_cubit.dart';
@@ -55,7 +56,11 @@ void main() {
     connectivity.dispose();
   });
 
-  Future<void> pumpDetails(WidgetTester tester, String bookingId) async {
+  Future<void> pumpDetails(
+    WidgetTester tester,
+    String bookingId, {
+    bool overrideMockStay = false,
+  }) async {
     tester.view.physicalSize = const Size(400, 3000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -79,7 +84,12 @@ void main() {
                 unawaited(cubit.load());
                 return cubit;
               },
-              child: BookingDetailsScreen(bookingId: id),
+              child: overrideMockStay
+                  ? RepositoryProvider<MockStayServer?>.value(
+                      value: null,
+                      child: BookingDetailsScreen(bookingId: id),
+                    )
+                  : BookingDetailsScreen(bookingId: id),
             );
           },
         ),
@@ -511,5 +521,47 @@ void main() {
 
     expect(find.text(l10n.claimTitle), findsOneWidget);
     expect(find.text(l10n.claimStatusOpen), findsOneWidget);
+  });
+
+  testWidgets('mock mode shows the stay tools sheet', (tester) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000021');
+
+    final toolsButton = find.byTooltip(l10n.mockToolsTitle);
+    expect(toolsButton, findsOneWidget);
+
+    await tester.tap(toolsButton);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.mockToolsTitle), findsOneWidget);
+    expect(find.text(l10n.mockOwnerHandover), findsOneWidget);
+    expect(find.text(l10n.mockChangeTerms), findsOneWidget);
+
+    await tester.tap(find.text(l10n.mockChangeTerms));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.mockToolsTitle), findsNothing);
+  });
+
+  testWidgets('remote mode (no mock stay) hides the tools icon', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    // A null MockStayServer provider, as the remote bootstrap registers.
+    await pumpDetails(
+      tester,
+      'b0000000-0000-4000-8000-000000000021',
+      overrideMockStay: true,
+    );
+
+    expect(find.byTooltip(l10n.mockToolsTitle), findsNothing);
   });
 }

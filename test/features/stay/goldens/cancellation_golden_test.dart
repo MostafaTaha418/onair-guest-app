@@ -33,13 +33,15 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+  TextDirection direction = TextDirection.rtl,
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -50,7 +52,7 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(textDirection: direction, child: child!),
     ),
     home: child,
   ),
@@ -167,6 +169,35 @@ void main() {
             width,
             1200,
             _cancellationChild(_booking21),
+          ),
+        ),
+      ),
+    );
+  }
+  const cancellationHeights = <String, double>{
+    'free': 1100,
+    'deposit_lost': 1100,
+    'no_refund': 1100,
+    'changed': 1100,
+  };
+  for (final scenario in scenarios.entries) {
+    final height = cancellationHeights[scenario.key] ?? 1100;
+    unawaited(
+      goldenTest(
+        'cancellation ${scenario.key} — light_LTR_en',
+        fileName: 'cancellation_${scenario.key}_light_LTR_en',
+        constraints: BoxConstraints(maxWidth: 420, maxHeight: height + 100),
+        pumpBeforeTest: _pumpUntilSettled,
+        builder: () => GoldenTestScenario(
+          name: 'light_LTR_en',
+          child: _theme(
+            ThemeMode.light,
+            1,
+            400,
+            height,
+            scenario.value(),
+            locale: const Locale('en'),
+            direction: TextDirection.ltr,
           ),
         ),
       ),

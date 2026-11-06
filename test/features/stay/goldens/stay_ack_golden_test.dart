@@ -35,13 +35,15 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+  TextDirection direction = TextDirection.rtl,
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -52,7 +54,7 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(textDirection: direction, child: child!),
     ),
     home: child,
   ),
@@ -248,5 +250,31 @@ void main() {
         ),
       );
     }
+  }
+  for (final scenario in scenarios.entries) {
+    final isSheet = scenario.key == 'checkin_sheet';
+    unawaited(
+      goldenTest(
+        'stay ack ${scenario.key} — light_LTR_en',
+        fileName: 'stay_ack_${scenario.key}_light_LTR_en',
+        constraints: BoxConstraints(
+          maxWidth: 420,
+          maxHeight: isSheet ? 1200 : 2900,
+        ),
+        pumpBeforeTest: _pumpUntilSettled,
+        builder: () => GoldenTestScenario(
+          name: 'light_LTR_en',
+          child: _theme(
+            ThemeMode.light,
+            1,
+            400,
+            isSheet ? 1100 : 2800,
+            scenario.value(),
+            locale: const Locale('en'),
+            direction: TextDirection.ltr,
+          ),
+        ),
+      ),
+    );
   }
 }

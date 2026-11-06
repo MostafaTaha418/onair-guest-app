@@ -44,17 +44,21 @@ final class OnAirConfirmDialog extends StatelessWidget {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(Dimens.radiusCard),
     ),
-    title: Text(title),
+    title: Semantics(header: true, child: Text(title)),
     content: Text(body),
     actions: [
       TextButton(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(64, Dimens.minTouchTarget),
+        ),
         onPressed: () => Navigator.pop(context, false),
         child: Text(cancelLabel),
       ),
       TextButton(
-        style: destructive
-            ? TextButton.styleFrom(foregroundColor: context.colors.errorText)
-            : null,
+        style: TextButton.styleFrom(
+          minimumSize: const Size(64, Dimens.minTouchTarget),
+          foregroundColor: destructive ? context.colors.errorText : null,
+        ),
         onPressed: () => Navigator.pop(context, true),
         child: Text(confirmLabel),
       ),

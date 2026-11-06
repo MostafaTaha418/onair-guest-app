@@ -392,6 +392,7 @@ final class _ThumbError extends StatelessWidget {
       child: Tooltip(
         message: AppLocalizations.of(context).claimPhotoFailed,
         child: IconButton(
+          tooltip: AppLocalizations.of(context).claimPhotoFailed,
           onPressed: onRetry,
           icon: const Icon(AppIcons.imageNotSupportedOutlined),
         ),

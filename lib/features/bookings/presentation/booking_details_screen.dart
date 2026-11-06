@@ -34,7 +34,9 @@ import 'package:on_air/features/bookings/presentation/booking_status_ui.dart';
 import 'package:on_air/features/bookings/presentation/widgets/refund_section.dart';
 import 'package:on_air/features/property/domain/policy_text.dart';
 import 'package:on_air/features/property/presentation/widgets/policy_line_text.dart';
+import 'package:on_air/features/stay/data/mock_stay_server.dart';
 import 'package:on_air/features/stay/presentation/claims/claim_texts.dart';
+import 'package:on_air/features/stay/presentation/mock_stay_tools_sheet.dart';
 import 'package:on_air/features/stay/presentation/offer/offer_card.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -108,7 +110,17 @@ final class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         final primary = firstGuestAction(visible);
         if (ready != null) _focusAfterFirstReady();
         return Scaffold(
-          appBar: AppBar(),
+          appBar: AppBar(
+            actions: [
+              // Mock-mode only: the owner/collector tools (Appendix D §8).
+              if (ready != null && context.read<MockStayServer?>() != null)
+                IconButton(
+                  icon: const Icon(AppIcons.tuneOutlined),
+                  tooltip: l10n.mockToolsTitle,
+                  onPressed: () => showMockStayTools(context, ready.details.id),
+                ),
+            ],
+          ),
           bottomNavigationBar: ready != null && primary != null
               ? BottomActionBar(
                   leading: const SizedBox.shrink(),
@@ -492,6 +504,9 @@ final class _DetailsList extends StatelessWidget {
                     ),
                     child: OutlinedButton(
                       key: ValueKey('action-${action.value}'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(64, Dimens.minTouchTarget),
+                      ),
                       onPressed: online ? () => onRun(action) : null,
                       child: Text(bookingActionLabel(action, l10n)),
                     ),
@@ -506,6 +521,9 @@ final class _DetailsList extends StatelessWidget {
                   ),
                   child: OutlinedButton(
                     key: const ValueKey('action-contact_support'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(64, Dimens.minTouchTarget),
+                    ),
                     onPressed: online
                         ? () => context.push(
                             '${AppRoutes.supportNew}?booking=${details.id}',
@@ -522,6 +540,7 @@ final class _DetailsList extends StatelessWidget {
                   key: const ValueKey('action-request_cancellation'),
                   style: TextButton.styleFrom(
                     foregroundColor: context.colors.errorText,
+                    minimumSize: const Size(64, Dimens.minTouchTarget),
                   ),
                   onPressed: online
                       ? () => onRun(BookingActionCode.requestCancellation)

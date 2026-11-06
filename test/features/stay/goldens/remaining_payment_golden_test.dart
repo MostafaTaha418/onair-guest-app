@@ -35,13 +35,15 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+  TextDirection direction = TextDirection.rtl,
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -52,7 +54,7 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(textDirection: direction, child: child!),
     ),
     home: child,
   ),
@@ -205,4 +207,44 @@ void main() {
       ),
     );
   }
+  unawaited(
+    goldenTest(
+      'remaining payment — light_LTR_en',
+      fileName: 'remaining_payment_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1200),
+      pumpBeforeTest: _pumpTwoFrames,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1100,
+          _remainingChild(),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
+  unawaited(
+    goldenTest(
+      'booking details deposit — light_LTR_en',
+      fileName: 'booking_details_deposit_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 2900),
+      pumpBeforeTest: _pumpTwoFrames,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          2800,
+          _detailsChild(),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
 }

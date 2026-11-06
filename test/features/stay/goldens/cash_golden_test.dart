@@ -38,13 +38,15 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+  TextDirection direction = TextDirection.rtl,
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -55,7 +57,7 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(textDirection: direction, child: child!),
     ),
     home: child,
   ),
@@ -198,4 +200,99 @@ void main() {
       );
     }
   }
+  unawaited(
+    goldenTest(
+      'cash phone — light_LTR_en',
+      fileName: 'cash_phone_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1200),
+      pumpBeforeTest: _pumpUntilSettled,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1100,
+          _confirmChild(
+            bookingId: _booking20,
+          ),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
+  unawaited(
+    goldenTest(
+      'cash not_authorized — light_LTR_en',
+      fileName: 'cash_not_authorized_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1200),
+      pumpBeforeTest: _pumpUntilSettled,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1100,
+          _confirmChild(
+            bookingId: _booking20,
+            afterLoad: (cubit) => cubit.submitPhone('01099999999'),
+          ),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
+  unawaited(
+    goldenTest(
+      'cash code — light_LTR_en',
+      fileName: 'cash_code_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1200),
+      pumpBeforeTest: _pumpUntilSettled,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1100,
+          _confirmChild(
+            bookingId: _booking28,
+            beforeLoad: (backend) async {
+              final all = await backend.server.bookings;
+              final pending = Map<String, dynamic>.from(
+                all[_booking28]!['pending_cash'] as Map,
+              );
+              pending['retry_after_seconds'] = 30;
+              all[_booking28]!['pending_cash'] = pending;
+            },
+          ),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
+  unawaited(
+    goldenTest(
+      'cash receipt — light_LTR_en',
+      fileName: 'cash_receipt_light_LTR_en',
+      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 1200),
+      pumpBeforeTest: _pumpUntilSettled,
+      builder: () => GoldenTestScenario(
+        name: 'light_LTR_en',
+        child: _theme(
+          ThemeMode.light,
+          1,
+          400,
+          1100,
+          _receiptChild(),
+          locale: const Locale('en'),
+          direction: TextDirection.ltr,
+        ),
+      ),
+    ),
+  );
 }

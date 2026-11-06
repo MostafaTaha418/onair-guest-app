@@ -246,6 +246,9 @@ final class _CancelBar extends StatelessWidget {
                   : Text(l10n.actionCancelBooking),
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size(64, Dimens.minTouchTarget),
+              ),
               onPressed: () => context.pop(false),
               child: Text(l10n.cancelKeep),
             ),

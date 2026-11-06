@@ -37,13 +37,15 @@ Widget _theme(
   double scale,
   double width,
   double height,
-  Widget child,
-) => SizedBox(
+  Widget child, {
+  Locale locale = const Locale('ar'),
+  TextDirection direction = TextDirection.rtl,
+}) => SizedBox(
   width: width,
   height: height,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    locale: const Locale('ar'),
+    locale: locale,
     supportedLocales: const [Locale('ar'), Locale('en')],
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     theme: OnAirTheme.light,
@@ -54,7 +56,7 @@ Widget _theme(
         textScaler: TextScaler.linear(scale),
         disableAnimations: true,
       ),
-      child: Directionality(textDirection: TextDirection.rtl, child: child!),
+      child: Directionality(textDirection: direction, child: child!),
     ),
     home: child,
   ),
@@ -205,5 +207,28 @@ void main() {
         ),
       );
     }
+  }
+  for (final scenario in scenarios.entries) {
+    final (child, height) = scenario.value;
+    unawaited(
+      goldenTest(
+        'claims ${scenario.key} — light_LTR_en',
+        fileName: '${scenario.key}_light_LTR_en',
+        constraints: BoxConstraints(maxWidth: 420, maxHeight: height + 100),
+        pumpBeforeTest: _pumpUntilSettled,
+        builder: () => GoldenTestScenario(
+          name: 'light_LTR_en',
+          child: _theme(
+            ThemeMode.light,
+            1,
+            400,
+            height,
+            child(),
+            locale: const Locale('en'),
+            direction: TextDirection.ltr,
+          ),
+        ),
+      ),
+    );
   }
 }

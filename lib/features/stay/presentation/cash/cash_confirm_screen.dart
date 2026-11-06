@@ -283,6 +283,9 @@ final class _PhoneStep extends StatelessWidget {
                   ),
                   const SizedBox(height: Dimens.space16),
                   OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(64, Dimens.minTouchTarget),
+                    ),
                     onPressed: () => context.push(
                       '${AppRoutes.supportNew}?booking=$bookingId',
                     ),
@@ -369,6 +372,9 @@ final class _CodeStep extends StatelessWidget {
                 Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: TextButton(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(64, Dimens.minTouchTarget),
+                    ),
                     onPressed: waitingToResend
                         ? null
                         : () => context.read<CashConfirmCubit>().resend(),

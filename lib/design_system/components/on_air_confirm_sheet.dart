@@ -108,11 +108,17 @@ final class OnAirConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: Dimens.space8),
           TextButton(
+            style: TextButton.styleFrom(
+              minimumSize: const Size(64, Dimens.minTouchTarget),
+            ),
             onPressed: isLoading ? null : () => Navigator.of(context).pop(),
             child: Text(cancelLabel),
           ),
           if (extraActionLabel != null)
             TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size(64, Dimens.minTouchTarget),
+              ),
               onPressed: isLoading ? null : onExtraAction,
               child: Text(extraActionLabel!),
             ),

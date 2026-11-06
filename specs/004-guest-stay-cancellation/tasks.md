@@ -1230,26 +1230,26 @@ scrolls to the offer card, which says "هتدفع … زيادة"; accepting sho
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T089 [P] Create `lib/features/stay/presentation/mock_stay_tools_sheet.dart` (mock mode only):
+- [X] T089 [P] Create `lib/features/stay/presentation/mock_stay_tools_sheet.dart` (mock mode only):
   - **Entry point:** in `booking_details_screen.dart`, when `context.read<MockStayServer?>() != null`, add an `IconButton(icon: const Icon(AppIcons.tuneOutlined), tooltip: l10n.mockToolsTitle, onPressed: () => showMockStayTools(context, details.id))` to `AppBar.actions`.
   - **`showMockStayTools`:** opens `showModalBottomSheet` with the same shape as `OnAirConfirmSheet.show`. It contains a `Column` of `ListTile`s, one per tool in Appendix D §8, labelled with the `mock*` keys in Appendix A. Each tile calls the matching `MockStayServer` method with the booking ID, closes the sheet, and then calls `context.read<BookingDetailsCubit>().refresh()`.
   - **Test:** with a `null` provider (remote mode), the icon is not shown.
-- [ ] T090 [P] Create `integration_test/stay_staging_test.dart`. Copy `integration_test/booking_outcomes_staging_test.dart`, with every test `skip: !const bool.fromEnvironment('STAY_STAGING')`. Write one `testWidgets` per AC: AC-025, AC-026, AC-027, AC-030, AC-031, AC-032, AC-036, AC-037, and AC-042. Each body is a `// TODO(staging-seed): <seed row from contracts/supabase-stay.md §7>` comment followed by `expect(true, isTrue);`. The file must compile.
-- [ ] T091 [P] English and LTR pass: in every screen golden file from T045, T055, T063, T070, T080, and T087, add one more variant `light_LTR_en` (locale `en`, `TextDirection.ltr`, scale 1.0). Generate the images, then check that chevrons mirror, amounts sit at the end, and no Arabic text appears.
-- [ ] T092 Accessibility sweep. Create `test/features/stay/presentation/stay_semantics_test.dart` with one `testWidgets` per new screen (remaining, cash phone, cash code, receipt, cancellation, claim, offer card, check-in sheet). Using `final handle = tester.ensureSemantics();`, assert that:
+- [X] T090 [P] Create `integration_test/stay_staging_test.dart`. Copy `integration_test/booking_outcomes_staging_test.dart`, with every test `skip: !const bool.fromEnvironment('STAY_STAGING')`. Write one `testWidgets` per AC: AC-025, AC-026, AC-027, AC-030, AC-031, AC-032, AC-036, AC-037, and AC-042. Each body is a `// TODO(staging-seed): <seed row from contracts/supabase-stay.md §7>` comment followed by `expect(true, isTrue);`. The file must compile.
+- [X] T091 [P] English and LTR pass: in every screen golden file from T045, T055, T063, T070, T080, and T087, add one more variant `light_LTR_en` (locale `en`, `TextDirection.ltr`, scale 1.0). Generate the images, then check that chevrons mirror, amounts sit at the end, and no Arabic text appears.
+- [X] T092 Accessibility sweep. Create `test/features/stay/presentation/stay_semantics_test.dart` with one `testWidgets` per new screen (remaining, cash phone, cash code, receipt, cancellation, claim, offer card, check-in sheet). Using `final handle = tester.ensureSemantics();`, assert that:
   - every `IconButton` has a non-empty tooltip;
   - every `InkWell` / button is at least 48×48 (`tester.getSize(...)`);
   - the sheet and dialog titles are in a `Semantics(header: true)`.
 
   Use `expect(tester, meetsGuideline(androidTapTargetGuideline))` and `meetsGuideline(labeledTapTargetGuideline)`. Fix any failure in the screen, not in the test.
-- [ ] T093 Create `test/features/stay/logging_rules_test.dart`:
+- [X] T093 Create `test/features/stay/logging_rules_test.dart`:
   - it lists every `.dart` file under `lib/features/stay/`, plus `payment_attempt_cubit.dart` and `unfinished_payment_cubit.dart`;
   - it fails if any line containing `logger.` or `_logger.` also contains one of these words (case-insensitive): `phone`, `e164`, `email`, `code`, `note`, `url`, `name`, `receipt`.
 
   Fix any hit by logging IDs only (research R14).
-- [ ] T094 Run `tool/check_hardcoded_styles.sh`, `dart format --set-exit-if-changed .`, `flutter analyze`, `flutter test`, and `flutter test --tags golden`. Fix every failure.
+- [X] T094 Run `tool/check_hardcoded_styles.sh`, `dart format --set-exit-if-changed .`, `flutter analyze`, `flutter test`, and `flutter test --tags golden`. Fix every failure.
 - [ ] T095 Walk through the 16 validation scenarios in [quickstart.md](quickstart.md) on an Android emulator in mock mode, in Arabic and English, light and dark, and at the largest font size. Write the result in `specs/004-guest-stay-cancellation/checklists/manual-validation.md` as a table with columns Scenario | AR light | AR dark | EN | 1.3× | Notes.
-- [ ] T096 Update `docs/OnAir Guest App Plan.md` §17 G3:
+- [X] T096 Update `docs/OnAir Guest App Plan.md` §17 G3:
   - tick the six items;
   - under them, add a status note in the same style as the G1 and G2 notes: "**حالة G3 (<date>):** القصص الست مكتملة كود وتشتغل في وضع mock … وضع remote مستني الفروقات S1–S8 في `contracts/supabase-stay.md` وبيانات الـ Seed (§7)."
 
