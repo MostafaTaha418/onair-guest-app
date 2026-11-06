@@ -114,8 +114,8 @@ final class _DatesRow extends StatelessWidget {
     final colors = context.colors;
     final text = stay == null
         ? l10n.searchDatesHint
-        : '${DateOnlyFormatter.dayMonth(stay!.checkIn)} – '
-              '${DateOnlyFormatter.dayMonth(stay!.checkOut)}';
+        : '${DateOnlyFormatter.dayMonth(stay!.checkIn, locale: AppLocalizations.of(context).localeName)} – '
+              '${DateOnlyFormatter.dayMonth(stay!.checkOut, locale: AppLocalizations.of(context).localeName)}';
     return InkWell(
       onTap: online
           ? () async {

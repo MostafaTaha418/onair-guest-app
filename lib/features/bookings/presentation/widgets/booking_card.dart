@@ -122,7 +122,10 @@ final class _BookingCardState extends State<BookingCard> {
     final deadlineLabel = countdown == null
         ? null
         : l10n.bookingMsgAwaitingOwner(
-            formatCairoDayMonthTime(booking.ownerResponseDeadline!),
+            formatCairoDayMonthTime(
+              booking.ownerResponseDeadline!,
+              locale: AppLocalizations.of(context).localeName,
+            ),
           );
     return Card(
       margin: const EdgeInsetsDirectional.only(
@@ -140,7 +143,7 @@ final class _BookingCardState extends State<BookingCard> {
             statusLabel,
             ?deadlineLabel,
             ?actionLabel,
-          ].join('، '),
+          ].join(l10n.localeName == 'ar' ? '، ' : ', '),
           child: Padding(
             padding: const EdgeInsetsDirectional.all(Dimens.space12),
             child: Row(
@@ -167,8 +170,8 @@ final class _BookingCardState extends State<BookingCard> {
                       ),
                       const SizedBox(height: Dimens.space4),
                       Text(
-                        '${DateOnlyFormatter.dayMonth(booking.stay.checkIn)}'
-                        ' – ${DateOnlyFormatter.dayMonth(booking.stay.checkOut)}',
+                        '${DateOnlyFormatter.dayMonth(booking.stay.checkIn, locale: AppLocalizations.of(context).localeName)}'
+                        ' – ${DateOnlyFormatter.dayMonth(booking.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: context.colors.textSecondary,
                         ),

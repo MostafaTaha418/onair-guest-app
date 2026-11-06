@@ -606,5 +606,7 @@
   "mockCollectorCash": "Collector records cash",
   "mockOpenClaim": "Open a claim",
   "mockAdvanceRefund": "Advance the refund stage",
-  "mockChangeTerms": "Change cancellation terms once"
+  "mockChangeTerms": "Change cancellation terms once",
+  "offerDates": "Dates",
+  "placeAreaCity": "{area}, {city}"
 }

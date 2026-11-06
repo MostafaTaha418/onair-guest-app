@@ -41,6 +41,10 @@ final class MockStayServer implements StayRepository {
 
   bool failNextWithNetwork = false;
   bool rateLimitNextSend = false;
+
+  /// Test hook: the next `sendCashCode` fails with no connection (the
+  /// cash request itself was already created).
+  bool failNextSendWithNetwork = false;
   int previews = 0;
   int cancels = 0;
   int checkIns = 0;
@@ -310,6 +314,10 @@ final class MockStayServer implements StayRepository {
 
   @override
   Future<void> sendCashCode(String challengeId) => _delayed(() async {
+    if (failNextSendWithNetwork) {
+      failNextSendWithNetwork = false;
+      throw AppFailure(ErrorMapper.noResponse());
+    }
     if (rateLimitNextSend) {
       rateLimitNextSend = false;
       throw const AppFailure(

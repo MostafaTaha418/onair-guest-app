@@ -190,6 +190,29 @@ void main() {
     await cubit.close();
   });
 
+  test(
+    'a failed code send after the request stays on the code step',
+    () async {
+      final cubit = build(_booking20);
+      await cubit.load();
+
+      backend.stay.failNextSendWithNetwork = true;
+      await cubit.submitPhone('01000000001');
+
+      // The request exists on the server: the guest must not be sent back
+      // to the phone step, where a retry would start a second request.
+      final entry = cubit.state as CashCodeEntry;
+      expect(entry.error?.code, ErrorCode.network);
+      expect(backend.stay.codesSent, 0);
+
+      await cubit.resend();
+      expect(cubit.state, isA<CashCodeEntry>());
+      expect((cubit.state as CashCodeEntry).error, isNull);
+      expect(backend.stay.codesSent, 1);
+      await cubit.close();
+    },
+  );
+
   test('a network error keeps the attempt key for the retry', () async {
     final cubit = build(_booking20);
     await cubit.load();

@@ -9,6 +9,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
+import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/design_system/components/acknowledgement_tracker.dart';
@@ -82,11 +83,33 @@ final class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     });
   }
 
+  /// Blocks a second fast tap in the same frame, before the pushed screen or
+  /// sheet is on top. It is released after the next frame, never by waiting
+  /// for the opened route: a route that leaves through `go` (the cash
+  /// receipt, a notification) never completes its future, and a lock tied
+  /// to it would freeze every action on this page.
+  var _launching = false;
+
   Future<void> _run(
     BookingDetails details,
     BookingActionCode action,
-  ) async {
-    final changed = await launchBookingAction(context, details, action);
+  ) => _guarded(() => launchBookingAction(context, details, action));
+
+  /// Opens a claim from its card. The claim screen pops `true` once the
+  /// guest answered, so the claim's status and actions are fetched again.
+  Future<void> _openClaim(String bookingId, String claimId) => _guarded(
+    () async =>
+        await context.push<bool>(AppRoutes.damageClaim(bookingId, claimId)) ??
+        false,
+  );
+
+  Future<void> _guarded(Future<bool> Function() open) async {
+    // While another screen or sheet is on top, this page takes no action
+    // taps (a tap that slipped through during a transition is ignored).
+    if (_launching || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    _launching = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _launching = false);
+    final changed = await open();
     if (!mounted || !changed) return;
     await context.read<BookingDetailsCubit>().refresh();
     if (!mounted) return;
@@ -157,6 +180,7 @@ final class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 claimsKey: _claimsKey,
                 paymentsKey: _paymentsKey,
                 onRun: (action) => _run(state.details, action),
+                onOpenClaim: (claimId) => _openClaim(state.details.id, claimId),
               ),
             ),
           },
@@ -174,6 +198,7 @@ final class _DetailsList extends StatelessWidget {
     required this.claimsKey,
     required this.paymentsKey,
     required this.onRun,
+    required this.onOpenClaim,
   });
 
   final DetailsReady state;
@@ -182,6 +207,7 @@ final class _DetailsList extends StatelessWidget {
   final GlobalKey claimsKey;
   final GlobalKey paymentsKey;
   final ValueChanged<BookingActionCode> onRun;
+  final ValueChanged<String> onOpenClaim;
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +231,12 @@ final class _DetailsList extends StatelessWidget {
                     bottom: Dimens.space8,
                   ),
                   child: Text(
-                    l10n.lastUpdated(formatCairoDayMonthTime(state.fetchedAt)),
+                    l10n.lastUpdated(
+                      formatCairoDayMonthTime(
+                        state.fetchedAt,
+                        locale: AppLocalizations.of(context).localeName,
+                      ),
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: context.colors.textSecondary,
                     ),
@@ -247,11 +278,17 @@ final class _DetailsList extends StatelessWidget {
               const SizedBox(height: Dimens.space8),
               AmountRow(
                 label: l10n.bookingArrival,
-                value: DateOnlyFormatter.dayMonth(details.stay.checkIn),
+                value: DateOnlyFormatter.dayMonth(
+                  details.stay.checkIn,
+                  locale: AppLocalizations.of(context).localeName,
+                ),
               ),
               AmountRow(
                 label: l10n.bookingDeparture,
-                value: DateOnlyFormatter.dayMonth(details.stay.checkOut),
+                value: DateOnlyFormatter.dayMonth(
+                  details.stay.checkOut,
+                  locale: AppLocalizations.of(context).localeName,
+                ),
               ),
               AmountRow(
                 label: l10n.bookingNights,
@@ -302,7 +339,12 @@ final class _DetailsList extends StatelessWidget {
                           label: l10n.bookingRemaining,
                           value: l10n.bookingRemainingDue(
                             DateOnlyFormatter.dayMonth(
-                              DateOnly.fromDateTime(details.remainingDueAt!),
+                              // The due instant is UTC; its calendar day is Cairo's,
+                              // like the remaining-payment screen shows it.
+                              DateOnly.fromDateTime(
+                                CairoTime.inCairo(details.remainingDueAt!),
+                              ),
+                              locale: AppLocalizations.of(context).localeName,
                             ),
                           ),
                         ),
@@ -375,9 +417,7 @@ final class _DetailsList extends StatelessWidget {
                       for (final claim in details.damageClaims)
                         Card(
                           child: InkWell(
-                            onTap: () => context.push(
-                              AppRoutes.damageClaim(details.id, claim.id),
-                            ),
+                            onTap: () => onOpenClaim(claim.id),
                             child: Semantics(
                               button: true,
                               label:
@@ -486,7 +526,10 @@ final class _DetailsList extends StatelessWidget {
                       title: event.toStatus != null
                           ? bookingStatusLabel(event.toStatus!, l10n)
                           : l10n.bookingEventGeneric,
-                      time: formatCairoDayMonthTime(event.createdAt),
+                      time: formatCairoDayMonthTime(
+                        event.createdAt,
+                        locale: AppLocalizations.of(context).localeName,
+                      ),
                     ),
                 ],
               ),
@@ -611,7 +654,10 @@ final class _Header extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${details.property.areaName}، ${details.property.cityName}',
+                    AppLocalizations.of(context).placeAreaCity(
+                      details.property.areaName,
+                      details.property.cityName,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: context.colors.textSecondary,
                     ),

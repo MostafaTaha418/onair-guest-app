@@ -40,8 +40,8 @@ final class UpcomingBookingTile extends StatelessWidget {
             ),
             const SizedBox(height: Dimens.space4),
             Text(
-              '${DateOnlyFormatter.dayMonth(booking.checkIn)} – '
-              '${DateOnlyFormatter.dayMonth(booking.checkOut)}',
+              '${DateOnlyFormatter.dayMonth(booking.checkIn, locale: AppLocalizations.of(context).localeName)} – '
+              '${DateOnlyFormatter.dayMonth(booking.checkOut, locale: AppLocalizations.of(context).localeName)}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colors.textSecondary,
               ),

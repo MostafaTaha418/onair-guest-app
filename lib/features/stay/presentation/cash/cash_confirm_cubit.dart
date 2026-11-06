@@ -240,7 +240,11 @@ final class CashConfirmCubit extends Cubit<CashConfirmState> {
           );
           return;
         }
-        emit(CashPhoneEntry(amount: amount, error: failure.error));
+        // The cash request already exists on the server: stay on the code
+        // step with the error and a working «resend» instead of sending the
+        // guest back to the phone step, where a retry would start a second
+        // request.
+        emit(CashCodeEntry(request: request, error: failure.error));
         return;
       }
       if (isClosed) return;

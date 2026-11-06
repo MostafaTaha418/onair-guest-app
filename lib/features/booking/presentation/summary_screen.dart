@@ -106,6 +106,7 @@ final class _SummaryBody extends StatelessWidget {
         QuoteField.remainingDueAt => l10n.bookingRemainingDue(
           DateOnlyFormatter.dayMonth(
             DateOnly.fromDateTime(change.previous.remainingDueAt!),
+            locale: AppLocalizations.of(context).localeName,
           ),
         ),
         // The hash itself has no row; it only blocks payment until accepted.
@@ -155,7 +156,10 @@ final class _SummaryBody extends StatelessWidget {
                 children: [
                   Text(property.title, style: titleStyle),
                   Text(
-                    '${property.areaName}، ${property.cityName}',
+                    AppLocalizations.of(context).placeAreaCity(
+                      property.areaName,
+                      property.cityName,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colors.textSecondary,
                     ),
@@ -169,8 +173,8 @@ final class _SummaryBody extends StatelessWidget {
         AmountRow(
           label: l10n.searchDatesLabel,
           value:
-              '${DateOnlyFormatter.dayMonth(quote.stay.checkIn)} – '
-              '${DateOnlyFormatter.dayMonth(quote.stay.checkOut)}',
+              '${DateOnlyFormatter.dayMonth(quote.stay.checkIn, locale: AppLocalizations.of(context).localeName)} – '
+              '${DateOnlyFormatter.dayMonth(quote.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
         ),
         AmountRow(
           label: l10n.bookingNights,
@@ -217,6 +221,7 @@ final class _SummaryBody extends StatelessWidget {
               value: l10n.bookingRemainingDue(
                 DateOnlyFormatter.dayMonth(
                   DateOnly.fromDateTime(quote.remainingDueAt!),
+                  locale: AppLocalizations.of(context).localeName,
                 ),
               ),
               previousValue: previousValue(QuoteField.remainingDueAt),

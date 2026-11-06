@@ -43,6 +43,12 @@ final class _DamageClaimScreenState extends State<DamageClaimScreen> {
   );
   final TextEditingController _note = TextEditingController();
 
+  /// Set once the server accepted the guest's answer. Going back then pops
+  /// `true`, so booking details fetches the claim's new status and drops
+  /// the «respond» action instead of showing a stale «waiting for you».
+  var _answered = false;
+  var _submitted = false;
+
   @override
   void dispose() {
     // Evidence URLs are memory-only and die with the screen.
@@ -74,7 +80,20 @@ final class _DamageClaimScreenState extends State<DamageClaimScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return BlocBuilder<DamageClaimCubit, ClaimState>(
+    return BlocConsumer<DamageClaimCubit, ClaimState>(
+      // After a submit the cubit reloads (submitting → loading → ready), so
+      // the answer is detected on the first ready state that follows a
+      // submit, not on a direct submitting → ready step.
+      listener: (context, state) {
+        if (state is ClaimSubmitting) {
+          _submitted = true;
+        } else if (_submitted &&
+            state is ClaimReady &&
+            state.claim.response != null &&
+            !_answered) {
+          setState(() => _answered = true);
+        }
+      },
       builder: (context, state) {
         final ready = state is ClaimReady
             ? state
@@ -82,16 +101,40 @@ final class _DamageClaimScreenState extends State<DamageClaimScreen> {
             ? state.from
             : null;
         final submitting = state is ClaimSubmitting;
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.claimTitle)),
-          bottomNavigationBar: ready == null || !ready.canRespond
-              ? null
-              : ready.disputeOpen
-              ? SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.all(Dimens.space12),
-                    child: OutlinedButton(
-                      key: const ValueKey('claim-send-dispute'),
+        return PopScope<Object?>(
+          canPop: !_answered,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && _answered) Navigator.of(context).pop(true);
+          },
+          child: Scaffold(
+            appBar: AppBar(title: Text(l10n.claimTitle)),
+            bottomNavigationBar: ready == null || !ready.canRespond
+                ? null
+                : ready.disputeOpen
+                ? SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.all(Dimens.space12),
+                      child: OutlinedButton(
+                        key: const ValueKey('claim-send-dispute'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: context.colors.errorText,
+                          side: BorderSide(color: context.colors.errorText),
+                          minimumSize: const Size.fromHeight(
+                            Dimens.minTouchTarget,
+                          ),
+                        ),
+                        onPressed: submitting
+                            ? null
+                            : () => context.read<DamageClaimCubit>().dispute(
+                                _note.text,
+                              ),
+                        child: Text(l10n.claimDisputeSend),
+                      ),
+                    ),
+                  )
+                : BottomActionBar(
+                    leading: OutlinedButton(
+                      key: const ValueKey('claim-dispute'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.colors.errorText,
                         side: BorderSide(color: context.colors.errorText),
@@ -101,54 +144,40 @@ final class _DamageClaimScreenState extends State<DamageClaimScreen> {
                       ),
                       onPressed: submitting
                           ? null
-                          : () => context.read<DamageClaimCubit>().dispute(
-                              _note.text,
-                            ),
-                      child: Text(l10n.claimDisputeSend),
+                          : () =>
+                                context.read<DamageClaimCubit>().openDispute(),
+                      child: Text(l10n.claimDispute),
+                    ),
+                    action: OnAirPrimaryButton(
+                      key: const ValueKey('claim-agree'),
+                      label: l10n.claimAgree,
+                      isLoading: submitting,
+                      onPressed: submitting ? null : _agree,
                     ),
                   ),
-                )
-              : BottomActionBar(
-                  leading: OutlinedButton(
-                    key: const ValueKey('claim-dispute'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: context.colors.errorText,
-                      side: BorderSide(color: context.colors.errorText),
-                      minimumSize: const Size.fromHeight(Dimens.minTouchTarget),
-                    ),
-                    onPressed: submitting
-                        ? null
-                        : () => context.read<DamageClaimCubit>().openDispute(),
-                    child: Text(l10n.claimDispute),
-                  ),
-                  action: OnAirPrimaryButton(
-                    key: const ValueKey('claim-agree'),
-                    label: l10n.claimAgree,
-                    isLoading: submitting,
-                    onPressed: submitting ? null : _agree,
-                  ),
-                ),
-          body: switch (state) {
-            ClaimReady() || ClaimSubmitting() => _ReadyBody(
-              state: ready!,
-              urls: _urls,
-              noteController: _note,
-            ),
-            ClaimFailed() => ErrorView(
-              message: apiErrorMessage(state.error, l10n),
-              onRetry: context.read<DamageClaimCubit>().load,
-              referenceNumber: state.error.requestId,
-            ),
-            ClaimOffline() => ErrorView(
-              message: l10n.stayNeedsConnection,
-              onRetry: context.read<DamageClaimCubit>().load,
-            ),
-            ClaimNotAvailable() => EmptyView(
-              icon: AppIcons.infoOutline,
-              message: l10n.notAvailable,
-            ),
-            _ => const SizedBox.shrink(),
-          },
+            body: switch (state) {
+              ClaimReady() || ClaimSubmitting() => _ReadyBody(
+                state: ready!,
+                urls: _urls,
+                noteController: _note,
+              ),
+              ClaimFailed() => ErrorView(
+                message: apiErrorMessage(state.error, l10n),
+                onRetry: context.read<DamageClaimCubit>().load,
+                referenceNumber: state.error.requestId,
+              ),
+              ClaimOffline() => ErrorView(
+                message: l10n.stayNeedsConnection,
+                onRetry: context.read<DamageClaimCubit>().load,
+              ),
+              ClaimNotAvailable() => EmptyView(
+                icon: AppIcons.infoOutline,
+                message: l10n.notAvailable,
+              ),
+              // Loading: the shared skeleton, never a blank page.
+              _ => const LoadingView(),
+            },
+          ),
         );
       },
     );

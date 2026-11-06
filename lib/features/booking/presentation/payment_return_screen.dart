@@ -345,7 +345,10 @@ final class _DeadlineCountdownState extends State<_DeadlineCountdown> {
     // One static announcement with the absolute Cairo deadline (FR-038):
     // the ticking text itself is excluded below.
     _deadlineLabel ??= AppLocalizations.of(context).bookingMsgAwaitingOwner(
-      formatCairoDayMonthTime(widget.deadlineUtc),
+      formatCairoDayMonthTime(
+        widget.deadlineUtc,
+        locale: AppLocalizations.of(context).localeName,
+      ),
     );
   }
 

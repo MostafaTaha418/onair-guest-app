@@ -117,7 +117,10 @@ final class _ReceiptBody extends StatelessWidget {
                         ),
                         AmountRow(
                           label: l10n.receiptDate,
-                          value: formatCairoDayMonthTime(receipt.confirmedAt),
+                          value: formatCairoDayMonthTime(
+                            receipt.confirmedAt,
+                            locale: AppLocalizations.of(context).localeName,
+                          ),
                         ),
                         Row(
                           children: [

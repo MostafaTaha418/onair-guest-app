@@ -642,5 +642,13 @@
   "mockCollectorCash": "المحصّل سجّل كاش",
   "mockOpenClaim": "فتح مطالبة",
   "mockAdvanceRefund": "تقديم مرحلة الاسترداد",
-  "mockChangeTerms": "تغيير شروط الإلغاء مرة"
+  "mockChangeTerms": "تغيير شروط الإلغاء مرة",
+  "offerDates": "التواريخ",
+  "placeAreaCity": "{area}، {city}",
+  "@placeAreaCity": {
+    "placeholders": {
+      "area": {"type": "String"},
+      "city": {"type": "String"}
+    }
+  }
 }

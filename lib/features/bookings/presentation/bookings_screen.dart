@@ -198,7 +198,12 @@ final class _TabListState extends State<_TabList> {
                 Dimens.space4,
               ),
               child: Text(
-                l10n.lastUpdated(formatCairoDayMonthTime(data.fetchedAt!)),
+                l10n.lastUpdated(
+                  formatCairoDayMonthTime(
+                    data.fetchedAt!,
+                    locale: AppLocalizations.of(context).localeName,
+                  ),
+                ),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: context.colors.textSecondary,
                 ),

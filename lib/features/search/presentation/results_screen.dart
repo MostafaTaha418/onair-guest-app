@@ -436,8 +436,8 @@ final class _SummaryBar extends StatelessWidget {
     final stay = state.criteria.stay;
     final dates = stay == null
         ? l10n.searchDatesHint
-        : '${DateOnlyFormatter.dayMonth(stay.checkIn)} – '
-              '${DateOnlyFormatter.dayMonth(stay.checkOut)}';
+        : '${DateOnlyFormatter.dayMonth(stay.checkIn, locale: AppLocalizations.of(context).localeName)} – '
+              '${DateOnlyFormatter.dayMonth(stay.checkOut, locale: AppLocalizations.of(context).localeName)}';
     final guests = state.criteria.guests == null
         ? l10n.searchGuestsAny
         : '${state.criteria.guests}';

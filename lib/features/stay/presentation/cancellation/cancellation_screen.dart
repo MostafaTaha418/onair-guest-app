@@ -66,7 +66,8 @@ final class CancellationScreen extends StatelessWidget {
             icon: AppIcons.infoOutline,
             message: l10n.notAvailable,
           ),
-          _ => const SizedBox.shrink(),
+          // Loading (and the instant before a pop): the shared skeleton.
+          _ => const LoadingView(),
         },
       ),
     );

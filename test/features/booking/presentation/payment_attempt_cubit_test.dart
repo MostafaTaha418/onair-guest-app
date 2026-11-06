@@ -523,6 +523,26 @@ void main() {
       },
     );
 
+    test(
+      'a left-over returned attempt does not block a new pay tap',
+      () async {
+        // The guest paid, came back to the verification screen (returned),
+        // then backed out of a failed result without «Try again».
+        await remainingCubit.payRemaining(booking20);
+        remainingCubit.markReturned();
+        expect(remainingCubit.state, isA<AttemptReturned>());
+        final firstKey = remainingFlow.keys.single;
+
+        await remainingCubit.payRemaining(booking20);
+
+        expect(remainingFlow.keys, hasLength(2));
+        // Same booking and kind: the stored key is reused (one attempt).
+        expect(remainingFlow.keys.last, firstKey);
+        expect(remainingCubit.state, isA<AttemptOpened>());
+        expect(browser.opened, hasLength(2));
+      },
+    );
+
     test('conflict emits AttemptFailed with conflict code', () async {
       remainingFlow.nextFailure = AppFailure(
         ErrorMapper.fromCode('CONFLICT'),

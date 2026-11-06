@@ -146,10 +146,19 @@ final class PaymentAttemptCubit extends Cubit<PaymentAttemptState> {
   }
 
   Future<void> payRemaining(String bookingId) async {
-    if (state is AttemptStarting ||
-        state is AttemptOpened ||
-        state is AttemptReturned ||
-        _starting) {
+    // An in-flight start, or the payment page just opened for this same
+    // remaining payment (the app-resume handler takes the guest to
+    // verification from there), blocks a new tap. Anything else left over —
+    // a returned attempt after a failed result the guest backed out of, or
+    // another booking's attempt — must not turn the button into a silent
+    // no-op: the key below is reused for the same booking, so the server
+    // answers with the same session or a CONFLICT that routes to
+    // verification.
+    final current = state;
+    if (current is AttemptStarting || _starting) return;
+    if (current is AttemptOpened &&
+        current.attempt.kind == PaymentKind.remaining &&
+        current.attempt.bookingId == bookingId) {
       return;
     }
     _starting = true;

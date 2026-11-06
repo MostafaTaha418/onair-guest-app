@@ -99,7 +99,10 @@ String bookingStatusMessage(BookingDetails details, AppLocalizations l10n) {
       details.ownerResponseDeadline == null
           ? l10n.bookingMsgAwaitingOwnerNoDeadline
           : l10n.bookingMsgAwaitingOwner(
-              formatCairoDayMonthTime(details.ownerResponseDeadline!),
+              formatCairoDayMonthTime(
+                details.ownerResponseDeadline!,
+                locale: l10n.localeName,
+              ),
             ),
     BookingStatus.confirmed =>
       details.remaining.amountMinor > 0
@@ -194,6 +197,8 @@ AckStep _ackStep({
   label: label,
   statusText: at == null
       ? l10n.ackWaiting
-      : l10n.ackConfirmedAt(formatCairoDayMonthTime(at)),
+      : l10n.ackConfirmedAt(
+          formatCairoDayMonthTime(at, locale: l10n.localeName),
+        ),
   done: at != null,
 );

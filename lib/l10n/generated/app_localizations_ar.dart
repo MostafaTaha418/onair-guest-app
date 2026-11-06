@@ -1896,4 +1896,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mockChangeTerms => 'تغيير شروط الإلغاء مرة';
+
+  @override
+  String get offerDates => 'التواريخ';
+
+  @override
+  String placeAreaCity(String area, String city) {
+    return '$area، $city';
+  }
 }

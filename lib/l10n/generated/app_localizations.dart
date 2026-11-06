@@ -3427,6 +3427,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تغيير شروط الإلغاء مرة'**
   String get mockChangeTerms;
+
+  /// No description provided for @offerDates.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواريخ'**
+  String get offerDates;
+
+  /// No description provided for @placeAreaCity.
+  ///
+  /// In ar, this message translates to:
+  /// **'{area}، {city}'**
+  String placeAreaCity(String area, String city);
 }
 
 class _AppLocalizationsDelegate

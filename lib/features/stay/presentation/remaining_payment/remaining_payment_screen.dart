@@ -180,6 +180,7 @@ final class _ReadyBody extends StatelessWidget {
                             label: l10n.remainingDueLabel,
                             value: formatCairoDayMonthTime(
                               details.remainingDueAt!,
+                              locale: AppLocalizations.of(context).localeName,
                             ),
                           ),
                       ],
@@ -251,7 +252,10 @@ final class _PropertyRow extends StatelessWidget {
               ),
             ),
             Text(
-              '${details.property.areaName}، ${details.property.cityName}',
+              AppLocalizations.of(context).placeAreaCity(
+                details.property.areaName,
+                details.property.cityName,
+              ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: context.colors.textSecondary,
               ),

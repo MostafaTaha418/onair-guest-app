@@ -19,7 +19,10 @@ String cancellationSentence(CancellationPreview p, AppLocalizations l10n) {
           : l10n.cancelReasonDepositLost(
               fmt(p.refund),
               fmt(p.nonRefundable),
-              formatCairoDayMonthTime(p.freeCancellationUntil!),
+              formatCairoDayMonthTime(
+                p.freeCancellationUntil!,
+                locale: l10n.localeName,
+              ),
             ),
     PolicyCase.noRefund => l10n.cancelReasonNoRefund,
     PolicyCase.unknown => l10n.bookingMsgUnknown,

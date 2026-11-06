@@ -152,10 +152,10 @@ final class _OfferCardBody extends StatelessWidget {
                 ),
                 const SizedBox(height: Dimens.space12),
                 AmountRow(
-                  label: l10n.bookingDatesTitle,
+                  label: l10n.offerDates,
                   value:
-                      '${DateOnlyFormatter.dayMonth(offer.stay.checkIn)} – '
-                      '${DateOnlyFormatter.dayMonth(offer.stay.checkOut)}',
+                      '${DateOnlyFormatter.dayMonth(offer.stay.checkIn, locale: AppLocalizations.of(context).localeName)} – '
+                      '${DateOnlyFormatter.dayMonth(offer.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
                 ),
                 const SizedBox(height: Dimens.space8),
                 InfoBanner(
@@ -174,7 +174,10 @@ final class _OfferCardBody extends StatelessWidget {
                       ),
                       child: Text(
                         l10n.offerExpires(
-                          formatCairoDayMonthTime(offer.expiresAt!),
+                          formatCairoDayMonthTime(
+                            offer.expiresAt!,
+                            locale: AppLocalizations.of(context).localeName,
+                          ),
                         ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: context.colors.textSecondary,

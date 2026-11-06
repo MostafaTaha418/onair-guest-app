@@ -63,6 +63,10 @@ Widget _theme(
   ),
 );
 
+/// One clock for the cubit and the resend countdown: the golden always
+/// shows the full 30-second wait, whatever the machine's speed.
+DateTime _fixedNow() => DateTime.utc(2026, 11, 1, 10);
+
 Widget _confirmChild({
   required String bookingId,
   Future<void> Function(FakeBookingBackend backend)? beforeLoad,
@@ -82,6 +86,7 @@ Widget _confirmChild({
     connectivity: connectivityCubit,
     logger: AppLogger(sink: (_) {}),
     bookingId: bookingId,
+    now: _fixedNow,
   );
   unawaited(() async {
     await beforeLoad?.call(backend);
@@ -103,7 +108,7 @@ Widget _confirmChild({
     ],
     child: BlocProvider<CashConfirmCubit>.value(
       value: cubit,
-      child: CashConfirmScreen(bookingId: bookingId),
+      child: CashConfirmScreen(bookingId: bookingId, now: _fixedNow),
     ),
   );
 }

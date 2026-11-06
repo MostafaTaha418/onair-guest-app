@@ -28,9 +28,13 @@ import 'package:on_air/features/stay/presentation/cash/cash_texts.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class CashConfirmScreen extends StatefulWidget {
-  const CashConfirmScreen({required this.bookingId, super.key});
+  const CashConfirmScreen({required this.bookingId, this.now, super.key});
 
   final String bookingId;
+
+  /// The clock for the resend countdown; tests pass a fixed one so the
+  /// remaining seconds never depend on how fast the test runs.
+  final DateTime Function()? now;
 
   @override
   State<CashConfirmScreen> createState() => _CashConfirmScreenState();
@@ -66,7 +70,10 @@ final class _CashConfirmScreenState extends State<CashConfirmScreen> {
     _resendDeadline = resendAvailableAt;
     unawaited(_resendSubscription?.cancel());
     _resendCountdown?.cancel();
-    final countdown = Countdown(deadlineUtc: resendAvailableAt);
+    final countdown = Countdown(
+      deadlineUtc: resendAvailableAt,
+      now: widget.now,
+    );
     _resendCountdown = countdown;
     _resendSubscription = countdown.remaining.listen((remaining) {
       if (remaining == Duration.zero && mounted) setState(() {});

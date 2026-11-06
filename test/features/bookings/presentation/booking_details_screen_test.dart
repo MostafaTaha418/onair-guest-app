@@ -28,6 +28,7 @@ import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_booking_backend.dart';
 import '../../../helpers/fake_connectivity.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/pump_until_found.dart';
 
 void main() {
   const confirmedId = 'b0000000-0000-4000-8000-000000000001';
@@ -212,9 +213,9 @@ void main() {
     expect(
       find.text(
         l10n.bookingRemainingDue(
-          DateOnlyFormatter.dayMonth(
-            DateOnly.fromDateTime(DateTime.parse('2026-11-19T22:00:00Z')),
-          ),
+          // 2026-11-19T22:00Z is 00:00 on 20 November in Cairo: the due
+          // day is Cairo's calendar day, as the remaining screen shows it.
+          DateOnlyFormatter.dayMonth(DateOnly(2026, 11, 20)),
         ),
       ),
       findsOneWidget,
@@ -563,5 +564,90 @@ void main() {
     );
 
     expect(find.byTooltip(l10n.mockToolsTitle), findsNothing);
+  });
+
+  testWidgets('a fast double tap on an action opens its sheet once', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000021');
+
+    final primary = find.byKey(const ValueKey('primary-confirm_checkin'));
+    await tester.tap(primary);
+    await tester.tap(primary, warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.checkinSheetTitle), findsOneWidget);
+    // Closing the one sheet shows the details again, not a second sheet.
+    await tester.tap(find.text(l10n.sheetNotYet));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.checkinSheetTitle), findsNothing);
+    expect(find.byKey(const ValueKey('primary-confirm_checkin')), findsOne);
+  });
+
+  testWidgets('answering a claim and going back refreshes the details', (
+    tester,
+  ) async {
+    backend.dispose();
+    backend = FakeBookingBackend(
+      includeG3Fixtures: true,
+      actionRegistry: BookingActionRegistry.g3(),
+    );
+
+    await pumpDetails(tester, 'b0000000-0000-4000-8000-000000000025');
+    expect(find.text(l10n.claimStatusOpen), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('primary-respond_damage_claim')),
+      findsNothing,
+      reason: 'respond is never the filled primary action',
+    );
+
+    await tester.scrollUntilVisible(
+      find.text(l10n.claimsSectionTitle),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text(l10n.claimStatusOpen));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('claim-agree')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.dialogConfirm));
+    await tester.pumpAndSettle();
+    expect(backend.stay.claimAnswers, 1);
+
+    // Back to the details: the claim no longer waits for the guest, and
+    // the «respond» action is gone without a manual pull-to-refresh.
+    // A system back (gesture or button) goes through the claim's PopScope.
+    final navigator = tester.state<NavigatorState>(
+      find.byType(Navigator).last,
+    );
+    await navigator.maybePop();
+    for (
+      var attempt = 0;
+      attempt < 40 && tester.any(find.text(l10n.claimTitle));
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+    await pumpUntilFound(tester, find.text(l10n.claimStatusAccepted));
+    for (
+      var attempt = 0;
+      attempt < 40 && tester.any(find.text(l10n.claimStatusOpen));
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+    expect(find.text(l10n.claimTitle), findsNothing);
+    expect(find.text(l10n.claimStatusOpen), findsNothing);
+    expect(find.text(l10n.claimStatusAccepted), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('action-respond_damage_claim')),
+      findsNothing,
+    );
   });
 }
