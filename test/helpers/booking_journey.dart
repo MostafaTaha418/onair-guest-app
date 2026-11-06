@@ -84,6 +84,9 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
   await tester.pump(const Duration(seconds: 3));
   await tester.pump(const Duration(seconds: 1));
   expect(find.text(l10n.paymentSuccessTitle), findsOneWidget);
+  // The success page may still be sliding in; a tap during the transition
+  // is absorbed (IgnorePointer) and misses the button on slower runners.
+  await tester.pump(const Duration(seconds: 1));
 
   // 3. A second journey: pay with «Fail», then «Try again» returns to the
   // dates step carrying the same stay.

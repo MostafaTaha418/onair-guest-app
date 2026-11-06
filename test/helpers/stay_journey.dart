@@ -22,12 +22,11 @@ import 'pump_until_found.dart';
 Future<void> runRemainingPaymentJourney(WidgetTester tester) async {
   const bookingId = 'b0000000-0000-4000-8000-000000000020';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-  }
+  // Same tall-viewport requirement as the cancellation journey: device
+  // screens (iOS 852 logical px) can cut the payment CTA below the fold.
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -91,12 +90,11 @@ Future<void> runCashJourney(WidgetTester tester) async {
   const booking20 = 'b0000000-0000-4000-8000-000000000020';
   const booking28 = 'b0000000-0000-4000-8000-000000000028';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-  }
+  // Same tall-viewport requirement as the cancellation journey: on iOS the
+  // pay CTA sits below the fold and lazy slivers never build it.
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -205,12 +203,10 @@ Future<void> runCashJourney(WidgetTester tester) async {
 Future<void> runStayAckJourney(WidgetTester tester) async {
   const booking21 = 'b0000000-0000-4000-8000-000000000021';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-  }
+  // Same tall-viewport requirement as the cancellation journey.
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -495,12 +491,11 @@ Future<void> runClaimJourney(WidgetTester tester) async {
 Future<void> runOfferJourney(WidgetTester tester) async {
   const booking26 = 'b0000000-0000-4000-8000-000000000026';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-  }
+  // Same tall-viewport requirement as the cancellation journey: the new
+  // notification row can land below the fold on device screens.
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
