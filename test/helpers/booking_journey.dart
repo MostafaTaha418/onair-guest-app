@@ -30,6 +30,7 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
+import 'fake_connectivity.dart';
 import 'pump_until_found.dart';
 import 'register_mock_guest.dart';
 
@@ -192,6 +193,13 @@ Future<void> bootApp(
     fileName: 'discovery_cache.json',
     schema: 1,
   );
+  // Pin connectivity online: the real platform channel on device runners can
+  // briefly report «none» (observed on the iOS simulator), which flips the
+  // whole app offline and hides the details actions and notification rows.
+  final connectivity = FakeConnectivity();
+  final connectivityCubit = connectivity.createCubit();
+  addTearDown(connectivityCubit.close);
+  addTearDown(connectivity.dispose);
   await tester.pumpWidget(
     MultiRepositoryProvider(
       providers: [
@@ -230,7 +238,7 @@ Future<void> bootApp(
         ),
         ...backend.appProviders(),
       ],
-      child: const OnAirApp(),
+      child: OnAirApp(connectivityCubit: connectivityCubit),
     ),
   );
   await tester.pumpAndSettle();
