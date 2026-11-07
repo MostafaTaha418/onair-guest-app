@@ -25,6 +25,11 @@ final class SupabaseListingsRepository implements ListingsRepository {
 
   SupabaseListingsRepository._(this._rpc);
 
+  /// The server caps each unavailable-dates window at 120 days and raises
+  /// VALIDATION_FAILED above it (contracts/supabase-discovery.md §4), so a
+  /// longer horizon is fetched in slices of at most this many days.
+  static const _maxWindowDays = 120;
+
   final Future<dynamic> Function(String fn, Map<String, dynamic> params) _rpc;
 
   @override
@@ -96,15 +101,42 @@ final class SupabaseListingsRepository implements ListingsRepository {
     DateOnly from,
     DateOnly to,
   ) => _guard(() async {
+    if (!from.isBefore(to)) {
+      // An empty or inverted range is still sent to the server so its
+      // VALIDATION_FAILED answer surfaces unchanged.
+      return (await _unavailableWindow(id, from, to))
+          .map(DateOnly.parse)
+          .toSet();
+    }
+    final windows = <(DateOnly, DateOnly)>[];
+    for (var start = from; start.isBefore(to);) {
+      final end = start.addDays(_maxWindowDays);
+      final windowEnd = end.isBefore(to) ? end : to;
+      windows.add((start, windowEnd));
+      start = windowEnd;
+    }
+    final slices = await Future.wait([
+      for (final (windowFrom, windowTo) in windows)
+        _unavailableWindow(id, windowFrom, windowTo),
+    ]);
+    return {
+      for (final slice in slices)
+        for (final row in slice) DateOnly.parse(row),
+    };
+  });
+
+  Future<List<String>> _unavailableWindow(
+    String id,
+    DateOnly from,
+    DateOnly to,
+  ) async {
     final rows = await _rpc('guest_get_property_unavailable_dates', {
       'p_property_id': id,
       'p_from': from.toString(),
       'p_to': to.toString(),
     });
-    return {
-      for (final row in _asList(rows).cast<String>()) DateOnly.parse(row),
-    };
-  });
+    return _asList(rows).cast<String>().toList();
+  }
 
   @override
   Future<ReviewsPage> reviews(

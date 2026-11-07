@@ -212,6 +212,63 @@ void main() {
     },
   );
 
+  test('a window of at most 120 days is a single call', () async {
+    await repo.unavailableNights(
+      '00000000-0000-4000-8000-000000000001',
+      DateOnly(2026, 11, 1),
+      DateOnly(2026, 11, 1).addDays(120),
+    );
+    expect(recorded, hasLength(1));
+    expect(recorded.single.$2['p_from'], '2026-11-01');
+    expect(recorded.single.$2['p_to'], '2027-03-01');
+  });
+
+  test('a 121-day window is two contiguous calls', () async {
+    await repo.unavailableNights(
+      '00000000-0000-4000-8000-000000000001',
+      DateOnly(2026, 11, 1),
+      DateOnly(2026, 11, 1).addDays(121),
+    );
+    expect(recorded, hasLength(2));
+    expect(recorded[0].$2['p_to'], recorded[1].$2['p_from']);
+    expect(recorded.last.$2['p_to'], '2027-03-02');
+  });
+
+  test('a year-long window is sliced and the results are merged', () async {
+    final windows = <(DateOnly, DateOnly)>[];
+    final slicedRepo = SupabaseListingsRepository(
+      rpc: (function, params) async {
+        expect(function, 'guest_get_property_unavailable_dates');
+        final from = DateOnly.parse(params['p_from'] as String);
+        final to = DateOnly.parse(params['p_to'] as String);
+        windows.add((from, to));
+        // Only the second slice reports blocked nights.
+        return from == DateOnly(2027, 3, 1) ? [from.toString()] : <String>[];
+      },
+    );
+    final nights = await slicedRepo.unavailableNights(
+      '00000000-0000-4000-8000-000000000001',
+      DateOnly(2026, 11, 1),
+      DateOnly(2027, 11, 1),
+    );
+
+    expect(nights, {DateOnly(2027, 3, 1)});
+    // ceil(365 / 120) = 4 contiguous slices covering [from, to).
+    expect(windows, hasLength(4));
+    for (var i = 0; i < windows.length; i++) {
+      final (from, to) = windows[i];
+      final span = DateTime(to.year, to.month, to.day)
+          .difference(DateTime(from.year, from.month, from.day))
+          .inDays;
+      expect(span, lessThanOrEqualTo(120), reason: 'slice $i: $from→$to');
+      if (i > 0) {
+        expect(from, windows[i - 1].$2, reason: 'slice $i must be contiguous');
+      }
+    }
+    expect(windows.first.$1, DateOnly(2026, 11, 1));
+    expect(windows.last.$2, DateOnly(2027, 11, 1));
+  });
+
   test('reviews calls guest_list_property_reviews with pagination', () async {
     final page = await repo.reviews(
       '00000000-0000-4000-8000-000000000001',
