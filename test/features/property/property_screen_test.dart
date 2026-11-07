@@ -358,44 +358,26 @@ void main() {
     return (checkIn, checkIn.addDays(1));
   }
 
-  testWidgets('picking a valid range updates the bottom-bar caption', (
-    tester,
-  ) async {
-    listings.propertyResponses.add(details());
-    await pumpProperty(tester, signedIn: false);
+  testWidgets(
+    'the availability calendar is read-only: tapping a day selects nothing',
+    (tester) async {
+      listings.propertyResponses.add(details());
+      await pumpProperty(tester, signedIn: false);
 
-    final (checkIn, checkOut) = nextMonthPicks();
-    await gotoMonth(tester, l10n, checkIn);
-    await tester.tap(find.text('${checkIn.day}'));
-    await tester.pump();
-    await tester.tap(find.text('${checkOut.day}'));
-    await tester.pump();
-    await tester.tap(find.text(l10n.calendarConfirm));
-    await tester.pump(const Duration(milliseconds: 100));
+      final (checkIn, _) = nextMonthPicks();
+      await gotoMonth(tester, l10n, checkIn);
+      await tester.tap(find.text('${checkIn.day}'));
+      await tester.pump();
 
-    expect(
-      find.textContaining(DateOnlyFormatter.dayMonth(checkIn)),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('an invalid range shows calendarRangeInvalid', (tester) async {
-    listings.propertyResponses.add(details());
-    final (checkIn, _) = nextMonthPicks();
-    final checkOut = checkIn.addDays(2);
-    // A night strictly inside the range rejects it (the checkOut day itself
-    // would not).
-    listings.unavailableNightsResponses.add({checkIn.addDays(1)});
-    await pumpProperty(tester, signedIn: false);
-
-    await gotoMonth(tester, l10n, checkIn);
-    await tester.tap(find.text('${checkIn.day}'));
-    await tester.pump();
-    await tester.tap(find.text('${checkOut.day}'));
-    await tester.pump();
-
-    expect(find.text(l10n.calendarRangeInvalid), findsOneWidget);
-  });
+      // No picking here: no confirm button, no selection copy, and the
+      // bottom-bar caption stays on the nightly price.
+      expect(find.text(l10n.calendarConfirm), findsNothing);
+      expect(
+        find.textContaining(DateOnlyFormatter.dayMonth(checkIn)),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('a visitor «احجز الآن» goes to sign-in', (tester) async {
     listings.propertyResponses.add(details());

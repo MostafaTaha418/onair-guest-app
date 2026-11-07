@@ -18,7 +18,7 @@ final class RangeCalendar extends StatefulWidget {
   const RangeCalendar({
     required this.today,
     required this.initialMonth,
-    required this.onDayTap,
+    this.onDayTap,
     this.selectedCheckIn,
     this.selectedCheckOut,
     this.unavailableNights = const {},
@@ -43,7 +43,10 @@ final class RangeCalendar extends StatefulWidget {
   /// Months whose fetch failed; their days are greyed and not tappable like
   /// the loading ones, and a retry button is shown for the displayed month.
   final Set<int> failedMonthKeys;
-  final void Function(DateOnly day) onDayTap;
+
+  /// Null renders the calendar read-only: past, loading and unavailable
+  /// nights keep their disabled look, and selectable days stop responding.
+  final void Function(DateOnly day)? onDayTap;
   final void Function(DateOnly firstDayOfMonth)? onMonthShown;
 
   /// Reports the displayed month for a retry after its fetch failed.
@@ -259,7 +262,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     );
     final cell = Semantics(
       label: label,
-      button: !disabled,
+      button: !disabled && widget.onDayTap != null,
       selected: isStart || isEnd,
       excludeSemantics: true,
       child: Center(
@@ -275,9 +278,11 @@ final class _RangeCalendarState extends State<RangeCalendar> {
       ),
     );
     if (disabled) return cell;
+    final onTap = widget.onDayTap;
+    if (onTap == null) return cell;
     return InkWell(
       customBorder: const CircleBorder(),
-      onTap: () => widget.onDayTap(day),
+      onTap: () => onTap(day),
       child: cell,
     );
   }

@@ -8,7 +8,6 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
-import 'package:on_air/design_system/components/counter_stepper.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
@@ -19,8 +18,9 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
-/// The date step of the booking flow: pick the stay and the guests, then
-/// continue to the summary with a fresh server quote.
+/// The date step of the booking flow: the availability calendar lives here,
+/// so the guest picks the stay (guests stay at their initial count) and
+/// continues to the summary with a fresh server quote.
 final class DatesScreen extends StatefulWidget {
   const DatesScreen({
     required this.propertyId,
@@ -144,7 +144,6 @@ final class _DatesScreenState extends State<DatesScreen> {
               today: widget.today ?? CairoTime.today(),
               pickedArrival: _pickedArrival,
               onDayTap: _onDayTap,
-              onGuestsChanged: cubit.setGuests,
             ),
           },
         ),
@@ -182,14 +181,12 @@ final class _ReadyBody extends StatelessWidget {
     required this.today,
     required this.pickedArrival,
     required this.onDayTap,
-    required this.onGuestsChanged,
   });
 
   final BookingFlowState state;
   final DateOnly today;
   final DateOnly? pickedArrival;
   final void Function(DateOnly) onDayTap;
-  final ValueChanged<int> onGuestsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -199,6 +196,15 @@ final class _ReadyBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
       children: [
+        // The same availability container the details screen displays,
+        // interactive here: this is where the stay is picked.
+        Text(
+          l10n.propertyAvailability,
+          style: context.textStyles.sectionTitle.copyWith(
+            color: colors['textAccent'],
+          ),
+        ),
+        const SizedBox(height: 12),
         RangeCalendar(
           today: today,
           initialMonth: today,
@@ -207,28 +213,6 @@ final class _ReadyBody extends StatelessWidget {
           unavailableNights: state.unavailable,
           lastSelectableDay: today.addDays(364),
           onDayTap: onDayTap,
-        ),
-        const SizedBox(height: Dimens.space16),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.searchGuestsLabel,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colors.textPrimary,
-                ),
-              ),
-            ),
-            CounterStepper(
-              value: state.guests,
-              min: 1,
-              max: state.property!.maxGuests,
-              onChanged: onGuestsChanged,
-              label: l10n.searchGuestsLabel,
-              decrementTooltip: l10n.guestsDecrease,
-              incrementTooltip: l10n.guestsIncrease,
-            ),
-          ],
         ),
         if (stay != null) ...[
           const SizedBox(height: Dimens.space8),

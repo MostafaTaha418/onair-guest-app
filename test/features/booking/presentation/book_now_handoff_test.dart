@@ -187,7 +187,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('book now hands the stay, guests, and terms to the date step', (
+  testWidgets('book now hands the stay and terms to the date step', (
     tester,
   ) async {
     final checkIn = CairoTime.today().addDays(20);
@@ -206,13 +206,9 @@ void main() {
 
     expect(find.byType(DatesScreen), findsOneWidget);
     expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
-    // The stepper shows the carried guest count.
-    expect(
-      find.descendant(
-        of: find.byType(CounterStepper),
-        matching: find.text('2'),
-      ),
-      findsOneWidget,
-    );
+    // The availability container lives here now, and the guests stepper
+    // does not: the count stays at the carried value silently.
+    expect(find.text(l10n.propertyAvailability), findsOneWidget);
+    expect(find.byType(CounterStepper), findsNothing);
   });
 }
