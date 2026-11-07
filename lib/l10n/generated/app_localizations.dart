@@ -1382,6 +1382,18 @@ abstract class AppLocalizations {
   /// **'اختار التواريخ'**
   String get bookingDatesTitle;
 
+  /// No description provided for @bookingPickCheckIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار يوم الدخول'**
+  String get bookingPickCheckIn;
+
+  /// No description provided for @bookingPickCheckOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار يوم المغادرة'**
+  String get bookingPickCheckOut;
+
   /// No description provided for @bookingRangeHasUnavailable.
   ///
   /// In ar, this message translates to:

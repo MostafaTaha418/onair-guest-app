@@ -778,6 +778,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookingDatesTitle => 'Choose dates';
 
   @override
+  String get bookingPickCheckIn => 'Pick your check-in day';
+
+  @override
+  String get bookingPickCheckOut => 'Pick your check-out day';
+
+  @override
   String get bookingRangeHasUnavailable =>
       'This range includes an unavailable day. Choose other dates.';
 

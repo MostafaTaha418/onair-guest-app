@@ -237,11 +237,17 @@ GoRouter createAppRouter({
               connectivity: context.read<ConnectivityCubit>(),
               propertyId: propertyId,
               termsHash: query['terms'] ?? '',
-              initialStay: StayRange.tryCreate(
-                DateOnly.tryParse(query['checkIn']),
-                DateOnly.tryParse(query['checkOut']),
-                CairoTime.today(),
-              ),
+              // The dates screen starts with an empty calendar from search
+              // or the details page — the stay is picked there with two
+              // explicit taps. The carried dates only return from a payment
+              // retry, which restores the guest's picked stay.
+              initialStay: query['restore'] == 'stay'
+                  ? StayRange.tryCreate(
+                      DateOnly.tryParse(query['checkIn']),
+                      DateOnly.tryParse(query['checkOut']),
+                      CairoTime.today(),
+                    )
+                  : null,
               initialGuests: _boundedGuests(query['guests']),
             );
             unawaited(cubit.load());

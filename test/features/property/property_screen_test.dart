@@ -305,9 +305,10 @@ void main() {
     expect(find.text('booking-stub'), findsOneWidget);
     expect(bookingQuery, isNotNull);
     expect(bookingQuery!['terms'], 't1');
-    expect(bookingQuery!['checkIn'], '2026-11-20');
-    expect(bookingQuery!['checkOut'], '2026-11-23');
     expect(bookingQuery!['guests'], '4');
+    // The stay is picked on the dates screen, never carried in the URL.
+    expect(bookingQuery!.containsKey('checkIn'), isFalse);
+    expect(bookingQuery!.containsKey('checkOut'), isFalse);
   });
 
   testWidgets('«احجز الآن» is disabled offline', (tester) async {

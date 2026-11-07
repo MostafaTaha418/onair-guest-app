@@ -187,16 +187,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('book now hands the stay and terms to the date step', (
+  testWidgets('book now opens an empty date step that picks the stay', (
     tester,
   ) async {
-    final checkIn = CairoTime.today().addDays(20);
-    final checkOut = CairoTime.today().addDays(23);
     await pumpHandoff(
       tester,
       query: {
-        'checkIn': checkIn.toString(),
-        'checkOut': checkOut.toString(),
+        'checkIn': CairoTime.today().addDays(20).toString(),
+        'checkOut': CairoTime.today().addDays(23).toString(),
         'guests': '2',
       },
     );
@@ -205,10 +203,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DatesScreen), findsOneWidget);
-    expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
-    // The availability container lives here now, and the guests stepper
-    // does not: the count stays at the carried value silently.
+    // The calendar always starts empty: the carried stay is dropped and the
+    // guest picks check-in, then check-out, on the availability container.
     expect(find.text(l10n.propertyAvailability), findsOneWidget);
+    expect(find.text(l10n.bookingPickCheckIn), findsOneWidget);
+    expect(find.text(l10n.bookingNightsCount('3')), findsNothing);
     expect(find.byType(CounterStepper), findsNothing);
   });
 }

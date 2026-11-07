@@ -78,8 +78,22 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await registerMockGuest(tester, l10n);
   await pumpUntilFound(tester, find.byType(DatesScreen));
-  await pumpUntilFound(tester, find.text(l10n.bookingNightsCount('3')));
-  // 8. The date step carries the same stay and guests: three nights.
+  // 8. The date step starts empty even though the search carried a stay:
+  // the guest re-picks the same range on the availability container.
+  expect(find.text(l10n.bookingNightsCount('3')), findsNothing);
+  displayedMonth = DateOnly(today.year, today.month, 1);
+  while (displayedMonth.year != checkIn.year ||
+      displayedMonth.month != checkIn.month) {
+    await tester.tap(find.byTooltip(l10n.calendarNextMonth));
+    await tester.pumpAndSettle();
+    final shifted = displayedMonth.addDays(32);
+    displayedMonth = DateOnly(shifted.year, shifted.month, 1);
+  }
+  await tester.tap(calendarDay(checkIn.day));
+  await tester.pumpAndSettle();
+  await tester.tap(calendarDay(checkOut.day));
+  await tester.pumpAndSettle();
+  await tester.pumpAndSettle();
   expect(find.byType(DatesScreen), findsOneWidget);
   expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
 

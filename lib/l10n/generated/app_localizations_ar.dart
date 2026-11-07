@@ -779,6 +779,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookingDatesTitle => 'اختار التواريخ';
 
   @override
+  String get bookingPickCheckIn => 'اختار يوم الدخول';
+
+  @override
+  String get bookingPickCheckOut => 'اختار يوم المغادرة';
+
+  @override
   String get bookingRangeHasUnavailable =>
       'الفترة دي فيها يوم مش متاح. اختار تواريخ تانية.';
 

@@ -412,7 +412,8 @@ final class _Failed extends StatelessWidget {
                   '/book/${details.property.id}/dates'
                   '?checkIn=$checkIn&checkOut=$checkOut'
                   '&guests=${details.guests}'
-                  '&terms=${Uri.encodeQueryComponent(termsHash)}',
+                  '&terms=${Uri.encodeQueryComponent(termsHash)}'
+                  '&restore=stay',
                 );
               },
             ),

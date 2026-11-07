@@ -222,6 +222,18 @@ final class _ReadyBody extends StatelessWidget {
               color: colors.textPrimary,
             ),
           ),
+        ] else ...[
+          // Two-step picking: the hint names the step the guest is on, so a
+          // fresh calendar never reads like a stuck selection.
+          const SizedBox(height: Dimens.space8),
+          Text(
+            pickedArrival == null
+                ? l10n.bookingPickCheckIn
+                : l10n.bookingPickCheckOut,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colors.textSecondary,
+            ),
+          ),
         ],
         if (state.error != null) ...[
           const SizedBox(height: Dimens.space8),

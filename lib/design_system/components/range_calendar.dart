@@ -221,6 +221,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     );
     final disabled = isPast || isBeyond || isLoading || isFailed;
     final unavailable = widget.unavailableNights.contains(day);
+    final isToday = day == widget.today;
     final isStart = day == widget.selectedCheckIn;
     final isEnd = day == widget.selectedCheckOut;
     final checkIn = widget.selectedCheckIn;
@@ -234,6 +235,7 @@ final class _RangeCalendarState extends State<RangeCalendar> {
         day.isBefore(checkOut);
 
     Color? background;
+    Color? outline;
     var foreground = colors.textPrimary;
     var decoration = TextDecoration.none;
     if (isStart || isEnd) {
@@ -246,6 +248,11 @@ final class _RangeCalendarState extends State<RangeCalendar> {
     } else if (unavailable) {
       foreground = colors.textSecondary;
       decoration = TextDecoration.lineThrough;
+    } else if (isToday) {
+      // A marked but clearly not-selected today: an outline, never the
+      // filled pill a picked day wears.
+      outline = colors.primary;
+      foreground = colors.primary;
     }
 
     final label = unavailable
@@ -270,9 +277,15 @@ final class _RangeCalendarState extends State<RangeCalendar> {
           width: Dimens.minTouchTarget,
           height: Dimens.minTouchTarget,
           alignment: Alignment.center,
-          decoration: background == null
+          decoration: background == null && outline == null
               ? null
-              : BoxDecoration(color: background, shape: BoxShape.circle),
+              : BoxDecoration(
+                  color: background,
+                  shape: BoxShape.circle,
+                  border: outline == null
+                      ? null
+                      : Border.all(color: outline, width: 1.5),
+                ),
           child: text,
         ),
       ),
