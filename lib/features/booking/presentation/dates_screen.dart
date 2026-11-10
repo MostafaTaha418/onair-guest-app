@@ -48,7 +48,33 @@ final class _DatesScreenState extends State<DatesScreen> {
     final cubit = _cubit;
     final state = cubit.state;
     final arrival = _pickedArrival;
-    if (arrival == null || state.stay != null) {
+    final stay = state.stay;
+    if (stay != null && arrival == null) {
+      // A full range is on the calendar: a tap after the current check-in
+      // moves the departure in place, an earlier tap restarts the pick
+      // from a new arrival.
+      if (day.isAfter(stay.checkIn)) {
+        final range = StayRange(stay.checkIn, day);
+        if (!range.isSelectable(state.unavailable)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).bookingRangeHasUnavailable,
+              ),
+            ),
+          );
+          return;
+        }
+        cubit.setStay(range);
+        return;
+      }
+      setState(() {
+        _pickedArrival = day;
+      });
+      cubit.setStay(null);
+      return;
+    }
+    if (arrival == null || stay != null) {
       setState(() {
         _pickedArrival = day;
       });
