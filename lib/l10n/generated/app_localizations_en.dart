@@ -969,6 +969,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get bookingsOfflineHint => 'Check your connection and try again.';
+
+  @override
+  String get bookingsStatusUpdating => 'Updating status…';
+
+  @override
+  String get bookingNeedsActionLead => 'Needs your action:';
+
+  @override
+  String ownerDeadlineDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get bookingStatusPaymentPending => 'Payment not completed';
 
   @override

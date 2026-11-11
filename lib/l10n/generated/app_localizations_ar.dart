@@ -962,6 +962,29 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get bookingsOfflineHint => 'اتأكد من الاتصال وحاول تاني.';
+
+  @override
+  String get bookingsStatusUpdating => 'جارٍ تحديث الحالة…';
+
+  @override
+  String get bookingNeedsActionLead => 'مطلوب منك:';
+
+  @override
+  String ownerDeadlineDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوم',
+      many: '$count يوم',
+      few: '$count أيام',
+      two: 'يومين',
+      one: 'يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get bookingStatusPaymentPending => 'بانتظار إتمام الدفع';
 
   @override

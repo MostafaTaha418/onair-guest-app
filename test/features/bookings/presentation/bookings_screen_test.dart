@@ -180,10 +180,15 @@ void main() {
   ) async {
     await pumpBookings(tester);
     expect(find.byType(CountdownText), findsWidgets);
+    // A fixture deadline already in the past shows "updating status" at zero.
     expect(
-      find.textContaining(RegExp(r'\d+:\d{2}')),
+      find.textContaining(
+        RegExp(
+          r'\d+:\d{2}|' + RegExp.escape(l10n.bookingsStatusUpdating),
+        ),
+      ),
       findsWidgets,
-      reason: 'the countdown text shows an H:MM remaining',
+      reason: 'the strip shows the time left or that the status is updating',
     );
   });
 

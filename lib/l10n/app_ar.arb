@@ -540,6 +540,17 @@
       }
     }
   },
+  "bookingsOfflineHint": "اتأكد من الاتصال وحاول تاني.",
+  "bookingsStatusUpdating": "جارٍ تحديث الحالة…",
+  "bookingNeedsActionLead": "مطلوب منك:",
+  "ownerDeadlineDays": "{count, plural, =1{يوم} =2{يومين} few{{count} أيام} many{{count} يوم} other{{count} يوم}}",
+  "@ownerDeadlineDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bookingStatusPaymentPending": "بانتظار إتمام الدفع",
   "bookingStatusPaymentVerifying": "جارٍ التحقق من الدفع",
   "bookingStatusAwaitingOwner": "بانتظار تأكيد المالك",

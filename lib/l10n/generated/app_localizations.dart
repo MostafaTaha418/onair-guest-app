@@ -1718,6 +1718,30 @@ abstract class AppLocalizations {
   /// **'آخر تحديث: {time}'**
   String lastUpdated(String time);
 
+  /// No description provided for @bookingsOfflineHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتأكد من الاتصال وحاول تاني.'**
+  String get bookingsOfflineHint;
+
+  /// No description provided for @bookingsStatusUpdating.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديث الحالة…'**
+  String get bookingsStatusUpdating;
+
+  /// No description provided for @bookingNeedsActionLead.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطلوب منك:'**
+  String get bookingNeedsActionLead;
+
+  /// No description provided for @ownerDeadlineDays.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{يوم} =2{يومين} few{{count} أيام} many{{count} يوم} other{{count} يوم}}'**
+  String ownerDeadlineDays(int count);
+
   /// No description provided for @bookingStatusPaymentPending.
   ///
   /// In ar, this message translates to:
