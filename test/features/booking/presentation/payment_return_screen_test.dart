@@ -31,10 +31,12 @@ void main() {
   late FakeInAppBrowser browser;
   late PaymentAttemptCubit attemptCubit;
   late AppLocalizations l10n;
+  late AppLocalizations l10nEn;
 
   setUpAll(() async {
     await initializeDateFormatting('ar');
     l10n = await AppLocalizations.delegate.load(const Locale('ar'));
+    l10nEn = await AppLocalizations.delegate.load(const Locale('en'));
     CairoTime.initialize();
   });
 
@@ -88,10 +90,16 @@ void main() {
   Future<void> pumpReturn(
     WidgetTester tester, {
     required String bookingId,
+    Size size = const Size(400, 1800),
+    double textScaleFactor = 1,
+    Locale locale = const Locale('ar'),
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
-    tester.view.physicalSize = const Size(400, 1800);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
+    tester.platformDispatcher.textScaleFactorTestValue = textScaleFactor;
     addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     final router = GoRouter(
       initialLocation: AppRoutes.paymentReturn(bookingId: bookingId),
       routes: [
@@ -137,6 +145,8 @@ void main() {
       ),
       bookingBackend: backend,
       connectivityCubit: connectivity.createCubit(),
+      locale: locale,
+      themeMode: themeMode,
     );
     await tester.pump();
   }
@@ -151,6 +161,68 @@ void main() {
     expect(find.text(l10n.paymentVerifying), findsNWidgets(2));
     expect(find.byKey(const ValueKey('return-try-again')), findsNothing);
     expect(find.byKey(const ValueKey('summary-pay')), findsNothing);
+  });
+
+  testWidgets('waiting immediately offers the stored checkout recovery', (
+    tester,
+  ) async {
+    final bookingId = await bookingFor(MockPaymentResult.silent);
+    await backend.paymentAttempts.save(
+      PaymentAttempt(
+        attemptKey: 'attempt-wait-${++attemptCounter}'.padRight(36, '0'),
+        quoteId: 'quote-x',
+        propertyId: property1f,
+        termsHash: 'mock-terms-1',
+        bookingId: bookingId,
+        paymentUrl: 'https://pay.mock.onair.test/session/$bookingId',
+        paymentUrlExpiresAt: DateTime.now().toUtc().add(
+          const Duration(minutes: 5),
+        ),
+        startedAt: DateTime.now().toUtc(),
+      ),
+    );
+    await attemptCubit.restore();
+    await pumpReturn(tester, bookingId: bookingId);
+
+    expect(
+      find.byKey(const ValueKey('return-reopen-checkout')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('recovery supports narrow English, dark mode and large text', (
+    tester,
+  ) async {
+    final bookingId = await bookingFor(MockPaymentResult.silent);
+    await backend.paymentAttempts.save(
+      PaymentAttempt(
+        attemptKey: 'attempt-a11y-${++attemptCounter}'.padRight(36, '0'),
+        quoteId: 'quote-x',
+        propertyId: property1f,
+        termsHash: 'mock-terms-1',
+        bookingId: bookingId,
+        paymentUrl: 'https://pay.mock.onair.test/session/$bookingId',
+        paymentUrlExpiresAt: DateTime.now().toUtc().add(
+          const Duration(minutes: 5),
+        ),
+        startedAt: DateTime.now().toUtc(),
+      ),
+    );
+    await attemptCubit.restore();
+    await pumpReturn(
+      tester,
+      bookingId: bookingId,
+      size: const Size(320, 700),
+      textScaleFactor: 1.6,
+      locale: const Locale('en'),
+      themeMode: ThemeMode.dark,
+    );
+
+    final action = find.text(l10nEn.paymentResumeCheckout);
+    expect(action, findsOneWidget);
+    expect(Directionality.of(tester.element(action)), TextDirection.ltr);
+    expect(Theme.of(tester.element(action)).brightness, Brightness.dark);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('success shows the title, the countdown, and view booking', (
@@ -303,6 +375,40 @@ void main() {
 
     expect(find.text(l10n.paymentTimeoutTitle), findsOneWidget);
     expect(await backend.paymentAttempts.read(), isNotNull);
+  });
+
+  testWidgets('a timeout can reopen a still-valid checkout once', (
+    tester,
+  ) async {
+    final bookingId = await bookingFor(MockPaymentResult.silent);
+    await backend.paymentAttempts.save(
+      PaymentAttempt(
+        attemptKey: 'attempt-reopen-${++attemptCounter}'.padRight(36, '0'),
+        quoteId: 'quote-x',
+        propertyId: property1f,
+        termsHash: 'mock-terms-1',
+        bookingId: bookingId,
+        paymentUrl: 'https://pay.mock.onair.test/session/$bookingId',
+        paymentUrlExpiresAt: DateTime.now().toUtc().add(
+          const Duration(minutes: 5),
+        ),
+        startedAt: DateTime.now().toUtc(),
+      ),
+    );
+    await attemptCubit.restore();
+    await pumpReturn(tester, bookingId: bookingId);
+    await tester.pump(const Duration(seconds: 125));
+    await tester.pumpAndSettle();
+
+    final reopen = find.byKey(const ValueKey('return-reopen-checkout'));
+    expect(reopen, findsOneWidget);
+    await tester.tap(reopen);
+    await tester.pump();
+    await tester.tap(reopen);
+    await tester.pump();
+
+    expect(browser.opened, hasLength(1));
+    expect(browser.opened.single.bookingId, bookingId);
   });
 
   Future<String> remainingBookingFor(MockPaymentResult result) async {

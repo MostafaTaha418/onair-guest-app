@@ -885,6 +885,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentTimeoutBody => 'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.';
 
   @override
+  String get paymentResumeCheckout => 'ارجع لصفحة الدفع';
+
+  @override
   String get paymentGoToBookings => 'اذهب لحجوزاتي';
 
   @override

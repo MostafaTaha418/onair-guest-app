@@ -43,6 +43,7 @@ extension PumpOnAirApp on WidgetTester {
     required AppConfigSource appConfigRepository,
     AuthCubit? authCubit,
     ThemeMode themeMode = ThemeMode.light,
+    Locale locale = const Locale('ar'),
     ListingsRepository? listingsRepository,
     FakeBookingBackend? bookingBackend,
     ConnectivityCubit? connectivityCubit,
@@ -119,10 +120,10 @@ extension PumpOnAirApp on WidgetTester {
         // A connectivity cubit is provided only when a test hands one in:
         // constructing the real one touches the platform channel.
         child: connectivityCubit == null
-            ? _inner(cubit, child, routerConfig)
+            ? _inner(cubit, child, routerConfig, themeMode, locale)
             : BlocProvider<ConnectivityCubit>.value(
                 value: connectivityCubit,
-                child: _inner(cubit, child, routerConfig),
+                child: _inner(cubit, child, routerConfig, themeMode, locale),
               ),
       ),
     );
@@ -133,26 +134,32 @@ extension PumpOnAirApp on WidgetTester {
     AuthCubit cubit,
     Widget child,
     RouterConfig<Object>? routerConfig,
+    ThemeMode themeMode,
+    Locale locale,
   ) => BlocProvider<AuthCubit>.value(
     value: cubit,
     child: routerConfig == null
         ? MaterialApp(
-            locale: const Locale('ar'),
+            locale: locale,
             supportedLocales: const [Locale('ar'), Locale('en')],
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             theme: OnAirTheme.light,
             darkTheme: OnAirTheme.dark,
+            themeMode: themeMode,
             home: Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: locale.languageCode == 'ar'
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
               child: child,
             ),
           )
         : MaterialApp.router(
-            locale: const Locale('ar'),
+            locale: locale,
             supportedLocales: const [Locale('ar'), Locale('en')],
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             theme: OnAirTheme.light,
             darkTheme: OnAirTheme.dark,
+            themeMode: themeMode,
             routerConfig: routerConfig,
           ),
   );

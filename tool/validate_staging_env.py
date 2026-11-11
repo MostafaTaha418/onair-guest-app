@@ -14,6 +14,7 @@ REQUIRED_KEYS = {
 # Optional. A distributed Staging build must talk to the real backend, so the
 # in-memory mock (Guest Plan 2.6) is rejected here.
 OPTIONAL_KEYS = {"BACKEND_MODE"}
+STAGING_API_BASE_URL = "https://api.on-air.website"
 
 
 def validate(values):
@@ -31,6 +32,8 @@ def validate(values):
         if (url.scheme != "https" or not url.hostname or url.username or url.password
                 or url.query or url.fragment or any(c.isspace() for c in values[name])):
             raise ValueError(f"{name} must be an HTTPS endpoint without credentials, query or fragment.")
+    if values["NODE_API_BASE_URL"] != STAGING_API_BASE_URL:
+        raise ValueError(f"NODE_API_BASE_URL must be {STAGING_API_BASE_URL}.")
     domain = values["LINK_DOMAIN"]
     if not re.fullmatch(r"(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}", domain):
         raise ValueError("LINK_DOMAIN must be a bare DNS hostname.")

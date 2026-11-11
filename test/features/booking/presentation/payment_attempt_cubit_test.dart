@@ -371,6 +371,38 @@ void main() {
     await restored.close();
   });
 
+  test('a restored attempt can reopen an unexpired checkout session', () async {
+    final attempt = PaymentAttempt(
+      attemptKey: 'key-reopen'.padRight(36, '0'),
+      quoteId: 'quote-x',
+      propertyId: property1f,
+      termsHash: 'mock-terms-1',
+      bookingId: 'b0000000-0000-4000-8000-000000000099',
+      paymentUrl: 'https://pay.mock.onair.test/session/reopen',
+      paymentUrlExpiresAt: DateTime.utc(2026, 11, 1, 10),
+      startedAt: DateTime.utc(2026, 11, 1, 9),
+    );
+    await backend.paymentAttempts.save(attempt);
+    final restored = PaymentAttemptCubit(
+      flow: flow,
+      store: backend.paymentAttempts,
+      browser: () => browser,
+      logger: AppLogger(sink: (_) {}),
+      now: () => DateTime.utc(2026, 11, 1, 9, 30),
+    );
+    await restored.restore();
+
+    expect(restored.canReopenPage, isTrue);
+    await restored.reopenPage();
+
+    expect(browser.opened, hasLength(1));
+    expect(
+      browser.opened.single.url,
+      Uri.parse('https://pay.mock.onair.test/session/reopen'),
+    );
+    await restored.close();
+  });
+
   test('restore stays idle for an attempt without a booking', () async {
     final attempt = PaymentAttempt(
       attemptKey: 'key-8'.padRight(36, '0'),

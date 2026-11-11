@@ -112,6 +112,7 @@ class EnvironmentTest(unittest.TestCase):
         cases = [
             ("FLAVOR", "production"), ("FLAVOR", ""),
             ("NODE_API_BASE_URL", "http://api.on-air.website"),
+            ("NODE_API_BASE_URL", "https://old-tunnel.example.com"),
             ("SUPABASE_URL", "https://user:password@test.supabase.co"),
             ("SUPABASE_URL", "https://test.supabase.co?secret=hidden"),
             ("LINK_DOMAIN", "https://on-air.website"),
@@ -132,6 +133,30 @@ class EnvironmentTest(unittest.TestCase):
             result = subprocess.run([sys.executable, str(TOOL / "validate_staging_env.py"), str(path)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 1)
             self.assertNotIn(secret, result.stdout + result.stderr)
+
+
+class AndroidSigningTest(unittest.TestCase):
+    def test_staging_distribution_requires_all_stable_signing_secrets(self):
+        workflow = (TOOL.parent / ".github" / "workflows" / "staging-build.yml").read_text(
+            encoding="utf-8"
+        )
+        for name in (
+            "ONAIR_UPLOAD_KEYSTORE_BASE64",
+            "ONAIR_UPLOAD_KEYSTORE_PASSWORD",
+            "ONAIR_UPLOAD_KEY_ALIAS",
+            "ONAIR_UPLOAD_KEY_PASSWORD",
+        ):
+            with self.subTest(name=name):
+                self.assertIn(f"secrets.{name}", workflow)
+        self.assertIn("Stable Android signing secrets are required", workflow)
+
+    def test_every_release_build_fails_closed_without_the_upload_key(self):
+        gradle = (TOOL.parent / "android" / "app" / "build.gradle.kts").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('task.name.contains("Release")', gradle)
+        self.assertIn("if (buildsRelease && !hasReleaseKeystore)", gradle)
+        self.assertNotIn('signingConfigs.getByName("debug")', gradle)
 
 
 if __name__ == "__main__":

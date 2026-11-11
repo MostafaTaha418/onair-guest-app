@@ -892,6 +892,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Don\'t worry and don\'t pay again. We will notify you once it is confirmed.';
 
   @override
+  String get paymentResumeCheckout => 'Return to checkout';
+
+  @override
   String get paymentGoToBookings => 'Go to My Bookings';
 
   @override

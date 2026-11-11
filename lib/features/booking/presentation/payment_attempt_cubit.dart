@@ -203,17 +203,30 @@ final class PaymentAttemptCubit extends Cubit<PaymentAttemptState> {
     }
   }
 
-  /// Reopens the Kashier page while the session is still valid (iOS
-  /// fallback, research R4).
+  bool get canReopenPage {
+    final attempt = switch (state) {
+      AttemptOpened(:final attempt) => attempt,
+      AttemptReturned(:final attempt) => attempt,
+      _ => null,
+    };
+    final url = attempt?.paymentUrl;
+    final expiresAt = attempt?.paymentUrlExpiresAt;
+    return url != null && expiresAt != null && expiresAt.isAfter(_now());
+  }
+
+  /// Reopens the Kashier page while the session is still valid. This is the
+  /// recovery path when a custom tab is closed before Kashier redirects.
   Future<void> reopenPage() async {
-    final state = this.state;
-    if (state is! AttemptOpened) return;
-    final url = state.attempt.paymentUrl;
-    final expiresAt = state.attempt.paymentUrlExpiresAt;
-    if (url == null || expiresAt == null || !expiresAt.isAfter(_now())) {
-      return;
-    }
-    await _browser().open(Uri.parse(url), bookingId: state.attempt.bookingId!);
+    final attempt = switch (state) {
+      AttemptOpened(:final attempt) => attempt,
+      AttemptReturned(:final attempt) => attempt,
+      _ => null,
+    };
+    if (!canReopenPage || attempt?.bookingId == null) return;
+    await _browser().open(
+      Uri.parse(attempt!.paymentUrl!),
+      bookingId: attempt.bookingId!,
+    );
   }
 
   /// The server confirmed a final outcome: the record goes.

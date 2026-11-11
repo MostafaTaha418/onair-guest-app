@@ -1574,6 +1574,12 @@ abstract class AppLocalizations {
   /// **'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.'**
   String get paymentTimeoutBody;
 
+  /// No description provided for @paymentResumeCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارجع لصفحة الدفع'**
+  String get paymentResumeCheckout;
+
   /// No description provided for @paymentGoToBookings.
   ///
   /// In ar, this message translates to:

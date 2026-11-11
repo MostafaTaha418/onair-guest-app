@@ -502,6 +502,7 @@
   "paymentFindOtherDates": "ابحث عن تواريخ تانية",
   "paymentTimeoutTitle": "لسه موصلناش تأكيد الدفع",
   "paymentTimeoutBody": "متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.",
+  "paymentResumeCheckout": "ارجع لصفحة الدفع",
   "paymentGoToBookings": "اذهب لحجوزاتي",
   "mockPaymentTitle": "صفحة دفع تجريبية",
   "mockPaySuccess": "دفع ناجح",

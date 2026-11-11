@@ -20,7 +20,12 @@ fun signingValue(property: String, environment: String): String? =
     keystoreProperties.getProperty(property) ?: System.getenv(environment)
 
 val releaseStoreFile = signingValue("storeFile", "ONAIR_UPLOAD_KEYSTORE")
-val hasReleaseKeystore = releaseStoreFile != null
+val releaseStorePassword = signingValue("storePassword", "ONAIR_UPLOAD_KEYSTORE_PASSWORD")
+val releaseKeyAlias = signingValue("keyAlias", "ONAIR_UPLOAD_KEY_ALIAS")
+val releaseKeyPassword = signingValue("keyPassword", "ONAIR_UPLOAD_KEY_PASSWORD")
+val hasReleaseKeystore =
+    listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword)
+        .all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.onair.guest"
@@ -50,12 +55,11 @@ android {
 
     signingConfigs {
         create("release") {
-            if (releaseStoreFile != null) {
-                storeFile = file(releaseStoreFile)
-                storePassword =
-                    signingValue("storePassword", "ONAIR_UPLOAD_KEYSTORE_PASSWORD")
-                keyAlias = signingValue("keyAlias", "ONAIR_UPLOAD_KEY_ALIAS")
-                keyPassword = signingValue("keyPassword", "ONAIR_UPLOAD_KEY_PASSWORD")
+            if (hasReleaseKeystore) {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
             }
         }
     }
@@ -69,15 +73,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // Upload key when available. Without it only Staging may fall back
-            // to the debug key (internal Firebase distribution); production
-            // release builds fail below instead of shipping a debug signature.
-            signingConfig =
-                if (hasReleaseKeystore) {
-                    signingConfigs.getByName("release")
-                } else {
-                    signingConfigs.getByName("debug")
-                }
+            // Every release artifact (including Staging) uses the stable upload
+            // key. Debug variants continue to use Android's separate debug key.
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -96,15 +94,15 @@ android {
 }
 
 gradle.taskGraph.whenReady {
-    val buildsProductionRelease =
+    val buildsRelease =
         allTasks.any { task ->
             task.project == project &&
-                task.name.contains("ProductionRelease") &&
+                task.name.contains("Release") &&
                 (task.name.startsWith("assemble") || task.name.startsWith("bundle"))
         }
-    if (buildsProductionRelease && !hasReleaseKeystore) {
+    if (buildsRelease && !hasReleaseKeystore) {
         throw GradleException(
-            "Production release builds need the upload key: add android/key.properties " +
+            "Release builds need the stable upload key: add android/key.properties " +
                 "or set ONAIR_UPLOAD_KEYSTORE, ONAIR_UPLOAD_KEYSTORE_PASSWORD, " +
                 "ONAIR_UPLOAD_KEY_ALIAS, and ONAIR_UPLOAD_KEY_PASSWORD.",
         )

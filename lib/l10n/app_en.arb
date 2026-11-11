@@ -468,6 +468,7 @@
   "paymentFindOtherDates": "Find other dates",
   "paymentTimeoutTitle": "We have not received payment confirmation yet",
   "paymentTimeoutBody": "Don't worry and don't pay again. We will notify you once it is confirmed.",
+  "paymentResumeCheckout": "Return to checkout",
   "paymentGoToBookings": "Go to My Bookings",
   "mockPaymentTitle": "Test payment page",
   "mockPaySuccess": "Succeed",
