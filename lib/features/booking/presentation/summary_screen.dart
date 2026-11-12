@@ -10,14 +10,7 @@ import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
-import 'package:on_air/design_system/components/amount_row.dart';
-import 'package:on_air/design_system/components/bottom_action_bar.dart';
-import 'package:on_air/design_system/components/info_banner.dart';
-import 'package:on_air/design_system/components/notice_card.dart';
-import 'package:on_air/design_system/components/on_air_network_image.dart';
-import 'package:on_air/design_system/components/on_air_primary_button.dart';
-import 'package:on_air/design_system/components/state_views.dart';
-import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
@@ -41,9 +34,11 @@ final class SummaryScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final attemptCubit = context.read<PaymentAttemptCubit>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.bookingSummaryTitle),
-        leading: BackButton(onPressed: () => context.pop()),
+      backgroundColor: context.colors.background,
+      appBar: flowAppBar(
+        context,
+        title: l10n.bookingSummaryTitle,
+        onBack: () => context.pop(),
       ),
       body: BlocBuilder<BookingFlowCubit, BookingFlowState>(
         builder: (context, state) {
@@ -51,23 +46,30 @@ final class SummaryScreen extends StatelessWidget {
           // gone. The fact lives in this booking's own flow cubit, so it
           // never leaks into another apartment's summary.
           if (state.load == FlowLoad.notAvailable) {
-            return EmptyView(
-              icon: AppIcons.homeOutlined,
+            return FlowStateView(
+              icon: AppIcons.apartment,
               message: l10n.propertyNotAvailable,
-              action: OnAirPrimaryButton(
+              action: FlowButton(
                 label: l10n.bookingsFindApartment,
+                icon: AppIcons.search,
+                expand: false,
                 onPressed: () => context.go(AppRoutes.search),
               ),
             );
           }
-          final quote = state.quote;
-          final property = state.property;
-          if (quote == null || property == null) {
+          if (state.quote == null || state.property == null) {
             // The draft is gone (restart, expired branch): start from the
             // page.
-            return ErrorView(
+            return FlowStateView(
+              icon: AppIcons.history,
               message: l10n.bookingQuoteExpired,
-              onRetry: () => context.pop(),
+              action: FlowButton(
+                label: l10n.dialogBack,
+                icon: AppIcons.arrowBackRounded,
+                kind: FlowButtonKind.outlined,
+                expand: false,
+                onPressed: () => context.pop(),
+              ),
             );
           }
           return _SummaryBody(flow: state);
@@ -90,173 +92,242 @@ final class _SummaryBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colors = context.colors;
+    final locale = l10n.localeName;
+    final online = context.watch<ConnectivityCubit>().state.isOnline;
     final quote = flow.quote!;
     final property = flow.property!;
     final change = flow.pendingChange;
-    String? previousValue(QuoteField field) {
-      if (change == null || !change.changedFields.contains(field)) return null;
-      return switch (field) {
-        QuoteField.nightly => MoneyFormatter().format(change.previous.nightly),
-        QuoteField.total => MoneyFormatter().format(change.previous.total),
-        QuoteField.payNow => MoneyFormatter().format(change.previous.payNow),
-        QuoteField.remaining => MoneyFormatter().format(
-          change.previous.remaining,
-        ),
-        QuoteField.remainingDueAt => l10n.bookingRemainingDue(
-          DateOnlyFormatter.dayMonth(
-            DateOnly.fromDateTime(change.previous.remainingDueAt!),
-            locale: AppLocalizations.of(context).localeName,
-          ),
-        ),
-        // The hash itself has no row; it only blocks payment until accepted.
-        QuoteField.termsHash => null,
-      };
+    final money = MoneyFormatter();
+    bool changed(QuoteField field) =>
+        change?.changedFields.contains(field) ?? false;
+    String dueText(DateTime dueAt) => l10n.bookingRemainingDue(
+      DateOnlyFormatter.dayMonth(DateOnly.fromDateTime(dueAt), locale: locale),
+    );
+
+    /// A money row; a changed one shows the old amount and counts up to the
+    /// new one (both are server values — nothing is computed).
+    FlowDataRow moneyRow(
+      String label,
+      QuoteField field,
+      Money Function(BookingQuote quote) pick, {
+      bool emphasized = false,
+    }) {
+      final now = pick(quote);
+      final before = change == null ? null : pick(change.previous);
+      return FlowDataRow(
+        label: label,
+        value: money.format(now),
+        emphasized: emphasized,
+        changed: changed(field),
+        previous: before == null ? null : money.format(before),
+        countUp: before == null
+            ? null
+            : FlowCountUp(
+                from: before.amountMinor,
+                to: now.amountMinor,
+                format: (minor) => money.format(Money(minor)),
+              ),
+      );
     }
 
-    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-      color: colors.textPrimary,
-    );
     return ListView(
-      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
-      children: [
-        if (change != null) ...[
-          InfoBanner(
-            message: l10n.quoteChangedNotice,
-            tone: StatusTone.warning,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        Dimens.screenSide,
+        Dimens.space8,
+        Dimens.screenSide,
+        Dimens.space24,
+      ),
+      children: _gap([
+        if (!online) const FlowOfflineBanner(icon: AppIcons.wifiOff),
+        if (change != null)
+          FlowFadeUp(
+            child: FlowBanner(
+              icon: AppIcons.warningOutline,
+              message: l10n.quoteChangedNotice,
+              tone: FlowBannerTone.warning,
+              liveRegion: true,
+            ),
           ),
-          const SizedBox(height: Dimens.space12),
-        ],
-        if (flow.termsChanged) ...[
-          NoticeCard(
-            icon: AppIcons.historyEdu,
-            message: l10n.termsChangedNotice,
+        if (flow.termsChanged)
+          FlowFadeUp(
+            delayMs: 40,
+            child: FlowNoticeCard(
+              icon: AppIcons.gavel,
+              tone: FlowTone.warning,
+              message: l10n.termsChangedNotice,
+              action: _AgreeTermsButton(enabled: online),
+            ),
           ),
-          const SizedBox(height: Dimens.space12),
-        ],
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(Dimens.radiusCard),
-              child: SizedBox(
-                width: 96,
-                height: 72,
-                child: OnAirNetworkImage(
-                  variants: property.images.isEmpty
-                      ? const []
-                      : property.images.first.variants,
-                ),
+        FlowFadeUp(
+          delayMs: 80,
+          child: FlowCard(
+            padding: const EdgeInsetsDirectional.all(Dimens.space12),
+            child: FlowPropertyHeader(
+              variants: property.images.isEmpty
+                  ? const []
+                  : property.images.first.variants,
+              title: property.title,
+              subtitle: l10n.placeAreaCity(
+                property.areaName,
+                property.cityName,
               ),
             ),
-            const SizedBox(width: Dimens.space12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(property.title, style: titleStyle),
-                  Text(
-                    AppLocalizations.of(context).placeAreaCity(
-                      property.areaName,
-                      property.cityName,
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.textSecondary,
-                    ),
+          ),
+        ),
+        FlowFadeUp(
+          delayMs: 120,
+          child: FlowRowsCard(
+            children: [
+              FlowDataRow(
+                label: l10n.searchDatesLabel,
+                value:
+                    '${DateOnlyFormatter.dayMonth(quote.stay.checkIn, locale: locale)} – '
+                    '${DateOnlyFormatter.dayMonth(quote.stay.checkOut, locale: locale)}',
+              ),
+              FlowDataRow(label: l10n.bookingNights, value: '${quote.nights}'),
+              FlowDataRow(
+                label: l10n.searchGuestsLabel,
+                value: '${quote.guests}',
+              ),
+              moneyRow(
+                l10n.bookingNightlyPrice,
+                QuoteField.nightly,
+                (q) => q.nightly,
+              ),
+              const FlowRowDivider(),
+              moneyRow(
+                l10n.bookingTotal,
+                QuoteField.total,
+                (q) => q.total,
+                emphasized: true,
+              ),
+              moneyRow(
+                l10n.bookingPayNow,
+                QuoteField.payNow,
+                (q) => q.payNow,
+                emphasized: true,
+              ),
+              if (!quote.isFullPayment) ...[
+                moneyRow(
+                  l10n.bookingRemaining,
+                  QuoteField.remaining,
+                  (q) => q.remaining,
+                ),
+                if (quote.remainingDueAt != null)
+                  FlowDataRow(
+                    label: l10n.bookingRemaining,
+                    value: dueText(quote.remainingDueAt!),
+                    changed: changed(QuoteField.remainingDueAt),
+                    previous: change?.previous.remainingDueAt == null
+                        ? null
+                        : dueText(change!.previous.remainingDueAt!),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: Dimens.space16),
-        AmountRow(
-          label: l10n.searchDatesLabel,
-          value:
-              '${DateOnlyFormatter.dayMonth(quote.stay.checkIn, locale: AppLocalizations.of(context).localeName)} – '
-              '${DateOnlyFormatter.dayMonth(quote.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
-        ),
-        AmountRow(
-          label: l10n.bookingNights,
-          value: l10n.bookingNightsCount('${quote.nights}'),
-        ),
-        AmountRow(
-          label: l10n.searchGuestsLabel,
-          value: '${quote.guests}',
-        ),
-        AmountRow(
-          label: l10n.bookingNightlyPrice,
-          value: MoneyFormatter().format(quote.nightly),
-          previousValue: previousValue(QuoteField.nightly),
-          highlighted:
-              change?.changedFields.contains(QuoteField.nightly) ?? false,
-        ),
-        AmountRow(
-          label: l10n.bookingTotal,
-          value: MoneyFormatter().format(quote.total),
-          previousValue: previousValue(QuoteField.total),
-          highlighted:
-              change?.changedFields.contains(QuoteField.total) ?? false,
-          emphasized: true,
-        ),
-        AmountRow(
-          label: l10n.bookingPayNow,
-          value: MoneyFormatter().format(quote.payNow),
-          previousValue: previousValue(QuoteField.payNow),
-          highlighted:
-              change?.changedFields.contains(QuoteField.payNow) ?? false,
-          emphasized: true,
-        ),
-        if (!quote.isFullPayment) ...[
-          AmountRow(
-            label: l10n.bookingRemaining,
-            value: MoneyFormatter().format(quote.remaining),
-            previousValue: previousValue(QuoteField.remaining),
-            highlighted:
-                change?.changedFields.contains(QuoteField.remaining) ?? false,
+              ],
+            ],
           ),
-          if (quote.remainingDueAt != null)
-            AmountRow(
-              label: l10n.bookingRemaining,
-              value: l10n.bookingRemainingDue(
-                DateOnlyFormatter.dayMonth(
-                  DateOnly.fromDateTime(quote.remainingDueAt!),
-                  locale: AppLocalizations.of(context).localeName,
+        ),
+        FlowFadeUp(
+          delayMs: 160,
+          child: FlowSectionTitle(l10n.bookingPolicyTitle),
+        ),
+        FlowFadeUp(
+          delayMs: 200,
+          // Changed terms show the reloaded property's lines — the quote may
+          // still carry the old snapshot.
+          child: FlowBulletCard(
+            lines: [
+              for (final line in policyLines(
+                flow.termsChanged
+                    ? property.policy
+                    : (quote.policySummary ?? property.policy),
+              ))
+                policyLineText(line, l10n),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(top: Dimens.space4),
+          child: FlowFadeUp(
+            delayMs: 240,
+            child: FlowBanner(
+              icon: AppIcons.infoOutline,
+              message: l10n.bookingSummaryOwnerNotice,
+              tone: FlowBannerTone.info,
+            ),
+          ),
+        ),
+        BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
+          builder: (context, attempt) {
+            final opened =
+                attempt is AttemptOpened &&
+                attempt.attempt.quoteId == quote.quoteId;
+            if (!opened) return const SizedBox.shrink();
+            return FlowFadeUp(
+              child: FlowBanner(
+                icon: AppIcons.creditcard,
+                message: l10n.paymentReturnHint,
+                tone: FlowBannerTone.info,
+                action: FlowButton(
+                  label: l10n.paymentCheckStatus,
+                  kind: FlowButtonKind.outlined,
+                  expand: false,
+                  textSize: 14,
+                  onPressed: online
+                      ? () => context.go(
+                          AppRoutes.paymentReturn(
+                            bookingId: attempt.attempt.bookingId,
+                          ),
+                        )
+                      : null,
                 ),
               ),
-              previousValue: previousValue(QuoteField.remainingDueAt),
-              highlighted:
-                  change?.changedFields.contains(QuoteField.remainingDueAt) ??
-                  false,
-            ),
-        ],
-        const SizedBox(height: Dimens.space16),
-        Text(l10n.bookingPolicyTitle, style: titleStyle),
-        const SizedBox(height: Dimens.space8),
-        // Changed terms show the reloaded property's lines — the quote may
-        // still carry the old snapshot.
-        for (final line in policyLines(
-          flow.termsChanged
-              ? property.policy
-              : (quote.policySummary ?? property.policy),
-        ))
-          Text(policyLineText(line, l10n)),
-        if (flow.termsChanged) ...[
-          const SizedBox(height: Dimens.space12),
-          OnAirPrimaryButton(
-            key: const ValueKey('terms-accept-new'),
-            label: l10n.termsAcceptNew,
-            onPressed: () => context.read<BookingFlowCubit>().acceptNewTerms(),
-          ),
-        ],
-        const SizedBox(height: Dimens.space16),
-        InfoBanner(
-          message: l10n.bookingSummaryOwnerNotice,
-          tone: StatusTone.info,
+            );
+          },
         ),
-      ],
+      ]),
     );
   }
+
+  /// 12dp between sections.
+  List<Widget> _gap(List<Widget> children) => [
+    for (var i = 0; i < children.length; i++) ...[
+      if (i > 0) const SizedBox(height: Dimens.space12),
+      children[i],
+    ],
+  ];
+}
+
+/// "Accept the new terms": spins while the fresh quote under the new terms
+/// arrives; a second tap meanwhile is ignored.
+final class _AgreeTermsButton extends StatefulWidget {
+  const _AgreeTermsButton({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  State<_AgreeTermsButton> createState() => _AgreeTermsButtonState();
+}
+
+final class _AgreeTermsButtonState extends State<_AgreeTermsButton> {
+  var _busy = false;
+
+  Future<void> _agree() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await context.read<BookingFlowCubit>().acceptNewTerms();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => FlowButton(
+    key: const ValueKey('terms-accept-new'),
+    label: AppLocalizations.of(context).termsAcceptNew,
+    loading: _busy,
+    onPressed: widget.enabled ? _agree : null,
+  );
 }
 
 final class _PayBar extends StatefulWidget {
@@ -276,9 +347,10 @@ final class _PayBar extends StatefulWidget {
 
 final class _PayBarState extends State<_PayBar> {
   /// The server answered RATE_LIMITED with a retry-after: the pay button
-  /// stays disabled until it passes (AC-003).
+  /// stays disabled until it passes (AC-003), with the seconds left beside
+  /// its label.
   Timer? _rateLimitTimer;
-  var _rateLimited = false;
+  var _cooldownSeconds = 0;
 
   @override
   void dispose() {
@@ -288,9 +360,16 @@ final class _PayBarState extends State<_PayBar> {
 
   void _armRateLimit(Duration retryAfter) {
     _rateLimitTimer?.cancel();
-    setState(() => _rateLimited = true);
-    _rateLimitTimer = Timer(retryAfter, () {
-      if (mounted) setState(() => _rateLimited = false);
+    setState(
+      () => _cooldownSeconds = (retryAfter.inMilliseconds / 1000).ceil(),
+    );
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() => _cooldownSeconds--);
+      if (_cooldownSeconds <= 0) {
+        timer.cancel();
+        setState(() => _cooldownSeconds = 0);
+      }
     });
   }
 
@@ -310,8 +389,11 @@ final class _PayBarState extends State<_PayBar> {
     return BlocBuilder<BookingFlowCubit, BookingFlowState>(
       builder: (context, flow) {
         final quote = flow.quote;
-        // AC-003: no pay button under the not-available view.
-        if (flow.load == FlowLoad.notAvailable) {
+        // AC-003: no pay button under the not-available view; none either
+        // under the "start again" view.
+        if (flow.load == FlowLoad.notAvailable ||
+            quote == null ||
+            flow.property == null) {
           return const SizedBox.shrink();
         }
         return BlocListener<PaymentAttemptCubit, PaymentAttemptState>(
@@ -335,71 +417,58 @@ final class _PayBarState extends State<_PayBar> {
                   state.error.retryAfter != null) {
                 _armRateLimit(state.error.retryAfter!);
               }
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(apiErrorMessage(state.error, l10n)),
-                ),
-              );
+              showFlowSnack(context, apiErrorMessage(state.error, l10n));
             }
           },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
-                builder: (context, attempt) {
-                  final online = context
-                      .read<ConnectivityCubit>()
-                      .state
-                      .isOnline;
-                  final opened =
-                      attempt is AttemptOpened &&
-                      quote != null &&
-                      attempt.attempt.quoteId == quote.quoteId;
-                  return Column(
-                    children: [
-                      if (opened)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.symmetric(
-                            horizontal: Dimens.screenSide,
-                          ),
-                          child: InfoBanner(
-                            message: l10n.paymentReturnHint,
-                            tone: StatusTone.info,
-                            actionLabel: l10n.paymentCheckStatus,
-                            onAction: () => context.go(
-                              AppRoutes.paymentReturn(
-                                bookingId: attempt.attempt.bookingId,
-                              ),
-                            ),
-                          ),
-                        ),
-                      BottomActionBar(
-                        leading: const SizedBox.shrink(),
-                        action: flow.pendingChange != null
-                            ? OnAirPrimaryButton(
-                                key: const ValueKey('quote-confirm-new'),
-                                label: l10n.quoteConfirmNew,
-                                onPressed: widget.flowCubit.acceptChange,
+          child: BlocBuilder<PaymentAttemptCubit, PaymentAttemptState>(
+            builder: (context, attempt) {
+              final online = context.watch<ConnectivityCubit>().state.isOnline;
+              final cooldown = _cooldownSeconds;
+              final base = Theme.of(context).textTheme.bodyMedium!;
+              return FlowActionBar(
+                child: flow.pendingChange != null
+                    ? FlowButton(
+                        key: const ValueKey('quote-confirm-new'),
+                        label: l10n.quoteConfirmNew,
+                        minHeight: 52,
+                        textSize: 16,
+                        onPressed: online
+                            ? widget.flowCubit.acceptChange
+                            : null,
+                      )
+                    : FlowButton(
+                        key: const ValueKey('summary-pay'),
+                        label: l10n.bookingGoToPayment,
+                        minHeight: 52,
+                        textSize: 16,
+                        loading: attempt is AttemptStarting,
+                        trailing: cooldown > 0
+                            ? Text(
+                                '· \u20660:${'$cooldown'.padLeft(2, '0')}\u2069',
+                                style: flowText(
+                                  context,
+                                  base: base,
+                                  size: 16,
+                                  weight: FontWeight.w700,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                  color: FlowPalette.of(
+                                    context,
+                                  ).disabledForeground,
+                                ),
                               )
-                            : OnAirPrimaryButton(
-                                key: const ValueKey('summary-pay'),
-                                label: l10n.bookingGoToPayment,
-                                isLoading: attempt is AttemptStarting,
-                                onPressed:
-                                    online &&
-                                        attempt is! AttemptStarting &&
-                                        flow.canPay &&
-                                        quote != null &&
-                                        !_rateLimited
-                                    ? () => widget.attemptCubit.pay(quote)
-                                    : null,
-                              ),
+                            : null,
+                        onPressed:
+                            online &&
+                                attempt is! AttemptStarting &&
+                                flow.canPay &&
+                                cooldown == 0
+                            ? () => widget.attemptCubit.pay(quote)
+                            : null,
                       ),
-                    ],
-                  );
-                },
-              ),
-            ],
+              );
+            },
           ),
         );
       },

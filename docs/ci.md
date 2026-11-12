@@ -91,13 +91,17 @@ Settings → Secrets and variables → Actions → Repository secrets:
 
 | Secret | Purpose | How to obtain |
 |---|---|---|
-| `STAGING_ENV_JSON` | Full contents of `env/staging.json`: `FLAVOR`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NODE_API_BASE_URL`, `LINK_DOMAIN` | Use the new Staging Supabase URL and **publishable** key (legacy `anon` is accepted), and the deployed Edge Function command API URL. Never use `service_role` or `sb_secret_` (Constitution IV). Existing variable names remain for compatibility. |
+| `STAGING_ENV_JSON` | Full contents of `env/staging.json`: `FLAVOR`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NODE_API_BASE_URL`, `LINK_DOMAIN` | Use the Staging Supabase URL and **publishable** key (legacy `anon` is accepted). `NODE_API_BASE_URL` must be exactly `https://api.on-air.website`; the validator rejects tunnels and stale endpoints. Never use `service_role` or `sb_secret_` (Constitution IV). |
 | `FIREBASE_APP_ID_STAGING` | Android app ID of the Staging Firebase project | Firebase console → Project settings → General → Apps → Android (`1:…:android:…`) |
 | `FIREBASE_SERVICE_CREDENTIALS` | Service-account key used to upload releases | Google Cloud console → IAM → Service accounts → the App Distribution service account → Keys → JSON; grant it the **Firebase App Distribution Admin** role |
 | `FIREBASE_STAGING_TESTERS` | Tester group alias that receives the build | Firebase console → App Distribution → Testers & Groups → create a group and use its alias |
+| `ONAIR_UPLOAD_KEYSTORE_BASE64` | Base64 of the stable Android upload keystore used for every distributed Staging APK | Generate/store once; never commit the keystore. The workflow now fails closed when it is absent. |
+| `ONAIR_UPLOAD_KEYSTORE_PASSWORD` | Keystore password | Store only in GitHub Actions secrets. |
+| `ONAIR_UPLOAD_KEY_ALIAS` | Alias inside the upload keystore | Must match the keystore entry used to derive `assetlinks.json` SHA-256. |
+| `ONAIR_UPLOAD_KEY_PASSWORD` | Key-entry password | Store only in GitHub Actions secrets. |
 | `RESEND_API_KEY_STAGING` | Server-only backup for the dedicated sending key; **not consumed by these Flutter workflows** | Already saved in GitHub Secrets and Supabase SMTP; never add it to `STAGING_ENV_JSON`, Dart defines, or an APK |
 
-### Verified setup status (2026-10-28)
+### Verified setup status (2026-11-11)
 
 The service owner is now **onair3team@gmail.com**. The public service references are
 recorded in [`config/service-targets.json`](../config/service-targets.json); see
@@ -114,14 +118,25 @@ remaining backend prerequisites.
   `github-staging-distribution@onair-staging-5579e.iam.gserviceaccount.com`, with
   `roles/firebaseappdistro.admin`. Its private key was transferred directly to
   GitHub's encrypted secret without writing it to disk or printing it.
-- `STAGING_ENV_JSON` is configured from the ignored local `env/staging.json` with
-  the new Supabase project `popadthwlumlkizmauak` and its publishable client key.
-  `NODE_API_BASE_URL` is the legacy config name for the command API. Its configured
-  target is `https://popadthwlumlkizmauak.supabase.co/functions/v1/guest-api`;
-  **the function has not been deployed**, so this URL does not yet serve the contract.
+- `STAGING_ENV_JSON` must be configured from the ignored local `env/staging.json` with
+  Supabase project `popadthwlumlkizmauak`, its publishable client key, and the existing
+  production Worker command API at `https://api.on-air.website`. The legacy key name
+  `NODE_API_BASE_URL` is retained for application compatibility.
+- The local Staging environment and stable upload key are ready, but their GitHub
+  Actions secret values still need to be copied from the local private files into
+  repository secrets before the distribution workflow can run.
 - Supabase custom SMTP uses Resend (`smtp.resend.com:465`) with
   `no-reply@on-air.website`. The sending-only, domain-restricted key is stored in
   Supabase SMTP and `RESEND_API_KEY_STAGING`; no provider key is in application code.
+
+Generate the Staging upload key once on a trusted Windows workstation with
+`powershell -File tool/create_staging_keystore.ps1`. The command refuses to
+replace an existing key, stores the keystore and GitHub secret values under the
+current user's local application-data directory with a private ACL, and writes
+the ignored `android/key.properties` for local release verification. Back up the
+keystore and its four secret values in the team's approved secret store before
+deleting the local copy. Debug builds remain signed by Android's debug key;
+every release build fails closed unless the stable upload key is available.
   Signup/recovery templates display OTP tokens; email OTP is six digits with a
   ten-minute expiry (approved by the owner).
 - Branch protection is blocked by the current GitHub plan, not by admin permissions.

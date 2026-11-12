@@ -21,6 +21,9 @@ final class _FakeUriLinkSource implements UriLinkSource {
   final controller = StreamController<Uri>.broadcast();
 
   @override
+  Future<Uri?> getInitialLink() async => null;
+
+  @override
   Stream<Uri> get uriLinks => controller.stream;
 }
 

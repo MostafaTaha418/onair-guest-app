@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
@@ -45,6 +46,7 @@ final class _BookingCardState extends State<BookingCard> {
   DateTime? _countdownDeadline;
   StreamSubscription<Duration>? _deadlineSubscription;
   var _deadlineNotified = false;
+  var _focused = false;
 
   @override
   void didUpdateWidget(BookingCard oldWidget) {
@@ -106,142 +108,226 @@ final class _BookingCardState extends State<BookingCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final ink = dark ? colors['textAccent'] : colors.primary;
     final booking = widget.booking;
+    final locale = l10n.localeName;
     final statusLabel = bookingStatusLabel(booking.status, l10n);
+    final refundLabel = booking.refundStage == null
+        ? null
+        : refundStageLabel(booking.refundStage!, l10n);
     final registry = _registryFor(context);
     final action = needsActionCode(
       registry.visible(booking.availableActions),
     );
-    final actionLabel = action == null
+    final actionName = action == null ? null : bookingActionLabel(action, l10n);
+    final actionLabel = actionName == null
         ? null
-        : l10n.bookingNeedsAction(bookingActionLabel(action, l10n));
+        : l10n.bookingNeedsAction(actionName);
     final countdown = _countdownFor(booking);
     // One static announcement with the absolute Cairo deadline (FR-038):
-    // the ticking CountdownText is excluded from the card's merged
-    // semantics so the announcement never changes every second.
+    // the ticking strip is excluded from the card's semantics so the
+    // announcement never changes every second.
     final deadlineLabel = countdown == null
         ? null
         : l10n.bookingMsgAwaitingOwner(
             formatCairoDayMonthTime(
               booking.ownerResponseDeadline!,
-              locale: AppLocalizations.of(context).localeName,
+              locale: locale,
             ),
           );
-    return Card(
-      margin: const EdgeInsetsDirectional.only(
-        start: Dimens.screenSide,
-        end: Dimens.screenSide,
-        bottom: Dimens.space12,
+    final base = theme.textTheme.bodyMedium!;
+    final metaStyle = flowText(
+      context,
+      base: base,
+      size: 13,
+      weight: FontWeight.w500,
+      height: 1.5,
+      color: colors.textSecondary,
+    );
+    final overlay = ink.withValues(alpha: dark ? 0.08 : 0.07);
+    return Material(
+      color: colors.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Dimens.radiusCard),
+        side: _focused
+            ? BorderSide(color: ink, width: 2)
+            : BorderSide(
+                color: dark ? colors.border : colors['borderNeutral'],
+              ),
       ),
       child: InkWell(
         onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(Dimens.radiusCard),
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        splashColor: overlay,
+        highlightColor: overlay,
+        overlayColor: WidgetStatePropertyAll(overlay),
         child: Semantics(
           button: true,
+          excludeSemantics: true,
           label: [
             booking.title,
             statusLabel,
-            ?deadlineLabel,
+            ?refundLabel,
             ?actionLabel,
-          ].join(l10n.localeName == 'ar' ? '، ' : ', '),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.all(Dimens.space12),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(Dimens.radiusChip),
-                  child: SizedBox(
-                    width: 72,
-                    height: 72,
-                    child: OnAirNetworkImage(
-                      variants: booking.coverImage?.variants ?? const [],
+            ?deadlineLabel,
+          ].join(locale == 'ar' ? '، ' : ', '),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: Dimens.minTouchTarget,
+            ),
+            child: AnimatedSize(
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 200),
+              alignment: AlignmentDirectional.topStart,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                      Dimens.space12,
+                      Dimens.space12,
+                      Dimens.space12,
+                      actionName == null ? Dimens.space12 : Dimens.space8,
                     ),
-                  ),
-                ),
-                const SizedBox(width: Dimens.space12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(color: context.colors.textPrimary),
-                      ),
-                      const SizedBox(height: Dimens.space4),
-                      Text(
-                        '${DateOnlyFormatter.dayMonth(booking.stay.checkIn, locale: AppLocalizations.of(context).localeName)}'
-                        ' – ${DateOnlyFormatter.dayMonth(booking.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                      if (actionLabel != null)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            top: Dimens.space4,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            Dimens.radiusField,
                           ),
-                          child: Row(
+                          child: SizedBox(
+                            width: 72,
+                            height: 72,
+                            child: OnAirNetworkImage(
+                              variants:
+                                  booking.coverImage?.variants ?? const [],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: Dimens.space12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                AppIcons.infoOutline,
-                                size: 16,
-                                color: context.colors['warning'],
-                              ),
-                              const SizedBox(width: Dimens.space4),
-                              Flexible(
-                                child: Text(
-                                  actionLabel,
-                                  style: Theme.of(context).textTheme.labelMedium
-                                      ?.copyWith(
-                                        color: context.colors['warning'],
-                                      ),
+                              Text(
+                                booking.title,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: flowText(
+                                  context,
+                                  base: base,
+                                  size: 15,
+                                  weight: FontWeight.w700,
+                                  height: 1.5,
+                                  color: colors.textPrimary,
                                 ),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(
+                                    AppIcons.calendarMonth,
+                                    size: 14,
+                                    color: colors.textSecondary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      '${DateOnlyFormatter.dayMonth(booking.stay.checkIn, locale: locale)}'
+                                      ' – ${DateOnlyFormatter.dayMonth(booking.stay.checkOut, locale: locale)}',
+                                      style: metaStyle,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Wrap(
+                                spacing: Dimens.space4,
+                                runSpacing: Dimens.space4,
+                                children: [
+                                  StatusChip(
+                                    label: statusLabel,
+                                    tone: bookingStatusTone(booking.status),
+                                    style: StatusChipStyle.dot,
+                                  ),
+                                  // The refund chip rides along only when the
+                                  // server reported a refund (US4).
+                                  if (refundLabel != null)
+                                    StatusChip(
+                                      label: refundLabel,
+                                      tone: refundStageTone(
+                                        booking.refundStage!,
+                                      ),
+                                      style: StatusChipStyle.dot,
+                                    ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                      const SizedBox(height: Dimens.space8),
-                      Wrap(
-                        spacing: Dimens.space8,
-                        runSpacing: Dimens.space4,
-                        children: [
-                          StatusChip(
-                            label: statusLabel,
-                            tone: bookingStatusTone(booking.status),
-                          ),
-                          // The refund chip rides along only when the
-                          // server reported a refund (US4).
-                          if (booking.refundStage != null)
-                            StatusChip(
-                              label: refundStageLabel(
-                                booking.refundStage!,
-                                l10n,
-                              ),
-                              tone: refundStageTone(booking.refundStage!),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                if (countdown != null)
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: Dimens.space8,
-                      ),
-                      child: ExcludeSemantics(
-                        child: CountdownText(
-                          remaining: countdown.remaining,
-                          format: (remaining) => l10n.ownerDeadlineCountdown(
-                            Countdown.format(remaining),
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
-              ],
+                  if (actionName != null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        96,
+                        0,
+                        Dimens.space12,
+                        Dimens.space12,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(top: 2),
+                            child: Icon(
+                              AppIcons.infoOutline,
+                              size: 16,
+                              color: colors['warning'],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: l10n.bookingNeedsActionLead,
+                                    style: flowText(
+                                      context,
+                                      base: const TextStyle(),
+                                      weight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  TextSpan(text: ' $actionName'),
+                                ],
+                              ),
+                              style: metaStyle.copyWith(
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (countdown != null)
+                    ExcludeSemantics(
+                      child: _CountdownStrip(
+                        countdown: countdown,
+                        ink: ink,
+                        style: metaStyle.copyWith(color: ink),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -256,5 +342,142 @@ final class _BookingCardState extends State<BookingCard> {
       // Isolated legacy widget/golden harnesses have no repository stack.
       return BookingActionRegistry.g2();
     }
+  }
+}
+
+/// The owner-deadline strip under an awaiting-owner card. Only its text
+/// rebuilds on a tick; at zero it turns into "updating status" at the same
+/// height while the screen asks the server again.
+final class _CountdownStrip extends StatelessWidget {
+  const _CountdownStrip({
+    required this.countdown,
+    required this.ink,
+    required this.style,
+  });
+
+  final Countdown countdown;
+  final Color ink;
+  final TextStyle style;
+
+  String _time(Duration remaining, AppLocalizations l10n) =>
+      remaining >= const Duration(hours: 24)
+      ? l10n.ownerDeadlineDays(remaining.inDays)
+      : Countdown.format(remaining);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    // The sentence around the time comes from one translation; the time
+    // itself is isolated left-to-right so its digits never reorder in RTL.
+    const marker = '\u0000';
+    final parts = l10n.ownerDeadlineCountdown(marker).split(marker);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 36),
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: Dimens.space12,
+        vertical: 6,
+      ),
+      color: colors['badgeNavActive'],
+      alignment: AlignmentDirectional.centerStart,
+      child: CountdownText(
+        remaining: countdown.remaining,
+        format: (remaining) =>
+            l10n.ownerDeadlineCountdown(_time(remaining, l10n)),
+        builder: (context, remaining) {
+          if (remaining == Duration.zero) {
+            return Row(
+              children: [
+                _UpdatingIndicator(ink: ink, track: colors.border),
+                const SizedBox(width: Dimens.space8),
+                Flexible(
+                  child: Text(
+                    l10n.bookingsStatusUpdating,
+                    style: flowText(
+                      context,
+                      base: style,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Icon(AppIcons.schedule, size: 16, color: ink),
+              const SizedBox(width: Dimens.space8),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(text: parts.first),
+                      TextSpan(
+                        text: '\u2066${_time(remaining, l10n)}\u2069',
+                        style: flowText(
+                          context,
+                          base: const TextStyle(),
+                          weight: FontWeight.w800,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      if (parts.length > 1) TextSpan(text: parts.last),
+                    ],
+                  ),
+                  style: style,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The spinner beside "updating status". It stops after a few seconds (and
+/// never runs with animations off): if the refresh brings no new status the
+/// strip rests instead of spinning forever.
+final class _UpdatingIndicator extends StatefulWidget {
+  const _UpdatingIndicator({required this.ink, required this.track});
+
+  final Color ink;
+  final Color track;
+
+  @override
+  State<_UpdatingIndicator> createState() => _UpdatingIndicatorState();
+}
+
+final class _UpdatingIndicatorState extends State<_UpdatingIndicator> {
+  Timer? _stop;
+  var _resting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _stop = Timer(const Duration(seconds: 10), () {
+      if (mounted) setState(() => _resting = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _stop?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resting || MediaQuery.disableAnimationsOf(context)) {
+      return Icon(AppIcons.schedule, size: 16, color: widget.ink);
+    }
+    return SizedBox.square(
+      dimension: 16,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: widget.ink,
+        backgroundColor: widget.track,
+      ),
+    );
   }
 }

@@ -7,13 +7,38 @@ import 'package:on_air/features/property/presentation/property_screen.dart';
 import '../test_app_harness.dart';
 
 final class _FakeUriLinkSource implements UriLinkSource {
+  _FakeUriLinkSource({this.initialLink});
+
+  final Uri? initialLink;
   final controller = StreamController<Uri>.broadcast();
+
+  @override
+  Future<Uri?> getInitialLink() async => initialLink;
 
   @override
   Stream<Uri> get uriLinks => controller.stream;
 }
 
 void main() {
+  testWidgets('an initial verified link is handled on cold start', (
+    tester,
+  ) async {
+    final source = _FakeUriLinkSource(
+      initialLink: Uri.parse(
+        'https://on-air.website/property/'
+        '550e8400-e29b-41d4-a716-446655440000',
+      ),
+    );
+    addTearDown(source.controller.close);
+    await pumpVisitorAppWithLinks(
+      tester,
+      uriLinkSource: source,
+      linkDomain: 'on-air.website',
+    );
+
+    expect(find.byType(PropertyScreen), findsOneWidget);
+  });
+
   testWidgets(
     'incoming verified links navigate through the parser and router',
     (

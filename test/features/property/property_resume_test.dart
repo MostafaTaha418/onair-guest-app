@@ -273,9 +273,10 @@ void main() {
 
       expect(find.text('booking-stub'), findsOneWidget);
       expect(bookingQuery!['terms'], 't1');
-      expect(bookingQuery!['checkIn'], '2026-11-20');
-      expect(bookingQuery!['checkOut'], '2026-11-23');
       expect(bookingQuery!['guests'], '2');
+      // The dates screen picks the stay; the entry URL carries none.
+      expect(bookingQuery!.containsKey('checkIn'), isFalse);
+      expect(bookingQuery!.containsKey('checkOut'), isFalse);
       expect(
         lastPropertyLocation,
         isNot(contains('resume')),

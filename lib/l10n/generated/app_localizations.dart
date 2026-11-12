@@ -1382,6 +1382,18 @@ abstract class AppLocalizations {
   /// **'اختار التواريخ'**
   String get bookingDatesTitle;
 
+  /// No description provided for @bookingPickCheckIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار يوم الدخول'**
+  String get bookingPickCheckIn;
+
+  /// No description provided for @bookingPickCheckOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار يوم المغادرة'**
+  String get bookingPickCheckOut;
+
   /// No description provided for @bookingRangeHasUnavailable.
   ///
   /// In ar, this message translates to:
@@ -1399,6 +1411,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'متابعة'**
   String get bookingContinue;
+
+  /// No description provided for @bookingBackToProperty.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع لصفحة الشقة'**
+  String get bookingBackToProperty;
+
+  /// No description provided for @bookingStepCheckIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم الدخول'**
+  String get bookingStepCheckIn;
+
+  /// No description provided for @bookingStepCheckOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم المغادرة'**
+  String get bookingStepCheckOut;
+
+  /// No description provided for @calendarToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'النهاردة'**
+  String get calendarToday;
+
+  /// No description provided for @bookingDetailsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الحجز'**
+  String get bookingDetailsTitle;
+
+  /// No description provided for @amountWas.
+  ///
+  /// In ar, this message translates to:
+  /// **'كان {amount}'**
+  String amountWas(String amount);
 
   /// No description provided for @bookingStartFromProperty.
   ///
@@ -1562,6 +1610,12 @@ abstract class AppLocalizations {
   /// **'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.'**
   String get paymentTimeoutBody;
 
+  /// No description provided for @paymentResumeCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارجع لصفحة الدفع'**
+  String get paymentResumeCheckout;
+
   /// No description provided for @paymentGoToBookings.
   ///
   /// In ar, this message translates to:
@@ -1699,6 +1753,30 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'آخر تحديث: {time}'**
   String lastUpdated(String time);
+
+  /// No description provided for @bookingsOfflineHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتأكد من الاتصال وحاول تاني.'**
+  String get bookingsOfflineHint;
+
+  /// No description provided for @bookingsStatusUpdating.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديث الحالة…'**
+  String get bookingsStatusUpdating;
+
+  /// No description provided for @bookingNeedsActionLead.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطلوب منك:'**
+  String get bookingNeedsActionLead;
+
+  /// No description provided for @ownerDeadlineDays.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{يوم} =2{يومين} few{{count} أيام} many{{count} يوم} other{{count} يوم}}'**
+  String ownerDeadlineDays(int count);
 
   /// No description provided for @bookingStatusPaymentPending.
   ///

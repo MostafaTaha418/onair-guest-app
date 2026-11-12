@@ -169,24 +169,36 @@ final class _Waiting extends StatelessWidget {
   final AppLocalizations l10n;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Semantics(
-          label: l10n.paymentVerifying,
-          child: const CircularProgressIndicator(),
+  Widget build(BuildContext context) {
+    final canReopen = context.select<PaymentAttemptCubit, bool>(
+      (cubit) => cubit.canReopenPage,
+    );
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsetsDirectional.all(Dimens.space24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              label: l10n.paymentVerifying,
+              child: const CircularProgressIndicator(),
+            ),
+            const SizedBox(height: Dimens.space16),
+            Text(l10n.paymentVerifying, textAlign: TextAlign.center),
+            const SizedBox(height: Dimens.space8),
+            Text(
+              l10n.paymentVerifyingBody,
+              textAlign: TextAlign.center,
+            ),
+            if (canReopen) ...[
+              const SizedBox(height: Dimens.space24),
+              _ReopenCheckoutButton(l10n: l10n),
+            ],
+          ],
         ),
-        const SizedBox(height: Dimens.space16),
-        Text(l10n.paymentVerifying, textAlign: TextAlign.center),
-        const SizedBox(height: Dimens.space8),
-        Text(
-          l10n.paymentVerifyingBody,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 final class _Success extends StatelessWidget {
@@ -412,7 +424,8 @@ final class _Failed extends StatelessWidget {
                   '/book/${details.property.id}/dates'
                   '?checkIn=$checkIn&checkOut=$checkOut'
                   '&guests=${details.guests}'
-                  '&terms=${Uri.encodeQueryComponent(termsHash)}',
+                  '&terms=${Uri.encodeQueryComponent(termsHash)}'
+                  '&restore=stay',
                 );
               },
             ),
@@ -464,32 +477,80 @@ final class _Conflict extends StatelessWidget {
   }
 }
 
+final class _ReopenCheckoutButton extends StatefulWidget {
+  const _ReopenCheckoutButton({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  State<_ReopenCheckoutButton> createState() => _ReopenCheckoutButtonState();
+}
+
+final class _ReopenCheckoutButtonState extends State<_ReopenCheckoutButton> {
+  var _reopening = false;
+
+  Future<void> _reopen() async {
+    if (_reopening) return;
+    setState(() => _reopening = true);
+    try {
+      await context.read<PaymentAttemptCubit>().reopenPage();
+      // Keep the action disabled while the external checkout owns the flow.
+      // If the guest closes it, reopening the recovery screen creates a new
+      // widget and makes the action available again.
+    } on Object catch (_) {
+      if (mounted) setState(() => _reopening = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => OnAirPrimaryButton(
+    key: const ValueKey('return-reopen-checkout'),
+    label: widget.l10n.paymentResumeCheckout,
+    isLoading: _reopening,
+    onPressed: _reopen,
+  );
+}
+
 final class _Timeout extends StatelessWidget {
   const _Timeout({required this.l10n});
 
   final AppLocalizations l10n;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: SingleChildScrollView(
-      padding: const EdgeInsetsDirectional.all(Dimens.space24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(AppIcons.schedule, size: 64),
-          const SizedBox(height: Dimens.space16),
-          Text(l10n.paymentTimeoutTitle, textAlign: TextAlign.center),
-          const SizedBox(height: Dimens.space8),
-          Text(l10n.paymentTimeoutBody, textAlign: TextAlign.center),
-          const SizedBox(height: Dimens.space24),
-          // The attempt record stays: the booking may still confirm.
-          OnAirPrimaryButton(
-            key: const ValueKey('return-go-bookings'),
-            label: l10n.paymentGoToBookings,
-            onPressed: () => context.go(AppRoutes.bookingsTab('current')),
-          ),
-        ],
+  Widget build(BuildContext context) {
+    final canReopen = context.select<PaymentAttemptCubit, bool>(
+      (cubit) => cubit.canReopenPage,
+    );
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsetsDirectional.all(Dimens.space24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(AppIcons.schedule, size: 64),
+            const SizedBox(height: Dimens.space16),
+            Text(l10n.paymentTimeoutTitle, textAlign: TextAlign.center),
+            const SizedBox(height: Dimens.space8),
+            Text(l10n.paymentTimeoutBody, textAlign: TextAlign.center),
+            const SizedBox(height: Dimens.space24),
+            if (canReopen) ...[
+              _ReopenCheckoutButton(l10n: l10n),
+              const SizedBox(height: Dimens.space12),
+              TextButton(
+                key: const ValueKey('return-go-bookings'),
+                onPressed: () => context.go(AppRoutes.bookingsTab('current')),
+                child: Text(l10n.paymentGoToBookings),
+              ),
+            ] else
+              // The attempt record stays: the booking may still confirm.
+              OnAirPrimaryButton(
+                key: const ValueKey('return-go-bookings'),
+                label: l10n.paymentGoToBookings,
+                onPressed: () => context.go(AppRoutes.bookingsTab('current')),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

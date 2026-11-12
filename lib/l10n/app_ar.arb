@@ -92,17 +92,35 @@
   "authCreateAccount": "إنشاء حساب",
   "authCodeTitle": "اكتب كود التأكيد",
   "authCodeDescription": "بعتنا كود من 6 أرقام إلى {phone}",
-  "@authCodeDescription": {"placeholders": {"phone": {"type": "String"}}},
+  "@authCodeDescription": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "authResend": "إعادة إرسال الكود",
   "authResendIn": "إعادة الإرسال بعد {time}",
-  "@authResendIn": {"placeholders": {"time": {"type": "String"}}},
+  "@authResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "authChangePhone": "تغيير رقم الموبايل",
   "authCompleteProfileTitle": "كمّل بياناتك",
   "authNameInvalid": "الاسم لازم يكون من حرفين إلى 80 حرف.",
   "authAcceptTerms": "أوافق على الشروط والأحكام وسياسة الخصوصية",
   "authTermsRequired": "لازم توافق على الشروط للمتابعة.",
   "authWaitSeconds": "{seconds} ثانية",
-  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}},
+  "@authWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "authEmailInvalid": "اكتب بريد إلكتروني صحيح.",
   "authFieldRequired": "الحقل ده مطلوب.",
   "authCodeRequired": "اكتب كود التأكيد.",
@@ -144,10 +162,22 @@
   "homeUpcomingConfirmed": "حجز مؤكد",
   "homeEmpty": "مفيش شقق ظاهرة دلوقتي. جرّب تبحث في مكان أو تواريخ مختلفة.",
   "homeSectionError": "تعذر تحميل {section}. حاول مرة أخرى.",
-  "@homeSectionError": {"placeholders": {"section": {"type": "String"}}},
+  "@homeSectionError": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
   "homeEmptyAction": "ابحث عن شقة",
   "areaListingCount": "{count, plural, =0{مفيش شقق} =1{شقة واحدة} =2{شقتين} few{{count} شقق} many{{count} شقة} other{{count} شقة}}",
-  "@areaListingCount": {"placeholders": {"count": {"type": "int"}}},
+  "@areaListingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchTitle": "البحث",
   "searchLocationLabel": "المكان",
   "searchLocationHint": "محافظة، مدينة أو منطقة",
@@ -161,7 +191,13 @@
   "searchFilters": "الفلاتر",
   "searchClearAll": "مسح الكل",
   "searchShowResults": "{count, plural, =0{مفيش نتايج} =1{عرض نتيجة واحدة} =2{عرض نتيجتين} other{عرض {count} نتيجة}}",
-  "@searchShowResults": {"placeholders": {"count": {"type": "int"}}},
+  "@searchShowResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchShowResultsUnknown": "عرض النتايج",
   "searchPriceRange": "سعر الليلة",
   "searchMinBedrooms": "أقل عدد غرف",
@@ -181,17 +217,59 @@
   "searchShare": "مشاركة البحث",
   "shareSearchText": "بحث على OnAir",
   "nightlyPrice": "{price} / الليلة",
-  "@nightlyPrice": {"placeholders": {"price": {"type": "String"}}},
+  "@nightlyPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
   "stayTotal": "{nights, plural, =1{إجمالي ليلة واحدة: {total}} =2{إجمالي ليلتين: {total}} few{إجمالي {nights} ليالي: {total}} other{إجمالي {nights} ليلة: {total}}}",
-  "@stayTotal": {"placeholders": {"nights": {"type": "int"}, "total": {"type": "String"}}},
+  "@stayTotal": {
+    "placeholders": {
+      "nights": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
   "filterChipRemove": "شيل فلتر {label}",
-  "@filterChipRemove": {"placeholders": {"label": {"type": "String"}}},
+  "@filterChipRemove": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "bedroomsAtLeast": "{count}+ غرف",
-  "@bedroomsAtLeast": {"placeholders": {"count": {"type": "int"}}},
+  "@bedroomsAtLeast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bathroomsAtLeast": "{count}+ حمامات",
-  "@bathroomsAtLeast": {"placeholders": {"count": {"type": "int"}}},
+  "@bathroomsAtLeast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "priceRangeChip": "{min} – {max}",
-  "@priceRangeChip": {"placeholders": {"min": {"type": "String"}, "max": {"type": "String"}}},
+  "@priceRangeChip": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "guestsDecrease": "قلّل عدد الضيوف",
   "guestsIncrease": "زوّد عدد الضيوف",
   "countDecrease": "قلّل",
@@ -204,17 +282,53 @@
   "calendarRangeNotLoaded": "التوافر لسه بيتحمّل لشهر من الفترة دي. حاول تاني بعد لحظات.",
   "calendarRangeLoadFailed": "تعذّر تحميل التوافر لشهر من الفترة دي. افتح الشهر ده واضغط إعادة المحاولة.",
   "calendarNightsSelected": "{count, plural, =1{ليلة واحدة} =2{ليلتين} few{{count} ليالي} other{{count} ليلة}}",
-  "@calendarNightsSelected": {"placeholders": {"count": {"type": "int"}}},
+  "@calendarNightsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarUnavailableDay": "{date}، مش متاح",
-  "@calendarUnavailableDay": {"placeholders": {"date": {"type": "String"}}},
+  "@calendarUnavailableDay": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "propertyBedrooms": "{count, plural, =1{غرفة واحدة} =2{غرفتين} few{{count} غرف} other{{count} غرفة}}",
-  "@propertyBedrooms": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyBedrooms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyBathrooms": "{count, plural, =1{حمام واحد} =2{حمامين} few{{count} حمامات} other{{count} حمام}}",
-  "@propertyBathrooms": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyBathrooms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyMaxGuests": "لحد {count} ضيوف",
-  "@propertyMaxGuests": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyMaxGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyArea": "{sqm} م²",
-  "@propertyArea": {"placeholders": {"sqm": {"type": "int"}}},
+  "@propertyArea": {
+    "placeholders": {
+      "sqm": {
+        "type": "int"
+      }
+    }
+  },
   "propertyDescription": "الوصف",
   "showMore": "عرض المزيد",
   "showLess": "عرض أقل",
@@ -223,31 +337,82 @@
   "propertyLocation": "الموقع",
   "propertyRules": "قواعد الإقامة",
   "rulesCheckIn": "الاستلام من {time}",
-  "@rulesCheckIn": {"placeholders": {"time": {"type": "String"}}},
+  "@rulesCheckIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "rulesCheckOut": "المغادرة لحد {time}",
-  "@rulesCheckOut": {"placeholders": {"time": {"type": "String"}}},
+  "@rulesCheckOut": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "rulesVisitorsAllowed": "الزوار مسموحين (لحد {count})",
-  "@rulesVisitorsAllowed": {"placeholders": {"count": {"type": "int"}}},
+  "@rulesVisitorsAllowed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "rulesVisitorsAllowedNoLimit": "الزوار مسموحين",
   "rulesVisitorsNotAllowed": "الزوار مش مسموحين",
   "propertyPolicy": "العربون والإلغاء",
   "policyDepositPercent": "العربون {percent}% من إجمالي الحجز.",
-  "@policyDepositPercent": {"placeholders": {"percent": {"type": "String"}}},
+  "@policyDepositPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "policyDepositFixed": "العربون {amount}.",
-  "@policyDepositFixed": {"placeholders": {"amount": {"type": "String"}}},
+  "@policyDepositFixed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "policyDepositFull": "الحجز ده بيتدفع بالكامل مقدمًا.",
   "policyFreeCancellation": "الإلغاء مجاني لحد {hours} ساعة قبل ميعاد الاستلام، وبيرجعلك المبلغ كامل.",
-  "@policyFreeCancellation": {"placeholders": {"hours": {"type": "int"}}},
+  "@policyFreeCancellation": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "policyAfterDeadline": "لو لغيت بعد الميعاد ده وقبل الإقامة، بتخسر العربون بس ويرجعلك الباقي.",
   "policyFullyPaidLate": "لو الحجز مدفوع بالكامل وألغيته بعد 24 ساعة من ميعاد الاستلام، المبلغ مش بيرجع.",
   "propertyAvailability": "التوافر",
   "propertyReviews": "التقييمات",
   "reviewsCount": "{count, plural, =1{تقييم واحد} =2{تقييمين} few{{count} تقييمات} other{{count} تقييم}}",
-  "@reviewsCount": {"placeholders": {"count": {"type": "int"}}},
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reviewsNone": "لسه مفيش تقييمات.",
   "reviewsSeeAll": "عرض كل التقييمات",
   "ratingSemantics": "التقييم {rating} من 5، {count} تقييم",
-  "@ratingSemantics": {"placeholders": {"rating": {"type": "String"}, "count": {"type": "int"}}},
+  "@ratingSemantics": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyContactOnAir": "عندك سؤال؟ تواصل مع OnAir",
   "bookNow": "احجز الآن",
   "propertyTermsUpdated": "الشروط اتحدّثت. راجعها قبل ما تحجز.",
@@ -255,7 +420,16 @@
   "galleryOpen": "افتح الصور",
   "galleryClose": "إغلاق",
   "galleryPhotoPosition": "صورة {current} من {total}",
-  "@galleryPhotoPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@galleryPhotoPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "galleryEmpty": "مفيش صور للشقة دي.",
   "supportEntryTitle": "تواصل مع OnAir",
   "supportEntryComingSoon": "خدمة الدعم من التطبيق هتتفتح قريب.",
@@ -268,10 +442,31 @@
   "paymentVerificationIssue": "فيه مشكلة في التحقق من الدفع. فريقنا هيتواصل معاك.",
   "close": "إغلاق",
   "bookingDatesTitle": "اختار التواريخ",
+  "bookingPickCheckIn": "اختار يوم الدخول",
+  "bookingPickCheckOut": "اختار يوم المغادرة",
   "bookingRangeHasUnavailable": "الفترة دي فيها يوم مش متاح. اختار تواريخ تانية.",
   "bookingNightsCount": "عدد الليالي: {count}",
-  "@bookingNightsCount": { "placeholders": { "count": { "type": "String" } } },
+  "@bookingNightsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "bookingContinue": "متابعة",
+  "bookingBackToProperty": "رجوع لصفحة الشقة",
+  "bookingStepCheckIn": "يوم الدخول",
+  "bookingStepCheckOut": "يوم المغادرة",
+  "calendarToday": "النهاردة",
+  "bookingDetailsTitle": "تفاصيل الحجز",
+  "amountWas": "كان {amount}",
+  "@amountWas": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingStartFromProperty": "ابدأ الحجز من صفحة الشقة.",
   "bookingSummaryTitle": "ملخص الحجز",
   "bookingNights": "الليالي",
@@ -280,7 +475,13 @@
   "bookingPayNow": "المطلوب دفعه دلوقتي",
   "bookingRemaining": "المتبقي",
   "bookingRemainingDue": "يتسدد قبل {date}",
-  "@bookingRemainingDue": { "placeholders": { "date": { "type": "String" } } },
+  "@bookingRemainingDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "bookingPolicyTitle": "الشروط وسياسة الإلغاء",
   "bookingSummaryOwnerNotice": "هيتبعت طلبك للمالك بعد الدفع. لو رفض أو مردّش خلال 24 ساعة هيترد لك المبلغ بالكامل.",
   "bookingGoToPayment": "اذهب للدفع",
@@ -291,17 +492,30 @@
   "paymentSuccessTitle": "تم الدفع وأُرسل طلبك للمالك",
   "paymentSuccessBody": "التواريخ محجوزة لك لحد ما المالك يرد.",
   "ownerDeadlineCountdown": "المالك قدامه {time} للرد",
-  "@ownerDeadlineCountdown": { "placeholders": { "time": { "type": "String" } } },
+  "@ownerDeadlineCountdown": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "paymentViewBooking": "عرض الحجز",
   "paymentFailedTitle": "لم تكتمل عملية الدفع",
   "paymentFailedBody": "ولم يُخصم أي مبلغ.",
   "paymentTryAgain": "حاول مرة أخرى",
   "paymentConflictTitle": "التواريخ اتحجزت قبل اكتمال دفعتك",
   "paymentConflictBody": "هيترد لك المبلغ بالكامل ({amount}).",
-  "@paymentConflictBody": { "placeholders": { "amount": { "type": "String" } } },
+  "@paymentConflictBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "paymentFindOtherDates": "ابحث عن تواريخ تانية",
   "paymentTimeoutTitle": "لسه موصلناش تأكيد الدفع",
   "paymentTimeoutBody": "متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.",
+  "paymentResumeCheckout": "ارجع لصفحة الدفع",
   "paymentGoToBookings": "اذهب لحجوزاتي",
   "mockPaymentTitle": "صفحة دفع تجريبية",
   "mockPaySuccess": "دفع ناجح",
@@ -317,7 +531,13 @@
   "verifyCodeSentToEmail": "بعتنا كود من 6 أرقام على بريدك.",
   "verifyResend": "ابعت الكود تاني",
   "verifyResendIn": "تقدر تبعت الكود تاني بعد {seconds} ثانية",
-  "@verifyResendIn": { "placeholders": { "seconds": { "type": "String" } } },
+  "@verifyResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
   "bookingsTabCurrent": "الحالية",
   "bookingsTabPast": "السابقة",
   "bookingsTabCancelled": "الملغاة",
@@ -326,7 +546,24 @@
   "bookingsEmptyCancelled": "مفيش حجوزات ملغاة.",
   "bookingsFindApartment": "ابحث عن شقة",
   "lastUpdated": "آخر تحديث: {time}",
-  "@lastUpdated": { "placeholders": { "time": { "type": "String" } } },
+  "@lastUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "bookingsOfflineHint": "اتأكد من الاتصال وحاول تاني.",
+  "bookingsStatusUpdating": "جارٍ تحديث الحالة…",
+  "bookingNeedsActionLead": "مطلوب منك:",
+  "ownerDeadlineDays": "{count, plural, =1{يوم} =2{يومين} few{{count} أيام} many{{count} يوم} other{{count} يوم}}",
+  "@ownerDeadlineDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bookingStatusPaymentPending": "بانتظار إتمام الدفع",
   "bookingStatusPaymentVerifying": "جارٍ التحقق من الدفع",
   "bookingStatusAwaitingOwner": "بانتظار تأكيد المالك",
@@ -343,21 +580,51 @@
   "bookingMsgPaymentPending": "لم يكتمل الدفع بعد. تقدر تكمّل الدفع عشان طلبك يتبعت للمالك.",
   "bookingMsgPaymentVerifying": "نتحقق من عملية الدفع. قد يستغرق ذلك دقائق، وسنبلغك فور التأكيد.",
   "bookingMsgAwaitingOwner": "تم الدفع وأُرسل طلبك للمالك. المالك لديه حتى {deadline} للرد. التواريخ محجوزة لك حتى ذلك الحين.",
-  "@bookingMsgAwaitingOwner": { "placeholders": { "deadline": { "type": "String" } } },
+  "@bookingMsgAwaitingOwner": {
+    "placeholders": {
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgAwaitingOwnerNoDeadline": "تم الدفع وأُرسل طلبك للمالك. التواريخ محجوزة لك لحد ما يرد.",
   "bookingMsgConfirmed": "تم تأكيد حجزك!",
   "bookingMsgConfirmedWithRemaining": "تم تأكيد حجزك! يجب سداد {amount} قبل الاستلام.",
-  "@bookingMsgConfirmedWithRemaining": { "placeholders": { "amount": { "type": "String" } } },
+  "@bookingMsgConfirmedWithRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgCheckedIn": "نتمنى لك إقامة سعيدة.",
   "bookingMsgCompleted": "اكتملت إقامتك. شاركنا رأيك!",
   "bookingMsgRejected": "اعتذر المالك عن قبول الطلب. سيتم رد كامل المبلغ ({amount}). سيتواصل معك فريق OnAir وقد يقترح بديلًا إن رغبت.",
-  "@bookingMsgRejected": { "placeholders": { "amount": { "type": "String" } } },
+  "@bookingMsgRejected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgExpired": "لم يرد المالك خلال 24 ساعة. سيتم رد كامل المبلغ ({amount}).",
-  "@bookingMsgExpired": { "placeholders": { "amount": { "type": "String" } } },
+  "@bookingMsgExpired": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgCancelled": "تم إلغاء الحجز.",
   "bookingMsgNoShow": "تم تسجيل عدم الحضور. للاستفسار تواصل مع الدعم.",
   "bookingMsgConflict": "تم حجز هذه التواريخ قبل اكتمال دفعتك. سيتم رد المبلغ بالكامل ({amount}).",
-  "@bookingMsgConflict": { "placeholders": { "amount": { "type": "String" } } },
+  "@bookingMsgConflict": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgAbandoned": "لم يكتمل الدفع ولم يُخصم أي مبلغ.",
   "bookingMsgUnknown": "فيه تحديث على حجزك. للاستفسار تواصل مع الدعم.",
   "bookingCode": "رقم الحجز",
@@ -408,13 +675,37 @@
   "notificationsFilterEmpty": "مفيش إشعارات في القسم ده.",
   "notificationsJustNow": "دلوقتي",
   "notificationsMinutesAgo": "من {count} د",
-  "@notificationsMinutesAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsHoursAgo": "من {count} س",
-  "@notificationsHoursAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsDaysAgo": "من {count} أيام",
-  "@notificationsDaysAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsWeeksAgo": "من {count} أسابيع",
-  "@notificationsWeeksAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsWeeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsEmpty": "مفيش إشعارات لسه.",
   "notificationsOffNotice": "الإشعارات مقفولة. فعّلها عشان تعرف فورًا لما المالك يرد.",
   "notificationsOpenSettings": "فتح الإعدادات",
@@ -423,7 +714,13 @@
   "pushPermissionEnable": "فعّل",
   "pushPermissionLater": "مش دلوقتي",
   "unreadBadge": "{count} إشعار غير مقروء",
-  "@unreadBadge": { "placeholders": { "count": { "type": "String" } } },
+  "@unreadBadge": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "notifBookingRequestReceivedTitle": "تم الدفع وأُرسل طلبك",
   "notifBookingRequestReceivedBody": "المالك هيرد خلال 24 ساعة. اضغط للتفاصيل.",
   "notifBookingConfirmedTitle": "تم تأكيد حجزك",
@@ -506,7 +803,13 @@
   "actionConfirmCheckout": "غادرت الشقة",
   "actionRespondClaim": "الرد على المطالبة",
   "bookingNeedsAction": "مطلوب منك: {action}",
-  "@bookingNeedsAction": {"placeholders":{"action":{"type":"String"}}},
+  "@bookingNeedsAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "bookingMsgWaitingHandover": "أكّدت استلامك. مستنيين المالك يأكّد تسليم الشقة.",
   "bookingMsgHostHandedOver": "المالك أكّد تسليم الشقة. أكّد إنك استلمتها.",
   "bookingMsgWaitingCheckout": "أكّدت مغادرتك. مستنيين المالك يأكّد استلام الشقة.",
@@ -518,7 +821,13 @@
   "ackYou": "أنت",
   "ackOwner": "المالك",
   "ackConfirmedAt": "أكّد {time}",
-  "@ackConfirmedAt": {"placeholders":{"time":{"type":"String"}}},
+  "@ackConfirmedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "ackWaiting": "مستني التأكيد",
   "ackKeyLeftSafe": "المفتاح اتساب في المكان المتفق عليه",
   "checkinSheetTitle": "استلمت الشقة فعلًا؟",
@@ -536,7 +845,13 @@
   "remainingOptionOnline": "ادفع أونلاين",
   "remainingOptionCash": "دفعت أو هدفع كاش",
   "remainingPayButton": "ادفع {amount}",
-  "@remainingPayButton": {"placeholders":{"amount":{"type":"String"}}},
+  "@remainingPayButton": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "remainingCashButton": "كمّل تأكيد الكاش",
   "remainingPaidTitle": "تم سداد المتبقي",
   "remainingPaidBody": "حجزك مدفوع بالكامل دلوقتي.",
@@ -550,13 +865,34 @@
   "cashWarning": "متسلّمش فلوس غير لشخص مفوّض من OnAir.",
   "cashSendCode": "ابعت الكود على بريدي",
   "cashCodeSent": "بعتنا كود على {email}",
-  "@cashCodeSent": {"placeholders":{"email":{"type":"String"}}},
+  "@cashCodeSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "cashCollectorLabel": "المستلم",
   "cashStatement": "أؤكد إني سلّمت {amount} كاش لـ {name}",
-  "@cashStatement": {"placeholders":{"amount":{"type":"String"},"name":{"type":"String"}}},
+  "@cashStatement": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "cashResend": "ابعت الكود تاني",
   "cashResendIn": "ابعت تاني بعد {time}",
-  "@cashResendIn": {"placeholders":{"time":{"type":"String"}}},
+  "@cashResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "cashConfirmButton": "أكّد الدفع",
   "cashContactSupport": "كلّم الدعم",
   "receiptTitle": "تم تأكيد الدفع الكاش",
@@ -569,11 +905,38 @@
   "cancelRefund": "هيترجعلك",
   "cancelNonRefundable": "مش هيترجع",
   "cancelReasonFree": "الإلغاء مجاني. هيترجعلك المبلغ كله ({amount}).",
-  "@cancelReasonFree": {"placeholders":{"amount":{"type":"String"}}},
+  "@cancelReasonFree": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "cancelReasonDepositLost": "هيترجعلك {refund}. العربون {deposit} مش هيترجع لأن ميعاد الإلغاء المجاني خلص يوم {date}.",
-  "@cancelReasonDepositLost": {"placeholders":{"refund":{"type":"String"},"deposit":{"type":"String"},"date":{"type":"String"}}},
+  "@cancelReasonDepositLost": {
+    "placeholders": {
+      "refund": {
+        "type": "String"
+      },
+      "deposit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "cancelReasonDepositLostNoDate": "هيترجعلك {refund}. العربون {deposit} مش هيترجع لأن ميعاد الإلغاء المجاني خلص.",
-  "@cancelReasonDepositLostNoDate": {"placeholders":{"refund":{"type":"String"},"deposit":{"type":"String"}}},
+  "@cancelReasonDepositLostNoDate": {
+    "placeholders": {
+      "refund": {
+        "type": "String"
+      },
+      "deposit": {
+        "type": "String"
+      }
+    }
+  },
   "cancelReasonNoRefund": "مفيش استرداد، لأن الحجز مدفوع بالكامل وعدّى أكتر من 24 ساعة على ميعاد الاستلام.",
   "cancelReasonTitle": "سبب الإلغاء (اختياري)",
   "cancelReasonChangeOfPlans": "خططي اتغيرت",
@@ -584,7 +947,13 @@
   "cancelKeep": "خليني محتفظ بالحجز",
   "cancelDialogTitle": "متأكد إنك عايز تلغي؟",
   "cancelDialogBody": "هيترجعلك {amount}.",
-  "@cancelDialogBody": {"placeholders":{"amount":{"type":"String"}}},
+  "@cancelDialogBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "cancelDialogConfirm": "أيوه، ألغي",
   "claimTitle": "مطالبة ضرر",
   "claimsSectionTitle": "مطالبات الضرر",
@@ -592,19 +961,40 @@
   "claimAmount": "المبلغ المطلوب",
   "claimEvidence": "الصور",
   "claimEvidencePhoto": "صورة {index} من {count}",
-  "@claimEvidencePhoto": {"placeholders":{"index":{"type":"String"},"count":{"type":"String"}}},
+  "@claimEvidencePhoto": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "claimPhotoFailed": "الصورة ما اتحملتش. اضغط للمحاولة تاني.",
   "claimAgree": "موافق",
   "claimDispute": "معترض",
   "claimAgreeDialogTitle": "توافق على المطالبة؟",
   "claimAgreeDialogBody": "انت موافق على مبلغ {amount}.",
-  "@claimAgreeDialogBody": {"placeholders":{"amount":{"type":"String"}}},
+  "@claimAgreeDialogBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "claimDisputeReason": "سبب الاعتراض",
   "claimDisputeReasonHint": "اكتب اللي حصل بالتفصيل",
   "claimDisputeTooShort": "اكتب 10 حروف على الأقل.",
   "claimDisputeSend": "ابعت الاعتراض",
   "claimCaseNumber": "رقم الحالة: {number}",
-  "@claimCaseNumber": {"placeholders":{"number":{"type":"String"}}},
+  "@claimCaseNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "claimYourAnswer": "ردك",
   "claimStatusOpen": "مستنية ردك",
   "claimStatusAccepted": "وافقت",
@@ -614,19 +1004,49 @@
   "claimStatusWithdrawn": "اتسحبت",
   "claimStatusUnknown": "فيه تحديث",
   "claimOutcomeGuestPays": "القرار: تدفع {amount}.",
-  "@claimOutcomeGuestPays": {"placeholders":{"amount":{"type":"String"}}},
+  "@claimOutcomeGuestPays": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "claimOutcomePartial": "القرار: تدفع جزء من المبلغ ({amount}).",
-  "@claimOutcomePartial": {"placeholders":{"amount":{"type":"String"}}},
+  "@claimOutcomePartial": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "claimOutcomeNoCharge": "القرار: مفيش أي مبلغ عليك.",
   "claimOutcomeWithdrawn": "المالك سحب المطالبة.",
   "offerTitle": "عرض بديل من OnAir",
   "offerPayMore": "هتدفع {amount} زيادة.",
-  "@offerPayMore": {"placeholders":{"amount":{"type":"String"}}},
+  "@offerPayMore": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "offerRefundDiff": "هيترجعلك {amount}.",
-  "@offerRefundDiff": {"placeholders":{"amount":{"type":"String"}}},
+  "@offerRefundDiff": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "offerNoDiff": "مفيش فرق في السعر.",
   "offerExpires": "رد قبل {time}",
-  "@offerExpires": {"placeholders":{"time":{"type":"String"}}},
+  "@offerExpires": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "offerAccept": "موافق على العرض",
   "offerDecline": "لا، عايز استرداد فلوسي",
   "offerAcceptDialogTitle": "توافق على العرض البديل؟",
@@ -647,8 +1067,12 @@
   "placeAreaCity": "{area}، {city}",
   "@placeAreaCity": {
     "placeholders": {
-      "area": {"type": "String"},
-      "city": {"type": "String"}
+      "area": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
     }
   }
 }

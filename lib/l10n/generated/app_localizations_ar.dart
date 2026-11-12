@@ -779,6 +779,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookingDatesTitle => 'اختار التواريخ';
 
   @override
+  String get bookingPickCheckIn => 'اختار يوم الدخول';
+
+  @override
+  String get bookingPickCheckOut => 'اختار يوم المغادرة';
+
+  @override
   String get bookingRangeHasUnavailable =>
       'الفترة دي فيها يوم مش متاح. اختار تواريخ تانية.';
 
@@ -789,6 +795,26 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bookingContinue => 'متابعة';
+
+  @override
+  String get bookingBackToProperty => 'رجوع لصفحة الشقة';
+
+  @override
+  String get bookingStepCheckIn => 'يوم الدخول';
+
+  @override
+  String get bookingStepCheckOut => 'يوم المغادرة';
+
+  @override
+  String get calendarToday => 'النهاردة';
+
+  @override
+  String get bookingDetailsTitle => 'تفاصيل الحجز';
+
+  @override
+  String amountWas(String amount) {
+    return 'كان $amount';
+  }
 
   @override
   String get bookingStartFromProperty => 'ابدأ الحجز من صفحة الشقة.';
@@ -879,6 +905,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentTimeoutBody => 'متقلقش ومتدفعش تاني. هنبلغك أول ما يتأكد.';
 
   @override
+  String get paymentResumeCheckout => 'ارجع لصفحة الدفع';
+
+  @override
   String get paymentGoToBookings => 'اذهب لحجوزاتي';
 
   @override
@@ -950,6 +979,29 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String lastUpdated(String time) {
     return 'آخر تحديث: $time';
+  }
+
+  @override
+  String get bookingsOfflineHint => 'اتأكد من الاتصال وحاول تاني.';
+
+  @override
+  String get bookingsStatusUpdating => 'جارٍ تحديث الحالة…';
+
+  @override
+  String get bookingNeedsActionLead => 'مطلوب منك:';
+
+  @override
+  String ownerDeadlineDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوم',
+      many: '$count يوم',
+      few: '$count أيام',
+      two: 'يومين',
+      one: 'يوم',
+    );
+    return '$_temp0';
   }
 
   @override

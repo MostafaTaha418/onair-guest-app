@@ -92,17 +92,35 @@
   "authCreateAccount": "Create account",
   "authCodeTitle": "Enter the verification code",
   "authCodeDescription": "We sent a 6-digit code to {phone}",
-  "@authCodeDescription": {"placeholders": {"phone": {"type": "String"}}},
+  "@authCodeDescription": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "authResend": "Resend code",
   "authResendIn": "Resend in {time}",
-  "@authResendIn": {"placeholders": {"time": {"type": "String"}}},
+  "@authResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "authChangePhone": "Change phone number",
   "authCompleteProfileTitle": "Complete your profile",
   "authNameInvalid": "Name must be between 2 and 80 characters.",
   "authAcceptTerms": "I agree to the terms and privacy policy",
   "authTermsRequired": "Accept the terms to continue.",
   "authWaitSeconds": "{seconds} seconds",
-  "@authWaitSeconds": {"placeholders": {"seconds": {"type": "int"}}},
+  "@authWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "authEmailInvalid": "Enter a valid email address.",
   "authFieldRequired": "This field is required.",
   "authCodeRequired": "Enter the verification code.",
@@ -138,10 +156,22 @@
   "homeUpcomingConfirmed": "Confirmed",
   "homeEmpty": "No apartments to show right now. Try a different destination or dates.",
   "homeSectionError": "Couldn't load {section}. Try again.",
-  "@homeSectionError": {"placeholders": {"section": {"type": "String"}}},
+  "@homeSectionError": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
   "homeEmptyAction": "Search for an apartment",
   "areaListingCount": "{count, plural, =0{No apartments} =1{1 apartment} other{{count} apartments}}",
-  "@areaListingCount": {"placeholders": {"count": {"type": "int"}}},
+  "@areaListingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchTitle": "Search",
   "searchLocationLabel": "Location",
   "searchLocationHint": "Governorate, city, or area",
@@ -155,7 +185,13 @@
   "searchFilters": "Filters",
   "searchClearAll": "Clear all",
   "searchShowResults": "{count, plural, =0{No results} =1{Show 1 result} other{Show {count} results}}",
-  "@searchShowResults": {"placeholders": {"count": {"type": "int"}}},
+  "@searchShowResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchShowResultsUnknown": "Show results",
   "searchPriceRange": "Nightly price",
   "searchMinBedrooms": "Minimum bedrooms",
@@ -175,17 +211,59 @@
   "searchShare": "Share search",
   "shareSearchText": "Search on OnAir",
   "nightlyPrice": "{price} / night",
-  "@nightlyPrice": {"placeholders": {"price": {"type": "String"}}},
+  "@nightlyPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
   "stayTotal": "{nights, plural, =1{Total for 1 night: {total}} other{Total for {nights} nights: {total}}}",
-  "@stayTotal": {"placeholders": {"nights": {"type": "int"}, "total": {"type": "String"}}},
+  "@stayTotal": {
+    "placeholders": {
+      "nights": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
   "filterChipRemove": "Remove filter {label}",
-  "@filterChipRemove": {"placeholders": {"label": {"type": "String"}}},
+  "@filterChipRemove": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "bedroomsAtLeast": "{count}+ bedrooms",
-  "@bedroomsAtLeast": {"placeholders": {"count": {"type": "int"}}},
+  "@bedroomsAtLeast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bathroomsAtLeast": "{count}+ bathrooms",
-  "@bathroomsAtLeast": {"placeholders": {"count": {"type": "int"}}},
+  "@bathroomsAtLeast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "priceRangeChip": "{min} – {max}",
-  "@priceRangeChip": {"placeholders": {"min": {"type": "String"}, "max": {"type": "String"}}},
+  "@priceRangeChip": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "guestsDecrease": "Fewer guests",
   "guestsIncrease": "More guests",
   "countDecrease": "Decrease",
@@ -198,17 +276,53 @@
   "calendarRangeNotLoaded": "Availability for a month in this range is still loading. Try again in a moment.",
   "calendarRangeLoadFailed": "Availability for a month in this range failed to load. Open that month and tap retry.",
   "calendarNightsSelected": "{count, plural, =1{1 night} other{{count} nights}}",
-  "@calendarNightsSelected": {"placeholders": {"count": {"type": "int"}}},
+  "@calendarNightsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarUnavailableDay": "{date}, unavailable",
-  "@calendarUnavailableDay": {"placeholders": {"date": {"type": "String"}}},
+  "@calendarUnavailableDay": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "propertyBedrooms": "{count, plural, =1{1 bedroom} other{{count} bedrooms}}",
-  "@propertyBedrooms": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyBedrooms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyBathrooms": "{count, plural, =1{1 bathroom} other{{count} bathrooms}}",
-  "@propertyBathrooms": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyBathrooms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyMaxGuests": "Up to {count} guests",
-  "@propertyMaxGuests": {"placeholders": {"count": {"type": "int"}}},
+  "@propertyMaxGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyArea": "{sqm} m²",
-  "@propertyArea": {"placeholders": {"sqm": {"type": "int"}}},
+  "@propertyArea": {
+    "placeholders": {
+      "sqm": {
+        "type": "int"
+      }
+    }
+  },
   "propertyDescription": "Description",
   "showMore": "Show more",
   "showLess": "Show less",
@@ -217,31 +331,82 @@
   "propertyLocation": "Location",
   "propertyRules": "Stay rules",
   "rulesCheckIn": "Check-in from {time}",
-  "@rulesCheckIn": {"placeholders": {"time": {"type": "String"}}},
+  "@rulesCheckIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "rulesCheckOut": "Check-out by {time}",
-  "@rulesCheckOut": {"placeholders": {"time": {"type": "String"}}},
+  "@rulesCheckOut": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "rulesVisitorsAllowed": "Visitors allowed (up to {count})",
-  "@rulesVisitorsAllowed": {"placeholders": {"count": {"type": "int"}}},
+  "@rulesVisitorsAllowed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "rulesVisitorsAllowedNoLimit": "Visitors allowed",
   "rulesVisitorsNotAllowed": "Visitors not allowed",
   "propertyPolicy": "Deposit and cancellation",
   "policyDepositPercent": "The deposit is {percent}% of the booking total.",
-  "@policyDepositPercent": {"placeholders": {"percent": {"type": "String"}}},
+  "@policyDepositPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "policyDepositFixed": "The deposit is {amount}.",
-  "@policyDepositFixed": {"placeholders": {"amount": {"type": "String"}}},
+  "@policyDepositFixed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "policyDepositFull": "This booking is paid in full upfront.",
   "policyFreeCancellation": "Free cancellation up to {hours} hours before check-in, with a full refund.",
-  "@policyFreeCancellation": {"placeholders": {"hours": {"type": "int"}}},
+  "@policyFreeCancellation": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "policyAfterDeadline": "If you cancel after that and before the stay, you lose only the deposit and get the rest back.",
   "policyFullyPaidLate": "If the booking is fully paid and you cancel more than 24 hours after check-in time, it is not refundable.",
   "propertyAvailability": "Availability",
   "propertyReviews": "Reviews",
   "reviewsCount": "{count, plural, =1{1 review} other{{count} reviews}}",
-  "@reviewsCount": {"placeholders": {"count": {"type": "int"}}},
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reviewsNone": "No reviews yet.",
   "reviewsSeeAll": "See all reviews",
   "ratingSemantics": "Rated {rating} out of 5, {count} reviews",
-  "@ratingSemantics": {"placeholders": {"rating": {"type": "String"}, "count": {"type": "int"}}},
+  "@ratingSemantics": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "propertyContactOnAir": "Have a question? Contact OnAir",
   "bookNow": "Book now",
   "propertyTermsUpdated": "The terms were updated. Review them before booking.",
@@ -249,7 +414,16 @@
   "galleryOpen": "Open photos",
   "galleryClose": "Close",
   "galleryPhotoPosition": "Photo {current} of {total}",
-  "@galleryPhotoPosition": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@galleryPhotoPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "galleryEmpty": "This property has no photos.",
   "supportEntryTitle": "Contact OnAir",
   "supportEntryComingSoon": "Support in the app opens soon.",
@@ -262,9 +436,17 @@
   "paymentVerificationIssue": "There is an issue verifying the payment. Our team will contact you.",
   "close": "Close",
   "bookingDatesTitle": "Choose dates",
+  "bookingPickCheckIn": "Pick your check-in day",
+  "bookingPickCheckOut": "Pick your check-out day",
   "bookingRangeHasUnavailable": "This range includes an unavailable day. Choose other dates.",
   "bookingNightsCount": "Nights: {count}",
   "bookingContinue": "Continue",
+  "bookingBackToProperty": "Back to apartment",
+  "bookingStepCheckIn": "Check-in",
+  "bookingStepCheckOut": "Check-out",
+  "calendarToday": "today",
+  "bookingDetailsTitle": "Booking details",
+  "amountWas": "was {amount}",
   "bookingStartFromProperty": "Start the booking from the apartment page.",
   "bookingSummaryTitle": "Booking summary",
   "bookingNights": "Nights",
@@ -292,6 +474,7 @@
   "paymentFindOtherDates": "Find other dates",
   "paymentTimeoutTitle": "We have not received payment confirmation yet",
   "paymentTimeoutBody": "Don't worry and don't pay again. We will notify you once it is confirmed.",
+  "paymentResumeCheckout": "Return to checkout",
   "paymentGoToBookings": "Go to My Bookings",
   "mockPaymentTitle": "Test payment page",
   "mockPaySuccess": "Succeed",
@@ -315,6 +498,10 @@
   "bookingsEmptyCancelled": "No cancelled bookings.",
   "bookingsFindApartment": "Find an apartment",
   "lastUpdated": "Last updated: {time}",
+  "bookingsOfflineHint": "Check your connection and try again.",
+  "bookingsStatusUpdating": "Updating status…",
+  "bookingNeedsActionLead": "Needs your action:",
+  "ownerDeadlineDays": "{count, plural, =1{1 day} other{{count} days}}",
   "bookingStatusPaymentPending": "Payment not completed",
   "bookingStatusPaymentVerifying": "Verifying payment",
   "bookingStatusAwaitingOwner": "Awaiting owner",
@@ -391,13 +578,37 @@
   "notificationsFilterEmpty": "No notifications in this category.",
   "notificationsJustNow": "Just now",
   "notificationsMinutesAgo": "{count} min ago",
-  "@notificationsMinutesAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsHoursAgo": "{count} hr ago",
-  "@notificationsHoursAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsDaysAgo": "{count} days ago",
-  "@notificationsDaysAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsWeeksAgo": "{count} weeks ago",
-  "@notificationsWeeksAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationsWeeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsEmpty": "No notifications yet.",
   "notificationsOffNotice": "Notifications are off. Turn them on to know as soon as the owner replies.",
   "notificationsOpenSettings": "Open settings",

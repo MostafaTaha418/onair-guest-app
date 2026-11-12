@@ -324,7 +324,8 @@ final class _OnAirAppState extends State<OnAirApp> {
         LinkParser(domain),
         _router,
         _authCubit,
-      )..start();
+      );
+      unawaited(_incomingLinks!.start());
     }
     // A cold-start push opens its screen once the router is ready; the
     // redirect handles sign-in and comes back.

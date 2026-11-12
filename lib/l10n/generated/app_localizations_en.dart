@@ -778,6 +778,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookingDatesTitle => 'Choose dates';
 
   @override
+  String get bookingPickCheckIn => 'Pick your check-in day';
+
+  @override
+  String get bookingPickCheckOut => 'Pick your check-out day';
+
+  @override
   String get bookingRangeHasUnavailable =>
       'This range includes an unavailable day. Choose other dates.';
 
@@ -788,6 +794,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookingContinue => 'Continue';
+
+  @override
+  String get bookingBackToProperty => 'Back to apartment';
+
+  @override
+  String get bookingStepCheckIn => 'Check-in';
+
+  @override
+  String get bookingStepCheckOut => 'Check-out';
+
+  @override
+  String get calendarToday => 'today';
+
+  @override
+  String get bookingDetailsTitle => 'Booking details';
+
+  @override
+  String amountWas(String amount) {
+    return 'was $amount';
+  }
 
   @override
   String get bookingStartFromProperty =>
@@ -886,6 +912,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Don\'t worry and don\'t pay again. We will notify you once it is confirmed.';
 
   @override
+  String get paymentResumeCheckout => 'Return to checkout';
+
+  @override
   String get paymentGoToBookings => 'Go to My Bookings';
 
   @override
@@ -957,6 +986,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String lastUpdated(String time) {
     return 'Last updated: $time';
+  }
+
+  @override
+  String get bookingsOfflineHint => 'Check your connection and try again.';
+
+  @override
+  String get bookingsStatusUpdating => 'Updating status…';
+
+  @override
+  String get bookingNeedsActionLead => 'Needs your action:';
+
+  @override
+  String ownerDeadlineDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
   }
 
   @override

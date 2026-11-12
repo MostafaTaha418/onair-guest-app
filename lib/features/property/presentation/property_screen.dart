@@ -104,11 +104,7 @@ final class _PropertyScreenState extends State<PropertyScreen> {
         if (state.details.termsVersion == intent.termsVersion) {
           unawaited(
             context.push(
-              _bookingEntryUri(
-                state.details,
-                state.stay,
-                state.guests,
-              ).toString(),
+              _bookingEntryUri(state.details, state.guests).toString(),
             ),
           );
         }
@@ -530,16 +526,13 @@ Future<void> pushVisitorLogin(
 }
 
 /// The booking entry carries the shown stay, guests, and terms (AC-013).
-Uri _bookingEntryUri(PropertyDetails details, StayRange? stay, int? guests) =>
-    Uri(
-      path: AppRoutes.bookingEntry(details.id),
-      queryParameters: {
-        if (stay != null) 'checkIn': stay.checkIn.toString(),
-        if (stay != null) 'checkOut': stay.checkOut.toString(),
-        if (guests != null) 'guests': '$guests',
-        'terms': details.termsVersion,
-      },
-    );
+Uri _bookingEntryUri(PropertyDetails details, int? guests) => Uri(
+  path: AppRoutes.bookingEntry(details.id),
+  queryParameters: {
+    if (guests != null) 'guests': '$guests',
+    'terms': details.termsVersion,
+  },
+);
 
 final class _DescriptionSection extends StatelessWidget {
   const _DescriptionSection({required this.details});
@@ -627,7 +620,7 @@ final class _BottomBarState extends State<_BottomBar> {
         return;
       }
       await context.push<void>(
-        _bookingEntryUri(widget.details, widget.stay, widget.guests).toString(),
+        _bookingEntryUri(widget.details, widget.guests).toString(),
       );
     } finally {
       if (mounted) setState(() => _opening = false);

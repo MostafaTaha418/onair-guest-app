@@ -10,10 +10,6 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/env/env_config.dart';
-import 'package:on_air/core/env/firebase_options_production.dart'
-    as production_firebase;
-import 'package:on_air/core/env/firebase_options_staging.dart'
-    as staging_firebase;
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
@@ -222,12 +218,11 @@ typedef _Backend = ({
 });
 
 Future<_Backend> _remoteBackend(EnvConfig environment) async {
-  final firebaseOptions = switch (environment.flavor) {
-    'staging' => staging_firebase.DefaultFirebaseOptions.currentPlatform,
-    'production' => production_firebase.DefaultFirebaseOptions.currentPlatform,
-    _ => throw StateError('Unsupported Firebase flavor: ${environment.flavor}'),
-  };
-  await Firebase.initializeApp(options: firebaseOptions);
+  // Native Firebase configuration is supplied by the flavor-specific
+  // google-services.json / GoogleService-Info.plist. This reuses Android's
+  // auto-created [DEFAULT] app and lets Apple initialize from its plist;
+  // supplying generated options here duplicates [DEFAULT] in Android release.
+  await Firebase.initializeApp();
   await Supabase.initialize(
     url: environment.supabaseUrl,
     publishableKey: environment.supabaseAnonKey,

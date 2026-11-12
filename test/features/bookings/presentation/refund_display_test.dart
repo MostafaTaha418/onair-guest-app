@@ -10,7 +10,6 @@ import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
-import 'package:on_air/design_system/components/refund_stage_tracker.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
@@ -20,6 +19,7 @@ import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
 import 'package:on_air/features/bookings/presentation/bookings_cubit.dart';
 import 'package:on_air/features/bookings/presentation/bookings_screen.dart';
+import 'package:on_air/features/bookings/presentation/widgets/refund_section.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../../../helpers/fake_app_config_repository.dart';
@@ -190,8 +190,8 @@ void main() {
     await tester.pump();
   }
 
-  RefundStageTracker tracker(WidgetTester tester) =>
-      tester.widget<RefundStageTracker>(find.byType(RefundStageTracker));
+  RefundProgress tracker(WidgetTester tester) =>
+      tester.widget<RefundProgress>(find.byType(RefundProgress));
 
   testWidgets('rejected: stage requested, chip, and the paid amount', (
     tester,
@@ -199,16 +199,17 @@ void main() {
     await pumpDetails(tester, rejectedId);
     expect(find.text(l10n.refundTitle), findsOneWidget);
     expect(find.text(l10n.refundAmount), findsOneWidget);
-    // The same figure is also the paid amount in the payments section.
+    // The same figure is also the paid amount and the card payment line
+    // in the payments section.
     expect(
       find.text(MoneyFormatter().format(Money(60000))),
-      findsExactly(2),
+      findsExactly(3),
     );
     expect(tracker(tester).currentIndex, 0);
     expect(tracker(tester).failed, isFalse);
     expect(find.text(l10n.refundChipRequested), findsOneWidget);
     // The reached-step checks stop at the current stage (AC-042).
-    expect(find.byIcon(AppIcons.checkCircle), findsOneWidget);
+    expect(find.byIcon(AppIcons.check), findsOneWidget);
     expect(find.text(l10n.refundChipDone), findsNothing);
     // AC-020: the message carries the full paid amount.
     expect(
@@ -225,7 +226,7 @@ void main() {
     await pumpDetails(tester, expiredId);
     expect(tracker(tester).currentIndex, 1);
     expect(find.text(l10n.refundChipInProgress), findsOneWidget);
-    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(2));
+    expect(find.byIcon(AppIcons.check), findsNWidgets(2));
     expect(find.text(l10n.refundChipDone), findsNothing);
     // AC-021: the message carries the full paid amount.
     expect(
@@ -238,7 +239,7 @@ void main() {
     await pumpDetails(tester, conflictId);
     expect(tracker(tester).currentIndex, 2);
     expect(find.text(l10n.refundChipInProgress), findsOneWidget);
-    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(3));
+    expect(find.byIcon(AppIcons.check), findsNWidgets(3));
     expect(find.text(l10n.refundChipDone), findsNothing);
   });
 
@@ -248,7 +249,7 @@ void main() {
     await pumpDetails(tester, cancelledId);
     expect(tracker(tester).currentIndex, 3);
     expect(find.text(l10n.refundChipDone), findsOneWidget);
-    expect(find.byIcon(AppIcons.checkCircle), findsNWidgets(4));
+    expect(find.byIcon(AppIcons.check), findsNWidgets(4));
     expect(find.text(l10n.refundProblemHint), findsNothing);
   });
 
@@ -283,6 +284,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(RefundStageTracker), findsNothing);
+    expect(find.byType(RefundProgress), findsNothing);
   });
 }

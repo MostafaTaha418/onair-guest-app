@@ -15,8 +15,7 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
-import 'package:on_air/design_system/components/on_air_primary_button.dart';
-import 'package:on_air/design_system/components/skeletons.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -266,9 +265,9 @@ void main() {
     await pumpDates(tester, height: 600, load: false);
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(SkeletonBox), findsNWidgets(3));
+    expect(find.byType(FlowSkeletonBlock), findsWidgets);
     await tester.scrollUntilVisible(
-      find.byType(SkeletonBox).last,
+      find.byType(FlowSkeletonBlock).last,
       100,
       scrollable: find.byType(Scrollable).first,
     );
@@ -284,7 +283,7 @@ void main() {
     expect(find.text(l10n.bookingRangeHasUnavailable), findsOneWidget);
     expect(
       tester
-          .widget<OnAirPrimaryButton>(
+          .widget<FlowButton>(
             find.byKey(const ValueKey('dates-continue')),
           )
           .onPressed,
@@ -301,13 +300,13 @@ void main() {
 
     final finder = find.byKey(const ValueKey('dates-continue'));
     expect(
-      tester.widget<OnAirPrimaryButton>(finder).onPressed,
+      tester.widget<FlowButton>(finder).onPressed,
       isNull,
     );
 
     await pickRange(tester, 20, 23);
     expect(
-      tester.widget<OnAirPrimaryButton>(finder).onPressed,
+      tester.widget<FlowButton>(finder).onPressed,
       isNotNull,
     );
     expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
@@ -357,6 +356,74 @@ void main() {
     expect(find.text('summary-stub'), findsNothing);
   });
 
+  testWidgets('a tap after the check-in moves the departure in place', (
+    tester,
+  ) async {
+    listings.propertyResponses.add(_property1f());
+    listings.unavailableNightsResponses.add(<DateOnly>{});
+    await pumpDates(tester);
+
+    await pickRange(tester, 20, 23);
+    expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
+
+    await ensureMonthVisible(tester, day(26));
+    await tester.tap(find.text('${day(26).day}').last);
+    await tester.pumpAndSettle();
+    // The arrival stays put, the departure moves, and the nights recount.
+    expect(find.text(l10n.bookingNightsCount('6')), findsOneWidget);
+    expect(
+      tester
+          .widget<FlowButton>(
+            find.byKey(const ValueKey('dates-continue')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('a tap at or before the check-in restarts the pick', (
+    tester,
+  ) async {
+    listings.propertyResponses.add(_property1f());
+    listings.unavailableNightsResponses.add(<DateOnly>{});
+    await pumpDates(tester);
+
+    await pickRange(tester, 20, 23);
+    // The calendar now shows December (day 20 is Nov 30, day 23 is Dec 3);
+    // the restart target day 17 (Nov 27) sits in the previous month.
+    await tester.tap(find.byTooltip(l10n.calendarPrevMonth));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('${day(17).day}').last);
+    await tester.pump();
+    // The old range is gone and the hint asks for the new departure.
+    expect(find.text(l10n.bookingNightsCount('3')), findsNothing);
+    expect(find.text(l10n.bookingPickCheckOut), findsOneWidget);
+
+    await ensureMonthVisible(tester, day(21));
+    await tester.tap(find.text('${day(21).day}').last);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.bookingNightsCount('4')), findsOneWidget);
+  });
+
+  testWidgets('an unavailable departure keeps the current range', (
+    tester,
+  ) async {
+    listings.propertyResponses.add(_property1f());
+    // day(24) is Dec 4 — a night inside the extended range.
+    listings.unavailableNightsResponses.add({day(24)});
+    await pumpDates(tester);
+
+    await pickRange(tester, 20, 23);
+    expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
+
+    await ensureMonthVisible(tester, day(26));
+    await tester.tap(find.text('${day(26).day}').last);
+    await tester.pumpAndSettle();
+    // The move is refused, the picked stay is untouched.
+    expect(find.text(l10n.bookingRangeHasUnavailable), findsOneWidget);
+    expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
+  });
+
   testWidgets('offline disables continue', (tester) async {
     listings.propertyResponses.add(_property1f());
     listings.unavailableNightsResponses.add(<DateOnly>{});
@@ -367,7 +434,7 @@ void main() {
     await pickRange(tester, 20, 23);
     expect(
       tester
-          .widget<OnAirPrimaryButton>(
+          .widget<FlowButton>(
             find.byKey(const ValueKey('dates-continue')),
           )
           .onPressed,
