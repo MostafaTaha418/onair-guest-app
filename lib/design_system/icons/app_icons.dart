@@ -72,6 +72,22 @@ abstract final class AppIcons {
   static const IconData warningOutline =
       CupertinoIcons.exclamationmark_triangle;
   static const IconData waves = LucideIcons.waves;
+  // Booking flow (dates · summary · details redesign, 2026-11).
+  static const IconData tapHint = LucideIcons.pointer;
+  static const IconData nights = LucideIcons.moon;
+  static const IconData gavel = LucideIcons.gavel;
+  static const IconData hourglass = LucideIcons.hourglass;
+  static const IconData blocked = LucideIcons.ban;
+  static const IconData apartment = LucideIcons.building2;
+  static const IconData refresh = LucideIcons.refreshCw;
+  static const IconData history = LucideIcons.history;
+  static const IconData mapPin = LucideIcons.mapPin;
+  static const IconData dateRange = LucideIcons.calendarRange;
+  static const IconData check = LucideIcons.check;
+  static const IconData ellipsis = LucideIcons.ellipsis;
+  static const IconData checkCircleLine = LucideIcons.circleCheck;
+  static const IconData xCircleLine = LucideIcons.circleX;
+  static const IconData leave = LucideIcons.logOut;
   static const IconData wifi = CupertinoIcons.wifi;
   static const IconData wifiOff = LucideIcons.wifiOff;
 }

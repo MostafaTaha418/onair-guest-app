@@ -454,6 +454,19 @@
     }
   },
   "bookingContinue": "متابعة",
+  "bookingBackToProperty": "رجوع لصفحة الشقة",
+  "bookingStepCheckIn": "يوم الدخول",
+  "bookingStepCheckOut": "يوم المغادرة",
+  "calendarToday": "النهاردة",
+  "bookingDetailsTitle": "تفاصيل الحجز",
+  "amountWas": "كان {amount}",
+  "@amountWas": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "bookingStartFromProperty": "ابدأ الحجز من صفحة الشقة.",
   "bookingSummaryTitle": "ملخص الحجز",
   "bookingNights": "الليالي",

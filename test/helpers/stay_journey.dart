@@ -312,6 +312,11 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
     tester,
     find.byKey(const ValueKey('action-request_cancellation')),
   );
+  // The cancel action sits at the end of the details page.
+  await tester.ensureVisible(
+    find.byKey(const ValueKey('action-request_cancellation')),
+  );
+  await tester.pump();
   await tester.tap(find.byKey(const ValueKey('action-request_cancellation')));
   await pumpUntilFound(tester, find.byKey(const ValueKey('cancel-confirm')));
   expect(
@@ -337,6 +342,11 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
     tester,
     find.byKey(const ValueKey('action-request_cancellation')),
   );
+  // The cancel action sits at the end of the details page.
+  await tester.ensureVisible(
+    find.byKey(const ValueKey('action-request_cancellation')),
+  );
+  await tester.pump();
   await tester.tap(find.byKey(const ValueKey('action-request_cancellation')));
   await pumpUntilFound(tester, find.byKey(const ValueKey('cancel-confirm')));
   expect(find.text(l10n.cancelReasonNoRefund), findsOneWidget);
@@ -355,6 +365,11 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
     tester,
     find.byKey(const ValueKey('action-request_cancellation')),
   );
+  // The cancel action sits at the end of the details page.
+  await tester.ensureVisible(
+    find.byKey(const ValueKey('action-request_cancellation')),
+  );
+  await tester.pump();
   await tester.tap(find.byKey(const ValueKey('action-request_cancellation')));
   await pumpUntilFound(tester, find.byKey(const ValueKey('cancel-confirm')));
   expect(

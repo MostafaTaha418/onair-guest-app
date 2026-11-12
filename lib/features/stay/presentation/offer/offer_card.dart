@@ -6,12 +6,9 @@ import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
-import 'package:on_air/design_system/components/amount_row.dart';
-import 'package:on_air/design_system/components/info_banner.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/on_air_confirm_dialog.dart';
-import 'package:on_air/design_system/components/on_air_network_image.dart';
-import 'package:on_air/design_system/components/on_air_primary_button.dart';
-import 'package:on_air/design_system/components/status_chip.dart';
+import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/domain/booking_stay_parts.dart';
@@ -101,138 +98,125 @@ final class _OfferCardBody extends StatelessWidget {
       builder: (context, state) {
         final pending = offer.status == OfferStatus.pending;
         final busy = state is OfferSubmitting;
-        return Card(
-          child: Padding(
-            padding: const EdgeInsetsDirectional.all(Dimens.space16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.offerTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: context.colors.textPrimary,
+        final colors = context.colors;
+        final locale = l10n.localeName;
+        final base = Theme.of(context).textTheme.bodyMedium!;
+        Widget line(IconData icon, String text, TextStyle style) => Row(
+          children: [
+            ExcludeSemantics(
+              child: Icon(icon, size: 18, color: colors.textSecondary),
+            ),
+            const SizedBox(width: Dimens.space8),
+            Expanded(child: Text(text, style: style)),
+          ],
+        );
+        return FlowCard(
+          borderColor: colors.primary,
+          padding: const EdgeInsetsDirectional.all(Dimens.space12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FlowChip(label: l10n.offerTitle, tone: FlowTone.badge),
+              ),
+              const SizedBox(height: Dimens.space12),
+              FlowPropertyHeader(
+                variants: offer.coverImage?.variants ?? const [],
+                title: offer.propertyTitle,
+                subtitle: offer.areaName,
+              ),
+              const SizedBox(height: Dimens.space12),
+              line(
+                AppIcons.dateRange,
+                '${l10n.offerDates}: '
+                '${DateOnlyFormatter.dayMonth(offer.stay.checkIn, locale: locale)} – '
+                '${DateOnlyFormatter.dayMonth(offer.stay.checkOut, locale: locale)}',
+                base.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              line(
+                AppIcons.cash,
+                offerDifferenceText(offer, l10n),
+                base.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
+              ),
+              if (pending && offer.expiresAt != null) ...[
+                const SizedBox(height: 6),
+                line(
+                  AppIcons.schedule,
+                  l10n.offerExpires(
+                    formatCairoDayMonthTime(offer.expiresAt!, locale: locale),
+                  ),
+                  base.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: Dimens.space12),
+              ],
+              const SizedBox(height: Dimens.space12),
+              if (pending)
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(Dimens.radiusChip),
-                      child: SizedBox(
-                        width: 64,
-                        height: 64,
-                        child: OnAirNetworkImage(
-                          variants: offer.coverImage?.variants ?? const [],
-                        ),
+                    Expanded(
+                      child: FlowButton(
+                        key: const ValueKey('offer-decline'),
+                        label: l10n.offerDecline,
+                        kind: FlowButtonKind.outlined,
+                        loading: busy && !state.accept,
+                        onPressed: busy ? null : () => _decline(context),
                       ),
                     ),
-                    const SizedBox(width: Dimens.space12),
+                    const SizedBox(width: Dimens.space8),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            offer.propertyTitle,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  color: context.colors.textPrimary,
-                                ),
-                          ),
-                          Text(
-                            offer.areaName,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: context.colors.textSecondary,
-                                ),
-                          ),
-                        ],
+                      child: FlowButton(
+                        key: const ValueKey('offer-accept'),
+                        label: l10n.offerAccept,
+                        loading: busy && state.accept,
+                        onPressed: busy ? null : () => _accept(context),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: Dimens.space12),
-                AmountRow(
-                  label: l10n.offerDates,
-                  value:
-                      '${DateOnlyFormatter.dayMonth(offer.stay.checkIn, locale: AppLocalizations.of(context).localeName)} – '
-                      '${DateOnlyFormatter.dayMonth(offer.stay.checkOut, locale: AppLocalizations.of(context).localeName)}',
-                ),
-                const SizedBox(height: Dimens.space8),
-                InfoBanner(
-                  message: offerDifferenceText(offer, l10n),
-                  tone: switch (offer.direction) {
-                    OfferDirection.guestRefunded => StatusTone.info,
-                    OfferDirection.guestPays => StatusTone.warning,
-                    OfferDirection.none => StatusTone.cancelled,
-                  },
-                ),
-                if (pending) ...[
-                  if (offer.expiresAt != null)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        top: Dimens.space8,
-                      ),
-                      child: Text(
-                        l10n.offerExpires(
-                          formatCairoDayMonthTime(
-                            offer.expiresAt!,
-                            locale: AppLocalizations.of(context).localeName,
-                          ),
-                        ),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: Dimens.space12),
-                  OnAirPrimaryButton(
-                    key: const ValueKey('offer-accept'),
-                    label: l10n.offerAccept,
-                    isLoading: busy && state.accept,
-                    onPressed: busy ? null : () => _accept(context),
+                )
+              else
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: FlowChip(
+                    label: switch (offer.status) {
+                      OfferStatus.accepted => l10n.offerStatusAccepted,
+                      OfferStatus.declined => l10n.offerStatusDeclined,
+                      _ => l10n.offerStatusExpired,
+                    },
+                    tone: offer.status == OfferStatus.accepted
+                        ? FlowTone.success
+                        : FlowTone.cancelled,
                   ),
-                  const SizedBox(height: Dimens.space8),
-                  OutlinedButton(
-                    key: const ValueKey('offer-decline'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(Dimens.minTouchTarget),
-                    ),
-                    onPressed: busy ? null : () => _decline(context),
-                    child: Text(l10n.offerDecline),
+                ),
+              if (state is OfferIdle && state.error != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    top: Dimens.space8,
                   ),
-                ] else
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      top: Dimens.space8,
-                    ),
-                    child: StatusChip(
-                      label: switch (offer.status) {
-                        OfferStatus.accepted => l10n.offerStatusAccepted,
-                        OfferStatus.declined => l10n.offerStatusDeclined,
-                        _ => l10n.offerStatusExpired,
-                      },
-                      tone: offer.status == OfferStatus.accepted
-                          ? StatusTone.completed
-                          : StatusTone.cancelled,
-                    ),
-                  ),
-                if (state is OfferIdle && state.error != null)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      top: Dimens.space8,
-                    ),
-                    child: Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        apiErrorMessage(state.error!, l10n),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: context.colors.errorText,
-                        ),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      apiErrorMessage(state.error!, l10n),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.errorText,
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         );
       },

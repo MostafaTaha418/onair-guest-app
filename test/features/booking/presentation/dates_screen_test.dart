@@ -15,8 +15,7 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
 import 'package:on_air/core/time/stay_range.dart';
-import 'package:on_air/design_system/components/on_air_primary_button.dart';
-import 'package:on_air/design_system/components/skeletons.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -266,9 +265,9 @@ void main() {
     await pumpDates(tester, height: 600, load: false);
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(SkeletonBox), findsNWidgets(3));
+    expect(find.byType(FlowSkeletonBlock), findsWidgets);
     await tester.scrollUntilVisible(
-      find.byType(SkeletonBox).last,
+      find.byType(FlowSkeletonBlock).last,
       100,
       scrollable: find.byType(Scrollable).first,
     );
@@ -284,7 +283,7 @@ void main() {
     expect(find.text(l10n.bookingRangeHasUnavailable), findsOneWidget);
     expect(
       tester
-          .widget<OnAirPrimaryButton>(
+          .widget<FlowButton>(
             find.byKey(const ValueKey('dates-continue')),
           )
           .onPressed,
@@ -301,13 +300,13 @@ void main() {
 
     final finder = find.byKey(const ValueKey('dates-continue'));
     expect(
-      tester.widget<OnAirPrimaryButton>(finder).onPressed,
+      tester.widget<FlowButton>(finder).onPressed,
       isNull,
     );
 
     await pickRange(tester, 20, 23);
     expect(
-      tester.widget<OnAirPrimaryButton>(finder).onPressed,
+      tester.widget<FlowButton>(finder).onPressed,
       isNotNull,
     );
     expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
@@ -374,7 +373,7 @@ void main() {
     expect(find.text(l10n.bookingNightsCount('6')), findsOneWidget);
     expect(
       tester
-          .widget<OnAirPrimaryButton>(
+          .widget<FlowButton>(
             find.byKey(const ValueKey('dates-continue')),
           )
           .onPressed,
@@ -435,7 +434,7 @@ void main() {
     await pickRange(tester, 20, 23);
     expect(
       tester
-          .widget<OnAirPrimaryButton>(
+          .widget<FlowButton>(
             find.byKey(const ValueKey('dates-continue')),
           )
           .onPressed,

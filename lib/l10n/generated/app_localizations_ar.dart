@@ -797,6 +797,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookingContinue => 'متابعة';
 
   @override
+  String get bookingBackToProperty => 'رجوع لصفحة الشقة';
+
+  @override
+  String get bookingStepCheckIn => 'يوم الدخول';
+
+  @override
+  String get bookingStepCheckOut => 'يوم المغادرة';
+
+  @override
+  String get calendarToday => 'النهاردة';
+
+  @override
+  String get bookingDetailsTitle => 'تفاصيل الحجز';
+
+  @override
+  String amountWas(String amount) {
+    return 'كان $amount';
+  }
+
+  @override
   String get bookingStartFromProperty => 'ابدأ الحجز من صفحة الشقة.';
 
   @override

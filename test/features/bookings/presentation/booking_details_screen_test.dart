@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
@@ -23,6 +25,7 @@ import 'package:on_air/features/stay/presentation/cash/cash_receipt_screen.dart'
 import 'package:on_air/features/stay/presentation/claims/damage_claim_cubit.dart';
 import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/fake_booking_backend.dart';
@@ -171,7 +174,7 @@ void main() {
     await pumpDetails(tester, confirmedId);
 
     // Header: code row with the copy button and the status chip.
-    expect(find.text(l10n.bookingCode), findsOneWidget);
+    expect(find.textContaining(l10n.bookingCode), findsOneWidget);
     expect(find.text('OA-MOCK001'), findsOneWidget);
     expect(find.byTooltip(l10n.bookingCopyCode), findsOneWidget);
     // Once in the header chip and once as the timeline's last event.
@@ -226,11 +229,11 @@ void main() {
       find.textContaining(MoneyFormatter().format(Money(112500))),
       findsExactly(2),
     );
+    // The payment line: its status chip and its Cairo date and time.
+    expect(find.text(l10n.paymentLineSucceeded), findsOneWidget);
     expect(
       find.text(
-        '${MoneyFormatter().format(Money(112500))} · '
-        '${l10n.paymentLineSucceeded} · '
-        '${formatCairoTime(DateTime.parse('2026-10-28T09:00:00Z'))}',
+        formatCairoDayMonthTime(DateTime.parse('2026-10-28T09:00:00Z')),
       ),
       findsOneWidget,
     );
@@ -332,7 +335,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    final button = tester.widget<OutlinedButton>(
+    final button = tester.widget<FlowButton>(
       find.byKey(const ValueKey('action-contact_support')),
     );
     expect(button.onPressed, isNull);

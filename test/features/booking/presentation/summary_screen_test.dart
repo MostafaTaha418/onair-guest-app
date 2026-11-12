@@ -13,6 +13,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -261,7 +262,14 @@ void main() {
     listings.unavailableNightsResponses.add(<DateOnly>{});
     await pumpSummary(tester, propertyId: property1f, listings: listings);
 
-    expect(find.text(l10n.bookingNightsCount('3')), findsOneWidget);
+    expect(
+      tester
+          .widgetList<FlowDataRow>(find.byType(FlowDataRow))
+          .where((row) => row.label == l10n.bookingNights)
+          .single
+          .value,
+      '3',
+    );
     expect(find.text('EGP 1,500.00'), findsOneWidget);
     expect(find.text('EGP 4,500.00'), findsOneWidget);
     expect(find.text('EGP 1,125.00'), findsOneWidget);

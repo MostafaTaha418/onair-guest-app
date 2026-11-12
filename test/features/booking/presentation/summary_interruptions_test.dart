@@ -15,8 +15,7 @@ import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
-import 'package:on_air/design_system/components/amount_row.dart';
-import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_quote.dart';
 import 'package:on_air/features/booking/domain/quote_change.dart';
@@ -280,17 +279,17 @@ void main() {
     expect(find.text('EGP 4,500.00'), findsOneWidget);
     expect(find.text('EGP 5,400.00'), findsOneWidget);
     final nightlyRow = tester
-        .widgetList<AmountRow>(find.byType(AmountRow))
+        .widgetList<FlowDataRow>(find.byType(FlowDataRow))
         .firstWhere((row) => row.label == l10n.bookingNightlyPrice);
-    expect(nightlyRow.highlighted, isTrue);
-    expect(nightlyRow.previousValue, 'EGP 1,500.00');
+    expect(nightlyRow.changed, isTrue);
+    expect(nightlyRow.previous, 'EGP 1,500.00');
 
     // The pay button is replaced until the guest confirms the new amounts.
     expect(find.byKey(const ValueKey('summary-pay')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('quote-confirm-new')));
     await tester.pumpAndSettle();
     expect(find.text(l10n.quoteChangedNotice), findsNothing);
-    final pay = tester.widget<OnAirPrimaryButton>(
+    final pay = tester.widget<FlowButton>(
       find.byKey(const ValueKey('summary-pay')),
     );
     expect(pay.onPressed, isNotNull);
@@ -318,7 +317,7 @@ void main() {
     expect(find.text(l10n.termsChangedNotice), findsOneWidget);
     expect(find.byKey(const ValueKey('terms-accept-new')), findsOneWidget);
     // The pay button is disabled while the terms are unaccepted.
-    final pay = tester.widget<OnAirPrimaryButton>(
+    final pay = tester.widget<FlowButton>(
       find.byKey(const ValueKey('summary-pay')),
     );
     expect(pay.onPressed, isNull);
@@ -327,7 +326,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(l10n.termsChangedNotice), findsNothing);
     expect(flowCubit.state.termsHash, 'mock-terms-2');
-    final payAgain = tester.widget<OnAirPrimaryButton>(
+    final payAgain = tester.widget<FlowButton>(
       find.byKey(const ValueKey('summary-pay')),
     );
     expect(payAgain.onPressed, isNotNull);
@@ -429,7 +428,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SnackBar), findsOneWidget);
-    final pay = tester.widget<OnAirPrimaryButton>(
+    final pay = tester.widget<FlowButton>(
       find.byKey(const ValueKey('summary-pay')),
     );
     expect(pay.onPressed, isNull);
@@ -437,7 +436,7 @@ void main() {
     // The retry-after passes: the pay button comes back on its own.
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
-    final payAgain = tester.widget<OnAirPrimaryButton>(
+    final payAgain = tester.widget<FlowButton>(
       find.byKey(const ValueKey('summary-pay')),
     );
     expect(payAgain.onPressed, isNotNull);

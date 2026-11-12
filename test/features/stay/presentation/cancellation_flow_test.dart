@@ -55,6 +55,10 @@ void main() {
       tester,
       find.byKey(const ValueKey('action-request_cancellation')),
     );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('action-request_cancellation')),
+    );
+    await tester.pump();
     await tester.tap(
       find.byKey(const ValueKey('action-request_cancellation')),
     );

@@ -204,8 +204,8 @@ void main() {
 
     expect(find.byType(DatesScreen), findsOneWidget);
     // The calendar always starts empty: the carried stay is dropped and the
-    // guest picks check-in, then check-out, on the availability container.
-    expect(find.text(l10n.propertyAvailability), findsOneWidget);
+    // guest picks check-in, then check-out; the first step is current.
+    expect(find.text(l10n.bookingStepCheckIn), findsOneWidget);
     expect(find.text(l10n.bookingPickCheckIn), findsOneWidget);
     expect(find.text(l10n.bookingNightsCount('3')), findsNothing);
     expect(find.byType(CounterStepper), findsNothing);

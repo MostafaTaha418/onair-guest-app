@@ -796,6 +796,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookingContinue => 'Continue';
 
   @override
+  String get bookingBackToProperty => 'Back to apartment';
+
+  @override
+  String get bookingStepCheckIn => 'Check-in';
+
+  @override
+  String get bookingStepCheckOut => 'Check-out';
+
+  @override
+  String get calendarToday => 'today';
+
+  @override
+  String get bookingDetailsTitle => 'Booking details';
+
+  @override
+  String amountWas(String amount) {
+    return 'was $amount';
+  }
+
+  @override
   String get bookingStartFromProperty =>
       'Start the booking from the apartment page.';
 

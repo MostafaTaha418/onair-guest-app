@@ -1412,6 +1412,42 @@ abstract class AppLocalizations {
   /// **'متابعة'**
   String get bookingContinue;
 
+  /// No description provided for @bookingBackToProperty.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع لصفحة الشقة'**
+  String get bookingBackToProperty;
+
+  /// No description provided for @bookingStepCheckIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم الدخول'**
+  String get bookingStepCheckIn;
+
+  /// No description provided for @bookingStepCheckOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم المغادرة'**
+  String get bookingStepCheckOut;
+
+  /// No description provided for @calendarToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'النهاردة'**
+  String get calendarToday;
+
+  /// No description provided for @bookingDetailsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الحجز'**
+  String get bookingDetailsTitle;
+
+  /// No description provided for @amountWas.
+  ///
+  /// In ar, this message translates to:
+  /// **'كان {amount}'**
+  String amountWas(String amount);
+
   /// No description provided for @bookingStartFromProperty.
   ///
   /// In ar, this message translates to:
