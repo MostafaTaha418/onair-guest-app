@@ -132,9 +132,11 @@ final class _OfferCardBody extends StatelessWidget {
                 '${l10n.offerDates}: '
                 '${DateOnlyFormatter.dayMonth(offer.stay.checkIn, locale: locale)} – '
                 '${DateOnlyFormatter.dayMonth(offer.stay.checkOut, locale: locale)}',
-                base.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                flowText(
+                  context,
+                  base: base,
+                  size: 14,
+                  weight: FontWeight.w600,
                   color: colors.textPrimary,
                 ),
               ),
@@ -142,9 +144,11 @@ final class _OfferCardBody extends StatelessWidget {
               line(
                 AppIcons.cash,
                 offerDifferenceText(offer, l10n),
-                base.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                flowText(
+                  context,
+                  base: base,
+                  size: 14,
+                  weight: FontWeight.w700,
                   color: colors.textPrimary,
                 ),
               ),
@@ -155,9 +159,11 @@ final class _OfferCardBody extends StatelessWidget {
                   l10n.offerExpires(
                     formatCairoDayMonthTime(offer.expiresAt!, locale: locale),
                   ),
-                  base.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  flowText(
+                    context,
+                    base: base,
+                    size: 13,
+                    weight: FontWeight.w500,
                     color: colors.textSecondary,
                   ),
                 ),

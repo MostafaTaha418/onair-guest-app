@@ -48,6 +48,7 @@ final class FlowPalette {
       dark ? colors['rejectedText'] : colors['destructive'];
   Color get disabledBackground => colors.textPrimary.withValues(alpha: 0.12);
   Color get disabledForeground => colors.textPrimary.withValues(alpha: 0.38);
+  Color get pressedOverlay => const Color(0xFF000000);
 
   /// Text, mark (icon/dot), background and border of a tone.
   ({Color text, Color mark, Color background, Color border}) tone(
@@ -106,6 +107,29 @@ TextStyle _text(
   fontWeight: weight,
   height: height,
   color: color ?? context.colors.textPrimary,
+);
+
+/// Applies the booking redesign's type choices while keeping every raw
+/// typography property inside the design system. Passing [base] preserves any
+/// existing theme features that the caller does not intentionally override.
+TextStyle flowText(
+  BuildContext context, {
+  TextStyle? base,
+  double? size,
+  FontWeight? weight,
+  double? height,
+  Color? color,
+  double? letterSpacing,
+  TextDecoration? decoration,
+  List<FontFeature>? fontFeatures,
+}) => (base ?? Theme.of(context).textTheme.bodyMedium!).copyWith(
+  fontSize: size,
+  fontWeight: weight,
+  height: height,
+  color: color,
+  letterSpacing: letterSpacing,
+  decoration: decoration,
+  fontFeatures: fontFeatures,
 );
 
 /// The redesign's app bar: 56dp, a 48dp back button and a 20/w800 title on
@@ -675,7 +699,7 @@ final class FlowButton extends StatefulWidget {
     this.icon,
     this.trailing,
     this.minHeight = Dimens.minTouchTarget,
-    this.fontSize = 15,
+    this.textSize = 15,
     this.expand = true,
     super.key,
   });
@@ -689,7 +713,7 @@ final class FlowButton extends StatefulWidget {
   /// Extra content after the label, excluded from semantics (a cooldown).
   final Widget? trailing;
   final double minHeight;
-  final double fontSize;
+  final double textSize;
   final bool expand;
 
   @override
@@ -727,7 +751,7 @@ final class _FlowButtonState extends State<FlowButton> {
     final onPressed = loading ? null : widget.onPressed;
     final textStyle = _text(
       context,
-      widget.fontSize,
+      widget.textSize,
       FontWeight.w700,
       height: 1.4,
     );
@@ -792,7 +816,7 @@ final class _FlowButtonState extends State<FlowButton> {
           textStyle: textStyle,
           // Reduced motion: state colors switch without a fade.
           animationDuration: flowDuration(context, 200),
-          overlayColor: const Color(0xFF000000),
+          overlayColor: palette.pressedOverlay,
         ),
         child: child,
       ),

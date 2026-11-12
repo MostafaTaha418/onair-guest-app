@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/info_banner.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
@@ -107,8 +108,10 @@ final class _BookingsBanner extends StatelessWidget {
     final colors = context.colors;
     // Primary text on the warning container keeps AA contrast in both themes.
     final foreground = colors.textPrimary;
-    final text = Theme.of(context).textTheme.bodyMedium!.copyWith(
-      fontSize: 14,
+    final text = flowText(
+      context,
+      base: Theme.of(context).textTheme.bodyMedium,
+      size: 14,
       color: foreground,
     );
     return Padding(
@@ -142,8 +145,10 @@ final class _BookingsBanner extends StatelessWidget {
                   Expanded(
                     child: Text(
                       message,
-                      style: text.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: flowText(
+                        context,
+                        base: text,
+                        weight: FontWeight.w600,
                         height: 1.45,
                       ),
                     ),
@@ -162,9 +167,11 @@ final class _BookingsBanner extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(Dimens.radiusField),
                       ),
-                      overlayColor: const Color(0xFF000000),
-                      textStyle: text.copyWith(
-                        fontWeight: FontWeight.w800,
+                      overlayColor: FlowPalette.of(context).pressedOverlay,
+                      textStyle: flowText(
+                        context,
+                        base: text,
+                        weight: FontWeight.w800,
                         decoration: TextDecoration.underline,
                       ),
                     ),

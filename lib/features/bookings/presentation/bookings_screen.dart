@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -51,9 +52,11 @@ final class BookingsScreen extends StatelessWidget {
           titleSpacing: Dimens.screenSide,
           title: Text(
             l10n.bookings,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+            style: flowText(
+              context,
+              base: Theme.of(context).textTheme.titleLarge,
+              size: 22,
+              weight: FontWeight.w800,
               height: 1.3,
               color: colors.textPrimary,
             ),
@@ -118,8 +121,10 @@ final class _SegmentedTabs extends StatelessWidget
     final colors = context.colors;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final ink = dark ? colors['textAccent'] : colors.primary;
-    final label = Theme.of(context).textTheme.labelLarge!.copyWith(
-      fontSize: 14,
+    final label = flowText(
+      context,
+      base: Theme.of(context).textTheme.labelLarge,
+      size: 14,
       height: 1.3,
     );
     return Padding(
@@ -148,8 +153,16 @@ final class _SegmentedTabs extends StatelessWidget
           ),
           labelColor: colors.onPrimary,
           unselectedLabelColor: colors.textSecondary,
-          labelStyle: label.copyWith(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: label.copyWith(fontWeight: FontWeight.w600),
+          labelStyle: flowText(
+            context,
+            base: label,
+            weight: FontWeight.w700,
+          ),
+          unselectedLabelStyle: flowText(
+            context,
+            base: label,
+            weight: FontWeight.w600,
+          ),
           splashBorderRadius: BorderRadius.circular(Dimens.radiusField),
           overlayColor: WidgetStatePropertyAll(ink.withValues(alpha: 0.08)),
           tabs: [
@@ -300,9 +313,11 @@ final class _TabListState extends State<_TabList> {
                   locale: l10n.localeName,
                 ),
               ),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              style: flowText(
+                context,
+                base: Theme.of(context).textTheme.bodySmall,
+                size: 12,
+                weight: FontWeight.w500,
                 height: 1.5,
                 color: colors.textSecondary,
               ),
@@ -569,9 +584,11 @@ final class _StateMessageState extends State<_StateMessage> {
     };
     final disabledBg = colors.textPrimary.withValues(alpha: 0.12);
     final disabledFg = colors.textPrimary.withValues(alpha: 0.38);
-    final buttonText = base.copyWith(
-      fontSize: 15,
-      fontWeight: FontWeight.w700,
+    final buttonText = flowText(
+      context,
+      base: base,
+      size: 15,
+      weight: FontWeight.w700,
       height: 1.2,
     );
     const shape = RoundedRectangleBorder(
@@ -624,7 +641,7 @@ final class _StateMessageState extends State<_StateMessage> {
               padding: padding,
               shape: shape,
               textStyle: buttonText,
-              overlayColor: const Color(0xFF000000),
+              overlayColor: FlowPalette.of(context).pressedOverlay,
             ),
             child: child,
           );
@@ -645,9 +662,11 @@ final class _StateMessageState extends State<_StateMessage> {
           child: Text(
             widget.title,
             textAlign: TextAlign.center,
-            style: base.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+            style: flowText(
+              context,
+              base: base,
+              size: 17,
+              weight: FontWeight.w700,
               height: 1.5,
               color: colors.textPrimary,
             ),
@@ -658,8 +677,10 @@ final class _StateMessageState extends State<_StateMessage> {
           Text(
             widget.subtitle!,
             textAlign: TextAlign.center,
-            style: base.copyWith(
-              fontSize: 14,
+            style: flowText(
+              context,
+              base: base,
+              size: 14,
               height: 1.6,
               color: colors.textSecondary,
             ),
@@ -672,9 +693,11 @@ final class _StateMessageState extends State<_StateMessage> {
           SelectableText(
             l10n.referenceNumber(widget.reference!),
             textAlign: TextAlign.center,
-            style: base.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+            style: flowText(
+              context,
+              base: base,
+              size: 12,
+              weight: FontWeight.w500,
               height: 1.5,
               color: colors.textSecondary,
               fontFeatures: const [FontFeature.tabularFigures()],

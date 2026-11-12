@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/core/time/countdown.dart';
 import 'package:on_air/core/time/date_only_formatter.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/on_air_network_image.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
@@ -138,9 +139,11 @@ final class _BookingCardState extends State<BookingCard> {
             ),
           );
     final base = theme.textTheme.bodyMedium!;
-    final metaStyle = base.copyWith(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
+    final metaStyle = flowText(
+      context,
+      base: base,
+      size: 13,
+      weight: FontWeight.w500,
       height: 1.5,
       color: colors.textSecondary,
     );
@@ -217,9 +220,11 @@ final class _BookingCardState extends State<BookingCard> {
                                 booking.title,
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
-                                style: base.copyWith(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
+                                style: flowText(
+                                  context,
+                                  base: base,
+                                  size: 15,
+                                  weight: FontWeight.w700,
                                   height: 1.5,
                                   color: colors.textPrimary,
                                 ),
@@ -296,8 +301,10 @@ final class _BookingCardState extends State<BookingCard> {
                                 children: [
                                   TextSpan(
                                     text: l10n.bookingNeedsActionLead,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
+                                    style: flowText(
+                                      context,
+                                      base: const TextStyle(),
+                                      weight: FontWeight.w700,
                                     ),
                                   ),
                                   TextSpan(text: ' $actionName'),
@@ -386,7 +393,11 @@ final class _CountdownStrip extends StatelessWidget {
                 Flexible(
                   child: Text(
                     l10n.bookingsStatusUpdating,
-                    style: style.copyWith(fontWeight: FontWeight.w700),
+                    style: flowText(
+                      context,
+                      base: style,
+                      weight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -403,9 +414,11 @@ final class _CountdownStrip extends StatelessWidget {
                       TextSpan(text: parts.first),
                       TextSpan(
                         text: '\u2066${_time(remaining, l10n)}\u2069',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                        style: flowText(
+                          context,
+                          base: const TextStyle(),
+                          weight: FontWeight.w800,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                       if (parts.length > 1) TextSpan(text: parts.last),

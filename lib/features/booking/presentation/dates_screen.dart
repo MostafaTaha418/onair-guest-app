@@ -234,7 +234,7 @@ final class _DatesScreenState extends State<DatesScreen> {
                 key: const ValueKey('dates-continue'),
                 label: l10n.bookingContinue,
                 minHeight: 52,
-                fontSize: 16,
+                textSize: 16,
                 loading: state.quoting,
                 onPressed:
                     state.load == FlowLoad.ready && state.canContinue && online
@@ -350,9 +350,11 @@ final class _ReadyBody extends StatelessWidget {
             child: Text(
               apiErrorMessage(state.error!, l10n),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+              style: flowText(
+                context,
+                base: Theme.of(context).textTheme.bodySmall,
+                size: 13,
+                weight: FontWeight.w500,
                 color: colors.errorText,
               ),
             ),
@@ -477,9 +479,11 @@ final class _StepCell extends StatelessWidget {
                   ),
                   child: Text(
                     '$number',
-                    style: base.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                    style: flowText(
+                      context,
+                      base: base,
+                      size: 11,
+                      weight: FontWeight.w700,
                       height: 1,
                       color: numberFg,
                     ),
@@ -489,9 +493,11 @@ final class _StepCell extends StatelessWidget {
                 Flexible(
                   child: Text(
                     label,
-                    style: base.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    style: flowText(
+                      context,
+                      base: base,
+                      size: 12,
+                      weight: FontWeight.w700,
                       color: current ? palette.accent : colors.textSecondary,
                     ),
                   ),
@@ -503,9 +509,11 @@ final class _StepCell extends StatelessWidget {
               shown,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: base.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+              style: flowText(
+                context,
+                base: base,
+                size: 16,
+                weight: FontWeight.w700,
                 color: done ? colors.textPrimary : colors.textSecondary,
               ),
             ),
@@ -540,9 +548,11 @@ final class _Hint extends StatelessWidget {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
+              style: flowText(
+                context,
+                base: Theme.of(context).textTheme.bodyMedium,
+                size: 15,
+                weight: FontWeight.w500,
                 color: colors.textSecondary,
               ),
             ),
@@ -593,9 +603,11 @@ final class _NightsChip extends StatelessWidget {
             Flexible(
               child: Text(
                 AppLocalizations.of(context).bookingNightsCount('$nights'),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                style: flowText(
+                  context,
+                  base: Theme.of(context).textTheme.bodyMedium,
+                  size: 14,
+                  weight: FontWeight.w700,
                   color: palette.badge,
                 ),
               ),

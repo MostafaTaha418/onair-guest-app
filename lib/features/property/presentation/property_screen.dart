@@ -526,14 +526,13 @@ Future<void> pushVisitorLogin(
 }
 
 /// The booking entry carries the shown stay, guests, and terms (AC-013).
-Uri _bookingEntryUri(PropertyDetails details, int? guests) =>
-    Uri(
-      path: AppRoutes.bookingEntry(details.id),
-      queryParameters: {
-        if (guests != null) 'guests': '$guests',
-        'terms': details.termsVersion,
-      },
-    );
+Uri _bookingEntryUri(PropertyDetails details, int? guests) => Uri(
+  path: AppRoutes.bookingEntry(details.id),
+  queryParameters: {
+    if (guests != null) 'guests': '$guests',
+    'terms': details.termsVersion,
+  },
+);
 
 final class _DescriptionSection extends StatelessWidget {
   const _DescriptionSection({required this.details});

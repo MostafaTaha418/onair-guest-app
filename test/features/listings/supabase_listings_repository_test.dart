@@ -257,9 +257,11 @@ void main() {
     expect(windows, hasLength(4));
     for (var i = 0; i < windows.length; i++) {
       final (from, to) = windows[i];
-      final span = DateTime(to.year, to.month, to.day)
-          .difference(DateTime(from.year, from.month, from.day))
-          .inDays;
+      final span = DateTime(
+        to.year,
+        to.month,
+        to.day,
+      ).difference(DateTime(from.year, from.month, from.day)).inDays;
       expect(span, lessThanOrEqualTo(120), reason: 'slice $i: $from→$to');
       if (i > 0) {
         expect(from, windows[i - 1].$2, reason: 'slice $i must be contiguous');

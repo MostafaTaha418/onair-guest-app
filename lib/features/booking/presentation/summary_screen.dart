@@ -271,7 +271,7 @@ final class _SummaryBody extends StatelessWidget {
                   label: l10n.paymentCheckStatus,
                   kind: FlowButtonKind.outlined,
                   expand: false,
-                  fontSize: 14,
+                  textSize: 14,
                   onPressed: online
                       ? () => context.go(
                           AppRoutes.paymentReturn(
@@ -431,7 +431,7 @@ final class _PayBarState extends State<_PayBar> {
                         key: const ValueKey('quote-confirm-new'),
                         label: l10n.quoteConfirmNew,
                         minHeight: 52,
-                        fontSize: 16,
+                        textSize: 16,
                         onPressed: online
                             ? widget.flowCubit.acceptChange
                             : null,
@@ -440,14 +440,16 @@ final class _PayBarState extends State<_PayBar> {
                         key: const ValueKey('summary-pay'),
                         label: l10n.bookingGoToPayment,
                         minHeight: 52,
-                        fontSize: 16,
+                        textSize: 16,
                         loading: attempt is AttemptStarting,
                         trailing: cooldown > 0
                             ? Text(
                                 '· \u20660:${'$cooldown'.padLeft(2, '0')}\u2069',
-                                style: base.copyWith(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
+                                style: flowText(
+                                  context,
+                                  base: base,
+                                  size: 16,
+                                  weight: FontWeight.w700,
                                   fontFeatures: const [
                                     FontFeature.tabularFigures(),
                                   ],

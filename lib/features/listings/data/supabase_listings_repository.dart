@@ -104,9 +104,11 @@ final class SupabaseListingsRepository implements ListingsRepository {
     if (!from.isBefore(to)) {
       // An empty or inverted range is still sent to the server so its
       // VALIDATION_FAILED answer surfaces unchanged.
-      return (await _unavailableWindow(id, from, to))
-          .map(DateOnly.parse)
-          .toSet();
+      return (await _unavailableWindow(
+        id,
+        from,
+        to,
+      )).map(DateOnly.parse).toSet();
     }
     final windows = <(DateOnly, DateOnly)>[];
     for (var start = from; start.isBefore(to);) {

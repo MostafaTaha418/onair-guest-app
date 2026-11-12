@@ -162,9 +162,11 @@ final class RefundProgress extends StatelessWidget {
         Text(
           stageLabels[index],
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+          style: flowText(
+            context,
+            base: Theme.of(context).textTheme.bodySmall,
+            size: 12,
+            weight: FontWeight.w700,
             color: done || failedHere
                 ? colors.textPrimary
                 : palette.colors.textSecondary,

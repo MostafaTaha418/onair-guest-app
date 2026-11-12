@@ -186,7 +186,7 @@ final class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     key: ValueKey('primary-${primary.value}'),
                     label: bookingActionLabel(primary, l10n),
                     minHeight: 52,
-                    fontSize: 16,
+                    textSize: 16,
                     onPressed: online
                         ? () => _run(ready.details, primary)
                         : null,
@@ -296,9 +296,11 @@ final class _DetailsList extends StatelessWidget {
                 l10n.lastUpdated(
                   formatCairoDayMonthTime(state.fetchedAt, locale: locale),
                 ),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                style: flowText(
+                  context,
+                  base: Theme.of(context).textTheme.bodySmall,
+                  size: 12,
+                  weight: FontWeight.w500,
                   color: colors.textSecondary,
                 ),
               ),
@@ -590,9 +592,11 @@ final class _Header extends StatelessWidget {
                   children: [
                     Text(
                       '${l10n.bookingCode}:',
-                      style: base.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: flowText(
+                        context,
+                        base: base,
+                        size: 14,
+                        weight: FontWeight.w500,
                         color: colors.textSecondary,
                       ),
                     ),
@@ -600,9 +604,11 @@ final class _Header extends StatelessWidget {
                     Text(
                       details.code,
                       textDirection: TextDirection.ltr,
-                      style: base.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      style: flowText(
+                        context,
+                        base: base,
+                        size: 14,
+                        weight: FontWeight.w700,
                         letterSpacing: 0.5,
                         color: colors.textPrimary,
                       ),
@@ -685,18 +691,22 @@ final class _AckCard extends StatelessWidget {
                 Text(
                   steps[i].label,
                   textAlign: TextAlign.center,
-                  style: base.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: flowText(
+                    context,
+                    base: base,
+                    size: 14,
+                    weight: FontWeight.w700,
                     color: colors.textPrimary,
                   ),
                 ),
                 Text(
                   steps[i].statusText,
                   textAlign: TextAlign.center,
-                  style: base.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  style: flowText(
+                    context,
+                    base: base,
+                    size: 13,
+                    weight: FontWeight.w500,
                     height: 1.5,
                     color: steps[i].done
                         ? colors['success']
@@ -716,9 +726,11 @@ final class _AckCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: base.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+              style: flowText(
+                context,
+                base: base,
+                size: 16,
+                weight: FontWeight.w800,
                 color: colors.textPrimary,
               ),
             ),
@@ -767,9 +779,11 @@ final class _AckCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         note!,
-                        style: base.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        style: flowText(
+                          context,
+                          base: base,
+                          size: 14,
+                          weight: FontWeight.w600,
                           color: colors.textPrimary,
                         ),
                       ),
@@ -861,27 +875,33 @@ final class _PaymentLineTile extends StatelessWidget {
                       children: [
                         Text(
                           method,
-                          style: base.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                          style: flowText(
+                            context,
+                            base: base,
+                            size: 14,
+                            weight: FontWeight.w700,
                             color: colors.textPrimary,
                           ),
                         ),
                         if (time != null)
                           Text(
                             time,
-                            style: base.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                            style: flowText(
+                              context,
+                              base: base,
+                              size: 12,
+                              weight: FontWeight.w500,
                               color: colors.textSecondary,
                             ),
                           ),
                         if (hasReceipt)
                           Text(
                             l10n.receiptShow,
-                            style: base.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                            style: flowText(
+                              context,
+                              base: base,
+                              size: 13,
+                              weight: FontWeight.w700,
                               color: palette.accent,
                             ),
                           ),
@@ -895,9 +915,11 @@ final class _PaymentLineTile extends StatelessWidget {
                       Text(
                         amount,
                         maxLines: 1,
-                        style: base.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                        style: flowText(
+                          context,
+                          base: base,
+                          size: 14,
+                          weight: FontWeight.w700,
                           color: colors.textPrimary,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
@@ -970,15 +992,16 @@ final class _ClaimTile extends StatelessWidget {
                       children: [
                         Text(
                           amount,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: colors.textPrimary,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
+                          style: flowText(
+                            context,
+                            base: Theme.of(context).textTheme.bodyMedium,
+                            size: 16,
+                            weight: FontWeight.w800,
+                            color: colors.textPrimary,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures(),
+                            ],
+                          ),
                         ),
                         FlowChip(label: status, tone: tone),
                       ],
@@ -1029,9 +1052,11 @@ final class _AddressCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     address!,
-                    style: base.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                    style: flowText(
+                      context,
+                      base: base,
+                      size: 14,
+                      weight: FontWeight.w600,
                       height: 1.6,
                       color: colors.textPrimary,
                     ),
@@ -1047,18 +1072,22 @@ final class _AddressCard extends StatelessWidget {
             ],
             Text(
               l10n.bookingArrivalInstructions,
-              style: base.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+              style: flowText(
+                context,
+                base: base,
+                size: 13,
+                weight: FontWeight.w700,
                 color: colors.textSecondary,
               ),
             ),
             const SizedBox(height: Dimens.space4),
             SelectableText(
               instructions!,
-              style: base.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              style: flowText(
+                context,
+                base: base,
+                size: 14,
+                weight: FontWeight.w500,
                 height: 1.7,
                 color: colors.textPrimary,
               ),
@@ -1124,9 +1153,11 @@ final class _Timeline extends StatelessWidget {
                       children: [
                         Text(
                           entries[i].title,
-                          style: base.copyWith(
-                            fontSize: 14,
-                            fontWeight: i == entries.length - 1
+                          style: flowText(
+                            context,
+                            base: base,
+                            size: 14,
+                            weight: i == entries.length - 1
                                 ? FontWeight.w800
                                 : FontWeight.w600,
                             color: colors.textPrimary,
@@ -1134,9 +1165,11 @@ final class _Timeline extends StatelessWidget {
                         ),
                         Text(
                           entries[i].time,
-                          style: base.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                          style: flowText(
+                            context,
+                            base: base,
+                            size: 12,
+                            weight: FontWeight.w500,
                             color: colors.textSecondary,
                           ),
                         ),
