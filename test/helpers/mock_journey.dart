@@ -81,6 +81,27 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   // 8. The date step starts empty even though the search carried a stay:
   // the guest re-picks the same range on the availability container.
   expect(find.text(l10n.bookingNightsCount('3')), findsNothing);
+  // Device keyboards can leave the calendar below the lazily built part of
+  // the dates list. Dismiss focus and scroll the real DatesScreen list until
+  // the calendar is built and hit-testable before looking up its day cells.
+  FocusManager.instance.primaryFocus?.unfocus();
+  await tester.pumpAndSettle();
+  final bookingCalendar = find.byType(RangeCalendar);
+  if (!tester.any(bookingCalendar)) {
+    final datesScrollable = find
+        .descendant(
+          of: find.byType(DatesScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      bookingCalendar,
+      240,
+      scrollable: datesScrollable,
+    );
+  }
+  await tester.ensureVisible(bookingCalendar);
+  await tester.pumpAndSettle();
   displayedMonth = DateOnly(today.year, today.month, 1);
   while (displayedMonth.year != checkIn.year ||
       displayedMonth.month != checkIn.month) {
