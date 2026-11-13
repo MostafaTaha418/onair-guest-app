@@ -37,8 +37,6 @@ String? _nonBlank(String? value) =>
 abstract interface class PhoneAuthClient {
   PhoneAuthUser? get currentUser;
   Stream<PhoneAuthUser?> get userChanges;
-  Future<void> requestOtp(String phone);
-  Future<PhoneAuthUser> verifySmsOtp(String phone, String token);
   Future<void> signUpWithEmail(
     String name,
     String email,
@@ -75,22 +73,6 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
       null => null,
     },
   );
-
-  @override
-  Future<void> requestOtp(String phone) =>
-      _client.signInWithOtp(phone: phone, shouldCreateUser: true);
-
-  @override
-  Future<PhoneAuthUser> verifySmsOtp(String phone, String token) async {
-    final response = await _client.verifyOTP(
-      phone: phone,
-      token: token,
-      type: OtpType.sms,
-    );
-    final user = response.user;
-    if (user == null) throw const AuthException('OTP returned no user');
-    return PhoneAuthUser.fromSupabase(user);
-  }
 
   @override
   Future<void> signUpWithEmail(
@@ -195,45 +177,8 @@ final class SupabaseAuthRepository implements AuthRepository {
       _accountFor(_auth.currentUser);
 
   @override
-  Future<CodeChallenge> requestPhoneCode(String phone) async {
-    final parsed = EgyptPhone.tryParse(phone);
-    if (parsed == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    try {
-      await _auth.requestOtp(parsed.e164);
-      // GoTrue does not expose resend headers. An immediate deadline avoids
-      // inventing a client-side interval; server rate limits remain authoritative.
-      return CodeChallenge(
-        channel: VerificationChannel.sms,
-        target: parsed.e164,
-        resendAt: _clock().toUtc(),
-      );
-    } on AuthException catch (error) {
-      throw _mapRequestError(error);
-    }
-  }
-
-  @override
-  Future<GuestAccount> verifyPhoneCode(String phone, String code) async {
-    try {
-      final user = await _auth.verifySmsOtp(EgyptPhone.parse(phone).e164, code);
-      return (await _accountFor(user))!;
-    } on AuthException catch (error) {
-      throw _mapVerifyError(error);
-    }
-  }
-
-  Exception _mapRequestError(AuthException error) {
-    if (_isNetwork(error)) return const AuthNetworkFailure();
-    if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
-    if (error.code == 'phone_provider_disabled' ||
-        error.code == 'phone_country_not_supported' ||
-        error.message.toLowerCase().contains('country')) {
-      return const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    return AuthRequestRejected(error.code ?? 'INTERNAL');
-  }
+  Future<GuestAccount?> refreshAccount() async =>
+      _accountFor(_auth.currentUser);
 
   Exception _mapVerifyError(AuthException error) {
     if (_isNetwork(error)) return const AuthNetworkFailure();
@@ -269,42 +214,17 @@ final class SupabaseAuthRepository implements AuthRepository {
     final profile = await _profiles.loadOwnProfile(user.id);
     return GuestAccount(
       id: user.id,
+      status: profile.status,
       phone: profile.phone ?? user.phone,
       phoneVerified: profile.phoneVerified || user.phoneVerified,
-      email: user.email,
-      emailVerified: user.emailVerified,
+      email: profile.email ?? user.email,
+      emailVerified: profile.emailVerified || user.emailVerified,
       fullName: profile.fullName,
+      authProviders: profile.authProviders,
+      hasPassword: profile.hasPassword,
       acceptedTermsVersion: profile.acceptedTermsVersion,
       acceptedTermsAt: profile.acceptedTermsAt,
     );
-  }
-
-  @override
-  Future<GuestAccount> completeProfile(
-    String name,
-    String termsVersion,
-  ) async {
-    try {
-      final profile = await _profiles.completeProfile(name, termsVersion);
-      final user = _auth.currentUser;
-      if (user == null) throw const AuthException('Session missing');
-      return GuestAccount(
-        id: user.id,
-        phone: profile.phone ?? user.phone,
-        phoneVerified: profile.phoneVerified || user.phoneVerified,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        fullName: profile.fullName,
-        acceptedTermsVersion: profile.acceptedTermsVersion,
-        acceptedTermsAt: profile.acceptedTermsAt,
-      );
-    } on PostgrestException catch (error) {
-      if (error.code == 'TERMS_CHANGED' ||
-          error.message.contains('TERMS_CHANGED')) {
-        throw const ProfileTermsChanged();
-      }
-      rethrow;
-    }
   }
 
   @override

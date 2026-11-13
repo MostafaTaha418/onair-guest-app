@@ -19,21 +19,13 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
 
-final class _NoSms implements SmsCodeReader {
-  @override
-  Future<void> cancel() async {}
-
-  @override
-  Future<String?> readCode() async => null;
-}
-
 final class _NoSecure implements SecureScreenControl {
   @override
   Future<void> setSecure({required bool enabled}) async {}
 }
 
 Widget _screen(String name, DateTime now) => switch (name) {
-  'register' => const RegisterScreen(phoneAuthEnabled: false),
+  'register' => const RegisterScreen(),
   'recovery' => const ForgotPasswordScreen(),
   'new_password' => const NewPasswordScreen(),
   'otp' => _otp(now),
@@ -47,12 +39,11 @@ Widget _otp(DateTime now) {
       target: 'guest@example.com',
       resendAt: now.add(const Duration(seconds: 57)),
     );
-  final cubit = AuthCubit(auth, currentTermsVersion: 'v1', clock: () => now);
+  final cubit = AuthCubit(auth, clock: () => now);
   unawaited(cubit.requestRecovery('guest@example.com'));
   return BlocProvider<AuthCubit>.value(
     value: cubit,
     child: OtpScreen(
-      codeReader: _NoSms(),
       secureScreen: _NoSecure(),
       clock: () => now,
     ),

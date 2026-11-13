@@ -81,8 +81,6 @@
   "authRegisterTitle": "Create your account",
   "authPhoneHint": "Example: 01012345678",
   "authPhoneInvalid": "Enter a valid 11-digit Egyptian mobile number.",
-  "authPhoneTab": "Phone",
-  "authEmailTab": "Email",
   "authEmailComingSoon": "Email sign-up is coming soon.",
   "authTermsPrefix": "By continuing, you agree to the",
   "terms": "Terms and conditions",
@@ -108,7 +106,6 @@
       }
     }
   },
-  "authChangePhone": "Change phone number",
   "authCompleteProfileTitle": "Complete your profile",
   "authNameInvalid": "Name must be between 2 and 80 characters.",
   "authAcceptTerms": "I agree to the terms and privacy policy",
@@ -819,5 +816,75 @@
   "mockAdvanceRefund": "Advance the refund stage",
   "mockChangeTerms": "Change cancellation terms once",
   "offerDates": "Dates",
-  "placeAreaCity": "{area}, {city}"
+  "placeAreaCity": "{area}, {city}",
+  "authOr": "or",
+  "authContinueWithGoogle": "Continue with Google",
+  "authContinueWithApple": "Continue with Apple",
+  "authSocialFailed": "Couldn't sign you in. Please try again.",
+  "confirmPhoneTitle": "Confirm your number",
+  "confirmPhoneNewTitle": "Change phone number",
+  "confirmPhoneSubtitle": "We'll send a code to this number on WhatsApp to make sure it's yours.",
+  "confirmPhoneEmailLabel": "Your account",
+  "confirmPhoneContinue": "Continue",
+  "confirmPhoneCancel": "Cancel",
+  "confirmPhoneLeaveTitle": "Leave registration?",
+  "confirmPhoneLeaveBody": "If you leave, your registration won't be completed.",
+  "confirmPhoneLeaveConfirm": "Leave",
+  "confirmPhoneLeaveStay": "Stay",
+  "whatsappCodeTitle": "Enter the code",
+  "whatsappCodeSentTo": "We sent a code to {phone} on WhatsApp",
+  "@whatsappCodeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappOpen": "Open WhatsApp",
+  "whatsappConfirm": "Confirm",
+  "whatsappResend": "Send a new code",
+  "whatsappResendIn": "You can request a new code in {time}",
+  "@whatsappResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours} h {minutes} min",
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappEditNumber": "Change number",
+  "whatsappNotOnWhatsApp": "This number isn't on WhatsApp. Use a number that has WhatsApp.",
+  "whatsappContactSupport": "Contact support",
+  "whatsappUseLatestCode": "Use the latest code you received.",
+  "otpBlockedUntil": "Code sending is paused until {date}. Contact support if you need help.",
+  "@otpBlockedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "otpAttestationFailed": "We couldn't verify this app. Update it from the store and try again.",
+  "otpTemporarilyUnavailable": "The service is busy right now. Try again shortly.",
+  "otpAttemptsExceeded": "Too many attempts. Request a new code.",
+  "confirmPhoneWelcome": "Welcome to OnAir",
+  "phoneChanged": "Your number was changed",
+  "accountSignInMethod": "Sign-in method",
+  "accountMethodGoogle": "Google",
+  "accountMethodApple": "Apple",
+  "accountMethodEmail": "Email",
+  "accountPhone": "Phone number",
+  "accountPhoneConfirmed": "Confirmed",
+  "accountChangePhone": "Change",
+  "verifyPhoneOnWhatsApp": "Confirm your number on WhatsApp"
 }

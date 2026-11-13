@@ -1,16 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_air/core/auth/profile_gate.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 
 final class AuthCubit extends Cubit<AuthState> {
   AuthCubit(
     this._repository, {
-    required this._currentTermsVersion,
     DateTime Function()? clock,
     SignOutCoordinator? signOutCoordinator,
   }) : _clock = clock ?? DateTime.now,
@@ -24,25 +23,27 @@ final class AuthCubit extends Cubit<AuthState> {
       _onExternalAccount,
       onError: (Object _, StackTrace _) {},
     );
+    // The server is the gate's authority: `PROFILE_INCOMPLETE` /
+    // `PHONE_NOT_VERIFIED` from any call refresh the account so the router
+    // can redirect to «أكّد رقمك» (research R9).
+    _gateSubscription = ProfileGate.events.listen((_) => _onProfileGate());
   }
 
   /// Error codes for the code screen when verification could not complete.
   static const networkError = 'NETWORK';
   static const unexpectedError = 'UNEXPECTED';
 
+  static const _refreshDebounce = Duration(seconds: 1);
+
   final AuthRepository _repository;
-  String _currentTermsVersion;
   final DateTime Function() _clock;
   final SignOutCoordinator _signOutCoordinator;
   late final StreamSubscription<GuestAccount?> _subscription;
+  late final StreamSubscription<void> _gateSubscription;
+  Future<void>? _refreshFuture;
+  DateTime? _lastRefreshAt;
 
-  void updateTermsVersion(String version) {
-    _currentTermsVersion = version;
-    final current = state;
-    if (current is SignedIn) _emitAccount(current.account);
-  }
-
-  Future<void> restore({Future<String?>? currentTermsVersion}) async {
+  Future<void> restore() async {
     GuestAccount? account;
     try {
       account = await _repository.restoreSession();
@@ -51,73 +52,47 @@ final class AuthCubit extends Cubit<AuthState> {
       // The session stays stored; the next auth event signs the guest back in.
       account = null;
     }
-    // A restored account must not be classified before the server's current
-    // terms version is known. Otherwise the router briefly opens profile
-    // completion because the initial version is empty.
-    if (account != null && currentTermsVersion != null) {
-      try {
-        final version = await currentTermsVersion;
-        if (version != null) _currentTermsVersion = version;
-      } on Object {
-        // Keep the last known version if configuration is unavailable.
-      }
-    }
     if (isClosed) return;
     emit(
       account == null
           ? const SignedOut()
-          : SignedIn(
-              account,
-              isComplete: account.isComplete(_currentTermsVersion),
-            ),
+          : SignedIn(account, isComplete: account.isComplete),
     );
   }
 
-  Future<void> requestPhoneCode(String phone) async {
-    try {
-      final challenge = await _repository.requestPhoneCode(phone);
-      if (!isClosed) emit(CodeSent(challenge));
-    } on AuthRateLimited catch (error) {
-      if (isClosed) return;
-      // FR-029: show the server wait time even on the first request.
-      final current = state;
-      final challenge = current is CodeSent
-          ? current.challenge
-          : current is RateLimited
-          ? current.challenge
-          : CodeChallenge(
-              channel: VerificationChannel.sms,
-              target: EgyptPhone.tryParse(phone)?.e164 ?? phone.trim(),
-              resendAt: error.until,
-            );
-      emit(RateLimited(challenge, error.until));
-    }
-  }
-
-  Future<void> verifyPhoneCode(String code) async {
-    final current = state;
-    if (current is! CodeSent) return;
-    try {
-      final account = await _repository.verifyPhoneCode(
-        current.challenge.target,
-        code,
-      );
-      _emitAccount(account);
-    } on AuthCodeRejected catch (error) {
-      if (!isClosed) emit(CodeSent(current.challenge, errorCode: error.code));
-    } on AuthRateLimited catch (error) {
-      if (!isClosed) emit(RateLimited(current.challenge, error.until));
-    } on AuthNetworkFailure {
-      if (!isClosed) emit(CodeSent(current.challenge, errorCode: networkError));
-    } on Object {
-      if (!isClosed) {
-        emit(CodeSent(current.challenge, errorCode: unexpectedError));
+  /// Re-reads the repository and re-emits the current completeness. Concurrent
+  /// callers share the in-flight future.
+  Future<void> refreshAccount() {
+    final inFlight = _refreshFuture;
+    if (inFlight != null) return inFlight;
+    _lastRefreshAt = _clock();
+    final future = () async {
+      try {
+        final account = await _repository.refreshAccount();
+        if (isClosed) return;
+        if (account == null) {
+          emit(const SessionEnded(null));
+        } else {
+          _emitAccount(account);
+        }
+      } on Object {
+        // Same rule as restore: a failed reload keeps the session alive.
+      } finally {
+        _refreshFuture = null;
       }
-    }
+    }();
+    _refreshFuture = future;
+    return future;
   }
 
-  void cancelCodeEntry() {
-    if (state is CodeSent || state is RateLimited) emit(const SignedOut());
+  void _onProfileGate() {
+    if (isClosed || state is! SignedIn) return;
+    final last = _lastRefreshAt;
+    if (last != null &&
+        _clock().difference(last) < AuthCubit._refreshDebounce) {
+      return;
+    }
+    unawaited(refreshAccount());
   }
 
   Future<void> requestEmailSignup(
@@ -257,13 +232,8 @@ final class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> completeProfile(String name, String termsVersion) async {
-    final account = await _repository.completeProfile(name, termsVersion);
-    if (!isClosed) {
-      emit(
-        SignedIn(account, isComplete: account.isComplete(_currentTermsVersion)),
-      );
-    }
+  void cancelCodeEntry() {
+    if (state is CodeSent || state is RateLimited) emit(const SignedOut());
   }
 
   void sessionEnded(String? returnTo) {
@@ -296,15 +266,14 @@ final class AuthCubit extends Cubit<AuthState> {
 
   void _emitAccount(GuestAccount account) {
     if (!isClosed) {
-      emit(
-        SignedIn(account, isComplete: account.isComplete(_currentTermsVersion)),
-      );
+      emit(SignedIn(account, isComplete: account.isComplete));
     }
   }
 
   @override
   Future<void> close() async {
     await _subscription.cancel();
+    await _gateSubscription.cancel();
     await super.close();
   }
 }

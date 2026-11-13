@@ -458,18 +458,6 @@ abstract class AppLocalizations {
   /// **'اكتب رقم موبايل مصري صحيح من 11 رقم.'**
   String get authPhoneInvalid;
 
-  /// No description provided for @authPhoneTab.
-  ///
-  /// In ar, this message translates to:
-  /// **'الموبايل'**
-  String get authPhoneTab;
-
-  /// No description provided for @authEmailTab.
-  ///
-  /// In ar, this message translates to:
-  /// **'البريد الإلكتروني'**
-  String get authEmailTab;
-
   /// No description provided for @authEmailComingSoon.
   ///
   /// In ar, this message translates to:
@@ -535,12 +523,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إعادة الإرسال بعد {time}'**
   String authResendIn(String time);
-
-  /// No description provided for @authChangePhone.
-  ///
-  /// In ar, this message translates to:
-  /// **'تغيير رقم الموبايل'**
-  String get authChangePhone;
 
   /// No description provided for @authCompleteProfileTitle.
   ///
@@ -3517,6 +3499,240 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'{area}، {city}'**
   String placeAreaCity(String area, String city);
+
+  /// No description provided for @authOr.
+  ///
+  /// In ar, this message translates to:
+  /// **'أو'**
+  String get authOr;
+
+  /// No description provided for @authContinueWithGoogle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتابعة بـ Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authContinueWithApple.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتابعة بـ Apple'**
+  String get authContinueWithApple;
+
+  /// No description provided for @authSocialFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر تسجيل الدخول، حاول مرة أخرى'**
+  String get authSocialFailed;
+
+  /// No description provided for @confirmPhoneTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد رقمك'**
+  String get confirmPhoneTitle;
+
+  /// No description provided for @confirmPhoneNewTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير رقم الهاتف'**
+  String get confirmPhoneNewTitle;
+
+  /// No description provided for @confirmPhoneSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'هنبعتلك كود على واتساب الرقم ده عشان نتأكد إنه بتاعك'**
+  String get confirmPhoneSubtitle;
+
+  /// No description provided for @confirmPhoneEmailLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك'**
+  String get confirmPhoneEmailLabel;
+
+  /// No description provided for @confirmPhoneContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة'**
+  String get confirmPhoneContinue;
+
+  /// No description provided for @confirmPhoneCancel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get confirmPhoneCancel;
+
+  /// No description provided for @confirmPhoneLeaveTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخرج من التسجيل؟'**
+  String get confirmPhoneLeaveTitle;
+
+  /// No description provided for @confirmPhoneLeaveBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لو خرجت، التسجيل مش هيكمل'**
+  String get confirmPhoneLeaveBody;
+
+  /// No description provided for @confirmPhoneLeaveConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'خروج'**
+  String get confirmPhoneLeaveConfirm;
+
+  /// No description provided for @confirmPhoneLeaveStay.
+  ///
+  /// In ar, this message translates to:
+  /// **'كمّل'**
+  String get confirmPhoneLeaveStay;
+
+  /// No description provided for @whatsappCodeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب الكود'**
+  String get whatsappCodeTitle;
+
+  /// No description provided for @whatsappCodeSentTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعتنا كود على واتساب {phone}'**
+  String whatsappCodeSentTo(String phone);
+
+  /// No description provided for @whatsappOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح واتساب'**
+  String get whatsappOpen;
+
+  /// No description provided for @whatsappConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get whatsappConfirm;
+
+  /// No description provided for @whatsappResend.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت كود جديد'**
+  String get whatsappResend;
+
+  /// No description provided for @whatsappResendIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقدر تطلب كود جديد بعد {time}'**
+  String whatsappResendIn(String time);
+
+  /// No description provided for @durationHoursMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hours} ساعة و{minutes} دقيقة'**
+  String durationHoursMinutes(String hours, String minutes);
+
+  /// No description provided for @whatsappEditNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الرقم'**
+  String get whatsappEditNumber;
+
+  /// No description provided for @whatsappNotOnWhatsApp.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب'**
+  String get whatsappNotOnWhatsApp;
+
+  /// No description provided for @whatsappContactSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلّم الدعم'**
+  String get whatsappContactSupport;
+
+  /// No description provided for @whatsappUseLatestCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم آخر كود وصلك'**
+  String get whatsappUseLatestCode;
+
+  /// No description provided for @otpBlockedUntil.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتوقف إرسال الأكواد مؤقتًا لحد {date}. لو محتاج مساعدة كلّم الدعم'**
+  String otpBlockedUntil(String date);
+
+  /// No description provided for @otpAttestationFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني'**
+  String get otpAttestationFailed;
+
+  /// No description provided for @otpTemporarilyUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمة مشغولة دلوقتي، جرّب بعد شوية'**
+  String get otpTemporarilyUnavailable;
+
+  /// No description provided for @otpAttemptsExceeded.
+  ///
+  /// In ar, this message translates to:
+  /// **'جربت كتير، اطلب كود جديد'**
+  String get otpAttemptsExceeded;
+
+  /// No description provided for @confirmPhoneWelcome.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلًا بيك في OnAir'**
+  String get confirmPhoneWelcome;
+
+  /// No description provided for @phoneChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقمك اتغيّر'**
+  String get phoneChanged;
+
+  /// No description provided for @accountSignInMethod.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة الدخول'**
+  String get accountSignInMethod;
+
+  /// No description provided for @accountMethodGoogle.
+  ///
+  /// In ar, this message translates to:
+  /// **'Google'**
+  String get accountMethodGoogle;
+
+  /// No description provided for @accountMethodApple.
+  ///
+  /// In ar, this message translates to:
+  /// **'Apple'**
+  String get accountMethodApple;
+
+  /// No description provided for @accountMethodEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد'**
+  String get accountMethodEmail;
+
+  /// No description provided for @accountPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get accountPhone;
+
+  /// No description provided for @accountPhoneConfirmed.
+  ///
+  /// In ar, this message translates to:
+  /// **'متأكد'**
+  String get accountPhoneConfirmed;
+
+  /// No description provided for @accountChangePhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير'**
+  String get accountChangePhone;
+
+  /// No description provided for @verifyPhoneOnWhatsApp.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد رقمك على واتساب'**
+  String get verifyPhoneOnWhatsApp;
 }
 
 class _AppLocalizationsDelegate

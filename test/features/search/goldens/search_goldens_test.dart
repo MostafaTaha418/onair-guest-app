@@ -152,7 +152,7 @@ Widget _results(ThemeMode mode, TextDirection direction, double scale) {
   final repository = _repositoryWithResults();
   final connectivity = _connectivity!;
   final authRepository = FakeAuthRepository();
-  final authCubit = AuthCubit(authRepository, currentTermsVersion: 'v1');
+  final authCubit = AuthCubit(authRepository);
   final favoritesCubit = FavoritesCubit(
     repository: MemoryFavoritesRepository(),
     listings: repository,

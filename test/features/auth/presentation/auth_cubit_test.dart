@@ -1,7 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:on_air/core/auth/profile_gate.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -13,9 +15,14 @@ final class _SignOutCoordinator extends Mock implements SignOutCoordinator {}
 
 void main() {
   late _Repository repository;
-  final incomplete = GuestAccount(id: 'id', phone: '+201012345678');
+  final incomplete = GuestAccount(
+    id: 'id',
+    status: AccountStatus.incomplete,
+    email: 'guest@example.com',
+  );
   final complete = GuestAccount(
     id: 'id',
+    status: AccountStatus.active,
     phone: '+201012345678',
     fullName: 'Guest Name',
     acceptedTermsVersion: 'v1',
@@ -32,7 +39,7 @@ void main() {
     'unknown restores a signed-out session',
     build: () {
       when(() => repository.restoreSession()).thenAnswer((_) async => null);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
     act: (cubit) => cubit.restore(),
     expect: () => [isA<SignedOut>()],
@@ -42,7 +49,7 @@ void main() {
     'unknown restores a signed-in session',
     build: () {
       when(() => repository.restoreSession()).thenAnswer((_) async => complete);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
     act: (cubit) => cubit.restore(),
     expect: () => [
@@ -51,101 +58,90 @@ void main() {
   );
 
   blocTest<AuthCubit, AuthState>(
-    'signed out requests a server challenge and verifies it',
+    'an incomplete restored account is signed in but not complete',
     build: () {
-      when(() => repository.restoreSession()).thenAnswer((_) async => null);
-      when(() => repository.requestPhoneCode(any())).thenAnswer(
-        (_) async => CodeChallenge(
-          channel: VerificationChannel.sms,
-          target: '+201012345678',
-          resendAt: DateTime.utc(2026, 10, 26, 12),
-        ),
-      );
       when(
-        () => repository.verifyPhoneCode(any(), any()),
+        () => repository.restoreSession(),
       ).thenAnswer((_) async => incomplete);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
-    act: (cubit) async {
-      await cubit.restore();
-      await cubit.requestPhoneCode('+201012345678');
-      await cubit.verifyPhoneCode('123456');
-    },
+    act: (cubit) => cubit.restore(),
     expect: () => [
-      isA<SignedOut>(),
-      isA<CodeSent>().having(
-        (s) => s.challenge.resendAt,
-        'server resendAt',
-        DateTime.utc(2026, 10, 26, 12),
-      ),
       isA<SignedIn>().having((s) => s.isComplete, 'complete', false),
     ],
   );
 
   blocTest<AuthCubit, AuthState>(
-    'profile completion, session end, and acknowledgement',
+    'refreshAccount re-reads the repository and re-emits completeness',
     build: () {
       when(
         () => repository.restoreSession(),
       ).thenAnswer((_) async => incomplete);
       when(
-        () => repository.completeProfile(any(), any()),
+        () => repository.refreshAccount(),
       ).thenAnswer((_) async => complete);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
     act: (cubit) async {
       await cubit.restore();
-      await cubit.completeProfile('Guest Name', 'v1');
-      cubit
-        ..sessionEnded('/bookings')
-        ..acknowledgeSessionEnded();
+      await cubit.refreshAccount();
+    },
+    verify: (_) {
+      verify(() => repository.refreshAccount()).called(1);
     },
     expect: () => [
       isA<SignedIn>().having((s) => s.isComplete, 'complete', false),
       isA<SignedIn>().having((s) => s.isComplete, 'complete', true),
-      isA<SessionEnded>().having((s) => s.returnTo, 'returnTo', '/bookings'),
-      isA<SignedOut>(),
     ],
   );
 
   blocTest<AuthCubit, AuthState>(
-    'server rate limit uses server deadline and resumes after it',
+    'refreshAccount emits the session end when the account is gone',
     build: () {
-      var sends = 0;
-      when(() => repository.restoreSession()).thenAnswer((_) async => null);
-      when(() => repository.requestPhoneCode(any())).thenAnswer((_) async {
-        if (sends++ == 1) {
-          throw AuthRateLimited(DateTime.utc(2026, 10, 26, 12, 5));
-        }
-        return CodeChallenge(
-          channel: VerificationChannel.sms,
-          target: '+201012345678',
-          resendAt: DateTime.utc(2026, 10, 26, 12),
-        );
-      });
-      return AuthCubit(
-        repository,
-        currentTermsVersion: 'v1',
-        clock: () => DateTime.utc(2026, 10, 26, 12, 6),
-      );
+      when(() => repository.restoreSession()).thenAnswer((_) async => complete);
+      when(() => repository.refreshAccount()).thenAnswer((_) async => null);
+      return AuthCubit(repository);
     },
     act: (cubit) async {
       await cubit.restore();
-      await cubit.requestPhoneCode('+201012345678');
-      await cubit.requestPhoneCode('+201012345678');
-      cubit.resumeCodeEntry();
+      await cubit.refreshAccount();
     },
-    expect: () => [
-      isA<SignedOut>(),
-      isA<CodeSent>(),
-      isA<RateLimited>().having(
-        (s) => s.until,
-        'server until',
-        DateTime.utc(2026, 10, 26, 12, 5),
-      ),
-      isA<CodeSent>(),
-    ],
+    expect: () => [isA<SignedIn>(), isA<SessionEnded>()],
   );
+
+  test(
+    'a ProfileGate event while signed in refreshes exactly once per second',
+    () async {
+      when(() => repository.restoreSession()).thenAnswer((_) async => complete);
+      when(
+        () => repository.refreshAccount(),
+      ).thenAnswer((_) async => complete);
+      final cubit = AuthCubit(
+        repository,
+        clock: () => DateTime.utc(2026, 11, 13),
+      );
+      addTearDown(cubit.close);
+      await cubit.restore();
+
+      ProfileGate.notify();
+      ProfileGate.notify();
+      await pumpEventQueue();
+
+      verify(() => repository.refreshAccount()).called(1);
+    },
+  );
+
+  test('a gate event for a signed-out guest never refreshes', () async {
+    when(() => repository.restoreSession()).thenAnswer((_) async => null);
+    final cubit = AuthCubit(repository);
+    addTearDown(cubit.close);
+    await cubit.restore();
+
+    ProfileGate.notify();
+    await pumpEventQueue();
+
+    verifyNever(() => repository.refreshAccount());
+  });
 
   blocTest<AuthCubit, AuthState>(
     'sign out emits signed out only after coordinated cleanup',
@@ -153,11 +149,7 @@ void main() {
       final coordinator = _SignOutCoordinator();
       when(() => repository.restoreSession()).thenAnswer((_) async => complete);
       when(coordinator.signOut).thenAnswer((_) async {});
-      return AuthCubit(
-        repository,
-        currentTermsVersion: 'v1',
-        signOutCoordinator: coordinator,
-      );
+      return AuthCubit(repository, signOutCoordinator: coordinator);
     },
     act: (cubit) async {
       await cubit.restore();
@@ -167,41 +159,13 @@ void main() {
   );
 
   blocTest<AuthCubit, AuthState>(
-    'rejected code stays in code entry with an error',
-    build: () {
-      when(() => repository.restoreSession()).thenAnswer((_) async => null);
-      when(() => repository.requestPhoneCode(any())).thenAnswer(
-        (_) async => CodeChallenge(
-          channel: VerificationChannel.sms,
-          target: '+201012345678',
-          resendAt: DateTime.utc(2026),
-        ),
-      );
-      when(
-        () => repository.verifyPhoneCode(any(), any()),
-      ).thenThrow(const AuthCodeRejected('OTP_INVALID'));
-      return AuthCubit(repository, currentTermsVersion: 'v1');
-    },
-    act: (cubit) async {
-      await cubit.restore();
-      await cubit.requestPhoneCode('+201012345678');
-      await cubit.verifyPhoneCode('000000');
-    },
-    expect: () => [
-      isA<SignedOut>(),
-      isA<CodeSent>(),
-      isA<CodeSent>().having((s) => s.errorCode, 'error', 'OTP_INVALID'),
-    ],
-  );
-
-  blocTest<AuthCubit, AuthState>(
     'email sign-in reaches signed-in state',
     build: () {
       when(() => repository.restoreSession()).thenAnswer((_) async => null);
       when(
         () => repository.signInEmail(any(), any()),
       ).thenAnswer((_) async => complete);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
     act: (cubit) async {
       await cubit.restore();
@@ -230,7 +194,7 @@ void main() {
       when(
         () => repository.setNewPassword(any()),
       ).thenAnswer((_) async => complete);
-      return AuthCubit(repository, currentTermsVersion: 'v1');
+      return AuthCubit(repository);
     },
     act: (cubit) async {
       await cubit.restore();
@@ -245,29 +209,8 @@ void main() {
       isA<SignedIn>(),
     ],
   );
-  group('review fixes', () {
-    blocTest<AuthCubit, AuthState>(
-      'first phone request that is rate-limited shows the server wait time',
-      build: () {
-        when(
-          () => repository.requestPhoneCode(any()),
-        ).thenThrow(AuthRateLimited(DateTime.utc(2026, 10, 28, 12)));
-        return AuthCubit(repository, currentTermsVersion: 'v1')
-          ..emit(const SignedOut());
-      },
-      act: (cubit) => cubit.requestPhoneCode('01012345678'),
-      expect: () => [
-        isA<RateLimited>()
-            .having((s) => s.until, 'until', DateTime.utc(2026, 10, 28, 12))
-            .having(
-              (s) => s.challenge.channel,
-              'channel',
-              VerificationChannel.sms,
-            )
-            .having((s) => s.challenge.target, 'target', '+201012345678'),
-      ],
-    );
 
+  group('review fixes', () {
     blocTest<AuthCubit, AuthState>(
       'unconfirmed email sign-in continues on the code screen',
       build: () {
@@ -280,8 +223,7 @@ void main() {
             ),
           ),
         );
-        return AuthCubit(repository, currentTermsVersion: 'v1')
-          ..emit(const SignedOut());
+        return AuthCubit(repository)..emit(const SignedOut());
       },
       act: (cubit) => cubit.signInEmail('guest@example.com', 'password1'),
       expect: () => [
@@ -299,7 +241,7 @@ void main() {
         when(
           () => repository.authStateChanges,
         ).thenAnswer((_) => Stream.error(Exception('network')));
-        return AuthCubit(repository, currentTermsVersion: 'v1')
+        return AuthCubit(repository)
           ..emit(SignedIn(complete, isComplete: true));
       },
       wait: const Duration(milliseconds: 10),
@@ -312,7 +254,7 @@ void main() {
         when(
           () => repository.restoreSession(),
         ).thenThrow(Exception('profile unavailable'));
-        return AuthCubit(repository, currentTermsVersion: 'v1');
+        return AuthCubit(repository);
       },
       act: (cubit) => cubit.restore(),
       expect: () => [isA<SignedOut>()],
@@ -323,11 +265,8 @@ void main() {
       build: () {
         final coordinator = _SignOutCoordinator();
         when(coordinator.signOut).thenThrow(Exception('offline'));
-        return AuthCubit(
-          repository,
-          currentTermsVersion: 'v1',
-          signOutCoordinator: coordinator,
-        )..emit(SignedIn(complete, isComplete: true));
+        return AuthCubit(repository, signOutCoordinator: coordinator)
+          ..emit(SignedIn(complete, isComplete: true));
       },
       act: (cubit) async {
         try {

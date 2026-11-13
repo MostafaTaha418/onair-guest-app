@@ -9,6 +9,7 @@ import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -39,6 +40,7 @@ final class _ControlledSignOut implements SignOutCoordinator {
 
 void main() {
   final account = GuestAccount(
+    status: AccountStatus.active,
     id: 'guest',
     phone: '+201012345678',
     fullName: 'Guest Name',
@@ -50,7 +52,7 @@ void main() {
       '${event.name} shows unauthenticated and returns to the same route',
       (tester) async {
         final repository = FakeAuthRepository()..account = account;
-        final cubit = AuthCubit(repository, currentTermsVersion: 'v1');
+        final cubit = AuthCubit(repository);
         await cubit.restore();
         final sessionEvents = _SessionEvents();
         final resetter = _Resetter();
@@ -134,7 +136,6 @@ void main() {
     final coordinator = _ControlledSignOut();
     final cubit = AuthCubit(
       repository,
-      currentTermsVersion: 'v1',
       signOutCoordinator: coordinator,
     );
     await cubit.restore();

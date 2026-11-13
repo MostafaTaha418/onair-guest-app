@@ -203,12 +203,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter a valid 11-digit Egyptian mobile number.';
 
   @override
-  String get authPhoneTab => 'Phone';
-
-  @override
-  String get authEmailTab => 'Email';
-
-  @override
   String get authEmailComingSoon => 'Email sign-up is coming soon.';
 
   @override
@@ -244,9 +238,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String authResendIn(String time) {
     return 'Resend in $time';
   }
-
-  @override
-  String get authChangePhone => 'Change phone number';
 
   @override
   String get authCompleteProfileTitle => 'Complete your profile';
@@ -1972,4 +1963,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String placeAreaCity(String area, String city) {
     return '$area, $city';
   }
+
+  @override
+  String get authOr => 'or';
+
+  @override
+  String get authContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get authContinueWithApple => 'Continue with Apple';
+
+  @override
+  String get authSocialFailed => 'Couldn\'t sign you in. Please try again.';
+
+  @override
+  String get confirmPhoneTitle => 'Confirm your number';
+
+  @override
+  String get confirmPhoneNewTitle => 'Change phone number';
+
+  @override
+  String get confirmPhoneSubtitle =>
+      'We\'ll send a code to this number on WhatsApp to make sure it\'s yours.';
+
+  @override
+  String get confirmPhoneEmailLabel => 'Your account';
+
+  @override
+  String get confirmPhoneContinue => 'Continue';
+
+  @override
+  String get confirmPhoneCancel => 'Cancel';
+
+  @override
+  String get confirmPhoneLeaveTitle => 'Leave registration?';
+
+  @override
+  String get confirmPhoneLeaveBody =>
+      'If you leave, your registration won\'t be completed.';
+
+  @override
+  String get confirmPhoneLeaveConfirm => 'Leave';
+
+  @override
+  String get confirmPhoneLeaveStay => 'Stay';
+
+  @override
+  String get whatsappCodeTitle => 'Enter the code';
+
+  @override
+  String whatsappCodeSentTo(String phone) {
+    return 'We sent a code to $phone on WhatsApp';
+  }
+
+  @override
+  String get whatsappOpen => 'Open WhatsApp';
+
+  @override
+  String get whatsappConfirm => 'Confirm';
+
+  @override
+  String get whatsappResend => 'Send a new code';
+
+  @override
+  String whatsappResendIn(String time) {
+    return 'You can request a new code in $time';
+  }
+
+  @override
+  String durationHoursMinutes(String hours, String minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get whatsappEditNumber => 'Change number';
+
+  @override
+  String get whatsappNotOnWhatsApp =>
+      'This number isn\'t on WhatsApp. Use a number that has WhatsApp.';
+
+  @override
+  String get whatsappContactSupport => 'Contact support';
+
+  @override
+  String get whatsappUseLatestCode => 'Use the latest code you received.';
+
+  @override
+  String otpBlockedUntil(String date) {
+    return 'Code sending is paused until $date. Contact support if you need help.';
+  }
+
+  @override
+  String get otpAttestationFailed =>
+      'We couldn\'t verify this app. Update it from the store and try again.';
+
+  @override
+  String get otpTemporarilyUnavailable =>
+      'The service is busy right now. Try again shortly.';
+
+  @override
+  String get otpAttemptsExceeded => 'Too many attempts. Request a new code.';
+
+  @override
+  String get confirmPhoneWelcome => 'Welcome to OnAir';
+
+  @override
+  String get phoneChanged => 'Your number was changed';
+
+  @override
+  String get accountSignInMethod => 'Sign-in method';
+
+  @override
+  String get accountMethodGoogle => 'Google';
+
+  @override
+  String get accountMethodApple => 'Apple';
+
+  @override
+  String get accountMethodEmail => 'Email';
+
+  @override
+  String get accountPhone => 'Phone number';
+
+  @override
+  String get accountPhoneConfirmed => 'Confirmed';
+
+  @override
+  String get accountChangePhone => 'Change';
+
+  @override
+  String get verifyPhoneOnWhatsApp => 'Confirm your number on WhatsApp';
 }

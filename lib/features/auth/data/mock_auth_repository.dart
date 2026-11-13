@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
@@ -8,11 +9,11 @@ import 'package:on_air/features/auth/domain/guest_account.dart';
 
 /// In-memory auth for `BACKEND_MODE=mock` (Guest Plan §2.6).
 ///
-/// Follows the same contract as the Supabase implementation: Egyptian
-/// numbers only, 6-digit codes ([MockBackend.verificationCode]), uniform
-/// messages that never reveal whether an account exists, unconfirmed email
-/// continues on the code screen, and terms version checks. Data lives only
-/// for the app session.
+/// Follows the same contract as the Supabase implementation: 6-digit codes
+/// ([MockBackend.verificationCode]), uniform messages that never reveal
+/// whether an account exists, unconfirmed email continues on the code screen,
+/// and every new account starts `incomplete` without a phone — the WhatsApp
+/// step activates it (S005). Data lives only for the app session.
 final class MockAuthRepository implements AuthRepository {
   MockAuthRepository({
     DateTime Function()? clock,
@@ -34,23 +35,7 @@ final class MockAuthRepository implements AuthRepository {
   Future<GuestAccount?> restoreSession() async => _current?.toAccount();
 
   @override
-  Future<CodeChallenge> requestPhoneCode(String phone) async {
-    final parsed = EgyptPhone.tryParse(phone);
-    if (parsed == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    return _challenge(VerificationChannel.sms, parsed.e164);
-  }
-
-  @override
-  Future<GuestAccount> verifyPhoneCode(String phone, String code) async {
-    _checkCode(code);
-    final e164 = EgyptPhone.parse(phone).e164;
-    final user = (_findBy((u) => u.phone == e164) ?? _create())
-      ..phone = e164
-      ..phoneVerified = true;
-    return _signIn(user);
-  }
+  Future<GuestAccount?> refreshAccount() async => _current?.toAccount();
 
   @override
   Future<CodeChallenge> signUpEmail(
@@ -60,10 +45,6 @@ final class MockAuthRepository implements AuthRepository {
     String phone,
     String termsVersion,
   ) async {
-    final parsedPhone = EgyptPhone.tryParse(phone);
-    if (parsedPhone == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
     if (termsVersion != currentTermsVersion) throw const ProfileTermsChanged();
     final normalized = _normalize(email);
     // Uniform result: an existing email gets the same response.
@@ -72,9 +53,12 @@ final class MockAuthRepository implements AuthRepository {
         ..email = normalized
         ..password = password
         ..fullName = name.trim()
-        ..phone = parsedPhone.e164
         ..acceptedTermsVersion = termsVersion
-        ..acceptedTermsAt = _clock().toUtc();
+        ..acceptedTermsAt = _clock().toUtc()
+        // Kept until US6 removes the registration phone: the field still
+        // exists in the form, but it does not make the account complete by
+        // itself any more (see verifyEmailCode).
+        ..phone = EgyptPhone.tryParse(phone)?.e164;
     }
     return _challenge(VerificationChannel.emailSignup, normalized);
   }
@@ -88,9 +72,18 @@ final class MockAuthRepository implements AuthRepository {
     _checkCode(code);
     final user = _findBy((u) => u.email == _normalize(email));
     if (user == null) throw const AuthCodeRejected('OTP_INVALID');
-    user
-      ..emailVerified = true
-      ..phoneVerified = true;
+    user.emailVerified = true;
+    // S005: only «أكّد رقمك» (US3–US5) turns an account `active`. The legacy
+    // registration shape (name + phone + terms from the current form) keeps
+    // activating like before so the full-app journeys keep working until the
+    // WhatsApp step exists; US6 removes this branch with the phone field.
+    if (user.fullName != null &&
+        user.phone != null &&
+        user.acceptedTermsVersion != null) {
+      user
+        ..status = AccountStatus.active
+        ..phoneVerified = true;
+    }
     return _signIn(user);
   }
 
@@ -133,26 +126,6 @@ final class MockAuthRepository implements AuthRepository {
       ..emailVerified = true;
     _recoveryEmail = null;
     return _signIn(user);
-  }
-
-  @override
-  Future<GuestAccount> completeProfile(String name, String termsVersion) async {
-    final user = _current;
-    if (user == null) throw const AuthRequestRejected('UNAUTHENTICATED');
-    if (termsVersion != currentTermsVersion) {
-      throw const ProfileTermsChanged();
-    }
-    final trimmed = name.trim();
-    if (trimmed.length < 2 || trimmed.length > 80) {
-      throw const AuthRequestRejected('VALIDATION_FAILED');
-    }
-    user
-      ..fullName = trimmed
-      ..acceptedTermsVersion = termsVersion
-      ..acceptedTermsAt = _clock().toUtc();
-    final account = user.toAccount();
-    _changes.add(account);
-    return account;
   }
 
   @override
@@ -203,6 +176,7 @@ final class _MockUser {
   _MockUser(this.id);
 
   final String id;
+  AccountStatus status = AccountStatus.incomplete;
   String? phone;
   bool phoneVerified = false;
   String? email;
@@ -214,6 +188,7 @@ final class _MockUser {
 
   GuestAccount toAccount() => GuestAccount(
     id: id,
+    status: status,
     phone: phone,
     phoneVerified: phoneVerified,
     email: email,

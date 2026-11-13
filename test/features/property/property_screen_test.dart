@@ -20,6 +20,7 @@ import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -176,6 +177,7 @@ void main() {
     // The account must exist before the cubit's session restore reads it.
     if (signedIn) {
       auth.account = GuestAccount(
+        status: AccountStatus.active,
         id: 'guest',
         phone: '+201012345678',
         phoneVerified: true,
@@ -184,7 +186,7 @@ void main() {
         acceptedTermsAt: DateTime.utc(2026),
       );
     }
-    final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final authCubit = AuthCubit(auth);
     unawaited(authCubit.restore());
     addTearDown(authCubit.close);
     final cacheDirectory = Directory.systemTemp.createTempSync(

@@ -4,6 +4,10 @@ abstract final class AppRoutes {
   static const bookings = '/bookings';
   static const favorites = '/favorites';
   static const account = '/account';
+
+  /// «تغيير رقم الهاتف» (S005 US6); the redirect already treats it as an
+  /// account screen for incomplete sessions.
+  static const accountPhone = '/account/phone';
   static const splash = '/splash';
   static const login = '/auth/login';
   static const register = '/auth/register';
@@ -83,6 +87,7 @@ abstract final class AppRoutes {
       bookings,
       favorites,
       account,
+      accountPhone,
       splash,
       login,
       register,
@@ -117,7 +122,12 @@ abstract final class AppRoutes {
 
   static bool requiresAccount(String location) {
     final path = Uri.tryParse(location)?.path;
-    if (path == bookings || path == favorites || path == account) return true;
+    if (path == bookings ||
+        path == favorites ||
+        path == account ||
+        path == accountPhone) {
+      return true;
+    }
     if (path == supportNew || path == notifications) return true;
     return path != null &&
         (_validMatch(_bookingDetails, path) ||

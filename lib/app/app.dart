@@ -158,7 +158,6 @@ final class _OnAirAppState extends State<OnAirApp> {
     _lifecycle = AppLifecycleListener(onResume: _onResume);
     _authCubit = AuthCubit(
       context.read<AuthRepository>(),
-      currentTermsVersion: '',
       signOutCoordinator: widget.signOutCoordinator,
     );
     _connectivityCubit = widget.connectivityCubit ?? ConnectivityCubit();
@@ -292,26 +291,19 @@ final class _OnAirAppState extends State<OnAirApp> {
   }
 
   Future<void> _initialize(AppConfigSource configRepository) async {
-    final termsVersion = configRepository
-        .load()
-        .then<String?>((config) {
-          return config.currentTermsVersion;
-        })
-        .catchError((Object error) {
-          _logger.warning('App config unavailable: $error');
-          return null;
-        });
-    // Signed-in restoration waits for the terms version; visitor restoration
-    // can continue immediately. This keeps profile completion off the first
-    // frame of a complete account.
+    // The config read warms the cached values (version gate, support phone)
+    // in parallel; the session restore must not wait for it (splash waits
+    // for restore, not config). Completeness no longer depends on the local
+    // terms version: the server decides it (S005, Constitution II).
     unawaited(
-      termsVersion.then((version) {
-        if (version != null && !_authCubit.isClosed) {
-          _authCubit.updateTermsVersion(version);
-        }
-      }),
+      configRepository.load().then<void>(
+        (_) {},
+        onError: (Object error) {
+          _logger.warning('App config unavailable: $error');
+        },
+      ),
     );
-    await _authCubit.restore(currentTermsVersion: termsVersion);
+    await _authCubit.restore();
     // The restored session opens the channel too (no state change may fire
     // for a restored sign-in).
     _onAuthStateChanged(_authCubit.state);

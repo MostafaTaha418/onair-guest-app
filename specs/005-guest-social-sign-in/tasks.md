@@ -195,7 +195,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
 
 ### Tests first (Phase 2)
 
-- [ ] T007 [P] Write `test/features/auth/domain/guest_account_test.dart`:
+- [X] T007 [P] Write `test/features/auth/domain/guest_account_test.dart`:
   - `isComplete` is true only when `status == AccountStatus.active`;
   - an `incomplete` account may have `phone == null`;
   - an `active` account with `phone == null` triggers an assertion in debug (`expect(() => …,
@@ -203,25 +203,25 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   - `fullName` outside 2–80 throws `ArgumentError`;
   - `AccountStatus.fromJson('something_new')` returns `AccountStatus.unknown`;
   - `AuthProvider.fromJson` maps `'email'|'google'|'apple'` and ignores unknown values.
-- [ ] T008 [P] Extend `test/core/errors/error_mapper_test.dart` (create it if missing):
+- [X] T008 [P] Extend `test/core/errors/error_mapper_test.dart` (create it if missing):
   - each new code maps to its `ErrorCode` and message key (table in T013);
   - `details` is kept on `ApiError.details`;
   - `fromCode('PROFILE_INCOMPLETE')` and `fromCode('PHONE_NOT_VERIFIED')` each emit exactly one
     event on `ProfileGate.events`;
   - other codes emit nothing.
-- [ ] T009 [P] Write `test/core/device/device_identity_test.dart`:
+- [X] T009 [P] Write `test/core/device/device_identity_test.dart`:
   - **iOS**: `KeychainDeviceIdentity` with a fake secure store returns a v4 UUID, stores it under
     `device_install_id`, and returns the **same** value on a second instance using the same
     store (simulated reinstall).
   - **Android**: `AndroidDeviceIdentity` uses a mocked `MethodChannel('on_air/device_identity')`
     (`TestDefaultBinaryMessengerBinding`) returning `'abc123'` → `'abc123'`. A
     `MissingPluginException` or an empty string → `DeviceIdentityUnavailable` is thrown.
-- [ ] T010 [P] Write `test/core/network/otp_send_interceptor_test.dart` with a fake `DeviceIdentity` (`'dev-1'`) and a fake `AppAttestation` (`'att-1'` or `null`):
+- [X] T010 [P] Write `test/core/network/otp_send_interceptor_test.dart` with a fake `DeviceIdentity` (`'dev-1'`) and a fake `AppAttestation` (`'att-1'` or `null`):
   - `POST /v1/otp/send` gets `X-Device-Id: dev-1` and `X-Firebase-AppCheck: att-1`;
   - `POST /v1/guest/bookings/start-payment` gets **neither** header;
   - when attestation returns `null`, `X-Firebase-AppCheck` is omitted and the request still goes
     out.
-- [ ] T011 [P] Update `test/app/router/redirect_test.dart` (find the existing redirect tests with `grep -rl resolveRedirect test/`) and add cases:
+- [X] T011 [P] Update `test/app/router/redirect_test.dart` (find the existing redirect tests with `grep -rl resolveRedirect test/`) and add cases:
   - `SignedIn(account(status: incomplete), isComplete: false)` on `/favorites`, `/bookings`,
     `/account`, `/account/phone`, `/notifications`, `/bookings/<uuid>` and
     `/book/<uuid>/dates?…` → `/auth/complete-profile?from=<that location>`;
@@ -229,7 +229,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
     (this matches the existing rule: an incomplete signed-in user is always sent there; keep that
     behaviour and assert it);
   - an `active` account on `/auth/complete-profile?from=/favorites` → `/favorites`.
-- [ ] T012 [P] Update `test/features/auth/presentation/auth_cubit_test.dart`:
+- [X] T012 [P] Update `test/features/auth/presentation/auth_cubit_test.dart`:
   - delete every SMS test (`requestPhoneCode`, `verifyPhoneCode`) and `completeProfile` /
     `updateTermsVersion` tests;
   - add: `restore()` with an incomplete account emits `SignedIn(isComplete: false)`;
@@ -239,7 +239,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
 
 ### Implementation (Phase 2)
 
-- [ ] T013 Errors:
+- [X] T013 Errors:
   1. In `lib/core/errors/api_error.dart`:
      - add the enum values `profileAlreadyComplete`, `otpSendBlocked`, `phoneNotOnWhatsApp`,
        `appAttestationFailed`, `otpTemporarilyUnavailable`, `otpSuperseded`,
@@ -255,19 +255,19 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
      - pass `details` into the returned `ApiError`;
      - at the end of `fromCode`, if the mapped code is `ErrorCode.profileIncomplete` or
        `ErrorCode.phoneNotVerified`, call `ProfileGate.notify()`.
-- [ ] T014 Create `lib/core/auth/profile_gate.dart`:
+- [X] T014 Create `lib/core/auth/profile_gate.dart`:
   - `abstract final class ProfileGate`;
   - a private `static final _controller = StreamController<void>.broadcast();`;
   - `static Stream<void> get events => _controller.stream;`;
   - `static void notify() => _controller.add(null);`;
   - a doc comment: "Server said the account is incomplete or the phone is unverified; AuthCubit
     refreshes the account so the router can redirect (research R9)."
-- [ ] T015 Add all **Localization keys** from section 0 to `lib/l10n/app_ar.arb` and `lib/l10n/app_en.arb` (with placeholder metadata), then run `flutter gen-l10n`. Do not remove any key yet (T020 does).
-- [ ] T016 [P] Create `lib/features/auth/domain/account_enums.dart`:
+- [X] T015 Add all **Localization keys** from section 0 to `lib/l10n/app_ar.arb` and `lib/l10n/app_en.arb` (with placeholder metadata), then run `flutter gen-l10n`. Do not remove any key yet (T020 does).
+- [X] T016 [P] Create `lib/features/auth/domain/account_enums.dart`:
   - `enum AccountStatus { incomplete, active, suspended, deleted, unknown; static AccountStatus
     fromJson(String? v) => …unknown fallback }`;
   - `enum AuthProvider { email, google, apple; static AuthProvider? fromJson(String v) }`.
-- [ ] T017 Update `lib/features/auth/domain/guest_account.dart` per data-model §1:
+- [X] T017 Update `lib/features/auth/domain/guest_account.dart` per data-model §1:
   - add `required this.status`, `this.authProviders = const {}`, `this.hasPassword = true`;
   - keep `email` nullable for now (legacy tests) but document "always set for real accounts";
   - replace the constructor check `phone == null && email == null` with
@@ -278,7 +278,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
     `bool get isComplete => status == AccountStatus.active;`.
 
   Fix every compile error this causes (`grep -rn "isComplete(" lib test`).
-- [ ] T018 Profile source:
+- [X] T018 Profile source:
   1. In `lib/features/auth/data/profile_repository.dart`:
      - make `loadOwnProfile` call `_client.rpc<dynamic>('common_get_my_context')` instead of
        selecting `profiles`;
@@ -290,7 +290,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
      from the record, including `status`, `authProviders` and `hasPassword`.
   3. Add `test/features/auth/data/profile_record_test.dart` covering `ProfileRecord.fromJson` with
      a full payload (data-model §1) and with missing optional fields.
-- [ ] T019 Remove the SMS path (research R10). Delete:
+- [X] T019 Remove the SMS path (research R10). Delete:
   - `requestPhoneCode`, `verifyPhoneCode`, `completeProfile` from `AuthRepository`
     (`lib/features/auth/domain/auth_repository.dart`), `SupabaseAuthRepository`,
     `MockAuthRepository` and `test/helpers/fake_auth_repository.dart`;
@@ -305,7 +305,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   Then run `flutter pub remove smart_auth`. Add `Future<GuestAccount?> refreshAccount();` to
   `AuthRepository` and implement it: Supabase → `_accountFor(_auth.currentUser)`; mock/fake →
   return the current account.
-- [ ] T020 Login/Register cleanup:
+- [X] T020 Login/Register cleanup:
   - in `lib/features/auth/presentation/login_screen.dart` remove the `phoneAuthEnabled` and
     `initialPhone` parameters, the segmented phone/email control, `_submitPhone`,
     `_signInPhoneFields`, and every phone field **in sign-in mode**;
@@ -319,7 +319,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   - run `flutter gen-l10n`;
   - update `test/features/auth/goldens/login_golden_test.dart` to `const LoginScreen()` and
     regenerate only that golden.
-- [ ] T021 `AuthCubit` (`lib/features/auth/presentation/auth_cubit.dart`):
+- [X] T021 `AuthCubit` (`lib/features/auth/presentation/auth_cubit.dart`):
   - remove the `currentTermsVersion` dependency from completeness: `_emitAccount` emits
     `SignedIn(account, isComplete: account.isComplete)`, and `restore()` no longer waits for the
     terms version (keep the parameter accepted but unused only if removing it breaks `app.dart`;
@@ -330,7 +330,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   - in the constructor subscribe to `ProfileGate.events` and call `refreshAccount()` when the
     state is `SignedIn`, ignoring events within 1 s of the last refresh;
   - cancel the subscription in `close()`.
-- [ ] T022 [P] Create `lib/core/device/device_identity.dart` (research R4):
+- [X] T022 [P] Create `lib/core/device/device_identity.dart` (research R4):
   - `abstract interface class DeviceIdentity { Future<String> id(); }`;
   - `final class DeviceIdentityUnavailable implements Exception {}`;
   - `final class KeychainDeviceIdentity implements DeviceIdentity`, which takes the existing
@@ -345,13 +345,13 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
     result or a `MissingPluginException` throws `DeviceIdentityUnavailable`;
   - `DeviceIdentity platformDeviceIdentity(...)`: returns the Keychain identity on iOS and the
     Android one otherwise, using `defaultTargetPlatform`.
-- [ ] T023 [P] Create `lib/core/device/app_attestation.dart`:
+- [X] T023 [P] Create `lib/core/device/app_attestation.dart`:
   - `abstract interface class AppAttestation { Future<String?> limitedUseToken(); }`;
   - `final class FirebaseAppAttestation implements AppAttestation`: `limitedUseToken()` returns
     `FirebaseAppCheck.instance.getLimitedUseToken()` and returns `null` on any exception (never
     log the token);
   - `final class NoAttestation implements AppAttestation` returns `null` (mock mode and tests).
-- [ ] T024 Create `lib/core/network/otp_send_interceptor.dart`:
+- [X] T024 Create `lib/core/network/otp_send_interceptor.dart`:
   - `final class OtpSendInterceptor extends Interceptor`, constructed with `DeviceIdentity` and
     `AppAttestation`;
   - in `onRequest`, only when `options.method == 'POST' && options.path.endsWith('/v1/otp/send')`:
@@ -362,7 +362,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   In `lib/core/network/dio_factory.dart` add optional named params `DeviceIdentity? deviceIdentity,
   AppAttestation? attestation` to `createNodeDio`. When both are non-null, insert
   `OtpSendInterceptor` right after `AuthInterceptor`.
-- [ ] T025 Bootstrap wiring in `lib/bootstrap.dart`:
+- [X] T025 Bootstrap wiring in `lib/bootstrap.dart`:
   - in `_remoteBackend`, after `await Firebase.initializeApp();`, call
     `await FirebaseAppCheck.instance.activate(...)` with `AndroidProvider.playIntegrity` and
     `AppleProvider.appAttestWithDeviceCheckFallback` in release builds, and the debug providers
@@ -374,7 +374,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
     `lib/core/config/mock_backend.dart`) and `NoAttestation()`.
 
   Expose `DeviceIdentity` via `RepositoryProvider` (it is needed by the mock OTP server in US5).
-- [ ] T026 Update `test/helpers/fake_auth_repository.dart` and `lib/features/auth/data/mock_auth_repository.dart`:
+- [X] T026 Update `test/helpers/fake_auth_repository.dart` and `lib/features/auth/data/mock_auth_repository.dart`:
   - every created `GuestAccount` gets a `status`;
   - existing complete mock users are `AccountStatus.active` with a phone;
   - newly signed-up email users are `AccountStatus.incomplete` with `phone: null` after email

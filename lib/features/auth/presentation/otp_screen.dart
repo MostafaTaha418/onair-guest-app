@@ -17,39 +17,14 @@ import 'package:on_air/features/auth/presentation/widgets/auth_brand_header.dart
 import 'package:on_air/features/auth/presentation/widgets/auth_flow_scaffold.dart';
 import 'package:on_air/features/auth/presentation/widgets/rapid_submit_guard.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
-import 'package:smart_auth/smart_auth.dart';
-
-abstract interface class SmsCodeReader {
-  Future<String?> readCode();
-  Future<void> cancel();
-}
-
-final class AndroidSmsCodeReader implements SmsCodeReader {
-  const AndroidSmsCodeReader();
-
-  @override
-  Future<String?> readCode() async {
-    final result = await SmartAuth.instance.getSmsWithUserConsentApi(
-      matcher: r'\d{6}',
-    );
-    return result.data?.code;
-  }
-
-  @override
-  Future<void> cancel() async {
-    await SmartAuth.instance.removeUserConsentApiListener();
-  }
-}
 
 final class OtpScreen extends StatefulWidget {
   const OtpScreen({
-    this.codeReader = const AndroidSmsCodeReader(),
     this.secureScreen = const SecureScreen(),
     this.clock = DateTime.now,
     super.key,
   });
 
-  final SmsCodeReader codeReader;
   final SecureScreenControl secureScreen;
   final DateTime Function() clock;
 
@@ -77,30 +52,12 @@ final class _OtpScreenState extends State<OtpScreen> {
         context.read<AuthCubit>().resumeCodeEntry();
       }
     });
-    final state = context.read<AuthCubit>().state;
-    final challenge = switch (state) {
-      CodeSent(:final challenge) => challenge,
-      RateLimited(:final challenge) => challenge,
-      _ => null,
-    };
-    if (challenge?.channel == VerificationChannel.sms) {
-      unawaited(_listenForSms());
-    }
-  }
-
-  Future<void> _listenForSms() async {
-    final code = await widget.codeReader.readCode();
-    if (!mounted || code == null || code.length != 6) return;
-    _controller.text = code;
-    setState(() {});
-    await _verify(code);
   }
 
   @override
   void dispose() {
     _ticker?.cancel();
     _controller.dispose();
-    unawaited(widget.codeReader.cancel());
     unawaited(widget.secureScreen.setSecure(enabled: false));
     super.dispose();
   }
@@ -122,8 +79,6 @@ final class _OtpScreenState extends State<OtpScreen> {
       _ => null,
     };
     switch (channel) {
-      case VerificationChannel.sms:
-        await cubit.verifyPhoneCode(code);
       case VerificationChannel.emailSignup:
         await cubit.verifyEmailCode(code);
       case VerificationChannel.emailRecovery:
@@ -166,8 +121,6 @@ final class _OtpScreenState extends State<OtpScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       switch (challenge.channel) {
-        case VerificationChannel.sms:
-          await cubit.requestPhoneCode(challenge.target);
         case VerificationChannel.emailSignup:
           await cubit.requestEmailVerification(challenge.target);
         case VerificationChannel.emailRecovery:
@@ -316,20 +269,12 @@ final class _OtpScreenState extends State<OtpScreen> {
             ),
             const SizedBox(height: Dimens.space16),
             TextButton(
-              key: ValueKey(
-                challenge.channel == VerificationChannel.sms
-                    ? 'change-phone-button'
-                    : 'change-email-button',
-              ),
+              key: const ValueKey('change-email-button'),
               onPressed: () => _changeTarget(challenge.channel),
               style: TextButton.styleFrom(
                 foregroundColor: context.colors['textAccent'],
               ),
-              child: Text(
-                challenge.channel == VerificationChannel.sms
-                    ? l10n.authChangePhone
-                    : l10n.authChangeEmail,
-              ),
+              child: Text(l10n.authChangeEmail),
             ),
           ],
         );

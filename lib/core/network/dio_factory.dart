@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:on_air/core/device/app_attestation.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
+import 'package:on_air/core/network/otp_send_interceptor.dart';
 import 'package:uuid/uuid.dart';
 
 abstract interface class SessionTokenSource {
@@ -11,6 +14,8 @@ abstract interface class SessionTokenSource {
 Dio createNodeDio({
   required String baseUrl,
   required SessionTokenSource tokens,
+  DeviceIdentity? deviceIdentity,
+  AppAttestation? attestation,
 }) {
   final uri = Uri.tryParse(baseUrl);
   if (uri == null || uri.scheme != 'https') {
@@ -20,6 +25,11 @@ Dio createNodeDio({
   dio.interceptors.addAll([
     RequestIdInterceptor(),
     AuthInterceptor(tokens),
+    if (deviceIdentity != null && attestation != null)
+      OtpSendInterceptor(
+        deviceIdentity: deviceIdentity,
+        attestation: attestation,
+      ),
     RefreshRetryInterceptor(dio, tokens),
     ErrorInterceptor(),
   ]);

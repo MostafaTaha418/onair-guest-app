@@ -28,7 +28,7 @@ Widget _login(ThemeMode mode, double scale) => SizedBox(
       ),
       child: Directionality(textDirection: TextDirection.rtl, child: child!),
     ),
-    home: const LoginScreen(phoneAuthEnabled: false),
+    home: const LoginScreen(),
   ),
 );
 

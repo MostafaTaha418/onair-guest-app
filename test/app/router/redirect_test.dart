@@ -1,13 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 
 void main() {
-  final incomplete = GuestAccount(id: 'id', phone: '+201012345678');
+  final incomplete = GuestAccount(
+    id: 'id',
+    status: AccountStatus.incomplete,
+    email: 'guest@example.com',
+  );
   final complete = GuestAccount(
     id: 'id',
+    status: AccountStatus.active,
     phone: '+201012345678',
     fullName: 'Guest Name',
     acceptedTermsVersion: 'v1',
@@ -239,6 +245,68 @@ void main() {
       ),
       '/auth/login?from=%2Fbook%2F${Uri.encodeComponent(uuid)}%2Fdates',
     );
+  });
+
+  group('S005: a server-incomplete account is forced to «أكّد رقمك»', () {
+    const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
+
+    test('every account-gated route and deep link carries its return', () {
+      final destinations = <String, String>{
+        AppRoutes.favorites: AppRoutes.favorites,
+        AppRoutes.bookings: AppRoutes.bookings,
+        AppRoutes.account: AppRoutes.account,
+        AppRoutes.accountPhone: AppRoutes.accountPhone,
+        AppRoutes.notifications: AppRoutes.notifications,
+        AppRoutes.bookingDetails(uuid): AppRoutes.bookingDetails(uuid),
+        '${AppRoutes.bookingEntry(uuid)}?guests=2':
+            '${AppRoutes.bookingEntry(uuid)}?guests=2',
+      };
+      for (final MapEntry(key: location, value: from) in destinations.entries) {
+        expect(
+          resolveRedirect(
+            RedirectContext(
+              location: location,
+              authState: SignedIn(incomplete, isComplete: false),
+            ),
+          ),
+          '/auth/complete-profile?from=${Uri.encodeComponent(from)}',
+          reason: location,
+        );
+      }
+    });
+
+    test('the same rule also catches public routes (existing behaviour)', () {
+      for (final location in [
+        AppRoutes.home,
+        AppRoutes.search,
+        AppRoutes.property(uuid),
+      ]) {
+        expect(
+          resolveRedirect(
+            RedirectContext(
+              location: location,
+              authState: SignedIn(incomplete, isComplete: false),
+            ),
+          ),
+          '/auth/complete-profile?from=${Uri.encodeComponent(location)}',
+          reason: location,
+        );
+      }
+    });
+
+    test('an active account returns from the completion route to `from`', () {
+      expect(
+        resolveRedirect(
+          RedirectContext(
+            location:
+                '${AppRoutes.completeProfile}?from=${AppRoutes.favorites}',
+            authState: SignedIn(complete, isComplete: true),
+            from: AppRoutes.favorites,
+          ),
+        ),
+        AppRoutes.favorites,
+      );
+    });
   });
 
   test('the route builders build the documented paths', () {

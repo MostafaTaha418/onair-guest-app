@@ -15,6 +15,7 @@ import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -55,6 +56,7 @@ Future<void> pumpSignedInApp(
   await _pumpApp(
     tester,
     account: GuestAccount(
+      status: AccountStatus.active,
       id: 'guest',
       phone: '+201012345678',
       phoneVerified: true,

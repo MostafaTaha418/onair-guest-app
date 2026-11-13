@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/domain/guest_account.dart';
 
 void main() {
   late MockAuthRepository repository;
@@ -11,39 +13,30 @@ void main() {
   setUp(() => repository = MockAuthRepository(clock: () => now));
   tearDown(() => repository.dispose());
 
-  test(
-    'phone sign-in follows the Egypt-only contract and fixed code',
-    () async {
-      await expectLater(
-        repository.requestPhoneCode('+966501234567'),
-        throwsA(
-          isA<AuthRequestRejected>().having(
-            (e) => e.code,
-            'code',
-            'PHONE_COUNTRY_NOT_SUPPORTED',
-          ),
-        ),
-      );
-      final challenge = await repository.requestPhoneCode('01012345678');
-      expect(challenge.target, '+201012345678');
-      expect(challenge.resendAt, now.add(MockBackend.resendInterval));
-      await expectLater(
-        repository.verifyPhoneCode(challenge.target, '000000'),
-        throwsA(isA<AuthCodeRejected>()),
-      );
-      final account = await repository.verifyPhoneCode(
-        challenge.target,
-        MockBackend.verificationCode,
-      );
-      expect(account.phoneVerified, isTrue);
-      expect(account.isComplete(MockBackend.termsVersion), isFalse);
+  Future<GuestAccount> signUpAndVerify() async {
+    await repository.signUpEmail(
+      'Guest',
+      'guest@example.com',
+      'password1',
+      '01012345678',
+      MockBackend.termsVersion,
+    );
+    return repository.verifyEmailCode(
+      'guest@example.com',
+      MockBackend.verificationCode,
+    );
+  }
 
-      final completed = await repository.completeProfile(
-        ' Guest Name ',
-        MockBackend.termsVersion,
-      );
-      expect(completed.fullName, 'Guest Name');
-      expect(completed.isComplete(MockBackend.termsVersion), isTrue);
+  test(
+    'the legacy registration shape (name + phone + terms) activates the account',
+    () async {
+      final account = await signUpAndVerify();
+
+      expect(account.emailVerified, isTrue);
+      expect(account.status, AccountStatus.active);
+      expect(account.isComplete, isTrue);
+      expect(account.phone, '+201012345678');
+      expect(account.phoneVerified, isTrue);
     },
   );
 
@@ -80,21 +73,31 @@ void main() {
     expect(account.emailVerified, isTrue);
   });
 
+  test('refreshAccount re-reads the current account', () async {
+    final account = await signUpAndVerify();
+    final refreshed = await repository.refreshAccount();
+    expect(refreshed!.id, account.id);
+    expect(refreshed.status, AccountStatus.active);
+  });
+
   test('terms version must match and sign-out clears the session', () async {
-    final challenge = await repository.requestPhoneCode('01012345678');
-    await repository.verifyPhoneCode(
-      challenge.target,
-      MockBackend.verificationCode,
-    );
     await expectLater(
-      repository.completeProfile('Guest Name', 'old-terms'),
+      repository.signUpEmail(
+        'Guest',
+        'guest@example.com',
+        'password1',
+        '01012345678',
+        'old-terms',
+      ),
       throwsA(isA<ProfileTermsChanged>()),
     );
+    await signUpAndVerify();
     final events = <Object?>[];
     final subscription = repository.authStateChanges.listen(events.add);
     await repository.signOut();
     await Future<void>.delayed(Duration.zero);
     expect(await repository.restoreSession(), isNull);
+    expect(await repository.refreshAccount(), isNull);
     expect(events.last, isNull);
     await subscription.cancel();
   });

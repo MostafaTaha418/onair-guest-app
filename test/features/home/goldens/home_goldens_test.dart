@@ -14,6 +14,7 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
@@ -153,6 +154,7 @@ Widget _homeChild({
   // signed-in refresh races the capture.
   if (signedIn) {
     auth.account = GuestAccount(
+      status: AccountStatus.active,
       id: 'guest',
       phone: '+201012345678',
       phoneVerified: true,
@@ -161,7 +163,7 @@ Widget _homeChild({
       acceptedTermsAt: DateTime.utc(2026),
     );
   }
-  final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
+  final authCubit = AuthCubit(auth);
   unawaited(authCubit.restore());
   final favoritesCubit = FavoritesCubit(
     repository: MemoryFavoritesRepository(),

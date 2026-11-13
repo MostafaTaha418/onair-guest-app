@@ -389,10 +389,24 @@ void main() {
     await pumpDates(tester);
 
     await pickRange(tester, 20, 23);
-    // The calendar now shows December (day 20 is Nov 30, day 23 is Dec 3);
-    // the restart target day 17 (Nov 27) sits in the previous month.
-    await tester.tap(find.byTooltip(l10n.calendarPrevMonth));
-    await tester.pumpAndSettle();
+    // After the pick the calendar shows the departure's month; walk
+    // backwards until the restart target's month is visible (it can share
+    // the departure's month, depending on today's real date).
+    var shown = DateOnly(day(23).year, day(23).month, 1);
+    final target = DateOnly(day(17).year, day(17).month, 1);
+    var guard = 0;
+    while (shown != target) {
+      if (guard++ > 24) {
+        fail(
+          'the calendar never reached ${DateOnlyFormatter.monthYear(target)}',
+        );
+      }
+      await tester.tap(find.byTooltip(l10n.calendarPrevMonth));
+      await tester.pumpAndSettle();
+      shown = shown.month == 1
+          ? DateOnly(shown.year - 1, 12, 1)
+          : DateOnly(shown.year, shown.month - 1, 1);
+    }
     await tester.tap(find.text('${day(17).day}').last);
     await tester.pump();
     // The old range is gone and the hint asks for the new departure.

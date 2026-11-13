@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
@@ -35,8 +36,12 @@ final class _SlowFavorites implements FavoritesRepository {
 void main() {
   test('a rapid second tap cannot save the same apartment twice', () async {
     final authRepository = FakeAuthRepository()
-      ..account = GuestAccount(id: 'guest', email: 'guest@example.test');
-    final auth = AuthCubit(authRepository, currentTermsVersion: 'v1');
+      ..account = GuestAccount(
+        id: 'guest',
+        status: AccountStatus.incomplete,
+        email: 'guest@example.test',
+      );
+    final auth = AuthCubit(authRepository);
     final repository = _SlowFavorites();
     final favorites = FavoritesCubit(
       repository: repository,
@@ -68,8 +73,12 @@ void main() {
 
   test('saved apartments reload and clear from memory on sign-out', () async {
     final authRepository = FakeAuthRepository()
-      ..account = GuestAccount(id: 'guest', email: 'guest@example.test');
-    final auth = AuthCubit(authRepository, currentTermsVersion: 'v1');
+      ..account = GuestAccount(
+        id: 'guest',
+        status: AccountStatus.incomplete,
+        email: 'guest@example.test',
+      );
+    final auth = AuthCubit(authRepository);
     final repository = MemoryFavoritesRepository();
     await repository.add('guest', 'property-1');
     final favorites = FavoritesCubit(

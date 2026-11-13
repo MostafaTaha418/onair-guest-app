@@ -60,13 +60,7 @@ extension PumpOnAirApp on WidgetTester {
     addTearDown(unreadCubit.close);
     final pushSource = ControllablePushMessageSource();
     addTearDown(pushSource.dispose);
-    final cubit =
-        authCubit ??
-        AuthCubit(
-          authRepository,
-          currentTermsVersion:
-              (await appConfigRepository.load()).currentTermsVersion,
-        );
+    final cubit = authCubit ?? AuthCubit(authRepository);
     await pumpWidget(
       MultiRepositoryProvider(
         providers: [

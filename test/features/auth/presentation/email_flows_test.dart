@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/platform/secure_screen.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -16,13 +17,6 @@ import 'package:on_air/features/auth/presentation/register_screen.dart';
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/pump_app.dart';
-
-final class _NoSms implements SmsCodeReader {
-  @override
-  Future<void> cancel() async {}
-  @override
-  Future<String?> readCode() async => null;
-}
 
 final class _NoSecure implements SecureScreenControl {
   @override
@@ -37,6 +31,9 @@ void main() {
     auth = FakeAuthRepository()
       ..account = GuestAccount(
         id: 'email-guest',
+        status: AccountStatus.active,
+        phone: '+201012345678',
+        phoneVerified: true,
         email: 'guest@example.com',
         emailVerified: true,
         fullName: 'Guest',
@@ -53,14 +50,12 @@ void main() {
     );
   });
 
-  testWidgets('email tab signs in with email and password', (tester) async {
+  testWidgets('sign-in opens on email fields', (tester) async {
     await tester.pumpOnAirApp(
       const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
       'guest@example.com',
@@ -83,11 +78,11 @@ void main() {
     expect(auth.lastPassword, 'password1');
   });
 
-  testWidgets('remote sign-in opens on email without a phone tab', (
+  testWidgets('sign-in shows no phone field and no segmented control', (
     tester,
   ) async {
     await tester.pumpOnAirApp(
-      const LoginScreen(phoneAuthEnabled: false),
+      const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -103,8 +98,6 @@ void main() {
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('email-name-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
@@ -125,8 +118,6 @@ void main() {
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('email-name-field')),
       'Guest Name',
@@ -181,7 +172,7 @@ void main() {
     final barrier = Completer<void>();
     auth.signUpEmailBarrier = barrier.future;
     await tester.pumpOnAirApp(
-      const RegisterScreen(phoneAuthEnabled: false),
+      const RegisterScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -284,7 +275,7 @@ void main() {
       target: 'guest@example.com',
       resendAt: DateTime.utc(2026),
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final cubit = AuthCubit(auth);
     await cubit.requestRecovery('guest@example.com');
     await cubit.verifyRecovery('123456');
     await tester.pumpOnAirApp(
@@ -311,7 +302,7 @@ void main() {
       target: 'guest@example.com',
       resendAt: DateTime.utc(2026),
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final cubit = AuthCubit(auth);
     await cubit.requestRecovery('guest@example.com');
     await cubit.verifyRecovery('123456');
     final barrier = Completer<void>();
@@ -344,7 +335,7 @@ void main() {
       target: 'guest@example.com',
       resendAt: now,
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1', clock: () => now);
+    final cubit = AuthCubit(auth, clock: () => now);
     await cubit.requestEmailSignup(
       'Guest',
       'guest@example.com',
@@ -353,11 +344,7 @@ void main() {
       'v1',
     );
     await tester.pumpOnAirApp(
-      OtpScreen(
-        codeReader: _NoSms(),
-        secureScreen: _NoSecure(),
-        clock: () => now,
-      ),
+      OtpScreen(secureScreen: _NoSecure(), clock: () => now),
       authRepository: auth,
       appConfigRepository: config,
       authCubit: cubit,

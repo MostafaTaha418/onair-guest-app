@@ -10,6 +10,7 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -116,15 +117,21 @@ void main() {
     );
     restored.complete(
       GuestAccount(
+        status: AccountStatus.active,
         id: 'guest-1',
+        phone: '+201012345678',
+        phoneVerified: true,
         email: 'guest@example.com',
         fullName: 'Guest Name',
         acceptedTermsVersion: 'v1',
         acceptedTermsAt: DateTime.utc(2026),
       ),
     );
+    // Completeness comes from the server now (S005): the restored complete
+    // account goes straight home without waiting for the app config, and
+    // profile completion never flashes — not before, not after the config.
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('splash-logo')), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-home')), findsOneWidget);
     expect(find.text('كمّل بياناتك'), findsNothing);
 
     configResult.complete(

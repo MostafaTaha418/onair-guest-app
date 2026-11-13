@@ -1,3 +1,4 @@
+import 'package:on_air/core/auth/profile_gate.dart';
 import 'package:on_air/core/errors/api_error.dart';
 
 abstract final class ErrorMapper {
@@ -84,6 +85,28 @@ abstract final class ErrorMapper {
       ErrorCode.offerNotAvailable,
       'offerNotAvailable',
     ),
+    'PROFILE_ALREADY_COMPLETE': (
+      ErrorCode.profileAlreadyComplete,
+      'authProfileIncomplete',
+    ),
+    'OTP_SEND_BLOCKED': (ErrorCode.otpSendBlocked, 'otpBlockedUntil'),
+    'PHONE_NOT_ON_WHATSAPP': (
+      ErrorCode.phoneNotOnWhatsApp,
+      'whatsappNotOnWhatsApp',
+    ),
+    'APP_ATTESTATION_FAILED': (
+      ErrorCode.appAttestationFailed,
+      'otpAttestationFailed',
+    ),
+    'OTP_TEMPORARILY_UNAVAILABLE': (
+      ErrorCode.otpTemporarilyUnavailable,
+      'otpTemporarilyUnavailable',
+    ),
+    'OTP_SUPERSEDED': (ErrorCode.otpSuperseded, 'whatsappUseLatestCode'),
+    'OTP_ATTEMPTS_EXCEEDED': (
+      ErrorCode.otpAttemptsExceeded,
+      'otpAttemptsExceeded',
+    ),
     'INTERNAL': (ErrorCode.internal, 'errorUnexpected'),
   };
 
@@ -97,10 +120,18 @@ abstract final class ErrorMapper {
     final seconds =
         _retrySeconds(details?['retry_after_seconds']) ??
         _retrySeconds(retryAfterHeader);
+    // The server is the gate's authority: these two codes mean the session's
+    // account state changed, so AuthCubit re-reads it and the router can
+    // redirect (research R9).
+    if (mapping.$1 == ErrorCode.profileIncomplete ||
+        mapping.$1 == ErrorCode.phoneNotVerified) {
+      ProfileGate.notify();
+    }
     return ApiError(
       code: mapping.$1,
       messageKey: mapping.$2,
       requestId: requestId,
+      details: details,
       retryAfter: seconds == null ? null : Duration(seconds: seconds),
     );
   }

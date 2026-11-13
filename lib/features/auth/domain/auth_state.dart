@@ -1,6 +1,6 @@
 import 'package:on_air/features/auth/domain/guest_account.dart';
 
-enum VerificationChannel { sms, emailSignup, emailRecovery }
+enum VerificationChannel { emailSignup, emailRecovery }
 
 final class CodeChallenge {
   const CodeChallenge({

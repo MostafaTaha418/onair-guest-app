@@ -39,8 +39,12 @@ abstract interface class AuthRepository {
   Stream<GuestAccount?> get authStateChanges;
 
   Future<GuestAccount?> restoreSession();
-  Future<CodeChallenge> requestPhoneCode(String phone);
-  Future<GuestAccount> verifyPhoneCode(String phone, String code);
+
+  /// Re-reads the server context for the current session. Completeness,
+  /// providers and the password flag come from the server (S005), so the
+  /// router reacts to `PROFILE_INCOMPLETE` / `PHONE_NOT_VERIFIED` by calling
+  /// this (research R9).
+  Future<GuestAccount?> refreshAccount();
   Future<CodeChallenge> signUpEmail(
     String name,
     String email,
@@ -54,6 +58,5 @@ abstract interface class AuthRepository {
   Future<CodeChallenge> requestRecovery(String email);
   Future<void> verifyRecovery(String email, String code);
   Future<GuestAccount> setNewPassword(String password);
-  Future<GuestAccount> completeProfile(String name, String termsVersion);
   Future<void> signOut();
 }

@@ -30,7 +30,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpOnAirApp(
-      const LoginScreen(phoneAuthEnabled: false),
+      const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -55,35 +55,11 @@ void main() {
     expect(auth.lastPassword, 'abc');
   });
 
-  testWidgets('phone sign in validates on first tap and clears on correction', (
-    tester,
-  ) async {
-    await tester.pumpOnAirApp(
-      const LoginScreen(),
-      authRepository: auth,
-      appConfigRepository: config,
-    );
-    await tester.tap(find.byKey(const ValueKey('send-code-button')));
-    await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsOneWidget);
-    expect(auth.requestPhoneCalls, 0);
-    await tester.enterText(find.byKey(const ValueKey('phone-field')), '123');
-    await tester.pump();
-    expect(find.text('اكتب رقم موبايل مصري صحيح من 11 رقم.'), findsOneWidget);
-    await tester.enterText(
-      find.byKey(const ValueKey('phone-field')),
-      '01012345678',
-    );
-    await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsNothing);
-    expect(find.text('اكتب رقم موبايل مصري صحيح من 11 رقم.'), findsNothing);
-  });
-
   testWidgets('email registration marks all empty fields and terms', (
     tester,
   ) async {
     await tester.pumpOnAirApp(
-      const RegisterScreen(phoneAuthEnabled: false),
+      const RegisterScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );

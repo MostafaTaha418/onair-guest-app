@@ -197,12 +197,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authPhoneInvalid => 'اكتب رقم موبايل مصري صحيح من 11 رقم.';
 
   @override
-  String get authPhoneTab => 'الموبايل';
-
-  @override
-  String get authEmailTab => 'البريد الإلكتروني';
-
-  @override
   String get authEmailComingSoon => 'التسجيل بالبريد الإلكتروني هيتاح قريبًا.';
 
   @override
@@ -238,9 +232,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String authResendIn(String time) {
     return 'إعادة الإرسال بعد $time';
   }
-
-  @override
-  String get authChangePhone => 'تغيير رقم الموبايل';
 
   @override
   String get authCompleteProfileTitle => 'كمّل بياناتك';
@@ -1956,4 +1947,132 @@ class AppLocalizationsAr extends AppLocalizations {
   String placeAreaCity(String area, String city) {
     return '$area، $city';
   }
+
+  @override
+  String get authOr => 'أو';
+
+  @override
+  String get authContinueWithGoogle => 'المتابعة بـ Google';
+
+  @override
+  String get authContinueWithApple => 'المتابعة بـ Apple';
+
+  @override
+  String get authSocialFailed => 'تعذر تسجيل الدخول، حاول مرة أخرى';
+
+  @override
+  String get confirmPhoneTitle => 'أكّد رقمك';
+
+  @override
+  String get confirmPhoneNewTitle => 'تغيير رقم الهاتف';
+
+  @override
+  String get confirmPhoneSubtitle =>
+      'هنبعتلك كود على واتساب الرقم ده عشان نتأكد إنه بتاعك';
+
+  @override
+  String get confirmPhoneEmailLabel => 'حسابك';
+
+  @override
+  String get confirmPhoneContinue => 'متابعة';
+
+  @override
+  String get confirmPhoneCancel => 'إلغاء';
+
+  @override
+  String get confirmPhoneLeaveTitle => 'تخرج من التسجيل؟';
+
+  @override
+  String get confirmPhoneLeaveBody => 'لو خرجت، التسجيل مش هيكمل';
+
+  @override
+  String get confirmPhoneLeaveConfirm => 'خروج';
+
+  @override
+  String get confirmPhoneLeaveStay => 'كمّل';
+
+  @override
+  String get whatsappCodeTitle => 'اكتب الكود';
+
+  @override
+  String whatsappCodeSentTo(String phone) {
+    return 'بعتنا كود على واتساب $phone';
+  }
+
+  @override
+  String get whatsappOpen => 'افتح واتساب';
+
+  @override
+  String get whatsappConfirm => 'تأكيد';
+
+  @override
+  String get whatsappResend => 'ابعت كود جديد';
+
+  @override
+  String whatsappResendIn(String time) {
+    return 'تقدر تطلب كود جديد بعد $time';
+  }
+
+  @override
+  String durationHoursMinutes(String hours, String minutes) {
+    return '$hours ساعة و$minutes دقيقة';
+  }
+
+  @override
+  String get whatsappEditNumber => 'تعديل الرقم';
+
+  @override
+  String get whatsappNotOnWhatsApp =>
+      'الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب';
+
+  @override
+  String get whatsappContactSupport => 'كلّم الدعم';
+
+  @override
+  String get whatsappUseLatestCode => 'استخدم آخر كود وصلك';
+
+  @override
+  String otpBlockedUntil(String date) {
+    return 'اتوقف إرسال الأكواد مؤقتًا لحد $date. لو محتاج مساعدة كلّم الدعم';
+  }
+
+  @override
+  String get otpAttestationFailed =>
+      'مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني';
+
+  @override
+  String get otpTemporarilyUnavailable => 'الخدمة مشغولة دلوقتي، جرّب بعد شوية';
+
+  @override
+  String get otpAttemptsExceeded => 'جربت كتير، اطلب كود جديد';
+
+  @override
+  String get confirmPhoneWelcome => 'أهلًا بيك في OnAir';
+
+  @override
+  String get phoneChanged => 'رقمك اتغيّر';
+
+  @override
+  String get accountSignInMethod => 'طريقة الدخول';
+
+  @override
+  String get accountMethodGoogle => 'Google';
+
+  @override
+  String get accountMethodApple => 'Apple';
+
+  @override
+  String get accountMethodEmail => 'البريد';
+
+  @override
+  String get accountPhone => 'رقم الهاتف';
+
+  @override
+  String get accountPhoneConfirmed => 'متأكد';
+
+  @override
+  String get accountChangePhone => 'تغيير';
+
+  @override
+  String get verifyPhoneOnWhatsApp => 'أكّد رقمك على واتساب';
 }

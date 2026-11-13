@@ -127,12 +127,12 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.login,
       name: 'login',
-      builder: (_, _) => const LoginScreen(phoneAuthEnabled: false),
+      builder: (_, _) => const LoginScreen(),
     ),
     GoRoute(
       path: AppRoutes.register,
       name: 'register',
-      builder: (_, _) => const RegisterScreen(phoneAuthEnabled: false),
+      builder: (_, _) => const RegisterScreen(),
     ),
     GoRoute(
       path: AppRoutes.otp,

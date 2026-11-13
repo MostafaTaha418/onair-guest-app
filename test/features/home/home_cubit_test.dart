@@ -8,6 +8,7 @@ import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -95,6 +96,7 @@ void main() {
   });
 
   GuestAccount guestAccount() => GuestAccount(
+    status: AccountStatus.active,
     id: 'guest',
     phone: '+201012345678',
     phoneVerified: true,
@@ -105,7 +107,7 @@ void main() {
 
   Future<AuthCubit> newAuthCubit({bool signedIn = false}) async {
     if (signedIn) auth.account = guestAccount();
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final cubit = AuthCubit(auth);
     await cubit.restore();
     return cubit;
   }
