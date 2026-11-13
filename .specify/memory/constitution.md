@@ -28,9 +28,12 @@ Guest Plan §2.2/§2.4: one repository per app (see "Technology Stack & Reposito
 - The following MUST NOT be built (Guest Plan §1.2): direct guest↔owner chat or messaging
   (AC-047), pay-after-owner-approval, "cash on arrival" at request time, weekday/seasonal
   pricing, service/cleaning/tax fees not in the plan, government ID upload, mandatory OTP or
-  photos for check-in, interactive price-pin map, social login, VIP features, offers/discounts.
-- Design tokens without a product decision (VIP, Offer, Discount, Social, Auth Card) MAY exist
-  in code but MUST NOT drive any feature.
+  photos for check-in, interactive price-pin map, VIP features, offers/discounts.
+- Social sign-in is limited to **Google and Apple** (decision D-002, Guest Plan §6.2.6). Any
+  other third-party sign-in provider requires a new recorded product decision.
+- Design tokens without a product decision (VIP, Offer, Discount, Auth Card) MAY exist in code
+  but MUST NOT drive any feature. The Social tokens drive only the Google/Apple sign-in buttons,
+  within Google's and Apple's official button guidelines.
 
 **Rationale:** The guest app is one of three clients over one platform. Rules invented in one
 client break consistency, money flows, and trust.
@@ -50,6 +53,11 @@ client break consistency, money flows, and trust.
   "not available" screen without revealing whether the record exists.
 - Guest-side acknowledgements (check-in, check-out) MUST NOT be shown as final until the server
   confirms the resulting state (AC-026/027).
+- Account completeness is a server state. An `incomplete` account (no confirmed phone) MUST be
+  rejected by the server for every account action except confirming the phone, signing out and
+  deleting the account; the app's routing guard is UX only.
+- Verification-code waits, send limits and blocks are server decisions. The app MUST display only
+  the server-provided `next_send_at` / `blocked_until` and MUST NOT compute or enforce them alone.
 
 **Rationale:** Money and booking state must have one source of truth. A modified client must
 not be able to change either.
@@ -76,8 +84,10 @@ can produce.
 ### IV. Security & Privacy by Default (NON-NEGOTIABLE)
 
 - **Secrets:** The app MAY contain only the Supabase URL, the Supabase **anon key**, the Node API
-  base URL, and public Firebase config. `service_role`, Kashier, Resend, SMS, or any provider
-  secret MUST NEVER appear in source, assets, or builds. CI MUST scan for forbidden key patterns.
+  base URL, public Firebase config, and public OAuth client identifiers for Google/Apple sign-in.
+  `service_role`, Kashier, Resend, SMS, Meta/WhatsApp access tokens, app or webhook secrets, the
+  Google client secret, the Apple sign-in key, or any provider secret MUST NEVER appear in
+  source, assets, or builds. CI MUST scan for forbidden key patterns.
 - **Environment files** (`env/*.json`) MUST stay out of Git and be injected by CI secrets.
 - **Session:** Tokens MUST be stored only in `flutter_secure_storage` (Keychain
   `first_unlock_this_device` / Android Keystore). `shared_preferences` MAY hold only
@@ -89,8 +99,24 @@ can produce.
 - **Logs & crash reports** MUST NOT contain PII (phone, email, names) or tokens. Release builds
   log `warning`/`error` only. Booking-related reports MAY include IDs only.
 - **Push content** MUST NOT contain sensitive data; payload is limited to `type` + `target_id`.
-- **Auth UX** MUST NOT reveal whether a phone or email is registered. Server rate limits are
-  shown as remaining time with disabled actions. OTPs are never auto-copied to the clipboard.
+- **Auth UX** MUST NOT reveal whether a phone or email is registered, with one exception
+  required by AC-001: the "number already used" answer when a signed-in guest confirms a phone,
+  which sits behind app attestation and the send limits below. Server rate limits are shown as
+  remaining time with disabled actions. OTPs are never auto-copied to the clipboard.
+- **Social sign-in** MUST use the platform's native Google/Apple sheet (no embedded web view),
+  a fresh nonce per Apple attempt, and MUST NOT store, display or log provider identity tokens.
+- **Phone confirmation** MUST be done only by a 6-digit code that the backend generates with a
+  secure random source, stores only as a hash, and sends to that number on WhatsApp through
+  Meta's official WhatsApp Business Cloud API. No SMS and no email fallback. The phone MUST NOT
+  be written to the guest's profile in any form before the correct code is confirmed.
+- **Code-send abuse protection** (server-enforced, values in server settings): resend waits of
+  30 s → 5 min → 1 h → 24 h, then 1 h / 24 h alternating; after 10 sends any further request
+  starts a 7-day block. Counters and blocks are keyed on the account, the phone number and the
+  device together, the strictest applies, and failed deliveries count. Code-send requests MUST
+  carry a valid app-attestation token (Firebase App Check: Play Integrity / App Attest) and a
+  reinstall-stable device identifier (iOS Keychain value, Android `ANDROID_ID`) that the server
+  stores only as a keyed hash and uses only for abuse prevention. A per-IP limit and a global
+  daily cap protect the messaging budget.
 - **Uploads:** client-side type/size checks for UX only. EXIF (including GPS) MUST be stripped
   before upload. Private attachments use short-lived signed URLs and are never cached
   persistently.
@@ -98,7 +124,9 @@ can produce.
 - **Build hardening:** Release builds MUST use `--obfuscate --split-debug-info`, R8 enabled,
   `allowBackup` disabled or excluding secure storage, no debug tools or screens.
 - **Privacy:** No location permission in v1. No ad tracking. Analytics only with consent and
-  without PII. Store privacy manifests and Data Safety forms MUST match actual behaviour.
+  without PII. Store privacy manifests and Data Safety forms MUST match actual behaviour,
+  including that the phone number is sent to Meta (WhatsApp) for the confirmation code and that
+  a hashed device identifier is kept for abuse prevention.
 
 **Rationale:** The app handles identity, bookings, and payments for real people. A leak or
 spoofed state is a legal and trust failure, not a bug.
@@ -160,7 +188,9 @@ more than building them in.
   journey). Pass-through use cases are forbidden.
 - Approved stack: Cubit through `flutter_bloc` for state, `go_router` for navigation, guards,
   and deep links (`StatefulShellRoute` for bottom nav), `freezed` + `json_serializable` for
-  immutable models, `supabase_flutter` for auth and RLS reads, `dio` for Node commands.
+  immutable models, `supabase_flutter` for auth and RLS reads, `dio` for Node commands,
+  `google_sign_in` / `sign_in_with_apple` for native social sign-in, and `firebase_app_check`
+  for app attestation.
 - **Money** MUST be an integer in the smallest unit (piasters) with a currency code, wrapped in
   a `Money` value object. `double` for money is forbidden.
 - **Stay dates** (arrival/departure) MUST be date-only values with no time or timezone.
@@ -211,7 +241,10 @@ as a broken app at the moment money is involved.
 - Design-system components and key screens MUST have golden tests in Light + Dark, RTL, and
   enlarged text.
 - Security tests MUST prove: a guest cannot read another guest's booking by ID; a forged deep
-  link changes nothing; repeated payment taps create one payment session.
+  link changes nothing; repeated payment taps create one payment session; an incomplete account
+  cannot perform account actions even with crafted requests; a phone is never stored before the
+  correct code; code sends follow the ladder and block, including after reinstalling the app or
+  switching accounts on the same device; requests without valid attestation send nothing.
 - Each feature MUST list the Master Plan acceptance criteria it covers (Guest Plan §14.2) and
   include tests for them. Booking/payment journeys run end-to-end on Staging with the Kashier
   test account.
@@ -235,8 +268,10 @@ criteria are the shared contract with the rest of the team.
 - **Platform:** Flutter / Dart (SDK `^3.12.2`), Android and iOS. Other platform folders are not
   release targets for this app.
 - **Backend:** Supabase (Postgres, Auth, RLS, Realtime) for reads under RLS; Node.js services
-  (or secure RPC) for all sensitive commands; Kashier for payments; FCM/APNs for push;
-  Cloudflare for media.
+  (or secure RPC) for all sensitive commands, running as the existing Cloudflare Worker
+  `onair-api`; Kashier for payments; FCM/APNs for push; Meta WhatsApp Business Cloud API for
+  phone-confirmation codes (called only by the backend); Google and Apple as Supabase Auth
+  sign-in providers; Firebase App Check for app attestation; Cloudflare for media and WAF.
 - **Environments:** Staging and Production flavors with separate app IDs, Supabase projects,
   API URLs, Firebase projects, and Kashier modes. Config via `--dart-define-from-file`.
 - **Crash monitoring:** exactly one tool for this app, aligned with the team where possible.
@@ -252,8 +287,9 @@ criteria are the shared contract with the rest of the team.
   `/speckit-tasks` → `/speckit-implement`). Every plan MUST pass the Constitution Check against
   Principles I–IX before design and again before implementation.
 - **Delivery order** follows Guest Plan §17 phases: G0 Foundation → G1 Discovery → G2 Booking &
-  Payment → G3 Stay & Cancellation → G4 Support & Account → G5 Favorites & Reviews → G6 Pilot
-  readiness.
+  Payment → G3 Stay & Cancellation → S005 Google/Apple sign-in + WhatsApp phone confirmation →
+  G4 Support & Account → G5 Favorites & Reviews → G6 Pilot readiness. Spec folders are numbered
+  in that order (`specs/005-…` is S005; G4 onward start at 006).
 - **CI gates on every PR (all MUST pass):** `dart format --set-exit-if-changed`,
   `flutter analyze` with strict lints and zero warnings, unit + widget + golden tests,
   forbidden-secret scan, and an up-to-date `build_runner` output check.
@@ -291,4 +327,4 @@ criteria are the shared contract with the rest of the team.
   and `docs/UI_UX_DESIGN_SYSTEM.md` for visual tokens. Compliance is reviewed at the end of each
   G-phase.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-10-27
+**Version**: 2.1.0 | **Ratified**: 2026-10-26 | **Last Amended**: 2026-11-13
