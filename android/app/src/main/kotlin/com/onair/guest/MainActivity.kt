@@ -1,5 +1,6 @@
 package com.onair.guest
 
+import android.provider.Settings
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -24,6 +25,21 @@ class MainActivity : FlutterActivity() {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 }
                 result.success(null)
+            }
+        }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "on_air/device_identity",
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "androidId" ->
+                    result.success(
+                        Settings.Secure.getString(
+                            contentResolver,
+                            Settings.Secure.ANDROID_ID,
+                        ),
+                    )
+                else -> result.notImplemented()
             }
         }
     }

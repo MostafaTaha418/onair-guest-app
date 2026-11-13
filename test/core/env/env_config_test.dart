@@ -82,4 +82,46 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('google client ids are optional and nullable when missing', () {
+    final config = EnvConfig.fromMap(values(anon));
+    expect(config.googleServerClientId, isNull);
+    expect(config.googleIosClientId, isNull);
+  });
+
+  test('empty google client ids become null', () {
+    final config = EnvConfig.fromMap(
+      values(anon)
+        ..['GOOGLE_SERVER_CLIENT_ID'] = '   '
+        ..['GOOGLE_IOS_CLIENT_ID'] = '',
+    );
+    expect(config.googleServerClientId, isNull);
+    expect(config.googleIosClientId, isNull);
+  });
+
+  test('google client id values are kept when provided', () {
+    final config = EnvConfig.fromMap(
+      values(anon)
+        ..['GOOGLE_SERVER_CLIENT_ID'] = '1234.apps.googleusercontent.com'
+        ..['GOOGLE_IOS_CLIENT_ID'] = '5678.apps.googleusercontent.com',
+    );
+    expect(config.googleServerClientId, '1234.apps.googleusercontent.com');
+    expect(config.googleIosClientId, '5678.apps.googleusercontent.com');
+  });
+
+  test('google client ids must not contain a secret', () {
+    expect(
+      () => EnvConfig.fromMap(
+        values(anon)..['GOOGLE_SERVER_CLIENT_ID'] = 'GOCSPX-SecretValue',
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => EnvConfig.fromMap(
+        values(anon)
+          ..['GOOGLE_IOS_CLIENT_ID'] = 'SECRET.apps.googleusercontent.com',
+      ),
+      throwsArgumentError,
+    );
+  });
 }

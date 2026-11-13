@@ -142,8 +142,8 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
 
 **Purpose**: packages, env, assets and native config. No behaviour change yet.
 
-- [ ] T001 Add packages by running `flutter pub add google_sign_in sign_in_with_apple crypto firebase_app_check` at the repo root. Then run `flutter pub get` and confirm `pubspec.yaml` lists the four. If `firebase_app_check` cannot resolve with `firebase_core: ^5.1.0`, pick the newest `firebase_app_check` version compatible with that `firebase_core` major (do not change `firebase_core`). Do **not** remove `smart_auth` yet (T019 does).
-- [ ] T002 [P] In `lib/core/env/env_config.dart`, add two optional public fields:
+- [X] T001 Add packages by running `flutter pub add google_sign_in sign_in_with_apple crypto firebase_app_check` at the repo root. Then run `flutter pub get` and confirm `pubspec.yaml` lists the four. If `firebase_app_check` cannot resolve with `firebase_core: ^5.1.0`, pick the newest `firebase_app_check` version compatible with that `firebase_core` major (do not change `firebase_core`). Do **not** remove `smart_auth` yet (T019 does).
+- [X] T002 [P] In `lib/core/env/env_config.dart`, add two optional public fields:
   - `final String? googleServerClientId;` read from `'GOOGLE_SERVER_CLIENT_ID'`;
   - `final String? googleIosClientId;` read from `'GOOGLE_IOS_CLIENT_ID'`.
 
@@ -162,8 +162,8 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
     Apple Design Resources → Sign in with Apple.
 
   Do not draw or download them yourself. Continue with the other tasks; T029 needs them.
-- [ ] T004 [P] In `pubspec.yaml` under `flutter: assets:`, add `- assets/images/social/` (keep the existing entries).
-- [ ] T005 [P] iOS config:
+- [X] T004 [P] In `pubspec.yaml` under `flutter: assets:`, add `- assets/images/social/` (keep the existing entries).
+- [X] T005 [P] iOS config:
   1. In `ios/Runner/Runner.entitlements` add:
      - `<key>com.apple.developer.applesignin</key><array><string>Default</string></array>`;
      - `<key>com.apple.developer.devicecheck.appattest-environment</key><string>production</string>`.
@@ -173,7 +173,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   3. In `ios/Runner/Info.plist` add `GIDClientID` = `$(GOOGLE_IOS_CLIENT_ID)` and a
      `CFBundleURLTypes` entry whose `CFBundleURLSchemes` array contains
      `$(GOOGLE_REVERSED_CLIENT_ID)`. Keep any existing `CFBundleURLTypes` entries.
-- [ ] T006 [P] Android MethodChannel in `android/app/src/main/kotlin/com/onair/guest/MainActivity.kt`. Inside `configureFlutterEngine`, after the existing `on_air/secure_screen` channel, add a second `MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "on_air/device_identity")`:
+- [X] T006 [P] Android MethodChannel in `android/app/src/main/kotlin/com/onair/guest/MainActivity.kt`. Inside `configureFlutterEngine`, after the existing `on_air/secure_screen` channel, add a second `MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "on_air/device_identity")`:
   - method `"androidId"` returns `Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)`
     (import `android.provider.Settings`);
   - any other method → `result.notImplemented()`.
