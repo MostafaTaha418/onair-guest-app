@@ -44,5 +44,8 @@
   platform's current OTP settings.
 - Remaining defaults are recorded in Assumptions and Guest Plan §19 (items 10, 11, 13, 14, 15);
   `/speckit-clarify` can revisit them.
+- Clarify session 2026-11-13: 5 questions answered (no-WhatsApp fallback, existing accounts,
+  unconfirmed-email collision, Apple on Android, counter reset); checklist re-validated, all items
+  still pass.
 - Constitution amended to v2.1.0 (2026-11-13) per D-002; the earlier "social login" blocker is
   resolved.

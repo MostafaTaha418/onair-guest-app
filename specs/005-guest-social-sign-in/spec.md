@@ -28,6 +28,25 @@ than 10 sends block code sending for 7 days in a way that survives reinstalling 
 `docs/UI_UX_DESIGN_SYSTEM.md`, `.specify/memory/constitution.md`,
 `specs/001-guest-app-foundation/spec.md` (existing email + password sign-in, delivered).
 
+## Clarifications
+
+### Session 2026-11-13
+
+- Q: What does a guest whose number is not on WhatsApp (and who has no other WhatsApp number) do
+  to finish registering? → A: No alternative; they must use a number that is on WhatsApp. The app
+  says so clearly and offers «كلّم الدعم».
+- Q: Must existing guests whose phone was confirmed earlier by email code re-confirm it on
+  WhatsApp? → A: No. They stay as they are; WhatsApp applies only when they change the number.
+- Q: What happens when someone signs in with Google/Apple using the email of an email + password
+  registration whose email was never confirmed? → A: Every sign-in method needs a confirmed email,
+  and Google/Apple emails are already confirmed, so the provider sign-in wins: the unconfirmed
+  registration is discarded (its password removed) and the guest continues as a Google/Apple
+  account to «أكّد رقمك». No one gets in without a confirmed phone.
+- Q: Does «المتابعة بـ Apple» also appear on Android in this release? → A: No, iOS only; Android
+  shows Google only.
+- Q: When do the WhatsApp send counter and resend ladder start over for a guest who is not blocked?
+  → A: After a successful confirmation, after a block ends, or after 7 days with no send request.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Sign in or register with Google (Priority: P1)
@@ -269,9 +288,10 @@ and confirm the existing bookings and phone appear and no «أكّد رقمك» 
 
 1. **Given** an existing complete account whose email is confirmed, **When** the guest signs in with
    Google or Apple using the same email, **Then** they enter that same account directly.
-2. **Given** an existing email account whose email is **not** confirmed, **When** the guest signs in
-   with Google or Apple using the same email, **Then** sign-in is refused with «البريد ده مسجل
-   بالفعل. ادخل بكلمة المرور أو أكّد بريدك الأول» and no second account is created.
+2. **Given** an email + password registration whose email was **never confirmed**, **When** someone
+   signs in with Google or Apple using the same email, **Then** the provider sign-in succeeds, the
+   unconfirmed registration is discarded (its password no longer works), no second account exists,
+   and the guest continues to «أكّد رقمك».
 3. **Given** the forgot-password flow, **When** a guest enters the email of an account that has no
    password, **Then** the same neutral message as for any email is shown.
 
@@ -318,6 +338,9 @@ the next Google sign-in shows the account picker.
 - An incomplete account is never completed: the server removes it after a retention period, but the
   send counters and any block on the number and device remain until they expire.
 - Support lifts a block manually: the next request is allowed immediately and the ladder restarts.
+- A guest who registered with Apple on an iPhone later uses an Android phone (no Apple button): they
+  can sign in with Google if it uses the same confirmed email, or use «نسيت كلمة المرور» to receive
+  an email code (Apple's relay forwards it) and set a password for the same account.
 - Large text, narrow and wide screens, the on-screen keyboard, light and dark mode, Arabic RTL and
   English LTR all keep the buttons, form, countdown and block message fully usable.
 
@@ -376,8 +399,10 @@ the next Google sign-in shows the account picker.
   newer code is sent, it MUST stop working.
 - **FR-019**: The code screen MUST show the number the code was sent to, «افتح واتساب», «تعديل الرقم»,
   paste and one-time-code autofill, and the resend countdown from the server's next-allowed time.
-- **FR-020**: The app MUST show «الرقم ده مش عليه واتساب» when the server reports the message could
-  not be delivered for that reason, checking the delivery status for about one minute after sending.
+- **FR-020**: The app MUST show «الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب» with «تعديل
+  الرقم» and «كلّم الدعم» when the server reports the message could not be delivered for that
+  reason, checking the delivery status for about one minute after sending. There is no other way to
+  confirm a number (no manual, voice, SMS or email alternative).
 - **FR-021**: Only a correct, unexpired, latest code MUST save the number (marked as the WhatsApp
   number), its confirmation time, and the name/Terms if asked, all at once, and mark the account
   complete.
@@ -403,8 +428,8 @@ the next Google sign-in shows the account picker.
 - **FR-029**: The platform MUST have a per-network-address request limit on code sending and a global
   daily cap on WhatsApp code messages that pauses sending and alerts the admins when reached.
 - **FR-030**: Failed deliveries MUST count as sends.
-- **FR-031**: Counters and the ladder MUST reset after a successful confirmation, after a block ends,
-  or after 7 days without any send request; blocks MUST be recorded for admins, who can lift one
+- **FR-031**: Counters and the ladder MUST reset only after a successful confirmation, after a block
+  ends, or after 7 consecutive days without any send request (no daily reset); blocks MUST be recorded for admins, who can lift one
   manually with a written reason.
 - **FR-032**: The app MUST display only the server's next-allowed and block-end times (in Cairo time
   for dates, plain Arabic durations for waits) and MUST disable send buttons until then.
@@ -415,8 +440,9 @@ the next Google sign-in shows the account picker.
   «الرقم ده عليه واتساب؟» question and separate WhatsApp number MUST be removed from the app.
 - **FR-034**: After a new email account confirms its email, the guest MUST go through «أكّد رقمك»
   (number only).
-- **FR-035**: Accounts whose phone was confirmed before this feature MUST NOT be asked to confirm
-  again.
+- **FR-035**: Accounts whose phone was confirmed before this feature (by email code) MUST NOT be
+  asked to confirm again, at sign-in or before booking; they use the WhatsApp code only if they
+  change the number later.
 - **FR-036**: Changing the phone number from the account MUST send the code to the new number on
   WhatsApp under FR-016–FR-032; the old number MUST stay until the new one is confirmed.
 
@@ -433,10 +459,14 @@ the next Google sign-in shows the account picker.
 
 - **FR-039**: Google/Apple sign-in with the email of an existing account whose email is confirmed MUST
   open that same account.
-- **FR-040**: Google/Apple sign-in with the email of an existing account whose email is not confirmed
-  MUST be refused with a clear message; no second account is created.
+- **FR-040**: Every sign-in method MUST require a confirmed email (Google/Apple emails count as
+  confirmed by the provider). Google/Apple sign-in with the email of an email + password
+  registration whose email was never confirmed MUST take over that email: the unconfirmed
+  registration and its password are discarded, no second account is created, and the guest
+  continues to «أكّد رقمك».
 - **FR-041**: Password recovery for an account without a password MUST show the same neutral message
-  as for any email.
+  as for any email and work the same way (email code, then a new password), so a Google/Apple guest
+  can add a password to the same account.
 
 **Account screens**
 
@@ -508,7 +538,8 @@ the next Google sign-in shows the account picker.
 - **Copy-code first**: the WhatsApp message has a «نسخ الكود» button and the guest pastes the code.
   Android one-tap/zero-tap autofill from WhatsApp is a later improvement (Guest Plan §19 item 14).
 - **Apple on iOS only in this release** (Guest Plan §19 item 10).
-- **Unconfirmed-email collision is refused** (FR-040, §19 item 11).
+- **Unconfirmed-email collision: the confirmed provider email wins** (FR-040, clarified
+  2026-11-13; Guest Plan §19 item 11).
 - **Incomplete accounts are removed after 7 days** without completion (§19 item 13).
 - **Initial values for the per-address limit and global daily cap** (e.g., 20 requests / 10 minutes
   per address) are set on Staging and tuned after the pilot (§19 item 15).
