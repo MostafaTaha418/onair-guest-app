@@ -155,7 +155,7 @@ Placeholders (`{phone}`, `{time}`, `{date}`, `{hours}`, `{minutes}`) need `@key`
   Add the two keys with empty strings to `env/example.json`. Add tests to the existing env test
   file (find it with `grep -rl EnvConfig test/`): missing → null, empty → null, value kept,
   `secret` rejected.
-- [ ] T003 **MANUAL — ask the user** to provide the official provider marks unmodified as PNG at 1x/2x/3x:
+- [X] T003 **MANUAL — ask the user** to provide the official provider marks unmodified as PNG at 1x/2x/3x:
   - `assets/images/social/google_g.png` (+ `2.0x/`, `3.0x/`, 24×24 logical px), from
     https://developers.google.com/identity/branding-guidelines;
   - `assets/images/social/apple_logo_black.png` and `apple_logo_white.png` (same sizes), from
