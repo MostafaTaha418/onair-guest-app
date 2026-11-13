@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -7,6 +9,7 @@ import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 
 final class _Repository extends Mock implements AuthRepository {}
@@ -209,6 +212,155 @@ void main() {
       isA<SignedIn>(),
     ],
   );
+
+  group('S005 social sign-in', () {
+    final active = GuestAccount(
+      id: 'social-guest',
+      status: AccountStatus.active,
+      phone: '+201012345678',
+      email: 'social@onair.test',
+      emailVerified: true,
+      fullName: 'Social Guest',
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'google success with an active account is complete',
+      build: () {
+        when(() => repository.restoreSession()).thenAnswer((_) async => null);
+        when(() => repository.signInWithGoogle()).thenAnswer(
+          (_) async => SocialSignInResult(account: active),
+        );
+        return AuthCubit(repository);
+      },
+      act: (cubit) async {
+        await cubit.restore();
+        await cubit.signInWithGoogle();
+      },
+      expect: () => [
+        isA<SignedOut>(),
+        isA<SignedIn>().having((s) => s.isComplete, 'complete', true),
+      ],
+      verify: (cubit) {
+        expect(cubit.social.value.busy, isNull);
+        expect(cubit.social.value.errorKey, isNull);
+      },
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'google success with an incomplete account keeps the provider name',
+      build: () {
+        when(() => repository.restoreSession()).thenAnswer((_) async => null);
+        when(() => repository.signInWithGoogle()).thenAnswer(
+          (_) async => SocialSignInResult(
+            account: GuestAccount(
+              id: 'social-new',
+              status: AccountStatus.incomplete,
+              email: 'social@onair.test',
+              emailVerified: true,
+            ),
+            providerFullName: 'Mona Adel',
+          ),
+        );
+        return AuthCubit(repository);
+      },
+      act: (cubit) async {
+        await cubit.restore();
+        await cubit.signInWithGoogle();
+      },
+      expect: () => [
+        isA<SignedOut>(),
+        isA<SignedIn>().having((s) => s.isComplete, 'complete', false),
+      ],
+      verify: (cubit) {
+        expect(cubit.providerFullName, 'Mona Adel');
+        expect(cubit.social.value.busy, isNull);
+      },
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'a cancelled sheet changes nothing and shows no error',
+      build: () {
+        when(() => repository.restoreSession()).thenAnswer((_) async => null);
+        when(
+          () => repository.signInWithGoogle(),
+        ).thenThrow(const SocialSignInCancelled());
+        return AuthCubit(repository);
+      },
+      act: (cubit) async {
+        await cubit.restore();
+        await cubit.signInWithGoogle();
+      },
+      expect: () => [isA<SignedOut>()],
+      verify: (cubit) {
+        expect(cubit.state, isA<SignedOut>());
+        expect(cubit.social.value.busy, isNull);
+        expect(cubit.social.value.errorKey, isNull);
+      },
+    );
+
+    blocTest<AuthCubit, AuthState>(
+      'a generic failure surfaces the uniform social error',
+      build: () {
+        when(() => repository.restoreSession()).thenAnswer((_) async => null);
+        when(
+          () => repository.signInWithGoogle(),
+        ).thenThrow(const AuthRequestRejected('SOCIAL_FAILED'));
+        return AuthCubit(repository);
+      },
+      act: (cubit) async {
+        await cubit.restore();
+        await cubit.signInWithGoogle();
+      },
+      expect: () => [isA<SignedOut>()],
+      verify: (cubit) {
+        expect(cubit.social.value.busy, isNull);
+        expect(cubit.social.value.errorKey, 'authSocialFailed');
+      },
+    );
+
+    test('a second call while a sheet is in flight is ignored', () async {
+      when(() => repository.restoreSession()).thenAnswer((_) async => null);
+      final barrier = Completer<SocialSignInResult>();
+      when(
+        () => repository.signInWithGoogle(),
+      ).thenAnswer((_) => barrier.future);
+      final cubit = AuthCubit(repository);
+      addTearDown(cubit.close);
+      await cubit.restore();
+
+      final first = cubit.signInWithGoogle();
+      await cubit.signInWithGoogle();
+      verify(() => repository.signInWithGoogle()).called(1);
+      expect(cubit.social.value.busy, SocialProvider.google);
+
+      barrier.complete(SocialSignInResult(account: active));
+      await first;
+      expect(cubit.social.value.busy, isNull);
+    });
+
+    test('sign-out clears the provider name', () async {
+      final coordinator = _SignOutCoordinator();
+      when(coordinator.signOut).thenAnswer((_) async {});
+      when(() => repository.signInWithGoogle()).thenAnswer(
+        (_) async => SocialSignInResult(
+          account: GuestAccount(
+            id: 'social-new',
+            status: AccountStatus.incomplete,
+            email: 'social@onair.test',
+            emailVerified: true,
+          ),
+          providerFullName: 'Mona Adel',
+        ),
+      );
+      final cubit = AuthCubit(repository, signOutCoordinator: coordinator);
+      addTearDown(cubit.close);
+
+      await cubit.signInWithGoogle();
+      expect(cubit.providerFullName, 'Mona Adel');
+      await cubit.signOut();
+      expect(cubit.providerFullName, isNull);
+    });
+  });
 
   group('review fixes', () {
     blocTest<AuthCubit, AuthState>(

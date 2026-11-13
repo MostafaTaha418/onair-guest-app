@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 
 final class FakeAuthRepository implements AuthRepository {
   final _changes = StreamController<GuestAccount?>.broadcast();
@@ -12,6 +13,9 @@ final class FakeAuthRepository implements AuthRepository {
   Exception? requestRecoveryError;
   Exception? verifyEmailError;
   Exception? signInEmailError;
+  SocialSignInResult? socialResult;
+  Exception? socialError;
+  int socialSignInCalls = 0;
   Future<void>? requestEmailVerificationBarrier;
   Future<void>? signUpEmailBarrier;
   Future<void>? requestRecoveryBarrier;
@@ -44,6 +48,18 @@ final class FakeAuthRepository implements AuthRepository {
     refreshAccountCalls += 1;
     return account;
   }
+
+  Future<SocialSignInResult> _social() async {
+    socialSignInCalls += 1;
+    if (socialError case final error?) throw error;
+    return socialResult ?? SocialSignInResult(account: account!);
+  }
+
+  @override
+  Future<SocialSignInResult> signInWithGoogle() => _social();
+
+  @override
+  Future<SocialSignInResult> signInWithApple() => _social();
 
   @override
   Future<CodeChallenge> signUpEmail(

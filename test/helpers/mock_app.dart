@@ -25,8 +25,11 @@ import 'fake_booking_backend.dart';
 /// exercise the real shell (the T095 journey, the T105 scroll-perf run).
 ///
 /// On the host, rootBundle never completes under the fake async zone — the
+/// Returns the mock auth repository so social-scenario tests can pick the
+/// canned outcome and read the call counter.
+///
 /// fixture files are read directly (the same reason T027 added `loader`).
-Future<void> bootMockApp(WidgetTester tester) async {
+Future<MockAuthRepository> bootMockApp(WidgetTester tester) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
   // Sync IO: async dart:io futures never complete under the fake async
@@ -75,4 +78,5 @@ Future<void> bootMockApp(WidgetTester tester) async {
     ),
   );
   await tester.pumpAndSettle();
+  return auth;
 }

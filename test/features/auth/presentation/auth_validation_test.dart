@@ -58,6 +58,11 @@ void main() {
   testWidgets('email registration marks all empty fields and terms', (
     tester,
   ) async {
+    // A tall surface keeps every field built (the social row lengthens the
+    // form), so all four required errors are on screen after the tap.
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await tester.pumpOnAirApp(
       const RegisterScreen(),
       authRepository: auth,

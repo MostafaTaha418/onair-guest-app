@@ -1,5 +1,6 @@
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 
 final class AuthRateLimited implements Exception {
   const AuthRateLimited(this.until);
@@ -39,6 +40,15 @@ abstract interface class AuthRepository {
   Stream<GuestAccount?> get authStateChanges;
 
   Future<GuestAccount?> restoreSession();
+
+  /// Native Google sign-in: the sheet produces an ID token that the server
+  /// exchanges for a session. Cancelled sheets throw
+  /// [SocialSignInCancelled] and never reach the UI as an error.
+  Future<SocialSignInResult> signInWithGoogle();
+
+  /// Native Apple sign-in (iOS only); off-platform this throws
+  /// [SocialSignInUnavailable].
+  Future<SocialSignInResult> signInWithApple();
 
   /// Re-reads the server context for the current session. Completeness,
   /// providers and the password flag come from the server (S005), so the

@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:on_air/features/auth/data/profile_repository.dart';
+import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class PhoneAuthUser {
@@ -37,6 +39,12 @@ String? _nonBlank(String? value) =>
 abstract interface class PhoneAuthClient {
   PhoneAuthUser? get currentUser;
   Stream<PhoneAuthUser?> get userChanges;
+  Future<AuthResponse> signInWithIdToken({
+    required OAuthProvider provider,
+    required String idToken,
+    String? accessToken,
+    String? nonce,
+  });
   Future<void> signUpWithEmail(
     String name,
     String email,
@@ -72,6 +80,19 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
       final user? => PhoneAuthUser.fromSupabase(user),
       null => null,
     },
+  );
+
+  @override
+  Future<AuthResponse> signInWithIdToken({
+    required OAuthProvider provider,
+    required String idToken,
+    String? accessToken,
+    String? nonce,
+  }) => _client.signInWithIdToken(
+    provider: provider,
+    idToken: idToken,
+    accessToken: accessToken,
+    nonce: nonce,
   );
 
   @override
@@ -162,11 +183,14 @@ final class SupabaseAuthRepository implements AuthRepository {
     this._auth,
     this._profiles, {
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+    SocialCredentialSource? socialCredentials,
+  }) : _clock = clock ?? DateTime.now,
+       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource();
 
   final PhoneAuthClient _auth;
   final ProfileSource _profiles;
   final DateTime Function() _clock;
+  final SocialCredentialSource _socialCredentials;
 
   @override
   Stream<GuestAccount?> get authStateChanges =>
@@ -179,6 +203,57 @@ final class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<GuestAccount?> refreshAccount() async =>
       _accountFor(_auth.currentUser);
+
+  @override
+  Future<SocialSignInResult> signInWithGoogle() =>
+      _signInWithSocial(SocialProvider.google);
+
+  @override
+  Future<SocialSignInResult> signInWithApple() =>
+      _signInWithSocial(SocialProvider.apple);
+
+  Future<SocialSignInResult> _signInWithSocial(
+    SocialProvider provider,
+  ) async {
+    final credential = switch (provider) {
+      SocialProvider.google => await _socialCredentials.google(),
+      SocialProvider.apple => await _socialCredentials.apple(),
+    };
+    try {
+      final response = await _auth.signInWithIdToken(
+        provider: switch (provider) {
+          SocialProvider.google => OAuthProvider.google,
+          SocialProvider.apple => OAuthProvider.apple,
+        },
+        idToken: credential.idToken,
+        accessToken: credential.accessToken,
+        nonce: credential.rawNonce,
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const AuthException('Social sign-in returned no user');
+      }
+      final account = await _accountFor(PhoneAuthUser.fromSupabase(user));
+      if (account == null) {
+        throw const AuthException('Social sign-in returned no session');
+      }
+      return SocialSignInResult(
+        account: account,
+        providerFullName: _socialFullName(credential),
+      );
+    } on AuthException catch (error) {
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
+      throw const AuthRequestRejected('SOCIAL_FAILED');
+    }
+  }
+
+  String? _socialFullName(SocialCredential credential) {
+    final joined =
+        '${credential.givenName ?? ''} '
+                '${credential.familyName ?? ''}'
+            .trim();
+    return joined.isNotEmpty ? joined : credential.displayName;
+  }
 
   Exception _mapVerifyError(AuthException error) {
     if (_isNetwork(error)) return const AuthNetworkFailure();

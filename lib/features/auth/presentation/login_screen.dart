@@ -1,14 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/env/env_config.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
+import 'package:on_air/design_system/components/social_sign_in_button.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
@@ -41,6 +45,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   String? _requestError;
   String? _generalError;
   final _submitGuard = RapidSubmitGuard();
+  AuthCubit? _cubit;
 
   @override
   void initState() {
@@ -48,6 +53,33 @@ final class _LoginScreenState extends State<LoginScreen> {
     for (final controller in [_phone, _name, _email, _password]) {
       controller.addListener(_submitGuard.reset);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Harnesses that pump the raw screen (goldens) have no AuthCubit.
+    AuthCubit? cubit;
+    try {
+      cubit = context.read<AuthCubit>();
+    } on ProviderNotFoundException {
+      cubit = null;
+    }
+    if (!identical(cubit, _cubit)) {
+      _detach(_cubit);
+      _cubit = cubit?..social.addListener(_onSocialChanged);
+    }
+  }
+
+  void _onSocialChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// The cubit may close before this screen unmounts; a disposed notifier
+  /// must not be touched again.
+  void _detach(AuthCubit? cubit) {
+    if (cubit == null || cubit.isClosed) return;
+    cubit.social.removeListener(_onSocialChanged);
   }
 
   bool get _validPhone => EgyptPhone.tryParse(_phone.text) != null;
@@ -87,6 +119,7 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _detach(_cubit);
     _phone.dispose();
     _name.dispose();
     _email.dispose();
@@ -190,6 +223,109 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   /// Codes that already have their own message next to the related field.
   static const _inlineCodes = {'INVALID_CREDENTIALS'};
+
+  bool get _socialBusy => _cubit?.social.value.busy != null;
+
+  bool _googleVisible(BuildContext context) {
+    try {
+      final env = context.read<EnvConfig>();
+      // Mock mode always shows it (no client id exists there).
+      if (env.backendMode == BackendMode.mock) return true;
+      return env.googleServerClientId != null;
+    } on ProviderNotFoundException {
+      // Harnesses without an env (tests) behave like mock mode.
+      return true;
+    }
+  }
+
+  bool _isMockMode(BuildContext context) {
+    try {
+      return context.read<EnvConfig>().backendMode == BackendMode.mock;
+    } on ProviderNotFoundException {
+      return true;
+    }
+  }
+
+  /// Debug-only scenario picker so testers can reach every mock social
+  /// outcome (T034).
+  Future<void> _pickMockScenario(BuildContext context) async {
+    final repo = context.read<AuthRepository>();
+    if (repo is! MockAuthRepository) return;
+    final picked = await showDialog<MockSocialScenario>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Mock social scenario'),
+        children: [
+          for (final scenario in MockSocialScenario.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(dialogContext, scenario),
+              child: Text(scenario.name),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) repo.scenario = picked;
+  }
+
+  Widget _socialSection(AppLocalizations l10n) {
+    final social = _cubit?.social.value ?? const SocialSignInUiState();
+    final showApple = defaultTargetPlatform == TargetPlatform.iOS;
+    final showGoogle = _googleVisible(context);
+    if (!showApple && !showGoogle) return const SizedBox.shrink();
+    final mockPicker = kDebugMode && _isMockMode(context)
+        ? () => _pickMockScenario(context)
+        : null;
+    return Column(
+      children: [
+        if (social.errorKey != null) ...[
+          const SizedBox(height: Dimens.space12),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.authSocialFailed,
+              key: const ValueKey('social-auth-error'),
+              style: TextStyle(color: context.colors.errorText),
+            ),
+          ),
+        ],
+        const SizedBox(height: Dimens.space24),
+        Row(
+          children: [
+            const Expanded(child: Divider()),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: Dimens.space12,
+              ),
+              child: Text(l10n.authOr),
+            ),
+            const Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: Dimens.space16),
+        Wrap(
+          spacing: Dimens.space16,
+          alignment: WrapAlignment.center,
+          children: [
+            if (showApple)
+              SocialSignInButton(
+                provider: SocialProvider.apple,
+                onPressed: _socialBusy ? null : () => _cubit?.signInWithApple(),
+                busy: social.busy == SocialProvider.apple,
+              ),
+            if (showGoogle)
+              SocialSignInButton(
+                provider: SocialProvider.google,
+                onPressed: _socialBusy
+                    ? null
+                    : () => _cubit?.signInWithGoogle(),
+                busy: social.busy == SocialProvider.google,
+                onLongPress: mockPicker,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _generalErrorText() => Padding(
     padding: const EdgeInsetsDirectional.only(top: Dimens.space12),
@@ -364,7 +500,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: OnAirPrimaryButton(
           key: const ValueKey('email-submit-button'),
           label: l10n.signIn,
-          onPressed: _loading ? null : _submitEmail,
+          onPressed: (_loading || _socialBusy) ? null : _submitEmail,
           isLoading: _loading,
           gradient: true,
           pill: true,
@@ -372,6 +508,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     ),
+    _socialSection(l10n),
   ];
 
   bool get _forgotBelowField =>
@@ -517,7 +654,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: OnAirPrimaryButton(
           key: const ValueKey('email-submit-button'),
           label: l10n.authSignUpWithEmail,
-          onPressed: _loading ? null : _submitEmail,
+          onPressed: (_loading || _socialBusy) ? null : _submitEmail,
           isLoading: _loading,
           gradient: true,
           pill: true,
@@ -525,6 +662,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     ),
+    _socialSection(l10n),
   ];
 
   Widget _accountSwitch(AppLocalizations l10n) => Wrap(

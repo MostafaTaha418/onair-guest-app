@@ -6,6 +6,19 @@ import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
+
+/// The canned social sign-in outcomes the mock can serve. Testers pick one
+/// via the long-press debug dialog on the Google button (T034).
+enum MockSocialScenario {
+  newUser,
+  incompleteUser,
+  completeUser,
+  legacyUser,
+  unconfirmedEmailCollision,
+  cancel,
+  failure,
+}
 
 /// In-memory auth for `BACKEND_MODE=mock` (Guest Plan §2.6).
 ///
@@ -28,14 +41,80 @@ final class MockAuthRepository implements AuthRepository {
   String? _recoveryEmail;
   int _nextId = 1;
 
+  /// The next social sign-in outcome; reset to [MockSocialScenario.newUser]
+  /// after every served sign-in.
+  MockSocialScenario scenario = MockSocialScenario.newUser;
+  int socialSignInCalls = 0;
+
   @override
   Stream<GuestAccount?> get authStateChanges => _changes.stream;
+
+  /// The current account for tests and the debug harness.
+  GuestAccount? get account => _current?.toAccount();
 
   @override
   Future<GuestAccount?> restoreSession() async => _current?.toAccount();
 
   @override
   Future<GuestAccount?> refreshAccount() async => _current?.toAccount();
+
+  @override
+  Future<SocialSignInResult> signInWithGoogle() =>
+      _signInWithSocial(SocialProvider.google);
+
+  @override
+  Future<SocialSignInResult> signInWithApple() =>
+      _signInWithSocial(SocialProvider.apple);
+
+  Future<SocialSignInResult> _signInWithSocial(SocialProvider provider) async {
+    socialSignInCalls += 1;
+    final picked = scenario;
+    scenario = MockSocialScenario.newUser;
+    switch (picked) {
+      case MockSocialScenario.cancel:
+        throw const SocialSignInCancelled();
+      case MockSocialScenario.failure:
+        throw const AuthRequestRejected('SOCIAL_FAILED');
+      case MockSocialScenario.newUser || MockSocialScenario.incompleteUser:
+        final user = _create()
+          ..email = provider == SocialProvider.apple
+              ? 'x7k2@privaterelay.appleid.com'
+              : 'social-new@onair.test'
+          ..emailVerified = true;
+        final account = _signIn(user);
+        return SocialSignInResult(
+          account: account,
+          providerFullName:
+              provider == SocialProvider.google &&
+                  picked == MockSocialScenario.newUser
+              ? 'Mona Adel'
+              : null,
+        );
+      case MockSocialScenario.completeUser:
+        final user = _create()
+          ..status = AccountStatus.active
+          ..email = 'social-complete@onair.test'
+          ..emailVerified = true
+          ..phone = '+201012345678'
+          ..phoneVerified = true
+          ..fullName = 'زائر تجريبي';
+        return SocialSignInResult(account: _signIn(user));
+      case MockSocialScenario.legacyUser:
+        final user = _create()
+          ..status = AccountStatus.active
+          ..email = 'legacy@onair.test'
+          ..emailVerified = true
+          ..phone = '+201012340000'
+          ..phoneVerified = true
+          ..fullName = 'Legacy Guest';
+        return SocialSignInResult(account: _signIn(user));
+      case MockSocialScenario.unconfirmedEmailCollision:
+        final user = _create()
+          ..email = 'collide@onair.test'
+          ..emailVerified = true;
+        return SocialSignInResult(account: _signIn(user));
+    }
+  }
 
   @override
   Future<CodeChallenge> signUpEmail(

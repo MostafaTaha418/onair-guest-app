@@ -1,11 +1,25 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/auth/profile_gate.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
+
+/// Sign-in-button state, kept out of [AuthState] so the social row can be
+/// driven without re-emitting the whole auth state (T033).
+final class SocialSignInUiState {
+  const SocialSignInUiState({this.busy, this.errorKey});
+
+  /// The provider whose native sheet is in flight; null when idle.
+  final SocialProvider? busy;
+
+  /// Localization key for the inline error above the row; null when none.
+  final String? errorKey;
+}
 
 final class AuthCubit extends Cubit<AuthState> {
   AuthCubit(
@@ -42,6 +56,17 @@ final class AuthCubit extends Cubit<AuthState> {
   late final StreamSubscription<void> _gateSubscription;
   Future<void>? _refreshFuture;
   DateTime? _lastRefreshAt;
+
+  /// Social sign-in UI state (busy provider, error key) — see
+  /// [SocialSignInUiState].
+  final ValueNotifier<SocialSignInUiState> social = ValueNotifier(
+    const SocialSignInUiState(),
+  );
+
+  /// The provider-supplied name for «أكّد رقمك»; memory only, cleared on
+  /// sign-out.
+  String? _providerFullName;
+  String? get providerFullName => _providerFullName;
 
   Future<void> restore() async {
     GuestAccount? account;
@@ -93,6 +118,40 @@ final class AuthCubit extends Cubit<AuthState> {
       return;
     }
     unawaited(refreshAccount());
+  }
+
+  Future<void> signInWithGoogle() => _signInWithSocial(
+    SocialProvider.google,
+    _repository.signInWithGoogle,
+  );
+
+  Future<void> signInWithApple() => _signInWithSocial(
+    SocialProvider.apple,
+    _repository.signInWithApple,
+  );
+
+  /// One guard for both providers: while any sheet is in flight further
+  /// calls are ignored, a cancelled sheet stays silent (FR-005), and any
+  /// other failure surfaces as the uniform `authSocialFailed` message.
+  Future<void> _signInWithSocial(
+    SocialProvider provider,
+    Future<SocialSignInResult> Function() action,
+  ) async {
+    if (social.value.busy != null) return;
+    social.value = SocialSignInUiState(busy: provider);
+    try {
+      final result = await action();
+      _providerFullName = result.providerFullName;
+      _emitAccount(result.account);
+    } on SocialSignInCancelled {
+      // The guest closed the sheet: no message (FR-005).
+    } on Object {
+      social.value = const SocialSignInUiState(errorKey: 'authSocialFailed');
+      return;
+    } finally {
+      final errorKey = social.value.errorKey;
+      social.value = SocialSignInUiState(errorKey: errorKey);
+    }
   }
 
   Future<void> requestEmailSignup(
@@ -251,6 +310,7 @@ final class AuthCubit extends Cubit<AuthState> {
     try {
       await _signOutCoordinator.signOut();
     } finally {
+      _providerFullName = null;
       if (!isClosed) emit(const SignedOut());
     }
   }
@@ -274,6 +334,10 @@ final class AuthCubit extends Cubit<AuthState> {
   Future<void> close() async {
     await _subscription.cancel();
     await _gateSubscription.cancel();
+    // Harnesses may close the same cubit twice (harness + test teardown).
+    if (!isClosed) {
+      social.dispose();
+    }
     await super.close();
   }
 }

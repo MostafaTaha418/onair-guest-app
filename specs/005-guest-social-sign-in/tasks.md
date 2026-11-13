@@ -402,13 +402,13 @@ and new accounts go to «أكّد رقمك».
 
 ### Tests for US1
 
-- [ ] T027 [P] [US1] Write `test/design_system/components/social_sign_in_button_test.dart`:
+- [X] T027 [P] [US1] Write `test/design_system/components/social_sign_in_button_test.dart`:
   - renders the asset for each provider;
   - has `Semantics` label `authContinueWithGoogle` / `authContinueWithApple`;
   - is ≥ 48×48;
   - `busy: true` shows a `CircularProgressIndicator` and ignores taps;
   - `enabled: false` ignores taps.
-- [ ] T028 [P] [US1] Add to `test/features/auth/presentation/auth_cubit_test.dart`:
+- [X] T028 [P] [US1] Add to `test/features/auth/presentation/auth_cubit_test.dart`:
   - `signInWithGoogle()` success with an active account → `SignedIn(isComplete: true)`;
   - success with an incomplete account → `SignedIn(isComplete: false)` and `providerFullName`
     set;
@@ -418,7 +418,7 @@ and new accounts go to «أكّد رقمك».
 
 ### Implementation for US1
 
-- [ ] T029 [P] [US1] Create `lib/design_system/components/social_sign_in_button.dart` (contracts/ui-screens.md §1):
+- [X] T029 [P] [US1] Create `lib/design_system/components/social_sign_in_button.dart` (contracts/ui-screens.md §1):
   - `final class SocialSignInButton extends StatelessWidget` with `required SocialProvider
     provider`, `required VoidCallback? onPressed`, `bool busy = false`;
   - a 56×56 circle, surface from the Social Fill token in `context.colors` (find the token
@@ -432,13 +432,13 @@ and new accounts go to «أكّد رقمك».
   (T030) and import it. If the design system must not import features, move the enum to
   `lib/design_system/components/social_sign_in_button.dart` and re-export it from
   `social_identity.dart`; the design system must not import `features/`.
-- [ ] T030 [P] [US1] Create `lib/features/auth/domain/social_identity.dart` with these classes (data-model §2):
+- [X] T030 [P] [US1] Create `lib/features/auth/domain/social_identity.dart` with these classes (data-model §2):
   - `SocialSignInCancelled implements Exception`;
   - `SocialSignInUnavailable implements Exception`;
   - `SocialSignInResult { final GuestAccount account; final String? providerFullName; }`;
   - `SocialCredential { provider, idToken, accessToken?, rawNonce?, givenName?, familyName? }`,
     with a doc comment saying it is memory only and must never be logged.
-- [ ] T031 [US1] Create `lib/features/auth/data/social_credential_source.dart`:
+- [X] T031 [US1] Create `lib/features/auth/data/social_credential_source.dart`:
   - `abstract interface class SocialCredentialSource { Future<SocialCredential> google();
     Future<SocialCredential> apple(); }`;
   - `GoogleAppleCredentialSource` implements it with `google_sign_in`:
@@ -452,7 +452,7 @@ and new accounts go to «أكّد رقمك».
   `apple()` is filled in by US2 (throw `SocialSignInUnavailable` for now). Read the installed
   `google_sign_in` version's README in `~/.pub-cache` (or the pub.dev page for that exact
   version) for the exact API names before writing code.
-- [ ] T032 [US1] In `lib/features/auth/domain/auth_repository.dart` add `Future<SocialSignInResult> signInWithGoogle();` and `Future<SocialSignInResult> signInWithApple();`. Implement them:
+- [X] T032 [US1] In `lib/features/auth/domain/auth_repository.dart` add `Future<SocialSignInResult> signInWithGoogle();` and `Future<SocialSignInResult> signInWithApple();`. Implement them:
   - **Supabase** (`supabase_auth_repository.dart`): get the credential from
     `SocialCredentialSource`, call
     `_client.signInWithIdToken(provider: OAuthProvider.google, idToken: c.idToken, accessToken:
@@ -466,7 +466,7 @@ and new accounts go to «أكّد رقمك».
     `AuthRequestRejected('SOCIAL_FAILED')`.
   - **Fake** (`test/helpers/fake_auth_repository.dart`): settable `socialResult` and
     `socialError`, plus a counter.
-- [ ] T033 [US1] In `AuthCubit` add:
+- [X] T033 [US1] In `AuthCubit` add:
   - `SocialProvider? socialBusy` and `String? socialError` (message key). Expose them through a
     small `ValueNotifier<SocialSignInUiState>` named `social` (fields `busy`, `errorKey`) so the
     login screen can listen without changing `AuthState`;
@@ -475,7 +475,7 @@ and new accounts go to «أكّد رقمك».
     `providerFullName`) and `_emitAccount`; on `SocialSignInCancelled` clear busy only; on another
     error set `errorKey = 'authSocialFailed'`; always clear busy in `finally`;
   - clear `providerFullName` in `signOut()`.
-- [ ] T034 [US1] Update `lib/features/auth/presentation/login_screen.dart` (sign-in and registration modes), per contracts/ui-screens.md §2–§3:
+- [X] T034 [US1] Update `lib/features/auth/presentation/login_screen.dart` (sign-in and registration modes), per contracts/ui-screens.md §2–§3:
   - under the primary button add a row: `Expanded(Divider)` · `Text(l10n.authOr)` ·
     `Expanded(Divider)`;
   - then a centred `Wrap(spacing: Dimens.space16)` of `SocialSignInButton`s. On iOS
@@ -489,9 +489,9 @@ and new accounts go to «أكّد رقمك».
   - in mock mode only (`BackendMode.mock`) and `kDebugMode`, a long-press on the Google button
     opens a simple `SimpleDialog` to pick the `MockSocialScenario` (this lets testers reach every
     scenario).
-- [ ] T035 [US1] `SignOutService` (`lib/features/account_gate/application/sign_out_service.dart`): add an optional `Future<void> Function()? socialSignOut` constructor param, called inside the existing try/catch flow (errors ignored). In `bootstrap.dart` pass `() => GoogleSignIn.instance.signOut()` in remote mode. Do **not** delete `device_install_id` (research R13). Add a unit test in the existing sign-out test file: `socialSignOut` is called once and its failure does not stop sign-out.
-- [ ] T036 [US1] Goldens: in `test/features/auth/goldens/login_golden_test.dart` add the variants `ios` (Apple + Google) and `android` (Google only) by overriding `debugDefaultTargetPlatformOverride` inside each golden (reset it after), in light/dark × 1.0/1.3. Add `test/design_system/goldens/social_sign_in_button_golden_test.dart`: each provider × {enabled, busy, disabled} × {light, dark}. Generate them and check the PNGs.
-- [ ] T037 [US1] Integration test `integration_test/social_sign_in_mock_test.dart` (use the helpers in `integration_test/helpers` and `test/helpers/mock_journey.dart` as patterns):
+- [X] T035 [US1] `SignOutService` (`lib/features/account_gate/application/sign_out_service.dart`): add an optional `Future<void> Function()? socialSignOut` constructor param, called inside the existing try/catch flow (errors ignored). In `bootstrap.dart` pass `() => GoogleSignIn.instance.signOut()` in remote mode. Do **not** delete `device_install_id` (research R13). Add a unit test in the existing sign-out test file: `socialSignOut` is called once and its failure does not stop sign-out.
+- [X] T036 [US1] Goldens: in `test/features/auth/goldens/login_golden_test.dart` add the variants `ios` (Apple + Google) and `android` (Google only) by overriding `debugDefaultTargetPlatformOverride` inside each golden (reset it after), in light/dark × 1.0/1.3. Add `test/design_system/goldens/social_sign_in_button_golden_test.dart`: each provider × {enabled, busy, disabled} × {light, dark}. Generate them and check the PNGs.
+- [X] T037 [US1] Integration test `integration_test/social_sign_in_mock_test.dart` (use the helpers in `integration_test/helpers` and `test/helpers/mock_journey.dart` as patterns):
   - (a) scenario `completeUser`: open the first apartment → «احجز الآن» → Google → back on the
     same apartment and signed in;
   - (b) scenario `cancel`: still on login, with no error text;

@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/core/api/generated/export.dart';
@@ -32,6 +33,7 @@ import 'package:on_air/features/account_gate/data/mock_device_repository.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/data/profile_repository.dart';
+import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
@@ -104,6 +106,10 @@ Future<void> bootstrap(String flavor) async {
     pushTokens: pushTokens,
     caches: AppConfigCacheCleaner(configSource),
     preferences: const SharedPreferencesCleaner(),
+    // The provider session is cleared too; the device abuse key stays (R13).
+    socialSignOut: environment.backendMode == BackendMode.remote
+        ? GoogleSignIn.instance.signOut
+        : null,
   );
   final sessionEventSource = backend.sessionEvents;
   final discoveryCache = await JsonFileCache.appSupport(
@@ -255,11 +261,16 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     deviceIdentity: deviceIdentity,
     attestation: const FirebaseAppAttestation(),
   );
+  final socialCredentials = GoogleAppleCredentialSource(
+    serverClientId: environment.googleServerClientId,
+    iosClientId: environment.googleIosClientId,
+  );
   return (
     config: AppConfigRepository(client),
     auth: SupabaseAuthRepository(
       SupabasePhoneAuthClient(client.auth),
       ProfileRepository(client),
+      socialCredentials: socialCredentials,
     ),
     pushTokens: FirebasePushTokenSource(),
     devices: DeviceRepository(client),

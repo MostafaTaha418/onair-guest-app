@@ -82,6 +82,11 @@ Widget _theme(
 
 Future<void> _pump(WidgetTester tester) async {
   await tester.pump();
+  // Asset images decode on the real event loop: step outside the fake
+  // async zone briefly so the social logos paint in the golden.
+  await tester.runAsync<void>(
+    () => Future<void>.delayed(const Duration(milliseconds: 100)),
+  );
   await tester.pump();
 }
 
