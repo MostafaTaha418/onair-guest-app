@@ -509,11 +509,11 @@ user lands on the old completion screen until US3.
 **Independent Test**: iOS simulator, mock mode, scenario `newUser` via Apple → «أكّد رقمك» shows
 the relay email and an empty required name (quickstart V8/V9).
 
-- [ ] T038 [P] [US2] Write `test/features/auth/data/apple_nonce_test.dart`:
+- [X] T038 [P] [US2] Write `test/features/auth/data/apple_nonce_test.dart`:
   - `generateRawNonce()` returns 32 bytes as a 64-char URL-safe string, and two calls differ;
   - `sha256Hex(raw)` equals the known SHA-256 of a fixed input (compute the expected value with
     `crypto` in the test).
-- [ ] T039 [US2] In `lib/features/auth/data/social_credential_source.dart`:
+- [X] T039 [US2] In `lib/features/auth/data/social_credential_source.dart`:
   - add the top-level functions `String generateRawNonce()` (`Random.secure()`, 32 bytes,
     base64Url without padding) and `String sha256Hex(String input)`;
   - implement `apple()` with `SignInWithApple.getAppleIDCredential(scopes:
@@ -523,7 +523,7 @@ the relay email and an empty required name (quickstart V8/V9).
     givenName: credential.givenName, familyName: credential.familyName)`;
   - map `SignInWithAppleAuthorizationException` with code `canceled` to `SocialSignInCancelled`;
   - on non-iOS throw `SocialSignInUnavailable`.
-- [ ] T040 [US2] Implement `signInWithApple()`:
+- [X] T040 [US2] Implement `signInWithApple()`:
   - **Supabase**: `signInWithIdToken(provider: OAuthProvider.apple, idToken: c.idToken, nonce:
     c.rawNonce)`. `providerFullName` = `'${givenName ?? ''} ${familyName ?? ''}'.trim()`, or
     `null` if empty.
@@ -531,7 +531,7 @@ the relay email and an empty required name (quickstart V8/V9).
     `'x7k2@privaterelay.appleid.com'` and `providerFullName: null`.
   - **AuthCubit**: `signInWithApple()` mirrors `signInWithGoogle()` (share one private helper).
   - Wire the Apple button `onPressed` in `login_screen.dart`.
-- [ ] T041 [US2] Add to `test/features/auth/presentation/login_screen_social_test.dart` (new):
+- [X] T041 [US2] Add to `test/features/auth/presentation/login_screen_social_test.dart` (new):
   - Apple is visible only when `debugDefaultTargetPlatformOverride = TargetPlatform.iOS`;
   - Google is visible on both;
   - while Apple is busy, Google is disabled.
