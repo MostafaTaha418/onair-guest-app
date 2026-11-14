@@ -36,6 +36,8 @@ import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
 import 'package:on_air/features/booking/data/supabase_booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
@@ -139,6 +141,9 @@ Future<void> bootstrap(String flavor) async {
         RepositoryProvider<AppLogger>.value(value: logger),
         // Needed later by the mock OTP server (US5) and the send interceptor.
         RepositoryProvider<DeviceIdentity>.value(value: deviceIdentity),
+        RepositoryProvider<PhoneVerificationRepository>.value(
+          value: backend.phoneVerification,
+        ),
         RepositoryProvider<AppConfigSource>.value(value: configSource),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<PushTokenSource>.value(value: pushTokens),
@@ -223,6 +228,7 @@ typedef _Backend = ({
   NotificationSignalSource signals,
   SecureStore secureStore,
   DeviceIdentity deviceIdentity,
+  PhoneVerificationRepository phoneVerification,
   MockBookingServer? mockServer,
   StayRepository stay,
   MockStayServer? mockStay,
@@ -285,6 +291,7 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     signals: SupabaseNotificationSignalSource(client),
     secureStore: FlutterSecureStore(),
     deviceIdentity: deviceIdentity,
+    phoneVerification: MockPhoneVerificationRepository(),
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
     mockStay: null,
@@ -320,6 +327,7 @@ _Backend _mockBackend() {
     signals: signals,
     secureStore: secureStore,
     deviceIdentity: const MemoryDeviceIdentity(),
+    phoneVerification: MockPhoneVerificationRepository(),
     mockServer: server,
     stay: stay,
     mockStay: stay,

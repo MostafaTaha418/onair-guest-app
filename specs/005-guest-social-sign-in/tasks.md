@@ -551,7 +551,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
 
 ### Tests for US3
 
-- [ ] T042 [P] [US3] Write `test/features/auth/phone_verification/phone_verification_cubit_form_test.dart` (bloc_test, with a fake `PhoneVerificationRepository`):
+- [X] T042 [P] [US3] Write `test/features/auth/phone_verification/phone_verification_cubit_form_test.dart` (bloc_test, with a fake `PhoneVerificationRepository`):
   - initial `PvForm`;
   - submit with an invalid phone → field error `authPhoneInvalid` and no repository call;
   - name required only when `needsName == true`, and it must be 2–80 chars;
@@ -561,7 +561,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
   - `PHONE_COUNTRY_NOT_SUPPORTED` → phone field error `authPhoneCountryNotSupported`;
   - `TERMS_CHANGED` → `termsAccepted` is reset to false and `termsChanged: true`;
   - `PROFILE_ALREADY_COMPLETE` → calls `onAlreadyComplete` (the screen refreshes the account).
-- [ ] T043 [P] [US3] Write `test/features/auth/phone_verification/confirm_phone_screen_form_test.dart` (widget):
+- [X] T043 [P] [US3] Write `test/features/auth/phone_verification/confirm_phone_screen_form_test.dart` (widget):
   - register purpose + `needsName` → the name, phone and terms fields are visible;
   - legacy-like email account (`needsName == false`, `needsTerms == false`) → only phone;
   - «متابعة» is disabled until valid;
@@ -572,7 +572,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
 
 ### Implementation for US3
 
-- [ ] T044 [P] [US3] Create `lib/features/auth/phone_verification/domain/phone_verification_repository.dart` with these models (data-model §3):
+- [X] T044 [P] [US3] Create `lib/features/auth/phone_verification/domain/phone_verification_repository.dart` with these models (data-model §3):
   - `enum PhoneVerificationPurpose { register, change }`;
   - `PhoneVerificationDraft { EgyptPhone phone; String? fullName; String? acceptedTermsVersion;
     String locale; }` — no `toJson`; the doc says memory only;
@@ -590,7 +590,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
   - `Future<WhatsAppChallenge> send(String challengeId);`
   - `Future<(DeliveryStatus, DeliveryFailure?, SendWindow)> status(String challengeId);`
   - `Future<GuestAccount> verify(String challengeId, String code);`
-- [ ] T045 [US3] Create `lib/features/auth/phone_verification/presentation/phone_verification_cubit.dart`. Implement **only the form part** now (states `PvForm`, `PvDone` as data-model §4):
+- [X] T045 [US3] Create `lib/features/auth/phone_verification/presentation/phone_verification_cubit.dart`. Implement **only the form part** now (states `PvForm`, `PvDone` as data-model §4):
   - constructor `(PhoneVerificationRepository repo, {required PhoneVerificationPurpose purpose,
     required bool needsName, required bool needsTerms, String? prefilledName, required String
     locale, required String? currentTermsVersion, DateTime Function()? clock})`;
@@ -600,7 +600,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
     `repo.start(...)` (the code step continues in US4 with `send`);
   - map errors exactly as in T042;
   - the cubit keeps no static state and writes nothing to storage.
-- [ ] T046 [US3] Create `lib/features/auth/phone_verification/presentation/confirm_phone_screen.dart` and `widgets/phone_form_step.dart` per contracts/ui-screens.md §4.1:
+- [X] T046 [US3] Create `lib/features/auth/phone_verification/presentation/confirm_phone_screen.dart` and `widgets/phone_form_step.dart` per contracts/ui-screens.md §4.1:
   - use `AuthFlowScaffold` + `AuthBrandHeader` for `register`, and a normal `Scaffold` + `AppBar`
     titled `confirmPhoneNewTitle` for `change`;
   - read `AuthCubit` state for `needsName` (`account.fullName == null`) and `needsTerms`
@@ -617,7 +617,7 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
     only): `confirmPhoneLeaveTitle`, `confirmPhoneLeaveBody`, actions `confirmPhoneLeaveStay`
     and destructive `confirmPhoneLeaveConfirm`. Confirm → `context.read<AuthCubit>().signOut()`,
     then `context.go(resolveAuthCancelDestination(from))`.
-- [ ] T047 [US3] Routing:
+- [X] T047 [US3] Routing:
   - in `lib/app/router/app_router.dart`, change the `AppRoutes.completeProfile` builder to
     `ConfirmPhoneScreen(purpose: PhoneVerificationPurpose.register, from:
     state.uri.queryParameters['from'])` and provide the cubit with `BlocProvider` there;
@@ -625,8 +625,8 @@ Bookings, the account, «احجز الآن» and a booking deep link. Back → d
     `test/features/auth/presentation/complete_profile_test.dart`;
   - leave `redirect.dart` logic as is (rule 7 already sends incomplete accounts here). Confirm
     with T011.
-- [ ] T048 [US3] Provide a `PhoneVerificationRepository` in `lib/bootstrap.dart`: `SupabasePhoneVerificationRepository` in remote mode (created in US4) and `MockPhoneVerificationRepository` in mock mode (created in US5). Until then, register a temporary `MockPhoneVerificationRepository` stub in `lib/features/auth/phone_verification/data/mock_phone_verification_repository.dart` where `start` returns `'mock-challenge'`.
-- [ ] T049 [US3] Goldens `test/features/auth/goldens/confirm_phone_form_golden_test.dart`, following `login_golden_test.dart`:
+- [X] T048 [US3] Provide a `PhoneVerificationRepository` in `lib/bootstrap.dart`: `SupabasePhoneVerificationRepository` in remote mode (created in US4) and `MockPhoneVerificationRepository` in mock mode (created in US5). Until then, register a temporary `MockPhoneVerificationRepository` stub in `lib/features/auth/phone_verification/data/mock_phone_verification_repository.dart` where `start` returns `'mock-challenge'`.
+- [X] T049 [US3] Goldens `test/features/auth/goldens/confirm_phone_form_golden_test.dart`, following `login_golden_test.dart`:
   - full form (Apple, no name) and number-only form;
   - each in light/dark × RTL/LTR × 1.0/1.3, at widths 320 and 800;
   - plus one with the keyboard open: set `MediaQuery.viewInsets.bottom = 300`.

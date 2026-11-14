@@ -18,8 +18,11 @@ import 'package:on_air/features/account/presentation/account_placeholder_screen.
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/confirm_phone_screen.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
-import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
 import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
 import 'package:on_air/features/auth/presentation/login_screen.dart';
 import 'package:on_air/features/auth/presentation/new_password_screen.dart';
@@ -142,7 +145,28 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.completeProfile,
       name: 'complete-profile',
-      builder: (_, _) => const CompleteProfileScreen(),
+      builder: (context, state) {
+        // The cubit is route-scoped: its flags come from the same account
+        // snapshot the screen renders (T047).
+        final authState = context.read<AuthCubit>().state;
+        final account = authState is SignedIn ? authState.account : null;
+        return BlocProvider<PhoneVerificationCubit>(
+          create: (context) => PhoneVerificationCubit(
+            context.read<PhoneVerificationRepository>(),
+            purpose: PhoneVerificationPurpose.register,
+            needsName: account?.fullName == null,
+            needsTerms: account?.acceptedTermsVersion == null,
+            prefilledName: context.read<AuthCubit>().providerFullName,
+            locale: 'ar',
+            currentTermsVersion: null,
+            onAlreadyComplete: () => context.read<AuthCubit>().refreshAccount(),
+          ),
+          child: ConfirmPhoneScreen(
+            purpose: PhoneVerificationPurpose.register,
+            from: state.uri.queryParameters['from'],
+          ),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.forgotPassword,

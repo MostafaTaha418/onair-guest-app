@@ -14,6 +14,7 @@ import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/storage/secure_store.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
@@ -42,6 +43,7 @@ extension PumpOnAirApp on WidgetTester {
     required AuthRepository authRepository,
     required AppConfigSource appConfigRepository,
     AuthCubit? authCubit,
+    PhoneVerificationRepository? phoneVerificationRepository,
     ThemeMode themeMode = ThemeMode.light,
     Locale locale = const Locale('ar'),
     ListingsRepository? listingsRepository,
@@ -65,6 +67,10 @@ extension PumpOnAirApp on WidgetTester {
       MultiRepositoryProvider(
         providers: [
           RepositoryProvider<AuthRepository>.value(value: authRepository),
+          if (phoneVerificationRepository != null)
+            RepositoryProvider<PhoneVerificationRepository>.value(
+              value: phoneVerificationRepository,
+            ),
           RepositoryProvider<AppConfigSource>.value(
             value: appConfigRepository,
           ),
