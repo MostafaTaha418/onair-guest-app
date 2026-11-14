@@ -213,6 +213,18 @@ final class MockAuthRepository implements AuthRepository {
     _changes.add(null);
   }
 
+  /// S005 mock: «أكّد رقمك» confirms the number and activates the
+  /// account (the WhatsApp step's success path, US4).
+  void activatePhone({required String userId, required String phoneE164}) {
+    final user = _usersById[userId];
+    if (user == null) return;
+    user
+      ..phone = phoneE164
+      ..phoneVerified = true
+      ..status = AccountStatus.active;
+    if (identical(user, _current)) _changes.add(user.toAccount());
+  }
+
   Future<void> dispose() => _changes.close();
 
   void _checkCode(String code) {

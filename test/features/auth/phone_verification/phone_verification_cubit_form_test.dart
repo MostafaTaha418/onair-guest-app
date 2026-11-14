@@ -10,6 +10,7 @@ import 'package:on_air/features/auth/phone_verification/presentation/phone_verif
 
 final class _FakeRepository implements PhoneVerificationRepository {
   Exception? startError;
+  int sendCalls = 0;
   int startCalls = 0;
   PhoneVerificationDraft? lastDraft;
   PhoneVerificationPurpose? lastPurpose;
@@ -27,8 +28,19 @@ final class _FakeRepository implements PhoneVerificationRepository {
   }
 
   @override
-  Future<WhatsAppChallenge> send(String challengeId) =>
-      throw UnimplementedError();
+  Future<WhatsAppChallenge> send(String challengeId) async {
+    sendCalls += 1;
+    final now = DateTime.utc(2026, 11, 14, 10);
+    return WhatsAppChallenge(
+      challengeId: challengeId,
+      maskedPhone: '+20 10•• ••• 678',
+      expiresAt: now.add(const Duration(minutes: 10)),
+      window: SendWindow(
+        serverTime: now,
+        nextSendAt: now.add(const Duration(seconds: 30)),
+      ),
+    );
+  }
 
   @override
   Future<(DeliveryStatus, DeliveryFailure?, SendWindow)> status(
@@ -121,7 +133,7 @@ void main() {
       ),
       isA<PvForm>().having((s) => s.nameText, 'name', 'Mona Adel'),
       isA<PvForm>().having((s) => s.submitting, 'submitting', true),
-      isA<PvForm>().having((s) => s.submitting, 'submitting', false),
+      isA<PvCode>(),
     ],
   );
 
@@ -143,7 +155,7 @@ void main() {
       isA<PvForm>(),
       isA<PvForm>().having((s) => s.termsAccepted, 'accepted', true),
       isA<PvForm>().having((s) => s.submitting, 'submitting', true),
-      isA<PvForm>().having((s) => s.submitting, 'submitting', false),
+      isA<PvCode>(),
     ],
   );
 

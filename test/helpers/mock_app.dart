@@ -29,7 +29,10 @@ import 'fake_booking_backend.dart';
 /// canned outcome and read the call counter.
 ///
 /// fixture files are read directly (the same reason T027 added `loader`).
-Future<MockAuthRepository> bootMockApp(WidgetTester tester) async {
+Future<MockAuthRepository> bootMockApp(
+  WidgetTester tester, {
+  MockAuthRepository? auth,
+}) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
   // Sync IO: async dart:io futures never complete under the fake async
@@ -47,7 +50,7 @@ Future<MockAuthRepository> bootMockApp(WidgetTester tester) async {
           loader: (path) async => File(path).readAsStringSync(),
         )
       : MockListingsRepository();
-  final auth = MockAuthRepository();
+  auth ??= MockAuthRepository();
   addTearDown(auth.dispose);
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);

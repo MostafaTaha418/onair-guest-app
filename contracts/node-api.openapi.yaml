@@ -41,6 +41,24 @@ paths:
         again before `retry_after_seconds` returns 429.
       parameters:
         - $ref: '#/components/parameters/RequestId'
+        - name: X-Device-Id
+          in: header
+          required: false
+          description: >-
+            Reinstall-stable device key (iOS Keychain UUID or Android
+            ANDROID_ID) for the WhatsApp send-limit keys (S005 A8). Required
+            for channel=whatsapp; ignored for email.
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-Firebase-AppCheck
+          in: header
+          required: false
+          description: >-
+            Firebase App Check limited-use token (S005 A8). Required for
+            channel=whatsapp; ignored for email.
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -270,17 +288,38 @@ components:
   schemas:
     OtpSent:
       type: object
-      required: [sent_to_masked, retry_after_seconds, expires_at]
+      required: [channel, masked_target, expires_at, server_time]
       properties:
+        channel:
+          type: string
+          enum: [email, whatsapp]
+          description: Where the code went (S005 A8).
+        masked_target:
+          type: string
+          description: >-
+            Masked destination: the email for `email`, the phone for
+            `whatsapp` (e.g. "+20 10•• ••• 678").
+        expires_at:
+          type: string
+          format: date-time
+        next_send_at:
+          type: string
+          format: date-time
+          nullable: true
+        blocked_until:
+          type: string
+          format: date-time
+          nullable: true
+        server_time:
+          type: string
+          format: date-time
+        # Email back-compat (optional): only `email` sends carry these.
         sent_to_masked:
           type: string
           description: Masked email, e.g. "a***@gmail.com"
         retry_after_seconds:
           type: integer
           minimum: 0
-        expires_at:
-          type: string
-          format: date-time
     PaymentSession:
       type: object
       required: [booking_id, payment_id, payment_url, payment_url_expires_at, amount_minor, currency]
@@ -348,6 +387,13 @@ components:
         - EMAIL_NOT_VERIFIED
         - OTP_INVALID
         - OTP_EXPIRED
+        - OTP_SUPERSEDED
+        - OTP_ATTEMPTS_EXCEEDED
+        - OTP_SEND_BLOCKED
+        - OTP_TEMPORARILY_UNAVAILABLE
+        - PHONE_NOT_ON_WHATSAPP
+        - APP_ATTESTATION_FAILED
+        - PROFILE_ALREADY_COMPLETE
         - TERMS_CHANGED
         - PROFILE_INCOMPLETE
         - ACCOUNT_HAS_ACTIVE_BOOKINGS

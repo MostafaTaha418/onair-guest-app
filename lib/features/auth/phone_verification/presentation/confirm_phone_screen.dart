@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -13,6 +14,7 @@ import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/phone_form_step.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/widgets/auth_brand_header.dart';
 import 'package:on_air/features/auth/presentation/widgets/auth_flow_scaffold.dart';
@@ -33,19 +35,22 @@ final class ConfirmPhoneScreen extends StatefulWidget {
 }
 
 class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
+  String? _supportPhone;
+
   @override
   void initState() {
     super.initState();
-    // The terms version comes from the server config, like the old
-    // completion step did (T046).
-    unawaited(_loadTerms());
+    // The terms version and the support phone come from the server
+    // config, like the old completion step did (T046).
+    unawaited(_loadConfig());
   }
 
-  Future<void> _loadTerms() async {
+  Future<void> _loadConfig() async {
     final config = await context.read<AppConfigSource>().load();
     if (!mounted) return;
     context.read<PhoneVerificationCubit>().termsVersion =
         config.currentTermsVersion;
+    setState(() => _supportPhone = config.supportPhone);
   }
 
   bool get _isRegister => widget.purpose == PhoneVerificationPurpose.register;
@@ -117,40 +122,79 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
           _EmailRow(email: account!.email!),
           const SizedBox(height: Dimens.space20),
         ],
-        form,
+        BlocBuilder<PhoneVerificationCubit, PvState>(
+          builder: (context, state) => switch (state) {
+            PvCode() => WhatsAppCodeStep(
+              supportPhone: _supportPhone ?? '',
+            ),
+            _ => form,
+          },
+        ),
       ],
     );
 
-    if (!_isRegister) {
-      return Scaffold(
-        appBar: AppBar(title: Text(l10n.confirmPhoneNewTitle)),
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(Dimens.screenSide),
-            children: [content],
-          ),
-        ),
-      );
-    }
-    return PopScope(
-      // Registration cannot be backed out of silently (FR-014).
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        unawaited(_leaveDialog());
+    return BlocListener<PhoneVerificationCubit, PvState>(
+      listener: (context, state) {
+        if (state is! PvDone) return;
+        unawaited(_onConfirmed(state));
       },
-      child: AuthFlowScaffold(
-        topSpaceFactor: 0.08,
-        minTopSpace: 24,
-        maxTopSpace: 56,
-        onBack: () => unawaited(_leaveDialog()),
-        children: [
-          const AuthBrandHeader(),
-          const SizedBox(height: Dimens.space32),
-          content,
-        ],
-      ),
+      child: _isRegister
+          ? PopScope(
+              // Registration cannot be backed out of silently (FR-014).
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) {
+                if (didPop) return;
+                unawaited(_leaveDialog());
+              },
+              child: AuthFlowScaffold(
+                topSpaceFactor: 0.08,
+                minTopSpace: 24,
+                maxTopSpace: 56,
+                onBack: () => unawaited(_leaveDialog()),
+                children: [
+                  const AuthBrandHeader(),
+                  const SizedBox(height: Dimens.space32),
+                  content,
+                ],
+              ),
+            )
+          : Scaffold(
+              appBar: AppBar(title: Text(l10n.confirmPhoneNewTitle)),
+              body: SafeArea(
+                child: ListView(
+                  padding: const EdgeInsets.all(Dimens.screenSide),
+                  children: [content],
+                ),
+              ),
+            ),
     );
+  }
+
+  /// T056: `register` refreshes the account and lets the router release
+  /// the guest to `from` (a snackbar confirms); the guest is navigated
+  /// only if the redirect has not already done it. `change` pops with
+  /// `true` and confirms with a snackbar.
+  Future<void> _onConfirmed(PvDone state) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (state.purpose == PhoneVerificationPurpose.register) {
+      await context.read<AuthCubit>().refreshAccount();
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.confirmPhoneWelcome)),
+      );
+      // Still here? The redirect could not run (e.g. the guest landed on
+      // a non-routed surface) — release them to the return destination.
+      if (mounted &&
+          GoRouterState.of(context).uri.path == AppRoutes.completeProfile) {
+        context.go(resolveAuthReturnDestination(widget.from));
+      }
+    } else {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.phoneChanged)),
+      );
+      context.pop(true);
+    }
   }
 }
 

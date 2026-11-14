@@ -37,6 +37,7 @@ import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/supabase_phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
 import 'package:on_air/features/booking/data/supabase_booking_flow_repository.dart';
@@ -291,7 +292,10 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     signals: SupabaseNotificationSignalSource(client),
     secureStore: FlutterSecureStore(),
     deviceIdentity: deviceIdentity,
-    phoneVerification: MockPhoneVerificationRepository(),
+    phoneVerification: SupabasePhoneVerificationRepository(
+      rpc: rpc,
+      node: FallbackClient(dio),
+    ),
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
     mockStay: null,
@@ -314,9 +318,10 @@ _Backend _mockBackend() {
     inner: rawListings,
     server: server,
   );
+  final auth = MockAuthRepository();
   return (
     config: const MockAppConfigSource(),
-    auth: MockAuthRepository(),
+    auth: auth,
     pushTokens: const NoopPushTokenSource(),
     devices: MockDeviceTokenRepository(),
     sessionEvents: const NoopSessionEventSource(),
@@ -327,7 +332,7 @@ _Backend _mockBackend() {
     signals: signals,
     secureStore: secureStore,
     deviceIdentity: const MemoryDeviceIdentity(),
-    phoneVerification: MockPhoneVerificationRepository(),
+    phoneVerification: MockPhoneVerificationRepository(auth: auth),
     mockServer: server,
     stay: stay,
     mockStay: stay,

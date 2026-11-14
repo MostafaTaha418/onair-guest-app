@@ -24,10 +24,17 @@ class _FallbackClient implements FallbackClient {
   Future<OtpSent> sendOtpCode({
     required String xRequestId,
     required V1OtpSendRequestBody body,
+    String? xDeviceId,
+    String? xFirebaseAppCheck,
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'x-request-id': xRequestId};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{
+      r'x-request-id': xRequestId,
+      r'X-Device-Id': xDeviceId,
+      r'X-Firebase-AppCheck': xFirebaseAppCheck,
+    };
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(body.toJson());

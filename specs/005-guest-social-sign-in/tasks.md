@@ -646,7 +646,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
 
 ### Tests for US4
 
-- [ ] T050 [P] [US4] Write `test/features/auth/phone_verification/phone_verification_cubit_code_test.dart` (bloc_test + `fake_async`):
+- [X] T050 [P] [US4] Write `test/features/auth/phone_verification/phone_verification_cubit_code_test.dart` (bloc_test + `fake_async`):
   - after `start`, the cubit calls `send` → `PvCode(challenge)`;
   - polling calls `status` every 5 s and stops after 60 s, or at the first `delivered` / `read` /
     `failed`;
@@ -659,7 +659,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
   - success → `PvDone(account, purpose)`;
   - «تعديل الرقم» → `PvForm` with the previous draft values;
   - `close()` cancels the timers (no pending timers in `fake_async`).
-- [ ] T051 [P] [US4] Write `test/features/auth/phone_verification/supabase_phone_verification_repository_test.dart` with mocked RPC and Node clients:
+- [X] T051 [P] [US4] Write `test/features/auth/phone_verification/supabase_phone_verification_repository_test.dart` with mocked RPC and Node clients:
   - `start(register)` calls RPC `common_start_phone_verification` with `p_phone`, `p_full_name`,
     `p_accepted_terms_version`, `p_locale`, exactly as contracts/supabase-auth.md A5;
   - `start(change)` calls `common_request_phone_change` with `p_new_phone` only;
@@ -672,7 +672,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
 
 ### Implementation for US4
 
-- [ ] T052 [US4] Update `contracts/node-api.openapi.yaml` `/v1/otp/send` to match `specs/005-guest-social-sign-in/contracts/node-otp.md` A8:
+- [X] T052 [US4] Update `contracts/node-api.openapi.yaml` `/v1/otp/send` to match `specs/005-guest-social-sign-in/contracts/node-otp.md` A8:
   - document the two request headers as optional parameters (`X-Device-Id`,
     `X-Firebase-AppCheck`);
   - change the `OtpSent` schema to `channel` (enum `email|whatsapp`), `masked_target` (string),
@@ -683,7 +683,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
   Then run `dart run swagger_parser` and `dart run build_runner build
   --delete-conflicting-outputs`. Fix the existing callers of `OtpSent` (`grep -rn OtpSent lib`)
   to use the optional fields safely.
-- [ ] T053 [US4] Create `lib/features/auth/phone_verification/data/supabase_phone_verification_repository.dart` implementing T044's interface:
+- [X] T053 [US4] Create `lib/features/auth/phone_verification/data/supabase_phone_verification_repository.dart` implementing T044's interface:
   - it is constructed with the same RPC helper type used by `SupabaseStayRepository` (check
     `bootstrap.dart`) and `FallbackClient`;
   - map RPC errors with `ErrorMapper.fromCode` exactly like `lib/features/stay/data/` does;
@@ -691,7 +691,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
     passes `details` (update `ErrorInterceptor` in `dio_factory.dart` to read
     `error.details` from the body into `ErrorMapper.fromCode(details: …)` if it does not
     already).
-- [ ] T054 [US4] Extend `PhoneVerificationCubit` with the code part:
+- [X] T054 [US4] Extend `PhoneVerificationCubit` with the code part:
   - after `start` succeeds, call `send` → `PvCode`;
   - start a `Timer.periodic(5s)` for `status`, max 12 ticks;
   - `onCodeChanged`, `verify()` (6 digits only), `resend()` (US5 completes the window logic),
@@ -701,7 +701,7 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
   - on success with `register`, call the `onRegistered` callback (the screen calls
     `AuthCubit.refreshAccount()`); with `change`, call `onChanged`;
   - every async action ignores re-entry while one is in flight.
-- [ ] T055 [US4] Create `lib/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart` per contracts/ui-screens.md §4.2:
+- [X] T055 [US4] Create `lib/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart` per contracts/ui-screens.md §4.2:
   - title `whatsappCodeTitle` and body `whatsappCodeSentTo(phone: challenge.maskedPhone)`;
   - `OnAirOtpField` with `AutofillHints.oneTimeCode` (copy its use from `otp_screen.dart`);
   - gradient primary `whatsappConfirm`, enabled at 6 digits;
@@ -714,13 +714,13 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
   - code errors shown under the field in the error style.
 
   Show this widget from `ConfirmPhoneScreen` when the state is `PvCode`.
-- [ ] T056 [US4] Success handling in `ConfirmPhoneScreen`:
+- [X] T056 [US4] Success handling in `ConfirmPhoneScreen`:
   - `register` → `await context.read<AuthCubit>().refreshAccount()`, then show a `SnackBar` with
     `confirmPhoneWelcome`. The router redirect (rule 8) moves the guest to `from`; do **not**
     navigate manually unless still on the screen after refresh. In that case,
     `context.go(resolveAuthReturnDestination(from))`.
   - `change` → `context.pop(true)` and a `SnackBar` with `phoneChanged`.
-- [ ] T057 [US4] Replace the stub with a real `MockPhoneVerificationRepository` that delegates to `MockOtpServer` (T061, US5). For now implement **without limits**:
+- [X] T057 [US4] Replace the stub with a real `MockPhoneVerificationRepository` that delegates to `MockOtpServer` (T061, US5). For now implement **without limits**:
   - `start` validates like the server (Egyptian, not `01111111111` which is "already used");
   - `send` returns `maskedPhone` like `+20 10•• ••• 678`, `expiresAt = now + 10 min`, and
     `nextSendAt = now + 30 s`;
@@ -728,8 +728,8 @@ apartment. A wrong code then app restart → still incomplete with no phone (qui
     `notOnWhatsApp`;
   - `verify` accepts only `MockBackend.verificationCode`. On success, set the mock account's
     `phone`, `phoneVerified: true` and `status: active` (call into `MockAuthRepository`).
-- [ ] T058 [US4] Goldens `test/features/auth/goldens/whatsapp_code_step_golden_test.dart`: states counting (seconds), ready, code error, not-on-WhatsApp notice, attestation notice, each light/dark × RTL/LTR × 1.0/1.3 at 320 and 800.
-- [ ] T059 [US4] Integration test `integration_test/social_sign_in_mock_test.dart`, add case (d): scenario `newUser` → «أكّد رقمك» → phone `01012345678` → code `123456` → lands on the apartment, and `MockAuthRepository` shows the account `active`. Add case (e): a wrong code `000000`, then restart the app widget (pump a new `MockApp` with the same mock backend instance) → «أكّد رقمك» opens with an **empty** phone field and the account has `phone == null`.
+- [X] T058 [US4] Goldens `test/features/auth/goldens/whatsapp_code_step_golden_test.dart`: states counting (seconds), ready, code error, not-on-WhatsApp notice, attestation notice, each light/dark × RTL/LTR × 1.0/1.3 at 320 and 800.
+- [X] T059 [US4] Integration test `integration_test/social_sign_in_mock_test.dart`, add case (d): scenario `newUser` → «أكّد رقمك» → phone `01012345678` → code `123456` → lands on the apartment, and `MockAuthRepository` shows the account `active`. Add case (e): a wrong code `000000`, then restart the app widget (pump a new `MockApp` with the same mock backend instance) → «أكّد رقمك» opens with an **empty** phone field and the account has `phone == null`.
 
 **Checkpoint**: the MVP is complete. A new Google user finishes registration with a WhatsApp code
 in mock mode.

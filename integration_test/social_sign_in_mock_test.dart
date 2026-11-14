@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
@@ -83,6 +84,109 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(auth.socialSignInCalls, 1);
+    },
+  );
+
+  testWidgets(
+    '(d) a new Google user finishes registration with the WhatsApp code',
+    (tester) async {
+      final auth = await bootMockApp(tester);
+      auth.scenario = MockSocialScenario.newUser;
+      await openLoginFromApartment(tester);
+
+      // The incomplete account is sent to «أكّد رقمك» (T047).
+      await tester.tap(find.byKey(const ValueKey('social-google-button')));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('confirm-phone-field')),
+      );
+      // The provider name pre-fills the name field (T046); the terms are
+      // still required.
+      await tester.enterText(
+        find.byKey(const ValueKey('confirm-phone-field')),
+        '01012345678',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('whatsapp-otp-field')),
+      );
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byKey(const ValueKey('whatsapp-otp-field')),
+          matching: find.byType(TextField),
+        ),
+        MockBackend.verificationCode,
+      );
+      await tester.tap(find.byKey(const ValueKey('whatsapp-confirm')));
+      await pumpUntilFound(tester, find.byType(DatesScreen));
+
+      expect(auth.account!.status, AccountStatus.active);
+      expect(auth.account!.phone, '+201012345678');
+      expect(auth.account!.phoneVerified, isTrue);
+    },
+  );
+
+  testWidgets(
+    '(e) a wrong code, then an app restart, keeps the account phoneless',
+    (tester) async {
+      final auth = MockAuthRepository();
+      var backend = await bootMockApp(tester, auth: auth);
+      backend.scenario = MockSocialScenario.newUser;
+      await openLoginFromApartment(tester);
+
+      await tester.tap(find.byKey(const ValueKey('social-google-button')));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('confirm-phone-field')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('confirm-phone-field')),
+        '01012345678',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('whatsapp-otp-field')),
+      );
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byKey(const ValueKey('whatsapp-otp-field')),
+          matching: find.byType(TextField),
+        ),
+        '000000',
+      );
+      await tester.tap(find.byKey(const ValueKey('whatsapp-confirm')));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('whatsapp-code-error')),
+      );
+      expect(auth.account!.phone, isNull);
+
+      // A fresh app over the SAME mock backend: the session survives as an
+      // incomplete account with no phone (quickstart V3).
+      backend = await bootMockApp(tester, auth: auth);
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('confirm-phone-field')),
+      );
+      final phoneField = tester.widget<TextField>(
+        find.descendant(
+          of: find.byKey(const ValueKey('confirm-phone-field')),
+          matching: find.byType(TextField),
+        ),
+      );
+      expect(phoneField.controller!.text, isEmpty);
+      expect(auth.account!.phone, isNull);
+      expect(auth.account!.status, AccountStatus.incomplete);
     },
   );
 }

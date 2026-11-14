@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/errors/api_error.dart';
@@ -10,8 +12,7 @@ sealed class PvState {
 }
 
 /// The «أكّد رقمك» form step: number, plus name and terms only when the
-/// account misses them (data-model §4). The code step states arrive with
-/// US4.
+/// account misses them (data-model §4).
 final class PvForm extends PvState {
   const PvForm({
     this.phoneText = '',
@@ -62,6 +63,63 @@ final class PvForm extends PvState {
   );
 }
 
+/// The WhatsApp code step (data-model §4): the server challenge, the entered
+/// code and the delivery notices. `codeFieldEnabled` goes false after
+/// `OTP_ATTEMPTS_EXCEEDED` until a fresh code arrives (FR-018).
+final class PvCode extends PvState {
+  const PvCode({
+    required this.challenge,
+    this.code = '',
+    this.verifying = false,
+    this.resending = false,
+    this.codeFieldEnabled = true,
+    this.errorKey,
+    this.notice,
+  });
+
+  final WhatsAppChallenge challenge;
+  final String code;
+  final bool verifying;
+  final bool resending;
+  final bool codeFieldEnabled;
+  final String? errorKey;
+
+  /// notOnWhatsApp / attestationFailed / temporarilyUnavailable; set from
+  /// the delivery poll or the send errors.
+  final PvNotice? notice;
+
+  PvCode copyWith({
+    WhatsAppChallenge? challenge,
+    String? code,
+    bool? verifying,
+    bool? resending,
+    bool? codeFieldEnabled,
+    String? errorKey,
+    PvNotice? notice,
+    bool clearError = false,
+    bool clearNotice = false,
+  }) => PvCode(
+    challenge: challenge ?? this.challenge,
+    code: code ?? this.code,
+    verifying: verifying ?? this.verifying,
+    resending: resending ?? this.resending,
+    codeFieldEnabled: codeFieldEnabled ?? this.codeFieldEnabled,
+    errorKey: clearError ? null : errorKey ?? this.errorKey,
+    notice: clearNotice ? null : notice ?? this.notice,
+  );
+}
+
+enum PvNotice {
+  /// The delivery poll answered `failed/not_on_whatsapp`.
+  notOnWhatsApp,
+
+  /// `APP_ATTESTATION_FAILED` from the send.
+  attestationFailed,
+
+  /// `OTP_TEMPORARILY_UNAVAILABLE` from the send.
+  temporarilyUnavailable,
+}
+
 /// The number was confirmed: `register` → the account is active and the
 /// router releases the guest to `from`; `change` → pop + snackbar.
 final class PvDone extends PvState {
@@ -72,8 +130,8 @@ final class PvDone extends PvState {
 }
 
 /// Screen-scoped (Constitution: state management): one cubit per
-/// «أكّد رقمك» / change-number screen. It keeps no static state and writes
-/// nothing to storage.
+/// «أكّد رقمك» / change-number screen. It keeps no static state, writes
+/// nothing to storage, and `close()` cancels the polling timer.
 final class PhoneVerificationCubit extends Cubit<PvState> {
   PhoneVerificationCubit(
     this._repository, {
@@ -84,9 +142,14 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
     required this._currentTermsVersion,
     this.prefilledName,
     this.onAlreadyComplete,
+    this.onRegistered,
+    this.onChanged,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now,
        super(PvForm(nameText: prefilledName ?? ''));
+
+  static const _pollInterval = Duration(seconds: 5);
+  static const _maxPollTicks = 12;
 
   final PhoneVerificationRepository _repository;
   final PhoneVerificationPurpose purpose;
@@ -96,24 +159,32 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
 
   /// Only when the account has no accepted terms (register).
   final bool needsTerms;
-  final String? prefilledName;
   final String locale;
-
-  /// Injectable clock for the US4 countdowns and polling.
-  // ignore: unused_field
+  final String? prefilledName;
   final DateTime Function() _clock;
 
   /// The profile is already active (`PROFILE_ALREADY_COMPLETE`): the screen
   /// refreshes the account so the router can release the guest.
   final VoidCallback? onAlreadyComplete;
 
-  String? _currentTermsVersion;
+  /// `register` success: the screen refreshes the account (T056).
+  final VoidCallback? onRegistered;
 
+  /// `change` success: the screen pops with `true`.
+  final VoidCallback? onChanged;
+
+  String? _currentTermsVersion;
   bool _submitInFlight = false;
+  Timer? _pollTimer;
+  int _pollTicks = 0;
+
+  // The draft the form step held, restored by «تعديل الرقم» and by
+  // PHONE_ALREADY_USED (FR-020, FR-023).
+  String? _draftPhoneText;
+  String? _draftNameText;
+  bool _draftTermsAccepted = false;
 
   /// The screen feeds the freshly loaded app-config version (T046).
-  /// The accepted terms version the draft carries when the account needs
-  /// to accept the current one.
   String? get termsVersion => _currentTermsVersion;
 
   set termsVersion(String version) {
@@ -165,8 +236,8 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
   }
 
   Future<void> submit() async {
-    final form = state as PvForm;
-    if (form.submitting || _submitInFlight) return;
+    final form = state;
+    if (form is! PvForm || form.submitting || _submitInFlight) return;
 
     // Local validation first: an invalid form never reaches the server.
     String? phoneErrorKey;
@@ -199,9 +270,12 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
     }
 
     _submitInFlight = true;
+    _draftPhoneText = form.phoneText;
+    _draftNameText = form.nameText;
+    _draftTermsAccepted = form.termsAccepted;
     emit(form.copyWith(submitting: true, clearGeneralError: true));
     try {
-      await _repository.start(
+      final challengeId = await _repository.start(
         PhoneVerificationDraft(
           phone: phone!,
           fullName: needsName ? form.nameText.trim() : null,
@@ -211,20 +285,254 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
         purpose,
       );
       if (isClosed) return;
-      // The WhatsApp code step continues in US4 (start → send → PvCode);
-      // until then the form simply returns to its idle state.
-      emit(
-        PvForm(
-          phoneText: form.phoneText,
-          nameText: form.nameText,
-          termsAccepted: form.termsAccepted,
-        ),
-      );
+      await _send(challengeId);
     } on AppFailure catch (error) {
       if (isClosed) return;
       _mapStartFailure(error);
     } finally {
       _submitInFlight = false;
+    }
+  }
+
+  /// Sends the code for an open challenge (also the «ابعت كود جديد» path).
+  Future<void> _send(String challengeId) async {
+    try {
+      final challenge = await _repository.send(challengeId);
+      if (isClosed) return;
+      emit(PvCode(challenge: challenge));
+      _startPolling(challenge.challengeId);
+    } on AppFailure catch (error) {
+      if (isClosed) return;
+      if (state is PvCode) {
+        // A failed resend keeps the code step and shows the reason.
+        _mapSendFailure(error);
+        return;
+      }
+      _mapStartFailure(error);
+    }
+  }
+
+  void _startPolling(String challengeId) {
+    _pollTimer?.cancel();
+    _pollTicks = 0;
+    _pollTimer = Timer.periodic(_pollInterval, (_) => _poll(challengeId));
+  }
+
+  Future<void> _poll(String challengeId) async {
+    final current = state;
+    if (current is! PvCode || current.verifying || current.resending) return;
+    _pollTicks += 1;
+    if (_pollTicks > _maxPollTicks) {
+      _pollTimer?.cancel();
+      return;
+    }
+    final tick = _pollTicks;
+    try {
+      final (status, failure, window) = await _repository.status(challengeId);
+      if (isClosed) return;
+      final latest = state;
+      if (latest is! PvCode) return;
+      final challenge = WhatsAppChallenge(
+        challengeId: latest.challenge.challengeId,
+        maskedPhone: latest.challenge.maskedPhone,
+        expiresAt: latest.challenge.expiresAt,
+        window: window,
+      );
+      switch (status) {
+        case DeliveryStatus.delivered || DeliveryStatus.read:
+          // Delivered: stop quietly (R7).
+          _pollTimer?.cancel();
+          emit(latest.copyWith(challenge: challenge));
+        case DeliveryStatus.failed:
+          _pollTimer?.cancel();
+          emit(
+            latest.copyWith(
+              challenge: challenge,
+              notice: failure == DeliveryFailure.notOnWhatsApp
+                  ? PvNotice.notOnWhatsApp
+                  : latest.notice,
+            ),
+          );
+        case DeliveryStatus.pending ||
+            DeliveryStatus.sent ||
+            DeliveryStatus.unknown:
+          // Still travelling: the periodic timer re-fires unless the budget
+          // ran out.
+          if (tick >= _maxPollTicks) {
+            _pollTimer?.cancel();
+          }
+          emit(latest.copyWith(challenge: challenge));
+      }
+    } on AppFailure {
+      // A failed status poll is not fatal: the guest can still type the
+      // code; the next tick retries until the budget runs out.
+    }
+  }
+
+  void onCodeChanged(String text) {
+    final current = state;
+    if (current is! PvCode) return;
+    emit(current.copyWith(code: text, clearError: true));
+  }
+
+  Future<void> verify() async {
+    final current = state;
+    if (current is! PvCode ||
+        current.verifying ||
+        current.resending ||
+        !current.codeFieldEnabled ||
+        current.code.length != 6) {
+      return;
+    }
+    _pollTimer?.cancel();
+    emit(current.copyWith(verifying: true, clearError: true));
+    try {
+      final account = await _repository.verify(
+        current.challenge.challengeId,
+        current.code,
+      );
+      if (isClosed) return;
+      emit(PvDone(account: account, purpose: purpose));
+      switch (purpose) {
+        case PhoneVerificationPurpose.register:
+          onRegistered?.call();
+        case PhoneVerificationPurpose.change:
+          onChanged?.call();
+      }
+    } on AppFailure catch (error) {
+      if (isClosed) return;
+      final latest = state;
+      final codeState = latest is PvCode
+          ? latest
+          : PvCode(challenge: current.challenge);
+      final code = error.error.code;
+      if (code == ErrorCode.otpInvalid) {
+        emit(codeState.copyWith(verifying: false, errorKey: 'authOtpInvalid'));
+      } else if (code == ErrorCode.otpExpired) {
+        emit(codeState.copyWith(verifying: false, errorKey: 'authOtpExpired'));
+      } else if (code == ErrorCode.otpSuperseded) {
+        emit(
+          codeState.copyWith(
+            verifying: false,
+            errorKey: 'whatsappUseLatestCode',
+          ),
+        );
+      } else if (code == ErrorCode.otpAttemptsExceeded) {
+        emit(
+          codeState.copyWith(
+            verifying: false,
+            codeFieldEnabled: false,
+            errorKey: 'otpAttemptsExceeded',
+          ),
+        );
+      } else if (code == ErrorCode.phoneAlreadyUsed) {
+        // The number went to another account while we confirmed (FR-023):
+        // back to the form with the draft and the field error.
+        emit(
+          PvForm(
+            phoneText: _draftPhoneText ?? '',
+            nameText: _draftNameText ?? '',
+            termsAccepted: _draftTermsAccepted,
+            phoneErrorKey: 'authPhoneAlreadyUsed',
+          ),
+        );
+      } else {
+        emit(
+          codeState.copyWith(
+            verifying: false,
+            errorKey: error.error.messageKey,
+          ),
+        );
+      }
+    } on Object {
+      if (isClosed) return;
+      final latest = state;
+      final codeState = latest is PvCode
+          ? latest
+          : PvCode(challenge: current.challenge);
+      emit(
+        codeState.copyWith(verifying: false, errorKey: 'errorUnexpectedNoRef'),
+      );
+    }
+  }
+
+  /// «تعديل الرقم»: back to the form step with the previous draft (FR-020).
+  void editNumber() {
+    final current = state;
+    if (current is! PvCode) return;
+    _pollTimer?.cancel();
+    emit(
+      PvForm(
+        phoneText: _draftPhoneText ?? '',
+        nameText: _draftNameText ?? '',
+        termsAccepted: _draftTermsAccepted,
+      ),
+    );
+  }
+
+  /// «ابعت كود جديد»: rotates the code on the same challenge. The window
+  /// rendering (countdown, block) completes in US5 (T063/T064).
+  Future<void> resend() async {
+    final current = state;
+    if (current is! PvCode || current.resending || current.verifying) return;
+    _pollTimer?.cancel();
+    emit(current.copyWith(resending: true, clearError: true));
+    try {
+      final challenge = await _repository.send(current.challenge.challengeId);
+      if (isClosed) return;
+      final latest = state;
+      final codeState = latest is PvCode ? latest : current;
+      emit(
+        codeState.copyWith(
+          challenge: challenge,
+          resending: false,
+          codeFieldEnabled: true,
+          code: '',
+          clearNotice: true,
+        ),
+      );
+      _startPolling(challenge.challengeId);
+    } on AppFailure catch (error) {
+      if (isClosed) return;
+      _mapSendFailure(error);
+    }
+  }
+
+  void _mapSendFailure(AppFailure failure) {
+    final current = state;
+    final codeState = current is PvCode
+        ? current
+        : PvCode(
+            challenge: WhatsAppChallenge(
+              challengeId: '',
+              maskedPhone: '',
+              expiresAt: _clock(),
+              window: SendWindow(serverTime: _clock()),
+            ),
+          );
+    final code = failure.error.code;
+    if (code == ErrorCode.appAttestationFailed) {
+      emit(
+        codeState.copyWith(
+          resending: false,
+          notice: PvNotice.attestationFailed,
+        ),
+      );
+    } else if (code == ErrorCode.otpTemporarilyUnavailable) {
+      emit(
+        codeState.copyWith(
+          resending: false,
+          notice: PvNotice.temporarilyUnavailable,
+        ),
+      );
+    } else {
+      // RATE_LIMITED / OTP_SEND_BLOCKED windows render in US5 (T063).
+      emit(
+        codeState.copyWith(
+          resending: false,
+          errorKey: failure.error.messageKey,
+        ),
+      );
     }
   }
 
@@ -266,5 +574,11 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
   PvForm _form(PvForm Function(PvForm) transform) {
     final current = state;
     return current is PvForm ? transform(current) : const PvForm();
+  }
+
+  @override
+  Future<void> close() async {
+    _pollTimer?.cancel();
+    await super.close();
   }
 }
