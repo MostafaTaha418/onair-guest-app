@@ -123,6 +123,17 @@ final class MockAuthRepository implements AuthRepository {
           account: _signIn(_usersById['mock-guest-legacy']!),
         );
       case MockSocialScenario.unconfirmedEmailCollision:
+        // A2 (FR-040): the provider takes an UNCONFIRMED email over — the
+        // same account id, the email confirmed by the provider, and the
+        // old password cleared so it stops working. A fresh visitor keeps
+        // the same uniform shape.
+        final existing = _findBy((u) => u.email == 'collide@onair.test');
+        if (existing != null && !existing.emailVerified) {
+          existing
+            ..emailVerified = true
+            ..password = null;
+          return SocialSignInResult(account: _signIn(existing));
+        }
         final user = _create()
           ..email = 'collide@onair.test'
           ..emailVerified = true;
@@ -277,6 +288,10 @@ final class _MockUser {
   String? acceptedTermsVersion;
   DateTime? acceptedTermsAt;
 
+  /// A2: `has_password` is the stored password being non-empty — social
+  /// sign-ins and a provider takeover leave it false.
+  bool get hasPassword => password != null && password!.isNotEmpty;
+
   GuestAccount toAccount() => GuestAccount(
     id: id,
     status: status,
@@ -285,6 +300,7 @@ final class _MockUser {
     email: email,
     emailVerified: emailVerified,
     fullName: fullName,
+    hasPassword: hasPassword,
     acceptedTermsVersion: acceptedTermsVersion,
     acceptedTermsAt: acceptedTermsAt,
   );

@@ -148,4 +148,72 @@ void main() {
       expect(email.id, social.account.id);
     },
   );
+
+  test(
+    'the unconfirmed-email collision: the provider takes over (FR-040)',
+    () async {
+      // The signup stays unconfirmed — sign-in still asks for the code.
+      await repository.signUpEmail(
+        'Guest',
+        'collide@onair.test',
+        MockAuthRepository.legacyPassword,
+        MockBackend.termsVersion,
+      );
+      repository.scenario = MockSocialScenario.unconfirmedEmailCollision;
+      final social = await repository.signInWithGoogle();
+
+      // The provider claimed the same account id (never a second one).
+      expect(social.account.email, 'collide@onair.test');
+      expect(social.account.status, AccountStatus.incomplete);
+      expect(social.account.emailVerified, isTrue);
+      expect(social.account.hasPassword, isFalse);
+
+      // The old password stopped working (the encrypted password cleared).
+      await expectLater(
+        repository.signInEmail(
+          'collide@onair.test',
+          MockAuthRepository.legacyPassword,
+        ),
+        throwsA(isA<AuthRequestRejected>()),
+      );
+
+      // The email identity on the claimed account still verifies to the
+      // SAME account — no duplicate was created.
+      final emailAccount = await repository.verifyEmailCode(
+        'collide@onair.test',
+        MockBackend.verificationCode,
+      );
+      expect(emailAccount.id, social.account.id);
+    },
+  );
+
+  test(
+    'a Google-only account recovers like any email and gains a password',
+    () async {
+      final social = await repository.signInWithGoogle();
+      expect(
+        social.account.hasPassword,
+        isFalse,
+        reason: 'social sign-ins carry no password',
+      );
+
+      final challenge = await repository.requestRecovery(social.account.email!);
+      expect(challenge.channel, VerificationChannel.emailRecovery);
+      await repository.verifyRecovery(
+        social.account.email!,
+        MockBackend.verificationCode,
+      );
+      final updated = await repository.setNewPassword('Password123!');
+      expect(updated.hasPassword, isTrue);
+      expect(updated.id, social.account.id);
+
+      // The new password signs in.
+      final signedIn = await repository.signInEmail(
+        social.account.email!,
+        'Password123!',
+      );
+      expect(signedIn.id, social.account.id);
+      expect(signedIn.hasPassword, isTrue);
+    },
+  );
 }

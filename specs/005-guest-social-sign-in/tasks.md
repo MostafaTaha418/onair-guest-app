@@ -868,7 +868,7 @@ must just behave correctly.)
 **Independent Test**: mock scenarios `legacyUser` and `unconfirmedEmailCollision` (quickstart
 V13, V14).
 
-- [ ] T073 [P] [US7] Mock behaviour in `MockAuthRepository`:
+- [X] T073 [P] [US7] Mock behaviour in `MockAuthRepository`:
   - `legacyUser` (Google with `legacy@onair.test`) returns the **same** account object (same id,
     phone, bookings) as email sign-in;
   - `unconfirmedEmailCollision`: first create an unconfirmed email signup for `collide@onair.test`
@@ -877,7 +877,7 @@ V13, V14).
     throws the existing invalid-credentials error;
   - `requestRecovery` for a Google-only mock account behaves exactly like any email (same neutral
     result and code `123456`), and `setNewPassword` sets `hasPassword = true`.
-- [ ] T074 [US7] Tests in `test/features/auth/data/mock_auth_repository_test.dart` (create it) for the three behaviours above, plus an integration case (f) in `integration_test/social_sign_in_mock_test.dart`: `legacyUser` → no «أكّد رقمك», and My Bookings shows the legacy bookings.
+- [X] T074 [US7] Tests in `test/features/auth/data/mock_auth_repository_test.dart` (create it) for the three behaviours above, plus an integration case (f) in `integration_test/social_sign_in_mock_test.dart`: `legacyUser` → no «أكّد رقمك», and My Bookings shows the legacy bookings.
 
 **Checkpoint**: one-account rules hold in mock mode. Staging verification is in Phase 11.
 

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
+import 'package:on_air/features/bookings/presentation/widgets/booking_card.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../test/helpers/mock_app.dart';
@@ -187,6 +190,36 @@ void main() {
       expect(phoneField.controller!.text, isEmpty);
       expect(auth.account!.phone, isNull);
       expect(auth.account!.status, AccountStatus.incomplete);
+    },
+  );
+
+  testWidgets(
+    '(f) the legacy user signs in with no «أكّد رقمك» and sees the bookings',
+    (tester) async {
+      final auth = await bootMockApp(tester);
+      auth.scenario = MockSocialScenario.legacyUser;
+      await openLoginFromApartment(tester);
+
+      // Google joins the seeded legacy account directly (V13, FR-039): the
+      // booking entry opens, never «أكّد رقمك».
+      await tester.tap(find.byKey(const ValueKey('social-google-button')));
+      await pumpUntilFound(tester, find.byType(DatesScreen));
+      expect(
+        find.byKey(const ValueKey('confirm-phone-field')),
+        findsNothing,
+      );
+      expect(auth.account!.id, 'mock-guest-legacy');
+      expect(auth.account!.status, AccountStatus.active);
+
+      // My Bookings shows the mock bookings for that account.
+      GoRouter.of(
+        tester.element(find.byType(DatesScreen)),
+      ).go(AppRoutes.bookings);
+      await pumpUntilFound(tester, find.byType(BookingCard));
+      expect(
+        find.byKey(const ValueKey('confirm-phone-field')),
+        findsNothing,
+      );
     },
   );
 }
