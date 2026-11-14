@@ -1110,6 +1110,16 @@
   "whatsappContactSupport": "كلّم الدعم",
   "whatsappUseLatestCode": "استخدم آخر كود وصلك",
   "otpBlockedUntil": "اتوقف إرسال الأكواد مؤقتًا لحد {date}. لو محتاج مساعدة كلّم الدعم",
+  "otpBlockedNoDate": "اتوقف إرسال الأكواد مؤقتًا. لو محتاج مساعدة كلّم الدعم",
+  "authRateLimitedNoTime": "محاولات كتير. جرّب تاني بعد شوية.",
+  "whatsappNotSentYet": "لسه ما بعتناش كود على {phone}. تقدر تطلب كود بعد ما العداد يخلص",
+  "@whatsappNotSentYet": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "@otpBlockedUntil": {
     "placeholders": {
       "date": {

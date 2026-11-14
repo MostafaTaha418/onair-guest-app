@@ -97,13 +97,14 @@ final class _OtpScreenState extends State<OtpScreen> {
       if (router != null) {
         final origin = GoRouterState.of(context).uri.queryParameters['from'];
         final destination = resolveAuthReturnDestination(origin);
+        // Only an explicitly incomplete account enters «أكّد رقمك».
         router.go(
-          state.isComplete
-              ? destination
-              : Uri(
+          state.account.needsPhoneStep
+              ? Uri(
                   path: AppRoutes.completeProfile,
                   queryParameters: {'from': destination},
-                ).toString(),
+                ).toString()
+              : destination,
         );
       }
       return;

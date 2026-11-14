@@ -2020,6 +2020,18 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get otpBlockedNoDate =>
+      'اتوقف إرسال الأكواد مؤقتًا. لو محتاج مساعدة كلّم الدعم';
+
+  @override
+  String get authRateLimitedNoTime => 'محاولات كتير. جرّب تاني بعد شوية.';
+
+  @override
+  String whatsappNotSentYet(String phone) {
+    return 'لسه ما بعتناش كود على $phone. تقدر تطلب كود بعد ما العداد يخلص';
+  }
+
+  @override
   String get otpAttestationFailed =>
       'مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني';
 

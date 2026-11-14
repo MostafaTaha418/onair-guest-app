@@ -202,13 +202,14 @@ void main() {
   );
 
   test('verify error keys follow the T050 table', () async {
-    final expected = <String, String>{
-      'OTP_INVALID': 'authOtpInvalid',
-      'OTP_EXPIRED': 'authOtpExpired',
-      'OTP_SUPERSEDED': 'whatsappUseLatestCode',
-      'OTP_ATTEMPTS_EXCEEDED': 'otpAttemptsExceeded',
+    final expected = <String, ErrorCode>{
+      'OTP_INVALID': ErrorCode.otpInvalid,
+      'OTP_EXPIRED': ErrorCode.otpExpired,
+      'OTP_SUPERSEDED': ErrorCode.otpSuperseded,
+      'OTP_ATTEMPTS_EXCEEDED': ErrorCode.otpAttemptsExceeded,
     };
-    for (final MapEntry(key: serverCode, value: errorKey) in expected.entries) {
+    for (final MapEntry(key: serverCode, value: errorCode)
+        in expected.entries) {
       final repo = _FakeRepository();
       final cubit = _cubit(repo);
       await _reachCodeStep(cubit, repo);
@@ -217,7 +218,7 @@ void main() {
       await cubit.verify();
 
       final code = cubit.state as PvCode;
-      expect(code.errorKey, errorKey, reason: serverCode);
+      expect(code.error?.code, errorCode, reason: serverCode);
       expect(
         code.codeFieldEnabled,
         serverCode != 'OTP_ATTEMPTS_EXCEEDED',

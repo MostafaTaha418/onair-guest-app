@@ -183,18 +183,13 @@ final class SupabaseAuthRepository implements AuthRepository {
     this._profiles, {
     DateTime Function()? clock,
     SocialCredentialSource? socialCredentials,
-    String Function()? locale,
   }) : _clock = clock ?? DateTime.now,
-       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource(),
-       _locale = locale ?? (() => 'ar');
+       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource();
 
   final PhoneAuthClient _auth;
   final ProfileSource _profiles;
   final DateTime Function() _clock;
   final SocialCredentialSource _socialCredentials;
-
-  /// The current locale code the sign-up metadata carries.
-  final String Function() _locale;
 
   @override
   Stream<GuestAccount?> get authStateChanges =>
@@ -314,15 +309,16 @@ final class SupabaseAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     try {
       await _auth.signUpWithEmail(
         name,
         _normalizeEmail(email),
         password,
         termsVersion,
-        locale: _locale(),
+        locale: locale,
       );
       return _emailChallenge(VerificationChannel.emailSignup, email);
     } on AuthRequestRejected {

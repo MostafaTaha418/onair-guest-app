@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
@@ -82,7 +83,12 @@ enum _CodeState {
         window: window,
       ),
       code: this == _CodeState.codeError ? '123456' : '',
-      errorKey: this == _CodeState.codeError ? 'authOtpInvalid' : null,
+      error: this == _CodeState.codeError
+          ? const ApiError(
+              code: ErrorCode.otpInvalid,
+              messageKey: 'authOtpInvalid',
+            )
+          : null,
       notice: switch (this) {
         _CodeState.notOnWhatsApp => PvNotice.notOnWhatsApp,
         _CodeState.attestation => PvNotice.attestationFailed,

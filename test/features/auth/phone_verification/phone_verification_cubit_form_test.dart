@@ -13,6 +13,7 @@ final class _FakeRepository implements PhoneVerificationRepository {
   Exception? sendError;
   int sendCalls = 0;
   int startCalls = 0;
+  int verifyCalls = 0;
   PhoneVerificationDraft? lastDraft;
   PhoneVerificationPurpose? lastPurpose;
   final sentChallengeIds = <String>[];
@@ -53,8 +54,10 @@ final class _FakeRepository implements PhoneVerificationRepository {
   ) => throw UnimplementedError();
 
   @override
-  Future<GuestAccount> verify(String challengeId, String code) =>
-      throw UnimplementedError();
+  Future<GuestAccount> verify(String challengeId, String code) {
+    verifyCalls += 1;
+    throw UnimplementedError();
+  }
 }
 
 PhoneVerificationCubit _cubit(
@@ -267,7 +270,7 @@ void main() {
 
       final form = cubit.state as PvForm;
       expect(form.submitting, isFalse);
-      expect(form.generalErrorKey, 'errorUnexpectedNoRef');
+      expect(form.generalError?.messageKey, 'errorUnexpectedNoRef');
       await cubit.close();
     },
   );
@@ -293,11 +296,17 @@ void main() {
       expect(code.challenge.challengeId, 'challenge-1');
       expect(code.challenge.maskedPhone, '+20 10•• ••• 678');
       expect(code.challenge.window.nextSendAt, nextSendAt);
+      // Nothing went out yet: the step says so and a typed code is ignored.
+      expect(code.codeSent, isFalse);
+      cubit.onCodeChanged('123456');
+      await cubit.verify();
+      expect(repo.verifyCalls, 0, reason: 'no code was sent to verify');
       // «ابعت كود جديد» reuses the SAME challenge — no new start().
       repo.sendError = null;
       await cubit.resend();
       expect(repo.startCalls, 1, reason: 'no new start()');
       expect(repo.sentChallengeIds, ['challenge-1', 'challenge-1']);
+      expect((cubit.state as PvCode).codeSent, isTrue);
       await cubit.close();
     },
   );
@@ -312,7 +321,7 @@ void main() {
 
       final code = cubit.state as PvCode;
       expect(code.resending, isFalse);
-      expect(code.errorKey, 'errorUnexpectedNoRef');
+      expect(code.error?.messageKey, 'errorUnexpectedNoRef');
       await cubit.close();
     },
   );

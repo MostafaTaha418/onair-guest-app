@@ -70,6 +70,12 @@ void main() {
       () => repository.verify(challengeId, '000000'),
     );
     expect(fifth.error.code, ErrorCode.otpAttemptsExceeded);
+
+    // The code is burned: even the right one is refused now.
+    final afterExceeded = await failureOf(
+      () => repository.verify(challengeId, MockBackend.verificationCode),
+    );
+    expect(afterExceeded.error.code, ErrorCode.otpAttemptsExceeded);
   });
 
   test(

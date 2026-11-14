@@ -80,6 +80,39 @@ void main() {
     );
   });
 
+  test('a suspended account that lands on «أكّد رقمك» or an auth screen goes '
+      'to the suspended screen', () {
+    for (final location in [
+      '${AppRoutes.completeProfile}?from=%2Fhome',
+      AppRoutes.accountPhone,
+      AppRoutes.login,
+      AppRoutes.otp,
+    ]) {
+      expect(
+        resolveRedirect(
+          RedirectContext(
+            location: location,
+            authState: SignedIn(suspended, isComplete: false),
+          ),
+        ),
+        AppRoutes.accountSuspended,
+        reason: location,
+      );
+    }
+  });
+
+  test('a visitor on the suspended screen goes home', () {
+    expect(
+      resolveRedirect(
+        const RedirectContext(
+          location: AppRoutes.accountSuspended,
+          authState: SignedOut(),
+        ),
+      ),
+      AppRoutes.home,
+    );
+  });
+
   test('an unknown status routes like active: no phone-step redirect', () {
     expect(
       resolveRedirect(

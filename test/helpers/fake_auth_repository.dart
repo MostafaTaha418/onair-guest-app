@@ -29,6 +29,7 @@ final class FakeAuthRepository implements AuthRepository {
   String? lastPassword;
   String? lastName;
   String? lastTermsVersion;
+  String? lastLocale;
   String? lastRecoveryEmail;
 
   @override
@@ -65,12 +66,14 @@ final class FakeAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     signUpEmailCalls += 1;
     await signUpEmailBarrier;
     lastName = name;
     lastTermsVersion = termsVersion;
+    lastLocale = locale;
     lastEmail = email;
     lastPassword = password;
     return challenge ??

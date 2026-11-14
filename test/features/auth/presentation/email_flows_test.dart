@@ -161,6 +161,59 @@ void main() {
 
     expect(auth.lastTermsVersion, 'v1');
     expect(auth.lastName, 'Guest Name');
+    expect(auth.lastLocale, 'ar');
+  });
+
+  testWidgets('email registration sends the app language (en)', (
+    tester,
+  ) async {
+    await tester.pumpOnAirApp(
+      const RegisterScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+      locale: const Locale('en'),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-name-field')),
+      'Guest Name',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-field')),
+      'guest@example.com',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('password-field')),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('password-field')),
+      'password1',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
+    await tester.pump();
+
+    expect(auth.lastLocale, 'en');
   });
 
   testWidgets('email registration ignores a rapid second submit', (

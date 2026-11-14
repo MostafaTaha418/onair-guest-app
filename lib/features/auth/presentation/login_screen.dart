@@ -137,11 +137,14 @@ final class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         // No phone here any more (S005 US6): «أكّد رقمك» collects it after
         // the email code.
+        // The signup metadata carries the app's language (FR-016), the same
+        // way «أكّد رقمك» sends it with the phone.
         await context.read<AuthCubit>().requestEmailSignup(
           _name.text,
           _email.text,
           _password.text,
           config.currentTermsVersion,
+          locale: Localizations.localeOf(context).languageCode,
         );
       } else {
         await context.read<AuthCubit>().signInEmail(
@@ -166,13 +169,16 @@ final class _LoginScreenState extends State<LoginScreen> {
       if (authState is SignedIn) {
         final origin = GoRouterState.of(context).uri.queryParameters['from'];
         final destination = resolveAuthReturnDestination(origin);
+        // Only an explicitly incomplete account enters «أكّد رقمك»; a
+        // suspended or unknown one goes to the destination and the redirect
+        // decides from there.
         context.go(
-          authState.isComplete
-              ? destination
-              : Uri(
+          authState.account.needsPhoneStep
+              ? Uri(
                   path: AppRoutes.completeProfile,
                   queryParameters: {'from': destination},
-                ).toString(),
+                ).toString()
+              : destination,
         );
         return;
       }

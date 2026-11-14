@@ -158,14 +158,16 @@ final class AuthCubit extends Cubit<AuthState> {
     String name,
     String email,
     String password,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     try {
       final challenge = await _repository.signUpEmail(
         name,
         email,
         password,
         termsVersion,
+        locale: locale,
       );
       if (!isClosed) emit(CodeSent(challenge));
     } on AuthRateLimited catch (error) {

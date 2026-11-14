@@ -144,6 +144,11 @@ final class MockPhoneVerificationRepository
     if (sentAt == null || clock().difference(sentAt) >= MockBackend.otpTtl) {
       throw AppFailure(ErrorMapper.fromCode('OTP_EXPIRED'));
     }
+    // A8 `otp_max_attempts`: after the fifth wrong code the code is burned —
+    // even the right one is refused until a resend rotates it.
+    if (challenge.wrongAttempts >= 5) {
+      throw AppFailure(ErrorMapper.fromCode('OTP_ATTEMPTS_EXCEEDED'));
+    }
     if (code == challenge.currentCode) {
       // T057: the WhatsApp confirmation is what activates the mock account.
       _auth.activatePhone(

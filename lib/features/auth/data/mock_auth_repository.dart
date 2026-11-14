@@ -146,8 +146,9 @@ final class MockAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     if (termsVersion != currentTermsVersion) throw const ProfileTermsChanged();
     final normalized = _normalize(email);
     // Uniform result: an existing email gets the same response.

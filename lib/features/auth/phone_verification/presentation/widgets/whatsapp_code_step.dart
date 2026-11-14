@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -11,6 +10,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/widgets/pv_error_text.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/send_window_notice.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,9 +77,6 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
     super.dispose();
   }
 
-  String? _errorText(String? key, AppLocalizations l10n, String? requestId) =>
-      key == null ? null : localizedErrorText(key, l10n, requestId: requestId);
-
   Future<void> _openWhatsApp() async {
     try {
       await launchUrl(Uri.parse('whatsapp://'));
@@ -124,9 +121,10 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                   l10n.otpTemporarilyUnavailable,
                 null => null,
               };
-        final error = blocked
+        final failure = code.error;
+        final error = blocked || failure == null
             ? null
-            : _errorText(code.errorKey, l10n, code.errorRequestId);
+            : phoneVerificationErrorText(failure, l10n);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -137,7 +135,11 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
             ),
             const SizedBox(height: Dimens.space12),
             Text(
-              l10n.whatsappCodeSentTo(code.challenge.maskedPhone),
+              // A rate-limited first send never went out: say so instead
+              // of «بعتنا كود» (review round 2).
+              code.codeSent
+                  ? l10n.whatsappCodeSentTo(code.challenge.maskedPhone)
+                  : l10n.whatsappNotSentYet(code.challenge.maskedPhone),
               style: context.textStyles.authDescription.copyWith(
                 color: colors['textMuted'],
               ),
@@ -155,7 +157,11 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
             OnAirOtpField(
               key: const ValueKey('whatsapp-otp-field'),
               controller: _codeController,
-              enabled: !blocked && code.codeFieldEnabled && !code.verifying,
+              enabled:
+                  !blocked &&
+                  code.codeSent &&
+                  code.codeFieldEnabled &&
+                  !code.verifying,
               onCompleted: (_) => cubit.verify(),
               onChanged: cubit.onCodeChanged,
             ),
@@ -179,6 +185,7 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                   label: l10n.whatsappConfirm,
                   onPressed:
                       !blocked &&
+                          code.codeSent &&
                           code.code.length == 6 &&
                           code.codeFieldEnabled &&
                           !code.verifying

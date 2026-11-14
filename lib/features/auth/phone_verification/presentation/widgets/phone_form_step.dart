@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/widgets/pv_error_text.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The «أكّد رقمك» form fields (contracts/ui-screens.md §4.1): the name is
@@ -48,12 +48,6 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
     'authPhoneCountryNotSupported' => l10n.authPhoneCountryNotSupported,
     _ => null,
   };
-
-  String? _generalErrorText(
-    String? key,
-    AppLocalizations l10n,
-    String? requestId,
-  ) => key == null ? null : localizedErrorText(key, l10n, requestId: requestId);
 
   @override
   Widget build(BuildContext context) {
@@ -125,21 +119,12 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ],
-            if (_generalErrorText(
-                  form.generalErrorKey,
-                  l10n,
-                  form.generalErrorRequestId,
-                ) !=
-                null) ...[
+            if (form.generalError case final error?) ...[
               const SizedBox(height: Dimens.space12),
               Semantics(
                 liveRegion: true,
                 child: Text(
-                  _generalErrorText(
-                    form.generalErrorKey,
-                    l10n,
-                    form.generalErrorRequestId,
-                  )!,
+                  phoneVerificationErrorText(error, l10n),
                   key: const ValueKey('confirm-phone-general-error'),
                   style: TextStyle(color: context.colors.errorText),
                 ),

@@ -862,6 +862,16 @@
   "whatsappContactSupport": "Contact support",
   "whatsappUseLatestCode": "Use the latest code you received.",
   "otpBlockedUntil": "Code sending is paused until {date}. Contact support if you need help.",
+  "otpBlockedNoDate": "Code sending is paused for now. Contact support if you need help.",
+  "authRateLimitedNoTime": "Too many attempts. Try again in a little while.",
+  "whatsappNotSentYet": "We haven't sent a code to {phone} yet. You can request one when the timer ends.",
+  "@whatsappNotSentYet": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "@otpBlockedUntil": {
     "placeholders": {
       "date": {

@@ -3626,6 +3626,24 @@ abstract class AppLocalizations {
   /// **'اتوقف إرسال الأكواد مؤقتًا لحد {date}. لو محتاج مساعدة كلّم الدعم'**
   String otpBlockedUntil(String date);
 
+  /// No description provided for @otpBlockedNoDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتوقف إرسال الأكواد مؤقتًا. لو محتاج مساعدة كلّم الدعم'**
+  String get otpBlockedNoDate;
+
+  /// No description provided for @authRateLimitedNoTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'محاولات كتير. جرّب تاني بعد شوية.'**
+  String get authRateLimitedNoTime;
+
+  /// No description provided for @whatsappNotSentYet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه ما بعتناش كود على {phone}. تقدر تطلب كود بعد ما العداد يخلص'**
+  String whatsappNotSentYet(String phone);
+
   /// No description provided for @otpAttestationFailed.
   ///
   /// In ar, this message translates to:

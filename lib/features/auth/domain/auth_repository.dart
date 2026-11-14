@@ -59,8 +59,9 @@ abstract interface class AuthRepository {
     String name,
     String email,
     String password,
-    String termsVersion,
-  );
+    String termsVersion, {
+    String locale = 'ar',
+  });
   Future<CodeChallenge> requestEmailVerification(String email);
   Future<GuestAccount> verifyEmailCode(String email, String code);
   Future<GuestAccount> signInEmail(String email, String password);

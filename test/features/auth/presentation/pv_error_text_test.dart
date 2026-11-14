@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -31,18 +32,51 @@ class _StubRepository implements PhoneVerificationRepository {
       throw UnimplementedError();
 }
 
-/// Review fix 3: the two steps render every error key through the shared
-/// `localizedErrorText` resolver — no silent whitelists, and the request id
-/// rides `errorUnexpected` (Constitution VIII).
+/// Review fixes 3 + round 2: both steps render every failure through the
+/// shared `apiErrorMessage` (via `phoneVerificationErrorText`) — no silent
+/// whitelists; an unexpected server error carries its reference number
+/// (Constitution VIII); a rate limit without a wait never says «0:00».
 void main() {
   final l10n = lookupAppLocalizations(const Locale('ar'));
   const requestId = 'req-9';
 
-  final keys = <String, Matcher>{
-    'errorUnexpected': contains('req-9'),
-    'authRateLimited': isNotEmpty,
-    'errorUnauthenticated': isNotEmpty,
-    'otpBlockedUntil': isNotEmpty,
+  final cases = <String, (ApiError, String)>{
+    'internal with a reference': (
+      const ApiError(
+        code: ErrorCode.internal,
+        messageKey: 'errorUnexpected',
+        requestId: requestId,
+      ),
+      l10n.errorUnexpected(requestId),
+    ),
+    'rate limited without a wait': (
+      const ApiError(
+        code: ErrorCode.rateLimited,
+        messageKey: 'authRateLimited',
+      ),
+      l10n.authRateLimitedNoTime,
+    ),
+    'unauthenticated': (
+      const ApiError(
+        code: ErrorCode.unauthenticated,
+        messageKey: 'errorUnauthenticated',
+      ),
+      l10n.errorUnauthenticated,
+    ),
+    'blocked without a date': (
+      const ApiError(
+        code: ErrorCode.otpSendBlocked,
+        messageKey: 'otpBlockedUntil',
+      ),
+      l10n.otpBlockedNoDate,
+    ),
+    'superseded code': (
+      const ApiError(
+        code: ErrorCode.otpSuperseded,
+        messageKey: 'whatsappUseLatestCode',
+      ),
+      l10n.whatsappUseLatestCode,
+    ),
   };
 
   Widget harness({required Widget child}) => MaterialApp(
@@ -54,85 +88,90 @@ void main() {
     home: Scaffold(body: ListView(children: [child])),
   );
 
-  Future<void> pumpCodeStep(WidgetTester tester, String key) async {
-    final cubit =
-        PhoneVerificationCubit(
-          _StubRepository(),
-          purpose: PhoneVerificationPurpose.register,
-          needsName: false,
-          needsTerms: false,
-          locale: 'ar',
-          currentTermsVersion: 'v1',
-        )..emit(
-          PvCode(
-            challenge: WhatsAppChallenge(
-              challengeId: 'challenge-1',
-              maskedPhone: '+20 10•• ••• 678',
-              expiresAt: DateTime.now().toUtc().add(
-                const Duration(minutes: 10),
-              ),
-              window: SendWindow(
-                serverTime: DateTime.now().toUtc(),
-                receivedAt: DateTime.now().toUtc(),
-              ),
-            ),
-            errorKey: key,
-            errorRequestId: requestId,
-          ),
-        );
+  PhoneVerificationCubit cubit() => PhoneVerificationCubit(
+    _StubRepository(),
+    purpose: PhoneVerificationPurpose.register,
+    needsName: false,
+    needsTerms: false,
+    locale: 'ar',
+    currentTermsVersion: 'v1',
+  );
+
+  WhatsAppChallenge challenge() => WhatsAppChallenge(
+    challengeId: 'challenge-1',
+    maskedPhone: '+20 10•• ••• 678',
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 10)),
+    window: SendWindow(
+      serverTime: DateTime.now().toUtc(),
+      receivedAt: DateTime.now().toUtc(),
+    ),
+  );
+
+  Future<void> pumpStep(
+    WidgetTester tester,
+    PvState state,
+    Widget step,
+  ) async {
+    final bloc = cubit()..emit(state);
+    addTearDown(bloc.close);
     await tester.pumpWidget(
       BlocProvider<PhoneVerificationCubit>.value(
-        value: cubit,
-        child: harness(
-          child: const WhatsAppCodeStep(supportPhone: '+201000000000'),
-        ),
+        value: bloc,
+        child: harness(child: step),
       ),
     );
     await tester.pump();
   }
 
-  Future<void> pumpFormStep(WidgetTester tester, String key) async {
-    final cubit = PhoneVerificationCubit(
-      _StubRepository(),
-      purpose: PhoneVerificationPurpose.register,
-      needsName: false,
-      needsTerms: false,
-      locale: 'ar',
-      currentTermsVersion: 'v1',
-    )..emit(PvForm(generalErrorKey: key, generalErrorRequestId: requestId));
-    await tester.pumpWidget(
-      BlocProvider<PhoneVerificationCubit>.value(
-        value: cubit,
-        child: harness(
-          child: const PhoneFormStep(needsName: false, needsTerms: false),
+  for (final MapEntry(key: name, value: (error, text)) in cases.entries) {
+    testWidgets('the code step renders $name visibly', (tester) async {
+      await pumpStep(
+        tester,
+        PvCode(challenge: challenge(), error: error),
+        const WhatsAppCodeStep(supportPhone: '+201000000000'),
+      );
+      expect(find.text(text), findsOneWidget);
+    });
+
+    testWidgets('the form step renders $name visibly', (tester) async {
+      await pumpStep(
+        tester,
+        PvForm(generalError: error),
+        const PhoneFormStep(needsName: false, needsTerms: false),
+      );
+      expect(find.text(text), findsOneWidget);
+    });
+  }
+
+  test('a rate limit with a wait keeps the m:ss text', () {
+    expect(
+      apiErrorMessage(
+        const ApiError(
+          code: ErrorCode.rateLimited,
+          messageKey: 'authRateLimited',
+          retryAfter: Duration(seconds: 90),
         ),
+        l10n,
       ),
+      l10n.authRateLimited('1:30'),
     );
-    await tester.pump();
-  }
+  });
 
-  for (final entry in keys.entries) {
-    testWidgets('the code step renders ${entry.key} visibly', (tester) async {
-      await pumpCodeStep(tester, entry.key);
-      expect(
-        find.text(localizedErrorText(entry.key, l10n, requestId: requestId)),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('the form step renders ${entry.key} visibly', (tester) async {
-      await pumpFormStep(tester, entry.key);
-      expect(
-        find.text(localizedErrorText(entry.key, l10n, requestId: requestId)),
-        findsOneWidget,
-      );
-    });
-  }
-
-  testWidgets('an unknown key falls back to the no-reference text', (
+  testWidgets('a rate-limited first send says no code went out yet', (
     tester,
   ) async {
-    await pumpCodeStep(tester, 'totally-unknown-key');
-    expect(find.text(l10n.errorUnexpectedNoRef), findsOneWidget);
+    await pumpStep(
+      tester,
+      PvCode(challenge: challenge(), codeSent: false),
+      const WhatsAppCodeStep(supportPhone: '+201000000000'),
+    );
+    expect(
+      find.text(l10n.whatsappNotSentYet('+20 10•• ••• 678')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(l10n.whatsappCodeSentTo('+20 10•• ••• 678')),
+      findsNothing,
+    );
   });
 }

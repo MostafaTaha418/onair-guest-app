@@ -2037,6 +2037,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get otpBlockedNoDate =>
+      'Code sending is paused for now. Contact support if you need help.';
+
+  @override
+  String get authRateLimitedNoTime =>
+      'Too many attempts. Try again in a little while.';
+
+  @override
+  String whatsappNotSentYet(String phone) {
+    return 'We haven\'t sent a code to $phone yet. You can request one when the timer ends.';
+  }
+
+  @override
   String get otpAttestationFailed =>
       'We couldn\'t verify this app. Update it from the store and try again.';
 
