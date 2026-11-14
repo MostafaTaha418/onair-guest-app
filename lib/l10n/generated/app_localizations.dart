@@ -350,6 +350,12 @@ abstract class AppLocalizations {
   /// **'حصلت مشكلة غير متوقعة. جرّب تاني.'**
   String get errorUnexpectedNoRef;
 
+  /// No description provided for @listSeparator.
+  ///
+  /// In ar, this message translates to:
+  /// **'، '**
+  String get listSeparator;
+
   /// No description provided for @errorCancelled.
   ///
   /// In ar, this message translates to:

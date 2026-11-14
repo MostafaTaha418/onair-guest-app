@@ -86,13 +86,22 @@ final class MockPhoneVerificationRepository
       phone: challenge.phone,
       deviceId: deviceId,
     );
+    // The code generations rotate so the stale-code path is reachable in
+    // mock mode (review extra): the first send uses the universal code, a
+    // resend moves to [MockBackend.resendVerificationCode].
     challenge
       ..sentAt = window.serverTime
-      ..deviceId = deviceId;
+      ..deviceId = deviceId
+      ..generation += 1
+      ..previousCode = challenge.currentCode
+      ..currentCode = challenge.generation == 1
+          ? MockBackend.verificationCode
+          : MockBackend.resendVerificationCode
+      ..wrongAttempts = 0;
     return WhatsAppChallenge(
       challengeId: challengeId,
       maskedPhone: _mask(challenge.phone),
-      expiresAt: window.serverTime.add(const Duration(minutes: 10)),
+      expiresAt: window.serverTime.add(MockBackend.otpTtl),
       window: window,
     );
   }
@@ -118,7 +127,7 @@ final class MockPhoneVerificationRepository
       status,
       failure,
       challenge.deviceId == null
-          ? SendWindow(serverTime: now)
+          ? SendWindow(serverTime: now, receivedAt: now)
           : otpServer.windowOf(
               accountId: challenge.userId,
               phone: challenge.phone,
@@ -130,24 +139,41 @@ final class MockPhoneVerificationRepository
   @override
   Future<GuestAccount> verify(String challengeId, String code) async {
     final challenge = _challenge(challengeId);
-    if (code != MockBackend.verificationCode) {
-      throw AppFailure(ErrorMapper.fromCode('OTP_INVALID'));
+    // A8: the code lives `otp_ttl_minutes`; expiry is checked first.
+    final sentAt = challenge.sentAt;
+    if (sentAt == null || clock().difference(sentAt) >= MockBackend.otpTtl) {
+      throw AppFailure(ErrorMapper.fromCode('OTP_EXPIRED'));
     }
-    // T057: the WhatsApp confirmation is what activates the mock account.
-    _auth.activatePhone(userId: challenge.userId, phoneE164: challenge.phone);
-    // A8 "Reset on success": the keys of the last send go back to zero.
-    if (challenge.deviceId != null) {
-      otpServer.countSuccess(
-        accountId: challenge.userId,
-        phone: challenge.phone,
-        deviceId: challenge.deviceId!,
+    if (code == challenge.currentCode) {
+      // T057: the WhatsApp confirmation is what activates the mock account.
+      _auth.activatePhone(
+        userId: challenge.userId,
+        phoneE164: challenge.phone,
       );
+      // A8 "Reset on success": the keys of the last send go back to zero.
+      if (challenge.deviceId != null) {
+        otpServer.countSuccess(
+          accountId: challenge.userId,
+          phone: challenge.phone,
+          deviceId: challenge.deviceId!,
+        );
+      }
+      final account = _auth.account;
+      if (account == null) {
+        throw AppFailure(ErrorMapper.fromCode('UNAUTHENTICATED'));
+      }
+      return account;
     }
-    final account = _auth.account;
-    if (account == null) {
-      throw AppFailure(ErrorMapper.fromCode('UNAUTHENTICATED'));
+    // An older generation's code is superseded, not wrong (review extra).
+    if (code == challenge.previousCode) {
+      throw AppFailure(ErrorMapper.fromCode('OTP_SUPERSEDED'));
     }
-    return account;
+    // A8 `otp_max_attempts` (5): the fifth wrong code ends the challenge.
+    challenge.wrongAttempts += 1;
+    if (challenge.wrongAttempts >= 5) {
+      throw AppFailure(ErrorMapper.fromCode('OTP_ATTEMPTS_EXCEEDED'));
+    }
+    throw AppFailure(ErrorMapper.fromCode('OTP_INVALID'));
   }
 
   Future<String> _deviceId() async {
@@ -182,4 +208,13 @@ final class _MockChallenge {
   /// Set by the last successful [MockPhoneVerificationRepository.send] —
   /// the device third of the limit keys (A8 step 4).
   String? deviceId;
+
+  /// The code generations (review extra): generation 1 carries
+  /// [MockBackend.verificationCode], a resend rotates to
+  /// [MockBackend.resendVerificationCode] and pushes the old one to
+  /// [previousCode] — that older code answers `OTP_SUPERSEDED`.
+  int generation = 0;
+  int wrongAttempts = 0;
+  String? currentCode;
+  String? previousCode;
 }

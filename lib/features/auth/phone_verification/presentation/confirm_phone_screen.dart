@@ -38,6 +38,7 @@ final class ConfirmPhoneScreen extends StatefulWidget {
 
 class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
   String? _supportPhone;
+  bool _configFailed = false;
 
   @override
   void initState() {
@@ -48,11 +49,21 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
   }
 
   Future<void> _loadConfig() async {
-    final config = await context.read<AppConfigSource>().load();
-    if (!mounted) return;
-    context.read<PhoneVerificationCubit>().termsVersion =
-        config.currentTermsVersion;
-    setState(() => _supportPhone = config.supportPhone);
+    try {
+      final config = await context.read<AppConfigSource>().load();
+      if (!mounted) return;
+      context.read<PhoneVerificationCubit>().termsVersion =
+          config.currentTermsVersion;
+      setState(() {
+        _supportPhone = config.supportPhone;
+        _configFailed = false;
+      });
+    } on Object {
+      // The terms gate stays shut without the server's version; the retry
+      // button re-reads the config (review fix 9).
+      if (!mounted) return;
+      setState(() => _configFailed = true);
+    }
   }
 
   bool get _isRegister => widget.purpose == PhoneVerificationPurpose.register;
@@ -127,7 +138,9 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          l10n.confirmPhoneTitle,
+          // The change flow's title is «رقم جديد»; register keeps «أكّد
+          // رقمك» (review extra: one title per screen, no AppBar duplicate).
+          _isRegister ? l10n.confirmPhoneTitle : l10n.confirmPhoneNewTitle,
           key: const ValueKey('confirm-phone-title'),
           style: context.textStyles.authTitle,
         ),
@@ -138,6 +151,27 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
             color: context.colors['textMuted'],
           ),
         ),
+        if (_configFailed) ...[
+          const SizedBox(height: Dimens.space12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.errorNoConnection,
+                  key: const ValueKey('config-error'),
+                  style: context.textStyles.authDescription.copyWith(
+                    color: context.colors.errorText,
+                  ),
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('config-retry'),
+                onPressed: () => unawaited(_loadConfig()),
+                child: Text(l10n.retry),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: Dimens.space24),
         if (showEmailRow) ...[
           _EmailRow(email: account!.email!),
@@ -199,7 +233,7 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
               ),
             )
           : Scaffold(
-              appBar: AppBar(title: Text(l10n.confirmPhoneNewTitle)),
+              appBar: AppBar(),
               body: SafeArea(
                 child: ListView(
                   padding: const EdgeInsets.all(Dimens.screenSide),
@@ -217,8 +251,13 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
   Future<void> _onConfirmed(PvDone state) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final auth = context.read<AuthCubit>();
+    // The flow returns the fresh profile: publish it immediately (review
+    // fix 7) and let refreshAccount confirm in the background.
+    // ignore: cascade_invocations
+    auth.applyAccount(state.account);
     if (state.purpose == PhoneVerificationPurpose.register) {
-      await context.read<AuthCubit>().refreshAccount();
+      unawaited(auth.refreshAccount());
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.confirmPhoneWelcome)),
@@ -230,6 +269,7 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
         context.go(resolveAuthReturnDestination(widget.from));
       }
     } else {
+      if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.phoneChanged)),
       );

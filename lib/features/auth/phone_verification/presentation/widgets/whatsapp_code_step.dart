@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:on_air/design_system/components/countdown_text.dart';
+import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -18,15 +18,23 @@ import 'package:url_launcher/url_launcher.dart';
 /// The WhatsApp code step (contracts/ui-screens.md §4.2): the masked target,
 /// the 6-digit field, «افتح واتساب», «تعديل الرقم» and the delivery notices.
 /// The resend wait renders from the server window (R8): a `Stream<Duration>`
-/// ticking every second feeds [CountdownText], so only the text rebuilds.
+/// ticking every second rebuilds the text alone.
 /// `OTP_SEND_BLOCKED` renders the step with its send controls disabled —
 /// the [BlockedNotice] itself lives above, on the screen (T064).
 final class WhatsAppCodeStep extends StatefulWidget {
-  const WhatsAppCodeStep({required this.supportPhone, super.key});
+  const WhatsAppCodeStep({
+    required this.supportPhone,
+    super.key,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
   /// From `app_config`; the «كلّم الدعم» notices dial it (G4 brings the
   /// support screens).
   final String supportPhone;
+
+  /// The device clock the countdown ticks with — injectable so goldens pin
+  /// one instant instead of racing the real second hand.
+  final DateTime Function() _clock;
 
   @override
   State<WhatsAppCodeStep> createState() => _WhatsAppCodeStepState();
@@ -52,16 +60,10 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
     _ticker?.cancel();
     unawaited(_countdown?.close());
     final controller = StreamController<Duration>.broadcast();
-    // The window is server-stamped: its remaining never moves on its own
-    // (R8 — the device clock is ignored), so the tick subtracts the real
-    // elapsed time from the wait the window answered with.
-    final issuedAt = DateTime.now();
-    final initial = window.remainingUntilSend(issuedAt);
-    void tick() {
-      final remaining = initial - DateTime.now().difference(issuedAt);
-      controller.add(remaining.isNegative ? Duration.zero : remaining);
-    }
-
+    // The window freezes its server↔device offset at arrival, so
+    // remainingUntilSend already subtracts the elapsed time (R8, review
+    // fix 10) — the tick just asks the window again.
+    void tick() => controller.add(window.remainingUntilSend(widget._clock()));
     tick();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => tick());
     _countdown = controller;
@@ -75,15 +77,8 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
     super.dispose();
   }
 
-  String? _errorText(String? key, AppLocalizations l10n) => switch (key) {
-    'authOtpInvalid' => l10n.authOtpInvalid,
-    'authOtpExpired' => l10n.authOtpExpired,
-    'whatsappUseLatestCode' => l10n.whatsappUseLatestCode,
-    'otpAttemptsExceeded' => l10n.otpAttemptsExceeded,
-    'errorNoConnection' => l10n.errorNoConnection,
-    'errorUnexpectedNoRef' => l10n.errorUnexpectedNoRef,
-    _ => null,
-  };
+  String? _errorText(String? key, AppLocalizations l10n, String? requestId) =>
+      key == null ? null : localizedErrorText(key, l10n, requestId: requestId);
 
   Future<void> _openWhatsApp() async {
     try {
@@ -129,7 +124,9 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                   l10n.otpTemporarilyUnavailable,
                 null => null,
               };
-        final error = blocked ? null : _errorText(code.errorKey, l10n);
+        final error = blocked
+            ? null
+            : _errorText(code.errorKey, l10n, code.errorRequestId);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -221,13 +218,11 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
               builder: (context, snapshot) {
                 final remaining = snapshot.hasData
                     ? snapshot.data!
-                    : code.challenge.window.remainingUntilSend(DateTime.now());
+                    : code.challenge.window.remainingUntilSend(widget._clock());
                 final counting = remaining > Duration.zero;
-                // The first frame renders the remaining directly: the
-                // broadcast stream's seed event lands before the
-                // subscription, so CountdownText takes over from the first
-                // tick — through its builder, so the label keeps the
-                // button's own (disabled grey while counting) style.
+                // The first frame falls back to the window's own remaining:
+                // the broadcast stream's seed event lands before the
+                // subscription.
                 return TextButton(
                   key: const ValueKey('whatsapp-resend'),
                   onPressed:
@@ -244,23 +239,11 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                           // (T079).
                           label: l10n.whatsappResend,
                           excludeSemantics: true,
-                          child: snapshot.hasData
-                              ? CountdownText(
-                                  remaining: countdown.stream,
-                                  format: (remaining) => l10n.whatsappResendIn(
-                                    formatSendWait(remaining, l10n),
-                                  ),
-                                  builder: (context, remaining) => Text(
-                                    l10n.whatsappResendIn(
-                                      formatSendWait(remaining, l10n),
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  l10n.whatsappResendIn(
-                                    formatSendWait(remaining, l10n),
-                                  ),
-                                ),
+                          child: Text(
+                            l10n.whatsappResendIn(
+                              formatSendWait(remaining, l10n),
+                            ),
+                          ),
                         )
                       : Text(l10n.whatsappResend),
                 );

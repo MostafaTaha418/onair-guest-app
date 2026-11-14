@@ -322,6 +322,12 @@ final class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Publishes an account the UI already holds — «أكّد رقمك»'s success
+  /// returns the fresh profile in its `PvDone`, so the account rows update
+  /// immediately and the next `refreshAccount()` only confirms (review
+  /// fix 7). No network call.
+  void applyAccount(GuestAccount account) => _emitAccount(account);
+
   void _emitAccount(GuestAccount account) {
     if (!isClosed) {
       emit(SignedIn(account, isComplete: account.isComplete));

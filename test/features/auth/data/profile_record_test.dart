@@ -37,10 +37,12 @@ void main() {
     expect(record.authProviders, {AuthProvider.google});
   });
 
-  test('missing optional fields fall back to an incomplete account', () {
+  test('missing optional fields fall back to an unknown account', () {
     final record = ProfileRecord.fromJson(null);
 
-    expect(record.status, AccountStatus.incomplete);
+    // Only an explicit 'incomplete' enters «أكّد رقمك» (review fix 6); a
+    // missing payload or field is unknown — the server decides.
+    expect(record.status, AccountStatus.unknown);
     expect(record.authProviders, isEmpty);
     expect(record.hasPassword, isTrue);
     expect(record.email, isNull);

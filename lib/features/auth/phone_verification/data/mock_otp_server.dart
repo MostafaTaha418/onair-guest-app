@@ -110,7 +110,11 @@ final class MockOtpServer {
         ..nextSendAt = now.add(MockOtpServer.ladder(record.sendCount));
       wait = MockOtpServer.ladder(record.sendCount);
     }
-    return SendWindow(serverTime: now, nextSendAt: now.add(wait));
+    return SendWindow(
+      serverTime: now,
+      receivedAt: now,
+      nextSendAt: now.add(wait),
+    );
   }
 
   /// The window the three keys of [accountId]/[phone]/[deviceId] currently
@@ -127,6 +131,7 @@ final class MockOtpServer {
     );
     return SendWindow(
       serverTime: now,
+      receivedAt: now,
       nextSendAt: _strictest(records.map((record) => record.nextSendAt)),
       blockedUntil: blockedUntil != null && blockedUntil.isAfter(now)
           ? blockedUntil

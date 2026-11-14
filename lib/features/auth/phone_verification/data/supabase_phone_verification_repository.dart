@@ -23,10 +23,15 @@ final class SupabasePhoneVerificationRepository
   SupabasePhoneVerificationRepository({
     required this._rpc,
     required this._node,
-  });
+    String? Function()? currentUserId,
+  }) : _currentUserId = currentUserId ?? (() => null);
 
   final Future<dynamic> Function(String fn, Map<String, dynamic> params) _rpc;
   final FallbackClient _node;
+
+  /// The session's user id — `common_verify_otp` may answer with the profile
+  /// shape alone, so the identity falls back to the session (A4).
+  final String? Function() _currentUserId;
 
   @override
   Future<String> start(
@@ -69,6 +74,7 @@ final class SupabasePhoneVerificationRepository
           serverTime: sent.serverTime,
           nextSendAt: sent.nextSendAt,
           blockedUntil: sent.blockedUntil,
+          receivedAt: DateTime.now(),
         ),
       );
     } on DioException catch (error) {
@@ -76,6 +82,12 @@ final class SupabasePhoneVerificationRepository
       // 429 keeps its retryAfter through the shared ApiError; the S005
       // payloads (next_send_at / blocked_until) ride on ApiError.details.
       throw AppFailure(inner is ApiError ? inner : ErrorMapper.noResponse());
+    } on AppFailure {
+      rethrow;
+    } on Object {
+      // FormatException, StateError, … — the cubit can only reset on an
+      // AppFailure, so every surprise becomes INTERNAL.
+      throw AppFailure(ErrorMapper.fromCode('INTERNAL'));
     }
   }
 
@@ -94,6 +106,7 @@ final class SupabasePhoneVerificationRepository
         serverTime: _requiredTime(json['server_time'], 'server_time'),
         nextSendAt: _time(json['next_send_at']),
         blockedUntil: _time(json['blocked_until']),
+        receivedAt: DateTime.now(),
       ),
     );
   });
@@ -108,9 +121,13 @@ final class SupabasePhoneVerificationRepository
       final json = Map<String, dynamic>.from(response! as Map);
       // A5 step 6 returns the profile in the A4 context shape.
       final record = ProfileRecord.fromJson(json);
-      final id = (json['guest_id'] ?? json['id'] ?? json['user_id']) as String?;
+      // The id may ride the payload or the session; with neither the caller
+      // is not identifiable at all.
+      final id =
+          (json['guest_id'] ?? json['id'] ?? json['user_id']) as String? ??
+          _currentUserId();
       if (id == null) {
-        throw AppFailure(ErrorMapper.fromCode('INTERNAL'));
+        throw AppFailure(ErrorMapper.fromCode('UNAUTHENTICATED'));
       }
       return GuestAccount(
         id: id,

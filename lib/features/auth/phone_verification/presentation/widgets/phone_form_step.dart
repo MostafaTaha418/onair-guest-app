@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
@@ -48,16 +49,11 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
     _ => null,
   };
 
-  String? _generalErrorText(String? key, AppLocalizations l10n) =>
-      switch (key) {
-        'errorValidationFailed' => l10n.errorValidationFailed,
-        'authTermsChanged' => l10n.authTermsChanged,
-        'otpAttestationFailed' => l10n.otpAttestationFailed,
-        'otpTemporarilyUnavailable' => l10n.otpTemporarilyUnavailable,
-        'errorUnexpectedNoRef' => l10n.errorUnexpectedNoRef,
-        'errorNoConnection' => l10n.errorNoConnection,
-        _ => null,
-      };
+  String? _generalErrorText(
+    String? key,
+    AppLocalizations l10n,
+    String? requestId,
+  ) => key == null ? null : localizedErrorText(key, l10n, requestId: requestId);
 
   @override
   Widget build(BuildContext context) {
@@ -129,12 +125,21 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ],
-            if (_generalErrorText(form.generalErrorKey, l10n) != null) ...[
+            if (_generalErrorText(
+                  form.generalErrorKey,
+                  l10n,
+                  form.generalErrorRequestId,
+                ) !=
+                null) ...[
               const SizedBox(height: Dimens.space12),
               Semantics(
                 liveRegion: true,
                 child: Text(
-                  _generalErrorText(form.generalErrorKey, l10n)!,
+                  _generalErrorText(
+                    form.generalErrorKey,
+                    l10n,
+                    form.generalErrorRequestId,
+                  )!,
                   key: const ValueKey('confirm-phone-general-error'),
                   style: TextStyle(color: context.colors.errorText),
                 ),

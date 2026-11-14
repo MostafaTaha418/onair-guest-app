@@ -51,4 +51,10 @@ final class GuestAccount {
   /// The server owns completeness (Constitution II): no local name/terms
   /// computation any more.
   bool get isComplete => status == AccountStatus.active;
+
+  /// Only an explicitly `incomplete` account is onboarding into «أكّد رقمك».
+  /// `suspended`/`deleted` keep the session but never see the step, and an
+  /// `unknown` (forward-compatible) status routes like `active` — the server
+  /// still enforces `PROFILE_INCOMPLETE` (review fix 6).
+  bool get needsPhoneStep => status == AccountStatus.incomplete;
 }

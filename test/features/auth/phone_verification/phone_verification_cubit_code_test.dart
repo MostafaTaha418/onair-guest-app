@@ -50,6 +50,7 @@ final class _FakeRepository implements PhoneVerificationRepository {
       expiresAt: now.add(const Duration(minutes: 10)),
       window: SendWindow(
         serverTime: now,
+        receivedAt: now,
         nextSendAt: now.add(const Duration(seconds: 30)),
       ),
     );
@@ -65,6 +66,7 @@ final class _FakeRepository implements PhoneVerificationRepository {
       statusFailure,
       SendWindow(
         serverTime: DateTime.utc(2026, 11, 14, 10),
+        receivedAt: DateTime.utc(2026, 11, 14, 10),
         nextSendAt: DateTime.utc(2026, 11, 14, 10).add(
           const Duration(seconds: 30),
         ),

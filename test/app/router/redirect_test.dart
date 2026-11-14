@@ -18,6 +18,22 @@ void main() {
     fullName: 'Guest Name',
     acceptedTermsVersion: 'v1',
   );
+  final suspended = GuestAccount(
+    id: 'id',
+    status: AccountStatus.suspended,
+    phone: '+201012345678',
+    email: 'guest@example.com',
+    fullName: 'Guest Name',
+    acceptedTermsVersion: 'v1',
+  );
+  final unknown = GuestAccount(
+    id: 'id',
+    status: AccountStatus.unknown,
+    phone: '+201012345678',
+    email: 'guest@example.com',
+    fullName: 'Guest Name',
+    acceptedTermsVersion: 'v1',
+  );
 
   test('incomplete signed-in account is forced to profile completion', () {
     expect(
@@ -28,6 +44,51 @@ void main() {
         ),
       ),
       '/auth/complete-profile?from=%2Fbookings',
+    );
+  });
+
+  test('a suspended account never sees «أكّد رقمك»; account routes show the '
+      'suspended screen', () {
+    // Account-gated route: the notice, not the phone step.
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.bookings,
+          authState: SignedIn(suspended, isComplete: false),
+        ),
+      ),
+      AppRoutes.accountSuspended,
+    );
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.accountSuspended,
+          authState: SignedIn(suspended, isComplete: false),
+        ),
+      ),
+      isNull,
+    );
+    // Public routes stay usable; the session survives.
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.home,
+          authState: SignedIn(suspended, isComplete: false),
+        ),
+      ),
+      isNull,
+    );
+  });
+
+  test('an unknown status routes like active: no phone-step redirect', () {
+    expect(
+      resolveRedirect(
+        RedirectContext(
+          location: AppRoutes.bookings,
+          authState: SignedIn(unknown, isComplete: false),
+        ),
+      ),
+      isNull,
     );
   });
 

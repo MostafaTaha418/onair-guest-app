@@ -80,6 +80,14 @@ final class RefreshRetryInterceptor extends Interceptor {
       handler.next(err);
       return;
     }
+    // An app-level failure rides a 401 too (APP_ATTESTATION_FAILED): the
+    // session is fine, so refreshing and replaying would loop (review
+    // fix 2).
+    final body = ErrorInterceptor.errorBodyOf(err.response?.data);
+    if ('${body['code']}' == 'APP_ATTESTATION_FAILED') {
+      handler.next(err);
+      return;
+    }
     try {
       final token = await _tokens.refreshToken();
       if (token == null) {
@@ -106,15 +114,19 @@ final class ErrorInterceptor extends Interceptor {
       return;
     }
     final response = err.response;
-    final body = _errorBody(response?.data);
+    final body = errorBodyOf(response?.data);
     final mapped = switch (err.type) {
       DioExceptionType.cancel => const ApiError(
         code: ErrorCode.cancelled,
         messageKey: 'errorCancelled',
       ),
       _ when response == null => ErrorMapper.noResponse(),
+      // A 401 with a known code is that code (the App Check failure rides
+      // one); only a bare 401 means the session ended (review fix 2).
       _ => ErrorMapper.fromCode(
-        response.statusCode == 401 ? 'UNAUTHENTICATED' : '${body['code']}',
+        response.statusCode == 401 && !ErrorMapper.hasCode('${body['code']}')
+            ? 'UNAUTHENTICATED'
+            : '${body['code']}',
         requestId:
             body['request_id'] as String? ??
             response.headers.value('x-request-id'),
@@ -131,7 +143,7 @@ final class ErrorInterceptor extends Interceptor {
   /// (`{"error": {"code", "message_key", "request_id", "details"}}`,
   /// contracts/node-api.openapi.yaml). Anything else yields an empty map, so
   /// the code falls back to INTERNAL.
-  static Map<String, dynamic> _errorBody(Object? data) {
+  static Map<String, dynamic> errorBodyOf(Object? data) {
     if (data is Map<String, dynamic>) {
       final error = data['error'];
       if (error is Map<String, dynamic>) return error;

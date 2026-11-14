@@ -8,6 +8,15 @@ abstract final class MockBackend {
   /// Every email code is accepted only if it equals this value.
   static const verificationCode = '123456';
 
+  /// The WhatsApp code AFTER a resend in mock mode: the generations must
+  /// differ so the `OTP_SUPERSEDED` path is reachable (review extra). The
+  /// FIRST generation (and every email code) stays [verificationCode].
+  static const resendVerificationCode = '654321';
+
+  /// The mock's code lifetime for the WhatsApp challenges (A8
+  /// `otp_ttl_minutes`).
+  static const otpTtl = Duration(minutes: 10);
+
   static const termsVersion = 'mock-terms-v1';
 
   /// Resend countdown the mock "server" returns after sending a code.

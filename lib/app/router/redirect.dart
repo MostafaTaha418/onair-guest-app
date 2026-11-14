@@ -1,4 +1,5 @@
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 
 final class RedirectContext {
@@ -74,7 +75,19 @@ String? resolveRedirect(RedirectContext context) {
           path == AppRoutes.newPassword)) {
     return AppRoutes.login;
   }
-  if (state is SignedIn && !state.isComplete) {
+  if (state is SignedIn &&
+      (state.account.status == AccountStatus.suspended ||
+          state.account.status == AccountStatus.deleted)) {
+    // The session survives, but account-gated surfaces show the suspended
+    // screen instead of «أكّد رقمك» (review fix 6); public routes still work.
+    if (AppRoutes.requiresAccount(context.location)) {
+      return path == AppRoutes.accountSuspended
+          ? null
+          : AppRoutes.accountSuspended;
+    }
+    return null;
+  }
+  if (state is SignedIn && state.account.needsPhoneStep) {
     if (path == AppRoutes.completeProfile) return null;
     final returnTo = AppRoutes.isAuthLocation(context.location)
         ? (_safeReturnLocation(context.from) ?? AppRoutes.home)
@@ -85,7 +98,7 @@ String? resolveRedirect(RedirectContext context) {
     ).toString();
   }
   if (state is SignedIn &&
-      state.isComplete &&
+      !state.account.needsPhoneStep &&
       AppRoutes.isAuthLocation(context.location)) {
     return _safeReturnLocation(context.from) ?? AppRoutes.home;
   }

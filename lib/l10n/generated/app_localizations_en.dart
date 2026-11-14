@@ -147,6 +147,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Something unexpected happened. Please try again.';
 
   @override
+  String get listSeparator => ', ';
+
+  @override
   String get errorCancelled => 'The operation was cancelled.';
 
   @override

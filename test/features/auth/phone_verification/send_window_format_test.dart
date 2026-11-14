@@ -50,38 +50,63 @@ void main() {
     final serverNow = DateTime.utc(2026, 11, 14, 10);
     final nextSendAt = serverNow.add(const Duration(minutes: 10));
 
-    test('uses the server difference, not the skewed device clock', () {
+    test('uses the server difference captured at arrival', () {
+      // The device runs 10 minutes behind the server when the response
+      // arrives: receivedAt 09:50, serverTime 10:00.
       final window = SendWindow(
         serverTime: serverNow,
+        receivedAt: serverNow.subtract(const Duration(minutes: 10)),
         nextSendAt: nextSendAt,
       );
-      // The device runs 10 minutes behind the server (R8): the remaining
-      // time still equals the server difference.
-      final deviceNow = serverNow.subtract(const Duration(minutes: 10));
+      // Right at arrival the remaining time equals the server difference.
       expect(
-        window.remainingUntilSend(deviceNow),
+        window.remainingUntilSend(
+          serverNow.subtract(const Duration(minutes: 10)),
+        ),
         const Duration(minutes: 10),
       );
     });
 
-    test('is a fixed server fact: the device clock never moves it', () {
+    test('decreases with real elapsed time, immune to the clock skew', () {
       final window = SendWindow(
         serverTime: serverNow,
+        receivedAt: serverNow.subtract(const Duration(minutes: 10)),
         nextSendAt: nextSendAt,
       );
-      // Any device clock answers with the same server difference; the
-      // ticking time comes from the caller's own elapsed measurement.
+      // Five real minutes later the server clock has moved the same five
+      // minutes: 10 m − 5 m. A skewed device clock only shifts the labels —
+      // receivedAt and deviceNow come from the same clock.
+      final deviceNow = serverNow.subtract(const Duration(minutes: 5));
+      expect(window.remainingUntilSend(deviceNow), const Duration(minutes: 5));
+      // A device running 10 minutes AHEAD measures the same elapsed time.
+      final skewedNow = deviceNow.add(const Duration(minutes: 10));
+      final skewedReceived = skewedNow.subtract(const Duration(minutes: 5));
       expect(
-        window.remainingUntilSend(serverNow.subtract(const Duration(hours: 5))),
-        const Duration(minutes: 10),
+        SendWindow(
+          serverTime: serverNow,
+          receivedAt: skewedReceived,
+          nextSendAt: nextSendAt,
+        ).remainingUntilSend(skewedNow),
+        const Duration(minutes: 5),
       );
+    });
+
+    test('is zero once the window passed on the server clock', () {
+      final window = SendWindow(
+        serverTime: serverNow,
+        receivedAt: serverNow,
+        nextSendAt: nextSendAt,
+      );
+      // Eleven real minutes after arrival the server clock passed
+      // next_send_at.
       expect(
-        window.remainingUntilSend(serverNow.add(const Duration(hours: 5))),
-        const Duration(minutes: 10),
+        window.remainingUntilSend(serverNow.add(const Duration(minutes: 11))),
+        Duration.zero,
       );
       expect(
         SendWindow(
           serverTime: serverNow,
+          receivedAt: serverNow,
           nextSendAt: serverNow,
         ).remainingUntilSend(serverNow),
         Duration.zero,
@@ -89,13 +114,17 @@ void main() {
       expect(
         SendWindow(
           serverTime: serverNow,
+          receivedAt: serverNow,
           nextSendAt: serverNow.subtract(const Duration(minutes: 1)),
         ).remainingUntilSend(serverNow),
         Duration.zero,
         reason: 'a stale window never waits',
       );
       expect(
-        SendWindow(serverTime: serverNow).remainingUntilSend(serverNow),
+        SendWindow(
+          serverTime: serverNow,
+          receivedAt: serverNow,
+        ).remainingUntilSend(serverNow),
         Duration.zero,
         reason: 'a null nextSendAt never waits',
       );

@@ -1,9 +1,16 @@
+import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Logs without any account identifier — the raw status value is not PII
+/// (review fix 6).
+final _log = AppLogger();
+
 final class ProfileRecord {
   const ProfileRecord({
-    this.status = AccountStatus.incomplete,
+    // A missing payload or field is `unknown`: the server decides, and only
+    // an explicit 'incomplete' enters «أكّد رقمك» (review fix 6).
+    this.status = AccountStatus.unknown,
     this.authProviders = const {},
     this.hasPassword = true,
     this.fullName,
@@ -15,13 +22,17 @@ final class ProfileRecord {
     this.acceptedTermsAt,
   });
 
-  /// `common_get_my_context` (contracts/supabase-auth.md A4). A missing
-  /// payload falls back to the incomplete default; an unrecognized status
-  /// stays `unknown` (forward-compatible).
+  /// `common_get_my_context` (contracts/supabase-auth.md A4). An
+  /// unrecognized status stays `unknown` (forward-compatible).
   factory ProfileRecord.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const ProfileRecord();
+    final rawStatus = json['profile_status'] as String?;
+    final status = AccountStatus.fromJson(rawStatus);
+    if (status == AccountStatus.unknown && rawStatus != null) {
+      _log.warning('profiles.status is not recognized by this build');
+    }
     return ProfileRecord(
-      status: AccountStatus.fromJson(json['profile_status'] as String?),
+      status: status,
       authProviders:
           ((json['auth_providers'] as List<dynamic>?) ?? const <dynamic>[])
               .whereType<String>()

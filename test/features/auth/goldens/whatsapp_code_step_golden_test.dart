@@ -43,6 +43,10 @@ final class _StubRepository implements PhoneVerificationRepository {
 /// live clock would diff every run (the auth_flow pattern).
 final pinnedNow = DateTime.utc(2026, 11, 14, 10);
 
+/// The frozen device clock for the countdown goldens: one real instant the
+/// whole suite shares, so the text never races the second hand.
+final DateTime frozenNow = DateTime.now().toUtc();
+
 enum _CodeState {
   counting,
   countingHours,
@@ -54,12 +58,17 @@ enum _CodeState {
 
   PvState state(DateTime now) {
     // The server window: counting keeps a 30 s wait, countingHours a 23 h
-    // one (the hours rendering), ready sends none (§4.2, T065).
+    // one (the hours rendering), ready sends none (§4.2, T065). The window
+    // is stamped with the REAL clock — remainingUntilSend subtracts the
+    // time since receivedAt, so a pinned instant would drift the text by
+    // the wall-clock distance; only the BLOCKED date stays pinned.
+    final real = frozenNow;
     final window = SendWindow(
-      serverTime: now,
+      serverTime: real,
+      receivedAt: real,
       nextSendAt: switch (this) {
-        _CodeState.counting => now.add(const Duration(seconds: 30)),
-        _CodeState.countingHours => now.add(
+        _CodeState.counting => real.add(const Duration(seconds: 30)),
+        _CodeState.countingHours => real.add(
           const Duration(hours: 23, minutes: 10),
         ),
         _ => null,
@@ -69,7 +78,7 @@ enum _CodeState {
       challenge: WhatsAppChallenge(
         challengeId: 'challenge-1',
         maskedPhone: '+20 10•• ••• 678',
-        expiresAt: now.add(const Duration(minutes: 10)),
+        expiresAt: real.add(const Duration(minutes: 10)),
         window: window,
       ),
       code: this == _CodeState.codeError ? '123456' : '',
@@ -113,7 +122,11 @@ Widget _step({
     locale: 'ar',
     currentTermsVersion: 'v1',
   )..emit(codeState.state(now));
-  const codeStep = WhatsAppCodeStep(supportPhone: '+201000000000');
+  // One shared frozen clock: every scenario renders the same remaining.
+  final codeStep = WhatsAppCodeStep(
+    supportPhone: '+201000000000',
+    clock: () => frozenNow,
+  );
   return RepositoryProvider<AppConfigSource>(
     create: (_) => FakeAppConfigRepository(
       const AppConfig(

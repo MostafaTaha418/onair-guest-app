@@ -32,7 +32,10 @@ void main() {
     void Function(Duration) advance,
     int times,
   ) {
-    var window = SendWindow(serverTime: DateTime.utc(1970));
+    var window = SendWindow(
+      serverTime: DateTime.utc(1970),
+      receivedAt: DateTime.utc(1970),
+    );
     for (var sent = 0; sent < times; sent++) {
       final wait = window.remainingUntilSend(mock.clock());
       if (wait > Duration.zero) advance(wait);
@@ -64,7 +67,10 @@ void main() {
         Duration(hours: 24),
         Duration(hours: 1),
       ];
-      var window = SendWindow(serverTime: DateTime.utc(1970));
+      var window = SendWindow(
+        serverTime: DateTime.utc(1970),
+        receivedAt: DateTime.utc(1970),
+      );
       for (var sent = 1; sent <= 9; sent++) {
         final wait = window.remainingUntilSend(mock.clock());
         if (wait > Duration.zero) advance(wait);

@@ -143,6 +143,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorUnexpectedNoRef => 'حصلت مشكلة غير متوقعة. جرّب تاني.';
 
   @override
+  String get listSeparator => '، ';
+
+  @override
   String get errorCancelled => 'تم إلغاء العملية.';
 
   @override

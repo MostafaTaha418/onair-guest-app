@@ -295,6 +295,9 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     phoneVerification: SupabasePhoneVerificationRepository(
       rpc: rpc,
       node: FallbackClient(dio),
+      // common_verify_otp may answer with the profile shape alone; the
+      // session is the identity then (review fix 1).
+      currentUserId: () => client.auth.currentUser?.id,
     ),
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),

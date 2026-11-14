@@ -56,6 +56,7 @@ void main() {
               expiresAt: now.add(const Duration(minutes: 10)),
               window: SendWindow(
                 serverTime: now,
+                receivedAt: now,
                 nextSendAt: now.add(const Duration(seconds: 30)),
               ),
             ),
@@ -81,8 +82,13 @@ void main() {
             darkTheme: OnAirTheme.dark,
             home: Scaffold(
               body: ListView(
-                children: const [
-                  WhatsAppCodeStep(supportPhone: '+201000000000'),
+                children: [
+                  WhatsAppCodeStep(
+                    supportPhone: '+201000000000',
+                    // The frozen emit instant: the countdown text cannot
+                    // race the real second hand in the test.
+                    clock: () => now,
+                  ),
                 ],
               ),
             ),

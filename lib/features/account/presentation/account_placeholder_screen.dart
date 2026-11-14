@@ -59,11 +59,12 @@ final class _SignedInBody extends StatelessWidget {
         _AccountRow(
           icon: AppIcons.keyOutline,
           label: l10n.accountSignInMethod,
-          value: providers.join('، '),
+          value: providers.join(l10n.listSeparator),
         ),
         if (account.phone != null) ...[
           const SizedBox(height: Dimens.space12),
           _AccountRow(
+            key: const ValueKey('account-phone-row'),
             icon: AppIcons.phoneOutlined,
             label: l10n.accountPhone,
             value: maskPhone(account.phone!),
@@ -119,6 +120,7 @@ final class _AccountRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    super.key,
     this.trailing,
   });
 

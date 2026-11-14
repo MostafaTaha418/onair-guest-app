@@ -23,6 +23,7 @@ final class PvForm extends PvState {
     this.phoneErrorKey,
     this.nameErrorKey,
     this.generalErrorKey,
+    this.generalErrorRequestId,
   });
 
   final String phoneText;
@@ -37,6 +38,9 @@ final class PvForm extends PvState {
   final String? nameErrorKey;
   final String? generalErrorKey;
 
+  /// The server reference for [generalErrorKey] (Constitution VIII).
+  final String? generalErrorRequestId;
+
   PvForm copyWith({
     String? phoneText,
     String? nameText,
@@ -46,6 +50,7 @@ final class PvForm extends PvState {
     String? phoneErrorKey,
     String? nameErrorKey,
     String? generalErrorKey,
+    String? generalErrorRequestId,
     bool clearPhoneError = false,
     bool clearNameError = false,
     bool clearGeneralError = false,
@@ -60,6 +65,9 @@ final class PvForm extends PvState {
     generalErrorKey: clearGeneralError
         ? null
         : generalErrorKey ?? this.generalErrorKey,
+    generalErrorRequestId: clearGeneralError
+        ? null
+        : generalErrorRequestId ?? this.generalErrorRequestId,
   );
 }
 
@@ -74,6 +82,7 @@ final class PvCode extends PvState {
     this.resending = false,
     this.codeFieldEnabled = true,
     this.errorKey,
+    this.errorRequestId,
     this.notice,
   });
 
@@ -83,6 +92,9 @@ final class PvCode extends PvState {
   final bool resending;
   final bool codeFieldEnabled;
   final String? errorKey;
+
+  /// The server reference for [errorKey] (Constitution VIII).
+  final String? errorRequestId;
 
   /// notOnWhatsApp / attestationFailed / temporarilyUnavailable; set from
   /// the delivery poll or the send errors.
@@ -95,6 +107,7 @@ final class PvCode extends PvState {
     bool? resending,
     bool? codeFieldEnabled,
     String? errorKey,
+    String? errorRequestId,
     PvNotice? notice,
     bool clearError = false,
     bool clearNotice = false,
@@ -105,6 +118,7 @@ final class PvCode extends PvState {
     resending: resending ?? this.resending,
     codeFieldEnabled: codeFieldEnabled ?? this.codeFieldEnabled,
     errorKey: clearError ? null : errorKey ?? this.errorKey,
+    errorRequestId: clearError ? null : errorRequestId ?? this.errorRequestId,
     notice: clearNotice ? null : notice ?? this.notice,
   );
 }
@@ -249,7 +263,11 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
       final name = form.nameText.trim();
       if (name.length < 2 || name.length > 80) return false;
     }
-    if (needsTerms && !form.termsAccepted) return false;
+    // Accepting terms without the SERVER's version is meaningless: the
+    // config must have loaded (review fix 9).
+    if (needsTerms && (_currentTermsVersion == null || !form.termsAccepted)) {
+      return false;
+    }
     return true;
   }
 
@@ -303,17 +321,29 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
         purpose,
       );
       if (isClosed) return;
-      await _send(challengeId);
+      await _send(challengeId, phone: phone);
     } on AppFailure catch (error) {
       if (isClosed) return;
       _mapStartFailure(error);
+    } on Object {
+      // A surprise from the repository layer must never leave the button
+      // spinning (review fix 4).
+      if (isClosed) return;
+      final current = state;
+      if (current is! PvForm) return;
+      emit(
+        current.copyWith(
+          submitting: false,
+          generalErrorKey: 'errorUnexpectedNoRef',
+        ),
+      );
     } finally {
       _submitInFlight = false;
     }
   }
 
   /// Sends the code for an open challenge (also the «ابعت كود جديد» path).
-  Future<void> _send(String challengeId) async {
+  Future<void> _send(String challengeId, {EgyptPhone? phone}) async {
     try {
       final challenge = await _repository.send(challengeId);
       if (isClosed) return;
@@ -324,6 +354,32 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
       if (state is PvCode) {
         // A failed resend keeps the code step and shows the reason.
         _mapSendFailure(error);
+        return;
+      }
+      // The FIRST send can already be rate-limited: the server window rides
+      // the error payload, so the code step renders for the SAME challenge —
+      // no new start() and no lost wait (review fix 5).
+      final nextSendAt = _detailsTime(error.error.details, 'next_send_at');
+      if (error.error.code == ErrorCode.rateLimited &&
+          nextSendAt != null &&
+          phone != null) {
+        final serverTime =
+            _detailsTime(error.error.details, 'server_time') ?? _clock();
+        emit(
+          PvCode(
+            challenge: WhatsAppChallenge(
+              challengeId: challengeId,
+              maskedPhone: maskPhone(phone.e164),
+              expiresAt: serverTime,
+              window: SendWindow(
+                serverTime: serverTime,
+                receivedAt: _clock(),
+                nextSendAt: nextSendAt,
+              ),
+            ),
+          ),
+        );
+        _startPolling(challengeId);
         return;
       }
       _mapStartFailure(error);
@@ -459,6 +515,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
           codeState.copyWith(
             verifying: false,
             errorKey: error.error.messageKey,
+            errorRequestId: error.error.requestId,
           ),
         );
       }
@@ -513,6 +570,15 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
     } on AppFailure catch (error) {
       if (isClosed) return;
       _mapSendFailure(error);
+    } on Object {
+      // A surprise from the repository layer must never leave the button
+      // spinning (review fix 4).
+      if (isClosed) return;
+      final latest = state;
+      if (latest is! PvCode) return;
+      emit(
+        latest.copyWith(resending: false, errorKey: 'errorUnexpectedNoRef'),
+      );
     }
   }
 
@@ -525,7 +591,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
               challengeId: '',
               maskedPhone: '',
               expiresAt: _clock(),
-              window: SendWindow(serverTime: _clock()),
+              window: SendWindow(serverTime: _clock(), receivedAt: _clock()),
             ),
           );
     final code = failure.error.code;
@@ -554,6 +620,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
           codeState.copyWith(
             resending: false,
             errorKey: failure.error.messageKey,
+            errorRequestId: failure.error.requestId,
           ),
         );
         return;
@@ -566,6 +633,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
               serverTime:
                   _detailsTime(failure.error.details, 'server_time') ??
                   _clock(),
+              receivedAt: _clock(),
               nextSendAt: nextSendAt,
             ),
           ),
@@ -576,6 +644,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
         codeState.copyWith(
           resending: false,
           errorKey: failure.error.messageKey,
+          errorRequestId: failure.error.requestId,
         ),
       );
     }
@@ -648,6 +717,7 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
         form.copyWith(
           submitting: false,
           generalErrorKey: failure.error.messageKey,
+          generalErrorRequestId: failure.error.requestId,
         ),
       );
     }

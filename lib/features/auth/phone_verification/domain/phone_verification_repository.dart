@@ -22,31 +22,40 @@ final class PhoneVerificationDraft {
 }
 
 /// Server timestamps only (R8, Constitution II): the UI derives countdowns
-/// from them with the device clock offset — it never computes the ladder.
+/// from them with the offset captured when the response arrived — it never
+/// computes the ladder.
 final class SendWindow {
   const SendWindow({
     required this.serverTime,
+    required this.receivedAt,
     this.nextSendAt,
     this.blockedUntil,
   });
 
   final DateTime serverTime;
+
+  /// The device time when the response carrying this window arrived; it
+  /// freezes the server↔device offset so a skewed clock cannot cheat or
+  /// over-wait (R8).
+  final DateTime receivedAt;
   final DateTime? nextSendAt;
 
   /// Non-null means the server blocked this key until then; it overrides
   /// [nextSendAt].
   final DateTime? blockedUntil;
 
-  /// How far the server clock is ahead of [deviceNow].
-  Duration clockOffset(DateTime deviceNow) => serverTime.difference(deviceNow);
+  /// How far the server clock was ahead of the device when the window
+  /// arrived.
+  Duration clockOffset() => serverTime.difference(receivedAt);
 
-  /// Wait left before the next send, using the server offset so a skewed
-  /// device clock cannot cheat or over-wait. `Duration.zero` when sending is
-  /// allowed now.
+  /// Wait left before the next send: the server's own remaining time,
+  /// decreased by the time elapsed since the response arrived. A skewed
+  /// device clock only shifts the labels, never the wait. `Duration.zero`
+  /// when sending is allowed now.
   Duration remainingUntilSend(DateTime deviceNow) {
     final next = nextSendAt;
     if (next == null) return Duration.zero;
-    final serverNow = deviceNow.add(clockOffset(deviceNow));
+    final serverNow = serverTime.add(deviceNow.difference(receivedAt));
     final remaining = next.difference(serverNow);
     return remaining.isNegative ? Duration.zero : remaining;
   }

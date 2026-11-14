@@ -213,6 +213,68 @@ void main() {
   );
 
   test(
+    'verify without a payload id takes the id from the current session',
+    () async {
+      final session = SupabasePhoneVerificationRepository(
+        rpc: rpc.call,
+        node: node,
+        currentUserId: () => 'session-guest',
+      );
+      when(() => rpc('common_verify_otp', any())).thenAnswer(
+        (_) async => {
+          // common_verify_otp may return only the profile shape (A4) with no
+          // id column — the session is the identity then.
+          'profile_status': 'active',
+          'phone_e164': '+201012345678',
+          'phone_verified': true,
+        },
+      );
+
+      final account = await session.verify('challenge-1', '123456');
+
+      expect(account.id, 'session-guest');
+      expect(account.status, AccountStatus.active);
+    },
+  );
+
+  test('verify with no id at all is UNAUTHENTICATED', () async {
+    when(
+      () => rpc('common_verify_otp', any()),
+    ).thenAnswer((_) async => {'profile_status': 'active'});
+
+    await expectLater(
+      repository.verify('challenge-1', '123456'),
+      throwsA(
+        isA<AppFailure>().having(
+          (failure) => failure.error.code,
+          'code',
+          ErrorCode.unauthenticated,
+        ),
+      ),
+    );
+  });
+
+  test('a send surprise (not Dio, not AppFailure) becomes INTERNAL', () async {
+    when(
+      () => node.sendOtpCode(
+        xRequestId: any(named: 'xRequestId'),
+        body: any(named: 'body'),
+      ),
+    ).thenThrow(const FormatException('bad json'));
+
+    await expectLater(
+      repository.send('challenge-1'),
+      throwsA(
+        isA<AppFailure>().having(
+          (failure) => failure.error.code,
+          'code',
+          ErrorCode.internal,
+        ),
+      ),
+    );
+  });
+
+  test(
     'a Node 429 OTP_SEND_BLOCKED carries the blocked_until details',
     () async {
       final now = DateTime.utc(2026, 11, 14, 10);

@@ -10,10 +10,12 @@ import 'package:on_air/features/auth/phone_verification/presentation/phone_verif
 
 final class _FakeRepository implements PhoneVerificationRepository {
   Exception? startError;
+  Exception? sendError;
   int sendCalls = 0;
   int startCalls = 0;
   PhoneVerificationDraft? lastDraft;
   PhoneVerificationPurpose? lastPurpose;
+  final sentChallengeIds = <String>[];
 
   @override
   Future<String> start(
@@ -30,6 +32,8 @@ final class _FakeRepository implements PhoneVerificationRepository {
   @override
   Future<WhatsAppChallenge> send(String challengeId) async {
     sendCalls += 1;
+    sentChallengeIds.add(challengeId);
+    if (sendError case final error?) throw error;
     final now = DateTime.utc(2026, 11, 14, 10);
     return WhatsAppChallenge(
       challengeId: challengeId,
@@ -37,6 +41,7 @@ final class _FakeRepository implements PhoneVerificationRepository {
       expiresAt: now.add(const Duration(minutes: 10)),
       window: SendWindow(
         serverTime: now,
+        receivedAt: now,
         nextSendAt: now.add(const Duration(seconds: 30)),
       ),
     );
@@ -252,4 +257,63 @@ void main() {
     expect(repo.lastDraft!.locale, 'ar');
     await cubit.close();
   });
+
+  test(
+    'a repository surprise resets submitting with the unexpected error',
+    () async {
+      repo.sendError = const FormatException('boom');
+      final cubit = _cubit(repo)..onPhoneChanged('01012345678');
+      await cubit.submit();
+
+      final form = cubit.state as PvForm;
+      expect(form.submitting, isFalse);
+      expect(form.generalErrorKey, 'errorUnexpectedNoRef');
+      await cubit.close();
+    },
+  );
+
+  test(
+    'the first-send RATE_LIMITED renders the code step for the same challenge',
+    () async {
+      final serverTime = DateTime.utc(2026, 11, 14, 10);
+      final nextSendAt = serverTime.add(const Duration(minutes: 5));
+      repo.sendError = AppFailure(
+        ErrorMapper.fromCode(
+          'RATE_LIMITED',
+          details: {
+            'next_send_at': nextSendAt.toIso8601String(),
+            'server_time': serverTime.toIso8601String(),
+          },
+        ),
+      );
+      final cubit = _cubit(repo)..onPhoneChanged('01012345678');
+      await cubit.submit();
+
+      final code = cubit.state as PvCode;
+      expect(code.challenge.challengeId, 'challenge-1');
+      expect(code.challenge.maskedPhone, '+20 10•• ••• 678');
+      expect(code.challenge.window.nextSendAt, nextSendAt);
+      // «ابعت كود جديد» reuses the SAME challenge — no new start().
+      repo.sendError = null;
+      await cubit.resend();
+      expect(repo.startCalls, 1, reason: 'no new start()');
+      expect(repo.sentChallengeIds, ['challenge-1', 'challenge-1']);
+      await cubit.close();
+    },
+  );
+
+  test(
+    'a resend surprise resets resending with the unexpected error',
+    () async {
+      final cubit = _cubit(repo)..onPhoneChanged('01012345678');
+      await cubit.submit(); // lands on the code step
+      repo.sendError = const FormatException('boom');
+      await cubit.resend();
+
+      final code = cubit.state as PvCode;
+      expect(code.resending, isFalse);
+      expect(code.errorKey, 'errorUnexpectedNoRef');
+      await cubit.close();
+    },
+  );
 }

@@ -92,6 +92,7 @@ void main() {
     required bool needsName,
     required bool needsTerms,
     String? prefilledName,
+    String? termsVersion = 'v1',
   }) async {
     auth = FakeAuthRepository()..account = account;
     final cubit = AuthCubit(auth);
@@ -106,7 +107,7 @@ void main() {
       needsTerms: needsTerms,
       prefilledName: prefilledName,
       locale: 'ar',
-      currentTermsVersion: 'v1',
+      currentTermsVersion: termsVersion,
     );
     addTearDown(phoneCubit.close);
 
@@ -203,6 +204,85 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
     await tester.pump();
     expect(buttonWidget().onPressed, isNotNull);
+  });
+
+  testWidgets(
+    'needsTerms with no loaded config keeps «متابعة» disabled (review fix 9)',
+    (tester) async {
+      config.loadError = Exception('offline');
+      await pumpScreen(
+        tester,
+        account: incompleteAccount(),
+        needsName: true,
+        needsTerms: true,
+        termsVersion: null,
+      );
+
+      OnAirPrimaryButton buttonWidget() => tester.widget<OnAirPrimaryButton>(
+        find.byKey(const ValueKey('confirm-phone-continue')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('confirm-phone-name-field')),
+        'Mona Adel',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('confirm-phone-field')),
+        '01012345678',
+      );
+      await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
+      await tester.pump();
+
+      // The form is complete, but the server's terms version never arrived.
+      expect(buttonWidget().onPressed, isNull);
+      expect(find.text(l10n.errorNoConnection), findsOneWidget);
+      expect(find.byKey(const ValueKey('config-retry')), findsOneWidget);
+    },
+  );
+
+  testWidgets('«أعد المحاولة» loads the config and unlocks «متابعة»', (
+    tester,
+  ) async {
+    config.loadError = Exception('offline');
+    await pumpScreen(
+      tester,
+      account: incompleteAccount(),
+      needsName: true,
+      needsTerms: true,
+      termsVersion: null,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('confirm-phone-name-field')),
+      'Mona Adel',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('confirm-phone-field')),
+      '01012345678',
+    );
+    await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
+    await tester.pump();
+    expect(
+      tester
+          .widget<OnAirPrimaryButton>(
+            find.byKey(const ValueKey('confirm-phone-continue')),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    // The network recovers; the retry button re-reads the config.
+    config.loadError = null;
+    await tester.tap(find.byKey(const ValueKey('config-retry')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<OnAirPrimaryButton>(
+            find.byKey(const ValueKey('confirm-phone-continue')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    expect(find.text(l10n.errorNoConnection), findsNothing);
   });
 
   testWidgets('the back button asks before leaving and «كمّل» keeps entries', (
