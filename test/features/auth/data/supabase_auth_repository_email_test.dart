@@ -99,8 +99,8 @@ void main() {
         'Guest Name',
         'guest@example.com',
         'password1',
-        '+201012345678',
         '1',
+        locale: 'ar',
       );
       await adapter.resendSignupEmail('guest@example.com');
       await adapter.verifySignupEmailOtp('guest@example.com', '123456');
@@ -113,10 +113,9 @@ void main() {
         () => client.signUp(
           email: 'guest@example.com',
           password: 'password1',
+          // No phone keys since S005 US6: «أكّد رقمك» owns the number.
           data: {
             'full_name': 'Guest Name',
-            'phone_e164': '+201012345678',
-            'phone_has_whatsapp': false,
             'accepted_terms_version': '1',
             'locale': 'ar',
           },
@@ -245,7 +244,13 @@ void main() {
 
     test('signup server errors are not reported as offline', () async {
       when(
-        () => auth.signUpWithEmail(any(), any(), any(), any(), any()),
+        () => auth.signUpWithEmail(
+          any(),
+          any(),
+          any(),
+          any(),
+          locale: any(named: 'locale'),
+        ),
       ).thenThrow(
         AuthRetryableFetchException(
           message: 'PHONE_ALREADY_USED',
@@ -258,7 +263,6 @@ void main() {
           'Guest Name',
           'guest@example.com',
           'password1',
-          '01012345678',
           '1',
         ),
         throwsA(

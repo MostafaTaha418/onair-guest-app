@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
 
 sealed class VerifyIdentityState {
@@ -30,27 +29,10 @@ final class VerifyEmailStep extends VerifyIdentityState {
   final Duration? retryAfter;
 }
 
+/// The phone is not confirmed: the screen shows the WhatsApp redirect card
+/// (S005 US6) — no booking-flow phone challenge any more.
 final class VerifyPhoneStep extends VerifyIdentityState {
-  const VerifyPhoneStep({this.error, this.sending = false});
-
-  final ErrorCode? error;
-  final bool sending;
-}
-
-final class VerifyCodeStep extends VerifyIdentityState {
-  const VerifyCodeStep({
-    required this.challengeId,
-    this.error,
-    this.verifying = false,
-    this.retryAfter,
-  });
-
-  final String challengeId;
-  final ErrorCode? error;
-  final bool verifying;
-
-  /// The resend window: from the challenge, or from the latest rate limit.
-  final Duration? retryAfter;
+  const VerifyPhoneStep();
 }
 
 final class VerifyDone extends VerifyIdentityState {
@@ -63,10 +45,10 @@ final class VerifyFailed extends VerifyIdentityState {
   final ApiError error;
 }
 
-/// US2: stops the booking flow until the guest's email and phone are
-/// confirmed. One email code covers both; the phone change is verified with
-/// the same code (FR-006). Auth states are untouched — the router must not
-/// leave the booking flow, so `AuthRepository` is used directly.
+/// US2: stops the booking flow until the guest's email is confirmed and the
+/// phone is on the account (S005 US6 hands the phone to «أكّد رقمك»). Auth
+/// states are untouched — the router must not leave the booking flow, so
+/// `AuthRepository` is used directly.
 final class VerifyIdentityCubit extends Cubit<VerifyIdentityState> {
   VerifyIdentityCubit({required this._flow, required this._auth})
     : super(const VerifyChecking());
@@ -130,108 +112,6 @@ final class VerifyIdentityCubit extends Cubit<VerifyIdentityState> {
           codeSent: true,
           error: _codeOf(error),
           retryAfter: _retryAfterOf(error),
-        ),
-      );
-    }
-  }
-
-  Future<void> submitPhone(
-    String raw, {
-    required bool hasWhatsapp,
-    String? whatsapp,
-  }) async {
-    final current = state;
-    if (current is! VerifyPhoneStep || current.sending) return;
-    final phone = EgyptPhone.tryParse(raw);
-    final whatsappPhone = whatsapp == null
-        ? null
-        : EgyptPhone.tryParse(whatsapp);
-    // Local validation first: the server is never called with a malformed
-    // number.
-    if (phone == null ||
-        (!hasWhatsapp && whatsapp != null && whatsappPhone == null)) {
-      emit(
-        const VerifyPhoneStep(error: ErrorCode.phoneCountryNotSupported),
-      );
-      return;
-    }
-    emit(const VerifyPhoneStep(sending: true));
-    PhoneChallenge? challenge;
-    try {
-      challenge = await _flow.requestPhoneChange(
-        phoneE164: phone.e164,
-        hasWhatsapp: hasWhatsapp,
-        whatsappE164: hasWhatsapp ? null : whatsappPhone?.e164,
-      );
-      await _flow.sendCode(challenge.challengeId);
-      if (isClosed) return;
-      emit(
-        VerifyCodeStep(
-          challengeId: challenge.challengeId,
-          retryAfter: challenge.retryAfter,
-        ),
-      );
-    } on AppFailure catch (failure) {
-      if (isClosed) return;
-      if (challenge != null) {
-        // The challenge exists; only sending the code failed.
-        emit(
-          VerifyCodeStep(
-            challengeId: challenge.challengeId,
-            error: failure.error.code,
-            retryAfter: failure.error.retryAfter ?? challenge.retryAfter,
-          ),
-        );
-      } else {
-        emit(VerifyPhoneStep(error: failure.error.code));
-      }
-    }
-  }
-
-  Future<void> resendCode() async {
-    final current = state;
-    if (current is! VerifyCodeStep || current.verifying) return;
-    try {
-      await _flow.sendCode(current.challengeId);
-      if (isClosed) return;
-      emit(
-        VerifyCodeStep(
-          challengeId: current.challengeId,
-          retryAfter: current.retryAfter,
-        ),
-      );
-    } on AppFailure catch (failure) {
-      if (isClosed) return;
-      emit(
-        VerifyCodeStep(
-          challengeId: current.challengeId,
-          error: failure.error.code,
-          retryAfter: failure.error.retryAfter ?? current.retryAfter,
-        ),
-      );
-    }
-  }
-
-  Future<void> submitCode(String code) async {
-    final current = state;
-    if (current is! VerifyCodeStep || current.verifying) return;
-    emit(
-      VerifyCodeStep(
-        challengeId: current.challengeId,
-        retryAfter: current.retryAfter,
-        verifying: true,
-      ),
-    );
-    try {
-      await _flow.verifyCode(challengeId: current.challengeId, code: code);
-      await start();
-    } on AppFailure catch (failure) {
-      if (isClosed) return;
-      emit(
-        VerifyCodeStep(
-          challengeId: current.challengeId,
-          error: failure.error.code,
-          retryAfter: current.retryAfter,
         ),
       );
     }

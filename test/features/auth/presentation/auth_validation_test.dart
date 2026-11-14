@@ -59,7 +59,8 @@ void main() {
     tester,
   ) async {
     // A tall surface keeps every field built (the social row lengthens the
-    // form), so all four required errors are on screen after the tap.
+    // form), so all three required errors are on screen after the tap —
+    // no phone field since S005 US6 (T067).
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -77,7 +78,7 @@ void main() {
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsNWidgets(4));
+    expect(find.text('الحقل ده مطلوب.'), findsNWidgets(3));
     expect(find.text('لازم توافق على الشروط للمتابعة.'), findsOneWidget);
     expect(auth.signUpEmailCalls, 0);
   });

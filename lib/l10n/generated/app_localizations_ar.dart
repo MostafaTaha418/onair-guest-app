@@ -191,9 +191,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authRegisterTitle => 'أنشئ حسابك';
 
   @override
-  String get authPhoneHint => 'مثال: 01012345678';
-
-  @override
   String get authPhoneInvalid => 'اكتب رقم موبايل مصري صحيح من 11 رقم.';
 
   @override
@@ -928,23 +925,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyEmailCodeHint => 'اكتب الكود اللي وصلك على البريد';
-
-  @override
-  String get verifyHasWhatsapp => 'الرقم ده عليه واتساب';
-
-  @override
-  String get verifyWhatsappNumber => 'رقم الواتساب (اختياري)';
-
-  @override
-  String get verifyCodeSentToEmail => 'بعتنا كود من 6 أرقام على بريدك.';
-
-  @override
-  String get verifyResend => 'ابعت الكود تاني';
-
-  @override
-  String verifyResendIn(String seconds) {
-    return 'تقدر تبعت الكود تاني بعد $seconds ثانية';
-  }
 
   @override
   String get bookingsTabCurrent => 'الحالية';

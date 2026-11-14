@@ -67,9 +67,7 @@ final class MockBookingServer
   final Map<String, int> _sessionsPerKey = {};
   final Map<String, PaymentSessionInfo> _sessionForKey = {};
   final Map<String, PaymentSessionInfo> _sessionForBooking = {};
-  ({bool email, bool phone}) _verified = (email: false, phone: false);
   var _bookingCounter = 0;
-  var _challengeCounter = 0;
   int remainingStarts = 0;
 
   Future<void> _delay() async {
@@ -211,11 +209,13 @@ final class MockBookingServer
 
   // -- BookingFlowRepository -------------------------------------------------
 
+  // The booking-flow phone challenge is gone (S005 US6): the flow only
+  // reads the canned confirmation status.
   @override
   Future<VerificationStatus> verificationStatus() => _delayed(() {
     return VerificationStatus(
-      emailConfirmed: startVerified || _verified.email,
-      phoneConfirmed: startVerified || _verified.phone,
+      emailConfirmed: startVerified,
+      phoneConfirmed: startVerified,
       email: 'guest@mock.onair.test',
       phone: '+201000000001',
     );
@@ -630,40 +630,6 @@ final class MockBookingServer
   void setStatus(String bookingId, String status) {
     _bookings?[bookingId]?['status'] = status;
   }
-
-  // -- Verification challenges ------------------------------------------------
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => _delayed(() {
-    if (!RegExp(r'^\+201[0125]\d{8}$').hasMatch(phoneE164)) {
-      _fail('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    if (phoneE164 == '+201000000000') {
-      _fail('PHONE_ALREADY_USED');
-    }
-    return PhoneChallenge(
-      challengeId: 'challenge-${++_challengeCounter}',
-      retryAfter: const Duration(seconds: 60),
-    );
-  });
-
-  @override
-  Future<void> sendCode(String challengeId) => _delayed(() {});
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => _delayed(() {
-    if (code != '123456') {
-      _fail('OTP_INVALID');
-    }
-    _verified = (email: true, phone: true);
-  });
 
   // -- NotificationsRepository ------------------------------------------------
 

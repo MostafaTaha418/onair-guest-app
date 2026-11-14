@@ -815,12 +815,12 @@ number from the account via WhatsApp; legacy accounts untouched.
 phone field → WhatsApp code → active. Then the account → «تغيير» → new number → code → snackbar
 (quickstart V10–V12).
 
-- [ ] T067 [P] [US6] Update `test/features/auth/presentation/email_flows_test.dart` and `auth_validation_test.dart`:
+- [X] T067 [P] [US6] Update `test/features/auth/presentation/email_flows_test.dart` and `auth_validation_test.dart`:
   - registration has no phone field;
   - `signUpEmail` is called with `(name, email, password, termsVersion)`;
   - after `verifyEmailCode` the account is `incomplete` and the router target is
     `/auth/complete-profile`.
-- [ ] T068 [US6] Remove the phone from email registration:
+- [X] T068 [US6] Remove the phone from email registration:
   - `AuthRepository.signUpEmail(String name, String email, String password, String
     termsVersion)` (drop `phone`) in the interface and the Supabase, mock and fake repositories,
     plus `AuthCubit.requestEmailSignup`;
@@ -830,15 +830,15 @@ phone field → WhatsApp code → active. Then the account → «تغيير» �
     validation and `_validPhone` use;
   - remove the now-unused ARB keys (`grep` each) and regenerate l10n;
   - update the registration golden.
-- [ ] T069 [US6] Mock: `MockAuthRepository.verifyEmailCode` returns an account with `status: incomplete, phone: null`. Add a seeded **legacy** mock user (`legacy@onair.test`, active, phone `+201012340000`, `phoneVerified: true`) used by the `legacyUser` social scenario and by email sign-in.
-- [ ] T070 [US6] Change number:
+- [X] T069 [US6] Mock: `MockAuthRepository.verifyEmailCode` returns an account with `status: incomplete, phone: null`. Add a seeded **legacy** mock user (`legacy@onair.test`, active, phone `+201012340000`, `phoneVerified: true`) used by the `legacyUser` social scenario and by email sign-in.
+- [X] T070 [US6] Change number:
   - add `AppRoutes.accountPhone = '/account/phone'` in `lib/app/router/routes.dart`, add it to
     `requiresAccount` and the registered locations (copy how `AppRoutes.account` is listed);
   - add the `GoRoute` in `app_router.dart` building `ConfirmPhoneScreen(purpose:
     PhoneVerificationPurpose.change)` (needsName/needsTerms are false for change);
   - `MockPhoneVerificationRepository.start(change)` requires an `active` account and keeps the
     old phone until `verify` succeeds.
-- [ ] T071 [US6] Booking verify step (`lib/features/booking/presentation/verify_identity_screen.dart` and `verify_identity_cubit.dart`):
+- [X] T071 [US6] Booking verify step (`lib/features/booking/presentation/verify_identity_screen.dart` and `verify_identity_cubit.dart`):
   - replace the `_PhoneStep` UI and the `submitPhone` / `resendCode` / `_CodeStep` phone logic
     with one card: text `bookingPhoneNotVerified` (existing key) and a primary button
     `verifyPhoneOnWhatsApp`;
@@ -848,7 +848,7 @@ phone field → WhatsApp code → active. Then the account → «تغيير» �
   - delete the booking-flow phone methods only if nothing else uses them (`grep -rn
     requestPhoneChange lib`);
   - update or delete the matching tests under `test/features/booking/`.
-- [ ] T072 [US6] Integration test `integration_test/email_register_phone_mock_test.dart`:
+- [X] T072 [US6] Integration test `integration_test/email_register_phone_mock_test.dart`:
   - (a) register by email → email code → «أكّد رقمك» with only the phone field → WhatsApp code
     → home;
   - (b) the legacy user signs in → no «أكّد رقمك»;

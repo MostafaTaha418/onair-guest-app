@@ -59,7 +59,6 @@ abstract interface class AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
     String termsVersion,
   );
   Future<CodeChallenge> requestEmailVerification(String email);

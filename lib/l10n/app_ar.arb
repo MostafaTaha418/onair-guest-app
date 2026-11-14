@@ -79,7 +79,6 @@
   "accountEmpty": "بيانات حسابك هتظهر هنا.",
   "authLoginTitle": "أهلًا بيك في OnAir",
   "authRegisterTitle": "أنشئ حسابك",
-  "authPhoneHint": "مثال: 01012345678",
   "authPhoneInvalid": "اكتب رقم موبايل مصري صحيح من 11 رقم.",
   "authEmailComingSoon": "التسجيل بالبريد الإلكتروني هيتاح قريبًا.",
   "authTermsPrefix": "بالمتابعة أنت توافق على",
@@ -523,18 +522,6 @@
   "verifyTitle": "تأكيد بياناتك",
   "verifyIntro": "قبل أول حجز لازم نأكد بريدك ورقم موبايلك بكود يوصلك على البريد.",
   "verifyEmailCodeHint": "اكتب الكود اللي وصلك على البريد",
-  "verifyHasWhatsapp": "الرقم ده عليه واتساب",
-  "verifyWhatsappNumber": "رقم الواتساب (اختياري)",
-  "verifyCodeSentToEmail": "بعتنا كود من 6 أرقام على بريدك.",
-  "verifyResend": "ابعت الكود تاني",
-  "verifyResendIn": "تقدر تبعت الكود تاني بعد {seconds} ثانية",
-  "@verifyResendIn": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
   "bookingsTabCurrent": "الحالية",
   "bookingsTabPast": "السابقة",
   "bookingsTabCancelled": "الملغاة",

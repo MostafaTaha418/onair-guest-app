@@ -97,22 +97,6 @@ final class ScriptedFlow implements BookingFlowRepository {
     required String bookingId,
     required String attemptKey,
   }) => throw UnimplementedError();
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => throw UnimplementedError();
-
-  @override
-  Future<void> sendCode(String challengeId) => throw UnimplementedError();
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => throw UnimplementedError();
 }
 
 /// Loads the flow and quotes in one go: a single cubit reference keeps the

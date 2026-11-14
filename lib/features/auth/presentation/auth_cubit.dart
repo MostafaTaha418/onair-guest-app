@@ -158,7 +158,6 @@ final class AuthCubit extends Cubit<AuthState> {
     String name,
     String email,
     String password,
-    String phone,
     String termsVersion,
   ) async {
     try {
@@ -166,7 +165,6 @@ final class AuthCubit extends Cubit<AuthState> {
         name,
         email,
         password,
-        phone,
         termsVersion,
       );
       if (!isClosed) emit(CodeSent(challenge));

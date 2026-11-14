@@ -4,7 +4,6 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/domain/social_identity.dart';
 
@@ -31,7 +30,21 @@ final class MockAuthRepository implements AuthRepository {
   MockAuthRepository({
     DateTime Function()? clock,
     this.currentTermsVersion = MockBackend.termsVersion,
-  }) : _clock = clock ?? DateTime.now;
+  }) : _clock = clock ?? DateTime.now {
+    // The S005 legacy account (T069): active, confirmed phone, no WhatsApp
+    // step — the same object the `legacyUser` social scenario and the
+    // `legacy@onair.test` email sign-in return (US7's one-account rule in
+    // mock form).
+    final legacy = _MockUser('mock-guest-legacy')
+      ..email = 'legacy@onair.test'
+      ..emailVerified = true
+      ..password = legacyPassword
+      ..status = AccountStatus.active
+      ..phone = '+201012340000'
+      ..phoneVerified = true
+      ..fullName = 'Legacy Guest';
+    _usersById[legacy.id] = legacy;
+  }
 
   final DateTime Function() _clock;
   final String currentTermsVersion;
@@ -40,6 +53,10 @@ final class MockAuthRepository implements AuthRepository {
   _MockUser? _current;
   String? _recoveryEmail;
   int _nextId = 1;
+
+  /// The password of the seeded legacy mock user (and of every journey
+  /// seed) — the mock accepts any sign-in with it.
+  static const legacyPassword = 'Passw0rd!';
 
   /// The next social sign-in outcome; reset to [MockSocialScenario.newUser]
   /// after every served sign-in.
@@ -100,14 +117,11 @@ final class MockAuthRepository implements AuthRepository {
           ..fullName = 'زائر تجريبي';
         return SocialSignInResult(account: _signIn(user));
       case MockSocialScenario.legacyUser:
-        final user = _create()
-          ..status = AccountStatus.active
-          ..email = 'legacy@onair.test'
-          ..emailVerified = true
-          ..phone = '+201012340000'
-          ..phoneVerified = true
-          ..fullName = 'Legacy Guest';
-        return SocialSignInResult(account: _signIn(user));
+        // The seeded legacy account itself — the same id the email sign-in
+        // returns (T069).
+        return SocialSignInResult(
+          account: _signIn(_usersById['mock-guest-legacy']!),
+        );
       case MockSocialScenario.unconfirmedEmailCollision:
         final user = _create()
           ..email = 'collide@onair.test'
@@ -121,7 +135,6 @@ final class MockAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
     String termsVersion,
   ) async {
     if (termsVersion != currentTermsVersion) throw const ProfileTermsChanged();
@@ -133,11 +146,7 @@ final class MockAuthRepository implements AuthRepository {
         ..password = password
         ..fullName = name.trim()
         ..acceptedTermsVersion = termsVersion
-        ..acceptedTermsAt = _clock().toUtc()
-        // Kept until US6 removes the registration phone: the field still
-        // exists in the form, but it does not make the account complete by
-        // itself any more (see verifyEmailCode).
-        ..phone = EgyptPhone.tryParse(phone)?.e164;
+        ..acceptedTermsAt = _clock().toUtc();
     }
     return _challenge(VerificationChannel.emailSignup, normalized);
   }
@@ -152,17 +161,8 @@ final class MockAuthRepository implements AuthRepository {
     final user = _findBy((u) => u.email == _normalize(email));
     if (user == null) throw const AuthCodeRejected('OTP_INVALID');
     user.emailVerified = true;
-    // S005: only «أكّد رقمك» (US3–US5) turns an account `active`. The legacy
-    // registration shape (name + phone + terms from the current form) keeps
-    // activating like before so the full-app journeys keep working until the
-    // WhatsApp step exists; US6 removes this branch with the phone field.
-    if (user.fullName != null &&
-        user.phone != null &&
-        user.acceptedTermsVersion != null) {
-      user
-        ..status = AccountStatus.active
-        ..phoneVerified = true;
-    }
+    // S005 US6: the email code never completes an account — only «أكّد
+    // رقمك» (US3–US5) confirms the phone and activates it.
     return _signIn(user);
   }
 

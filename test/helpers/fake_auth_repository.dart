@@ -28,7 +28,6 @@ final class FakeAuthRepository implements AuthRepository {
   String? lastEmail;
   String? lastPassword;
   String? lastName;
-  String? lastPhone;
   String? lastTermsVersion;
   String? lastRecoveryEmail;
 
@@ -66,13 +65,11 @@ final class FakeAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
     String termsVersion,
   ) async {
     signUpEmailCalls += 1;
     await signUpEmailBarrier;
     lastName = name;
-    lastPhone = phone;
     lastTermsVersion = termsVersion;
     lastEmail = email;
     lastPassword = password;

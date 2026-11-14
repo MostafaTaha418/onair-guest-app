@@ -196,9 +196,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authRegisterTitle => 'Create your account';
 
   @override
-  String get authPhoneHint => 'Example: 01012345678';
-
-  @override
   String get authPhoneInvalid =>
       'Enter a valid 11-digit Egyptian mobile number.';
 
@@ -935,23 +932,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyEmailCodeHint => 'Enter the code sent to your email';
-
-  @override
-  String get verifyHasWhatsapp => 'This number has WhatsApp';
-
-  @override
-  String get verifyWhatsappNumber => 'WhatsApp number (optional)';
-
-  @override
-  String get verifyCodeSentToEmail => 'We sent a 6-digit code to your email.';
-
-  @override
-  String get verifyResend => 'Resend code';
-
-  @override
-  String verifyResendIn(String seconds) {
-    return 'You can resend in $seconds s';
-  }
 
   @override
   String get bookingsTabCurrent => 'Current';

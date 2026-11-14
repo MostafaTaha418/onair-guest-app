@@ -6,7 +6,10 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import 'pump_until_found.dart';
 
-/// Completes the email-only registration flow used by the full-app tests.
+/// Completes the email + WhatsApp registration flow used by the full-app
+/// tests (S005): the email code leaves the account incomplete and «أكّد
+/// رقمك» (number only — the email form collected the name and terms)
+/// activates it.
 Future<void> registerMockGuest(
   WidgetTester tester,
   AppLocalizations l10n,
@@ -14,7 +17,6 @@ Future<void> registerMockGuest(
   await tester.tap(find.text(l10n.authCreateAccount));
   await tester.pumpAndSettle();
   final nameField = find.byKey(const ValueKey('email-name-field'));
-  final phoneField = find.byKey(const ValueKey('email-phone-field'));
   final emailField = find.byKey(const ValueKey('email-field'));
   final passwordField = find.byKey(const ValueKey('password-field'));
   final terms = find.byKey(const ValueKey('email-terms-checkbox'));
@@ -25,8 +27,6 @@ Future<void> registerMockGuest(
     nameField,
     'زائر تجريبي',
   );
-  await _scrollToRegistrationField(tester, phoneField);
-  await tester.enterText(phoneField, '01012345678');
   await _scrollToRegistrationField(tester, emailField);
   await tester.enterText(emailField, 'journey@example.com');
   await _scrollToRegistrationField(tester, passwordField);
@@ -49,6 +49,29 @@ Future<void> registerMockGuest(
   await tester.enterText(
     find.descendant(
       of: find.byKey(const ValueKey('otp-field')),
+      matching: find.byType(TextField),
+    ),
+    MockBackend.verificationCode,
+  );
+  await tester.pumpAndSettle();
+  // «أكّد رقمك»: the number only, then the WhatsApp code.
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('confirm-phone-field')),
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('confirm-phone-field')),
+    '01012345678',
+  );
+  await tester.pump();
+  await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('whatsapp-otp-field')),
+  );
+  await tester.enterText(
+    find.descendant(
+      of: find.byKey(const ValueKey('whatsapp-otp-field')),
       matching: find.byType(TextField),
     ),
     MockBackend.verificationCode,

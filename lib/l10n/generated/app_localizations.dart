@@ -446,12 +446,6 @@ abstract class AppLocalizations {
   /// **'أنشئ حسابك'**
   String get authRegisterTitle;
 
-  /// No description provided for @authPhoneHint.
-  ///
-  /// In ar, this message translates to:
-  /// **'مثال: 01012345678'**
-  String get authPhoneHint;
-
   /// No description provided for @authPhoneInvalid.
   ///
   /// In ar, this message translates to:
@@ -1657,36 +1651,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اكتب الكود اللي وصلك على البريد'**
   String get verifyEmailCodeHint;
-
-  /// No description provided for @verifyHasWhatsapp.
-  ///
-  /// In ar, this message translates to:
-  /// **'الرقم ده عليه واتساب'**
-  String get verifyHasWhatsapp;
-
-  /// No description provided for @verifyWhatsappNumber.
-  ///
-  /// In ar, this message translates to:
-  /// **'رقم الواتساب (اختياري)'**
-  String get verifyWhatsappNumber;
-
-  /// No description provided for @verifyCodeSentToEmail.
-  ///
-  /// In ar, this message translates to:
-  /// **'بعتنا كود من 6 أرقام على بريدك.'**
-  String get verifyCodeSentToEmail;
-
-  /// No description provided for @verifyResend.
-  ///
-  /// In ar, this message translates to:
-  /// **'ابعت الكود تاني'**
-  String get verifyResend;
-
-  /// No description provided for @verifyResendIn.
-  ///
-  /// In ar, this message translates to:
-  /// **'تقدر تبعت الكود تاني بعد {seconds} ثانية'**
-  String verifyResendIn(String seconds);
 
   /// No description provided for @bookingsTabCurrent.
   ///

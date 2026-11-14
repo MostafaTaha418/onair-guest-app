@@ -102,26 +102,6 @@ final class FlakyFlowRepository implements BookingFlowRepository {
     bookingId: bookingId,
     attemptKey: attemptKey,
   );
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => _inner.requestPhoneChange(
-    phoneE164: phoneE164,
-    hasWhatsapp: hasWhatsapp,
-    whatsappE164: whatsappE164,
-  );
-
-  @override
-  Future<void> sendCode(String challengeId) => _inner.sendCode(challengeId);
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => _inner.verifyCode(challengeId: challengeId, code: code);
 }
 
 void main() {

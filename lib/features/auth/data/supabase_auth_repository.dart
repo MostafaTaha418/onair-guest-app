@@ -4,7 +4,6 @@ import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/domain/social_identity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -49,9 +48,9 @@ abstract interface class PhoneAuthClient {
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  );
+    String termsVersion, {
+    required String locale,
+  });
   Future<void> resendSignupEmail(String email);
   Future<PhoneAuthUser> verifySignupEmailOtp(String email, String token);
   Future<PhoneAuthUser> signInWithEmailPassword(
@@ -100,18 +99,18 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    required String locale,
+  }) async {
     await _client.signUp(
       email: email,
       password: password,
+      // The phone is gone from registration (S005 US6): «أكّد رقمك» owns
+      // the number after the email code.
       data: {
         'full_name': name.trim(),
-        'phone_e164': phone,
-        'phone_has_whatsapp': false,
         'accepted_terms_version': termsVersion,
-        'locale': 'ar',
+        'locale': locale,
       },
     );
   }
@@ -184,13 +183,18 @@ final class SupabaseAuthRepository implements AuthRepository {
     this._profiles, {
     DateTime Function()? clock,
     SocialCredentialSource? socialCredentials,
+    String Function()? locale,
   }) : _clock = clock ?? DateTime.now,
-       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource();
+       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource(),
+       _locale = locale ?? (() => 'ar');
 
   final PhoneAuthClient _auth;
   final ProfileSource _profiles;
   final DateTime Function() _clock;
   final SocialCredentialSource _socialCredentials;
+
+  /// The current locale code the sign-up metadata carries.
+  final String Function() _locale;
 
   @override
   Stream<GuestAccount?> get authStateChanges =>
@@ -310,20 +314,15 @@ final class SupabaseAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
     String termsVersion,
   ) async {
     try {
-      final parsedPhone = EgyptPhone.tryParse(phone);
-      if (parsedPhone == null) {
-        throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-      }
       await _auth.signUpWithEmail(
         name,
         _normalizeEmail(email),
         password,
-        parsedPhone.e164,
         termsVersion,
+        locale: _locale(),
       );
       return _emailChallenge(VerificationChannel.emailSignup, email);
     } on AuthRequestRejected {

@@ -168,6 +168,26 @@ GoRouter createAppRouter({
         );
       },
     ),
+    // The change-number screen (S005 US6, T070): an active account only —
+    // name and terms are long settled, and the cubit carries no completion
+    // callbacks (a success pops with `true`).
+    GoRoute(
+      path: AppRoutes.accountPhone,
+      name: 'account-phone',
+      builder: (context, state) => BlocProvider<PhoneVerificationCubit>(
+        create: (context) => PhoneVerificationCubit(
+          context.read<PhoneVerificationRepository>(),
+          purpose: PhoneVerificationPurpose.change,
+          needsName: false,
+          needsTerms: false,
+          locale: 'ar',
+          currentTermsVersion: null,
+        ),
+        child: const ConfirmPhoneScreen(
+          purpose: PhoneVerificationPurpose.change,
+        ),
+      ),
+    ),
     GoRoute(
       path: AppRoutes.forgotPassword,
       name: 'forgot-password',

@@ -15,7 +15,6 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/password_rule.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_error_message.dart';
@@ -35,7 +34,6 @@ final class LoginScreen extends StatefulWidget {
 }
 
 final class _LoginScreenState extends State<LoginScreen> {
-  final _phone = TextEditingController();
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -50,7 +48,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    for (final controller in [_phone, _name, _email, _password]) {
+    for (final controller in [_name, _email, _password]) {
       controller.addListener(_submitGuard.reset);
     }
   }
@@ -82,7 +80,6 @@ final class _LoginScreenState extends State<LoginScreen> {
     cubit.social.removeListener(_onSocialChanged);
   }
 
-  bool get _validPhone => EgyptPhone.tryParse(_phone.text) != null;
   bool get _validEmail => RegExp(
     r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
   ).hasMatch(_email.text.trim());
@@ -96,7 +93,7 @@ final class _LoginScreenState extends State<LoginScreen> {
       (widget.registration
           ? PasswordRule.isValid(_password.text)
           : _password.text.isNotEmpty) &&
-      (!widget.registration || (_validName && _validPhone && _acceptedTerms));
+      (!widget.registration || (_validName && _acceptedTerms));
 
   String? _requiredOrInvalid(
     String value,
@@ -120,7 +117,6 @@ final class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _detach(_cubit);
-    _phone.dispose();
     _name.dispose();
     _email.dispose();
     _password.dispose();
@@ -139,11 +135,12 @@ final class _LoginScreenState extends State<LoginScreen> {
           refresh: true,
         );
         if (!mounted) return;
+        // No phone here any more (S005 US6): «أكّد رقمك» collects it after
+        // the email code.
         await context.read<AuthCubit>().requestEmailSignup(
           _name.text,
           _email.text,
           _password.text,
-          _phone.text,
           config.currentTermsVersion,
         );
       } else {
@@ -550,26 +547,6 @@ final class _LoginScreenState extends State<LoginScreen> {
           _name.text,
           _validName,
           l10n.authNameInvalid,
-          l10n,
-        ),
-        onChanged: (_) => setState(() => _generalError = null),
-      ),
-      const SizedBox(height: Dimens.space20),
-      // Kept until US6 removes it: the WhatsApp step (S005) owns the number.
-      OnAirTextField(
-        key: const ValueKey('email-phone-field'),
-        controller: _phone,
-        label: l10n.phoneNumber,
-        hint: l10n.authPhoneHint,
-        prefixIcon: AppIcons.phoneOutlined,
-        pill: true,
-        keyboardType: TextInputType.phone,
-        enabled: !_loading,
-        textInputAction: TextInputAction.next,
-        errorText: _requiredOrInvalid(
-          _phone.text,
-          _validPhone,
-          l10n.authPhoneInvalid,
           l10n,
         ),
         onChanged: (_) => setState(() => _generalError = null),
