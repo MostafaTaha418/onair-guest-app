@@ -122,6 +122,16 @@ void main() {
       isNull,
     );
   });
+
+  testWidgets('a rapid Google double tap starts one sign-in', (tester) async {
+    await pumpLogin(tester, TargetPlatform.android);
+
+    await tester.tap(googleButton());
+    await tester.tap(googleButton());
+    await tester.pumpAndSettle();
+
+    expect(auth.socialSignInCalls, 1);
+  });
 }
 
 /// Sets the target platform for the pumped tree and resets it in dispose,

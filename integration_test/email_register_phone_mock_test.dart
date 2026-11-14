@@ -29,9 +29,15 @@ void main() {
     addTearDown(tester.view.reset);
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
-    await tester.tap(find.byType(PropertyCard).first);
+    final firstCard = find.byType(PropertyCard).first;
+    await tester.ensureVisible(firstCard);
+    await tester.pumpAndSettle();
+    await tester.tap(firstCard);
     await pumpUntilFound(tester, find.text(l10n.bookNow));
-    await tester.tap(find.text(l10n.bookNow));
+    final bookNow = find.text(l10n.bookNow);
+    await tester.ensureVisible(bookNow);
+    await tester.pumpAndSettle();
+    await tester.tap(bookNow);
     await pumpUntilFound(
       tester,
       find.byKey(const ValueKey('social-google-button')),
@@ -83,8 +89,6 @@ void main() {
         find.byKey(const ValueKey('otp-field')),
         MockBackend.verificationCode,
       );
-      await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('verify-code-button')));
       // The incomplete account is forced to «أكّد رقمك» — number only: the
       // email form already collected the name and the terms.
       await pumpUntilFound(
@@ -117,7 +121,6 @@ void main() {
         ),
         MockBackend.verificationCode,
       );
-      await tester.tap(find.byKey(const ValueKey('whatsapp-confirm')));
       await pumpUntilFound(tester, find.byType(DatesScreen));
 
       expect(auth.account!.status, AccountStatus.active);
@@ -210,7 +213,6 @@ void main() {
       ),
       MockBackend.verificationCode,
     );
-    await tester.tap(find.byKey(const ValueKey('whatsapp-confirm')));
     await pumpUntilFound(tester, find.text(l10n.phoneChanged));
 
     expect(auth.account!.phone, '+201098765432');

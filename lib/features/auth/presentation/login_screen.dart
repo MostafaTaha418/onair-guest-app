@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,6 +45,7 @@ final class _LoginScreenState extends State<LoginScreen> {
   String? _requestError;
   String? _generalError;
   final _submitGuard = RapidSubmitGuard();
+  final _socialSubmitGuard = RapidSubmitGuard();
   AuthCubit? _cubit;
 
   @override
@@ -229,6 +232,37 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   bool get _socialBusy => _cubit?.social.value.busy != null;
 
+  void _signInWithGoogle() =>
+      unawaited(_signInWithSocial((cubit) => cubit.signInWithGoogle()));
+
+  void _signInWithApple() =>
+      unawaited(_signInWithSocial((cubit) => cubit.signInWithApple()));
+
+  Future<void> _signInWithSocial(
+    Future<void> Function(AuthCubit cubit) signIn,
+  ) async {
+    if (!_socialSubmitGuard.tryEnter()) return;
+    final cubit = _cubit;
+    if (cubit == null) return;
+    final router = GoRouter.maybeOf(context);
+    final origin = router == null
+        ? null
+        : GoRouterState.of(context).uri.queryParameters['from'];
+    await signIn(cubit);
+    if (!mounted) return;
+    final authState = cubit.state;
+    if (authState is! SignedIn || router == null) return;
+    final destination = resolveAuthReturnDestination(origin);
+    router.go(
+      authState.account.needsPhoneStep
+          ? Uri(
+              path: AppRoutes.completeProfile,
+              queryParameters: {'from': destination},
+            ).toString()
+          : destination,
+    );
+  }
+
   bool _googleVisible(BuildContext context) {
     try {
       final env = context.read<EnvConfig>();
@@ -312,15 +346,13 @@ final class _LoginScreenState extends State<LoginScreen> {
             if (showApple)
               SocialSignInButton(
                 provider: SocialProvider.apple,
-                onPressed: _socialBusy ? null : () => _cubit?.signInWithApple(),
+                onPressed: _socialBusy ? null : _signInWithApple,
                 busy: social.busy == SocialProvider.apple,
               ),
             if (showGoogle)
               SocialSignInButton(
                 provider: SocialProvider.google,
-                onPressed: _socialBusy
-                    ? null
-                    : () => _cubit?.signInWithGoogle(),
+                onPressed: _socialBusy ? null : _signInWithGoogle,
                 busy: social.busy == SocialProvider.google,
                 onLongPress: mockPicker,
               ),

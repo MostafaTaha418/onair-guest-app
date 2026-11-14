@@ -20,6 +20,7 @@ import 'package:on_air/features/app_update/presentation/not_available_screen.dar
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/confirm_phone_screen.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
@@ -157,9 +158,14 @@ GoRouter createAppRouter({
           final locale = AppLocalizations.of(builderContext).localeName;
           final authState = builderContext.read<AuthCubit>().state;
           final account = authState is SignedIn ? authState.account : null;
+          final phoneRepository = builderContext
+              .read<PhoneVerificationRepository>();
+          final clock = phoneRepository is MockPhoneVerificationRepository
+              ? phoneRepository.clock
+              : null;
           return BlocProvider<PhoneVerificationCubit>(
             create: (context) => PhoneVerificationCubit(
-              context.read<PhoneVerificationRepository>(),
+              phoneRepository,
               purpose: PhoneVerificationPurpose.register,
               needsName: account?.fullName == null,
               needsTerms: account?.acceptedTermsVersion == null,
@@ -168,10 +174,12 @@ GoRouter createAppRouter({
               currentTermsVersion: null,
               onAlreadyComplete: () =>
                   builderContext.read<AuthCubit>().refreshAccount(),
+              clock: clock,
             ),
             child: ConfirmPhoneScreen(
               purpose: PhoneVerificationPurpose.register,
               from: state.uri.queryParameters['from'],
+              clock: clock,
             ),
           );
         },
@@ -186,17 +194,24 @@ GoRouter createAppRouter({
       builder: (context, state) => Builder(
         builder: (builderContext) {
           final locale = AppLocalizations.of(builderContext).localeName;
+          final phoneRepository = builderContext
+              .read<PhoneVerificationRepository>();
+          final clock = phoneRepository is MockPhoneVerificationRepository
+              ? phoneRepository.clock
+              : null;
           return BlocProvider<PhoneVerificationCubit>(
             create: (context) => PhoneVerificationCubit(
-              context.read<PhoneVerificationRepository>(),
+              phoneRepository,
               purpose: PhoneVerificationPurpose.change,
               needsName: false,
               needsTerms: false,
               locale: locale,
               currentTermsVersion: null,
+              clock: clock,
             ),
-            child: const ConfirmPhoneScreen(
+            child: ConfirmPhoneScreen(
               purpose: PhoneVerificationPurpose.change,
+              clock: clock,
             ),
           );
         },

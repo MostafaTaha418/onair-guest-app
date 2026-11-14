@@ -33,9 +33,15 @@ void main() {
     addTearDown(tester.view.reset);
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
-    await tester.tap(find.byType(PropertyCard).first);
+    final firstCard = find.byType(PropertyCard).first;
+    await tester.ensureVisible(firstCard);
+    await tester.pumpAndSettle();
+    await tester.tap(firstCard);
     await pumpUntilFound(tester, find.text(l10n.bookNow));
-    await tester.tap(find.text(l10n.bookNow));
+    final bookNow = find.text(l10n.bookNow);
+    await tester.ensureVisible(bookNow);
+    await tester.pumpAndSettle();
+    await tester.tap(bookNow);
     await pumpUntilFound(
       tester,
       find.byKey(const ValueKey('social-google-button')),
@@ -147,6 +153,7 @@ void main() {
   testWidgets(
     '(a) the countdown text follows the ladder steps',
     (tester) async {
+      serverAhead = Duration.zero;
       MockBackend.clock = () => base.add(serverAhead);
       addTearDown(() => MockBackend.clock = DateTime.now);
       final auth = await bootMockApp(tester);
@@ -179,9 +186,11 @@ void main() {
     '(b) the 11th request shows the block date, (c) the reboot and (d) a '
     'new account stay blocked',
     (tester) async {
+      serverAhead = Duration.zero;
       MockBackend.clock = () => base.add(serverAhead);
       addTearDown(() => MockBackend.clock = DateTime.now);
       final auth = MockAuthRepository();
+      addTearDown(auth.dispose);
       await bootMockApp(tester, auth: auth);
       final phones = await reachBlock(tester, auth);
 
@@ -205,7 +214,7 @@ void main() {
 
       // (d) Signed out, a brand-new account on the same device: still
       // blocked.
-      await auth.signOut();
+      await tester.tap(find.byKey(const ValueKey('pv-blocked-sign-out')));
       await pumpUntilFound(tester, find.byType(PropertyCard));
       await reachBlockViaFormAfterSignIn(tester, auth);
     },
@@ -214,6 +223,7 @@ void main() {
   testWidgets(
     '(e) a failed attestation shows the notice and counts nothing',
     (tester) async {
+      serverAhead = Duration.zero;
       MockBackend.clock = () => base.add(serverAhead);
       addTearDown(() => MockBackend.clock = DateTime.now);
       final auth = await bootMockApp(tester);

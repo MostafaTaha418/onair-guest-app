@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/app.dart';
@@ -39,6 +40,11 @@ Future<MockAuthRepository> bootMockApp(
 }) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
+  // Detach a previously booted app so calling this helper again in the same
+  // test is a genuine process-style restart, not an update of OnAirApp's
+  // existing State object.
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump();
   // Sync IO: async dart:io futures never complete under the fake async
   // zone of a host widget test.
   final directory = Directory.systemTemp.createTempSync('on_air_mock_app');
@@ -54,8 +60,9 @@ Future<MockAuthRepository> bootMockApp(
           loader: (path) async => File(path).readAsStringSync(),
         )
       : MockListingsRepository();
+  final ownsAuth = auth == null;
   auth ??= MockAuthRepository();
-  addTearDown(auth.dispose);
+  if (ownsAuth) addTearDown(auth.dispose);
   final phones =
       phoneVerification ??
       MockPhoneVerificationRepository(

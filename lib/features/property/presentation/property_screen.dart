@@ -75,6 +75,7 @@ final class _PropertyScreenState extends State<PropertyScreen> {
   final GlobalKey _rulesKey = const GlobalObjectKey('property-rules');
   final ScrollController _scrollController = ScrollController();
   bool _noticeBannerShown = false;
+  bool _resumeScheduled = false;
 
   @override
   void initState() {
@@ -94,30 +95,49 @@ final class _PropertyScreenState extends State<PropertyScreen> {
   void _consumeResume(BuildContext context, PropertyReady state) {
     final intent = state.pendingResume!;
     context.read<PropertyCubit>().consumeResume();
+    final router = GoRouter.of(context);
     unawaited(
-      GoRouter.of(context).replace(
+      router.replace(
         ResumeIntent.stripFrom(GoRouterState.of(context).uri).toString(),
       ),
     );
-    switch (intent.action) {
-      case ResumeAction.book:
-        if (state.details.termsVersion == intent.termsVersion) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      switch (intent.action) {
+        case ResumeAction.book:
+          if (state.details.termsVersion != intent.termsVersion) return;
           unawaited(
-            context.push(
+            router.push(
               _bookingEntryUri(state.details, state.guests).toString(),
             ),
           );
-        }
-      case ResumeAction.contact:
-        unawaited(
-          context.push(
-            Uri(
-              path: AppRoutes.supportNew,
-              queryParameters: {'property': state.details.id},
-            ).toString(),
-          ),
-        );
-    }
+        case ResumeAction.contact:
+          unawaited(
+            router.push(
+              Uri(
+                path: AppRoutes.supportNew,
+                queryParameters: {'property': state.details.id},
+              ).toString(),
+            ),
+          );
+      }
+    });
+  }
+
+  /// A fast repository can reach [PropertyReady] before [BlocConsumer]
+  /// subscribes, so an initial resume cannot rely on the listener alone.
+  /// Schedule it after the first frame and re-read the state to keep the
+  /// action exactly-once if another transition already consumed it.
+  void _scheduleResume(BuildContext context) {
+    if (_resumeScheduled) return;
+    _resumeScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resumeScheduled = false;
+      if (!mounted) return;
+      final current = context.read<PropertyCubit>().state;
+      if (current is PropertyReady && current.pendingResume != null) {
+        _consumeResume(context, current);
+      }
+    });
   }
 
   void _showTermsNotice(BuildContext context) {
@@ -176,47 +196,45 @@ final class _PropertyScreenState extends State<PropertyScreen> {
     return BlocConsumer<PropertyCubit, PropertyState>(
       listener: (context, state) {
         if (state is! PropertyReady) return;
-        if (state.pendingResume != null) {
-          _consumeResume(context, state);
-        }
         if (state.termsUpdatedNotice && !_noticeBannerShown) {
           _showTermsNotice(context);
         }
       },
-      builder: (context, state) => switch (state) {
-        PropertyNotAvailable() => const NotAvailableScreen(),
-        PropertyLoading() => _LoadingBody(
-          propertyId: widget.propertyId,
-          heroVariants: widget.heroVariants,
-        ),
-        PropertyFailed(:final error) => Scaffold(
-          appBar: AppBar(leading: _backButton(context)),
-          body: ErrorView(
-            message: apiErrorMessage(error, AppLocalizations.of(context)),
-            referenceNumber: error.requestId,
-            onRetry: context.read<PropertyCubit>().retry,
-          ),
-        ),
-        PropertyOffline() => Scaffold(
-          appBar: AppBar(leading: _backButton(context)),
-          body: const _OfflineBody(),
-        ),
-        PropertyReady(
-          :final details,
-          :final stay,
-          :final guests,
-        ) =>
-          _ReadyBody(
+      builder: (context, state) {
+        if (state is PropertyReady && state.pendingResume != null) {
+          _scheduleResume(context);
+        }
+        return switch (state) {
+          PropertyNotAvailable() => const NotAvailableScreen(),
+          PropertyLoading() => _LoadingBody(
             propertyId: widget.propertyId,
             heroVariants: widget.heroVariants,
-            details: details,
-            stay: stay,
-            guests: guests,
-            typeLabels: _typeLabels,
-            scrollController: _scrollController,
-            rulesKey: _rulesKey,
-            today: widget.today,
           ),
+          PropertyFailed(:final error) => Scaffold(
+            appBar: AppBar(leading: _backButton(context)),
+            body: ErrorView(
+              message: apiErrorMessage(error, AppLocalizations.of(context)),
+              referenceNumber: error.requestId,
+              onRetry: context.read<PropertyCubit>().retry,
+            ),
+          ),
+          PropertyOffline() => Scaffold(
+            appBar: AppBar(leading: _backButton(context)),
+            body: const _OfflineBody(),
+          ),
+          PropertyReady(:final details, :final stay, :final guests) =>
+            _ReadyBody(
+              propertyId: widget.propertyId,
+              heroVariants: widget.heroVariants,
+              details: details,
+              stay: stay,
+              guests: guests,
+              typeLabels: _typeLabels,
+              scrollController: _scrollController,
+              rulesKey: _rulesKey,
+              today: widget.today,
+            ),
+        };
       },
     );
   }

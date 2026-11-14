@@ -27,10 +27,16 @@ import 'package:url_launcher/url_launcher.dart';
 /// The cubit comes from the route builder (T047); the same screen serves the
 /// change-number route (`purpose: change`, phone field only).
 final class ConfirmPhoneScreen extends StatefulWidget {
-  const ConfirmPhoneScreen({required this.purpose, this.from, super.key});
+  const ConfirmPhoneScreen({
+    required this.purpose,
+    this.from,
+    this.clock,
+    super.key,
+  });
 
   final PhoneVerificationPurpose purpose;
   final String? from;
+  final DateTime Function()? clock;
 
   @override
   State<ConfirmPhoneScreen> createState() => _ConfirmPhoneScreenState();
@@ -193,13 +199,17 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
                 ),
                 const SizedBox(height: Dimens.space16),
                 if (state.code != null)
-                  WhatsAppCodeStep(supportPhone: _supportPhone ?? '')
+                  WhatsAppCodeStep(
+                    supportPhone: _supportPhone ?? '',
+                    clock: widget.clock,
+                  )
                 else
                   form,
               ],
             ),
             PvCode() => WhatsAppCodeStep(
               supportPhone: _supportPhone ?? '',
+              clock: widget.clock,
             ),
             _ => form,
           },
