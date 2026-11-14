@@ -14,11 +14,13 @@ import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/phone_form_step.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/widgets/send_window_notice.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/widgets/auth_brand_header.dart';
 import 'package:on_air/features/auth/presentation/widgets/auth_flow_scaffold.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// «أكّد رقمك»: the mandatory WhatsApp phone confirmation. It cannot be
 /// skipped, and leaving `register` signs the guest out (FR-013, FR-014).
@@ -54,6 +56,25 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
   }
 
   bool get _isRegister => widget.purpose == PhoneVerificationPurpose.register;
+
+  /// The blocked state's «كلّم الدعم» dials the config support phone (§4.3).
+  Future<void> _contactSupport() async {
+    final phone = _supportPhone;
+    if (phone == null || phone.isEmpty) return;
+    try {
+      await launchUrl(Uri.parse('tel:$phone'));
+    } on Object {
+      // No dialer: silently do nothing.
+    }
+  }
+
+  /// The blocked register flow's «تسجيل الخروج»: the half-made account never
+  /// survives (FR-014) — the button itself is the confirmation.
+  Future<void> _signOutFromBlock() async {
+    await context.read<AuthCubit>().signOut();
+    if (!mounted) return;
+    context.go(resolveAuthCancelDestination(widget.from));
+  }
 
   /// The account snapshot the route builder classified the cubit with.
   GuestAccount? get _account {
@@ -124,6 +145,25 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
         ],
         BlocBuilder<PhoneVerificationCubit, PvState>(
           builder: (context, state) => switch (state) {
+            // The block notice sits above the interrupted step; both steps
+            // render their send/confirm controls disabled (§4.3, T064).
+            PvBlocked() => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                BlockedNotice(
+                  blockedUntil: state.blockedUntil,
+                  onSupport: () => unawaited(_contactSupport()),
+                  onSignOut: _isRegister
+                      ? () => unawaited(_signOutFromBlock())
+                      : null,
+                ),
+                const SizedBox(height: Dimens.space16),
+                if (state.code != null)
+                  WhatsAppCodeStep(supportPhone: _supportPhone ?? '')
+                else
+                  form,
+              ],
+            ),
             PvCode() => WhatsAppCodeStep(
               supportPhone: _supportPhone ?? '',
             ),

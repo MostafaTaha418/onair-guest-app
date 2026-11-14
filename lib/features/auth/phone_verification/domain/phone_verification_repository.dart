@@ -71,6 +71,15 @@ final class WhatsAppChallenge {
   final String maskedPhone;
   final DateTime expiresAt;
   final SendWindow window;
+
+  /// The same challenge under a fresh server window (the `RATE_LIMITED`
+  /// refresh, T063).
+  WhatsAppChallenge withWindow(SendWindow window) => WhatsAppChallenge(
+    challengeId: challengeId,
+    maskedPhone: maskedPhone,
+    expiresAt: expiresAt,
+    window: window,
+  );
 }
 
 /// Every failure throws an `AppFailure` whose `ApiError.details` carries the

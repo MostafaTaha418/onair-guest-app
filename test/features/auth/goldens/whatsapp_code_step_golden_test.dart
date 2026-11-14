@@ -13,6 +13,7 @@ import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/widgets/send_window_notice.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import '../../../helpers/fake_app_config_repository.dart';
@@ -38,22 +39,33 @@ final class _StubRepository implements PhoneVerificationRepository {
       throw UnimplementedError();
 }
 
+/// The pinned instant: the blocked state renders a real Cairo date, and a
+/// live clock would diff every run (the auth_flow pattern).
+final pinnedNow = DateTime.utc(2026, 11, 14, 10);
+
 enum _CodeState {
   counting,
+  countingHours,
   ready,
   codeError,
   notOnWhatsApp,
-  attestation;
+  attestation,
+  blocked;
 
-  PvCode state(DateTime now) {
-    // The server window: counting keeps a 30 s wait, ready sends none.
+  PvState state(DateTime now) {
+    // The server window: counting keeps a 30 s wait, countingHours a 23 h
+    // one (the hours rendering), ready sends none (§4.2, T065).
     final window = SendWindow(
       serverTime: now,
-      nextSendAt: this == _CodeState.counting
-          ? now.add(const Duration(seconds: 30))
-          : null,
+      nextSendAt: switch (this) {
+        _CodeState.counting => now.add(const Duration(seconds: 30)),
+        _CodeState.countingHours => now.add(
+          const Duration(hours: 23, minutes: 10),
+        ),
+        _ => null,
+      },
     );
-    return PvCode(
+    final code = PvCode(
       challenge: WhatsAppChallenge(
         challengeId: 'challenge-1',
         maskedPhone: '+20 10•• ••• 678',
@@ -68,11 +80,21 @@ enum _CodeState {
         _ => null,
       },
     );
+    if (this == _CodeState.blocked) {
+      // OTP_SEND_BLOCKED: the step renders disabled behind the notice.
+      return PvBlocked(
+        blockedUntil: now.add(const Duration(days: 7)),
+        serverTime: now,
+        code: code,
+      );
+    }
+    return code;
   }
 }
 
 /// Pumps the code step with the cubit already sitting in the requested
-/// state — no timers, no races (the golden pump cannot await cubits).
+/// state — no timers, no races (the golden pump cannot await cubits). The
+/// blocked state adds the notice above, exactly like the screen does.
 Widget _step({
   required ThemeMode mode,
   required TextDirection direction,
@@ -80,6 +102,9 @@ Widget _step({
   required int width,
   required _CodeState codeState,
 }) {
+  // One shared instant: the notice and the step's snapshot must show the
+  // same lift date.
+  final now = pinnedNow;
   final cubit = PhoneVerificationCubit(
     _StubRepository(),
     purpose: PhoneVerificationPurpose.register,
@@ -87,7 +112,8 @@ Widget _step({
     needsTerms: false,
     locale: 'ar',
     currentTermsVersion: 'v1',
-  )..emit(codeState.state(DateTime.now().toUtc()));
+  )..emit(codeState.state(now));
+  const codeStep = WhatsAppCodeStep(supportPhone: '+201000000000');
   return RepositoryProvider<AppConfigSource>(
     create: (_) => FakeAppConfigRepository(
       const AppConfig(
@@ -121,8 +147,16 @@ Widget _step({
             body: SafeArea(
               child: ListView(
                 padding: const EdgeInsets.all(28),
-                children: const [
-                  WhatsAppCodeStep(supportPhone: '+201000000000'),
+                children: [
+                  if (codeState == _CodeState.blocked) ...[
+                    BlockedNotice(
+                      blockedUntil: now.add(const Duration(days: 7)),
+                      onSupport: () {},
+                      onSignOut: () {},
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  codeStep,
                 ],
               ),
             ),
@@ -136,10 +170,12 @@ Widget _step({
 void main() {
   for (final (stateName, codeState) in [
     ('counting', _CodeState.counting),
+    ('counting_hours', _CodeState.countingHours),
     ('ready', _CodeState.ready),
     ('code_error', _CodeState.codeError),
     ('not_on_whatsapp', _CodeState.notOnWhatsApp),
     ('attestation', _CodeState.attestation),
+    ('blocked', _CodeState.blocked),
   ]) {
     for (final (modeName, mode) in [
       ('light', ThemeMode.light),

@@ -747,7 +747,7 @@ request shows the block; the block survives a simulated reinstall and an account
 
 ### Tests for US5
 
-- [ ] T060 [P] [US5] Write `test/features/auth/phone_verification/mock_otp_server_test.dart` (`fake_async`, injectable clock):
+- [X] T060 [P] [US5] Write `test/features/auth/phone_verification/mock_otp_server_test.dart` (`fake_async`, injectable clock):
   - waits after sends 1–9 are exactly `30s, 5m, 1h, 24h, 1h, 24h, 1h, 24h, 1h`;
   - a request before `nextSendAt` → `RATE_LIMITED` with `next_send_at`;
   - the 11th request → `OTP_SEND_BLOCKED` with `blocked_until = now + 7 days`, set on account,
@@ -759,7 +759,7 @@ request shows the block; the block survives a simulated reinstall and an account
   - success via `verify` resets the three keys;
   - `attestationFails = true` → `APP_ATTESTATION_FAILED` and nothing counted;
   - a "not on WhatsApp" send still counts.
-- [ ] T061 [P] [US5] Write `test/features/auth/phone_verification/send_window_format_test.dart`:
+- [X] T061 [P] [US5] Write `test/features/auth/phone_verification/send_window_format_test.dart`:
   - `formatSendWait(Duration)` returns `mm:ss` under 1 h (`00:30`, `04:59`);
   - for ≥ 1 h it returns `durationHoursMinutes` with hours and minutes (`1h 0m`, `23h 10m`);
   - `remainingUntilSend` uses the server offset: device clock 10 min behind → the remaining time
@@ -767,7 +767,7 @@ request shows the block; the block survives a simulated reinstall and an account
 
 ### Implementation for US5
 
-- [ ] T062 [US5] Create `lib/features/auth/phone_verification/data/mock_otp_server.dart` exactly per contracts/node-otp.md A8 "Processing order" and "Ladder":
+- [X] T062 [US5] Create `lib/features/auth/phone_verification/data/mock_otp_server.dart` exactly per contracts/node-otp.md A8 "Processing order" and "Ladder":
   - keys are plain strings `acct:<id>`, `phone:<e164>`, `dev:<deviceId>` (no hashing in the
     mock);
   - each key record holds `sendCount`, `lastSendAt`, `nextSendAt` and `blockedUntil`;
@@ -776,7 +776,7 @@ request shows the block; the block survives a simulated reinstall and an account
   - `MockPhoneVerificationRepository.send` calls `MockOtpServer.send(accountId, phone,
     deviceId)`, with the device id from the injected `DeviceIdentity` (T025's
     `MemoryDeviceIdentity`).
-- [ ] T063 [US5] In `PhoneVerificationCubit` and `WhatsAppCodeStep`:
+- [X] T063 [US5] In `PhoneVerificationCubit` and `WhatsAppCodeStep`:
   - keep the latest `SendWindow`, and feed a `Stream<Duration>` ticking every second to
     `CountdownText` (only the text rebuilds);
   - `whatsappResend` is disabled while the remaining time is > 0 and shows
@@ -784,7 +784,7 @@ request shows the block; the block survives a simulated reinstall and an account
   - `resend()` calls `send(challengeId)`. `RATE_LIMITED` updates the window from
     `details.next_send_at`. `OTP_SEND_BLOCKED` → state `PvBlocked(blockedUntil, serverTime)`.
   - Put `formatSendWait` in `widgets/send_window_notice.dart`.
-- [ ] T064 [US5] Create `lib/features/auth/phone_verification/presentation/widgets/send_window_notice.dart` with `BlockedNotice` (contracts/ui-screens.md §4.3):
+- [X] T064 [US5] Create `lib/features/auth/phone_verification/presentation/widgets/send_window_notice.dart` with `BlockedNotice` (contracts/ui-screens.md §4.3):
   - warning-tone `NoticeCard` with `otpBlockedUntil(date: …)`;
   - format the date in Cairo time with the existing date formatter in `lib/core/time/` (find it
     with `grep -rn Cairo lib/core/time`);
@@ -792,8 +792,8 @@ request shows the block; the block survives a simulated reinstall and an account
 
   Disable every send and confirm control while blocked. `PvBlocked` can also be reached from
   `start`/`send` on the form step: show the same notice there.
-- [ ] T065 [US5] Goldens: add the states `counting (hours)` and `blocked` to `whatsapp_code_step_golden_test.dart` (same matrix).
-- [ ] T066 [US5] Integration test `integration_test/phone_otp_limits_mock_test.dart`, driving the mock clock through a debug-only `MockClock` exposed by `MockBackend` (add `static DateTime Function() clock = DateTime.now;` and use it in `MockOtpServer`; tests replace it):
+- [X] T065 [US5] Goldens: add the states `counting (hours)` and `blocked` to `whatsapp_code_step_golden_test.dart` (same matrix).
+- [X] T066 [US5] Integration test `integration_test/phone_otp_limits_mock_test.dart`, driving the mock clock through a debug-only `MockClock` exposed by `MockBackend` (add `static DateTime Function() clock = DateTime.now;` and use it in `MockOtpServer`; tests replace it):
   - (a) the countdown text matches each ladder step;
   - (b) the 11th request shows the block date;
   - (c) recreate the app with the same mock backend (same `MemoryDeviceIdentity`) → still

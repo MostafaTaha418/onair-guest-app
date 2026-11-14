@@ -129,6 +129,24 @@ final class PvDone extends PvState {
   final PhoneVerificationPurpose purpose;
 }
 
+/// `OTP_SEND_BLOCKED` (§4.3): the server paused every send until
+/// [blockedUntil]. `code` keeps the code-step snapshot the block
+/// interrupted, `form` the form-step one — both render disabled behind the
+/// `BlockedNotice`.
+final class PvBlocked extends PvState {
+  const PvBlocked({
+    required this.blockedUntil,
+    required this.serverTime,
+    this.code,
+    this.form,
+  });
+
+  final DateTime blockedUntil;
+  final DateTime serverTime;
+  final PvCode? code;
+  final PvForm? form;
+}
+
 /// Screen-scoped (Constitution: state management): one cubit per
 /// «أكّد رقمك» / change-number screen. It keeps no static state, writes
 /// nothing to storage, and `close()` cancels the polling timer.
@@ -525,8 +543,35 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
           notice: PvNotice.temporarilyUnavailable,
         ),
       );
+    } else if (code == ErrorCode.otpSendBlocked) {
+      _emitBlocked(failure, code: codeState);
+    } else if (code == ErrorCode.rateLimited) {
+      // The server's `next_send_at` decides the wait (R8): the window
+      // refreshes from the error payload, no error text.
+      final nextSendAt = _detailsTime(failure.error.details, 'next_send_at');
+      if (nextSendAt == null) {
+        emit(
+          codeState.copyWith(
+            resending: false,
+            errorKey: failure.error.messageKey,
+          ),
+        );
+        return;
+      }
+      emit(
+        codeState.copyWith(
+          resending: false,
+          challenge: codeState.challenge.withWindow(
+            SendWindow(
+              serverTime:
+                  _detailsTime(failure.error.details, 'server_time') ??
+                  _clock(),
+              nextSendAt: nextSendAt,
+            ),
+          ),
+        ),
+      );
     } else {
-      // RATE_LIMITED / OTP_SEND_BLOCKED windows render in US5 (T063).
       emit(
         codeState.copyWith(
           resending: false,
@@ -534,6 +579,39 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
         ),
       );
     }
+  }
+
+  /// `OTP_SEND_BLOCKED` from either step: the block notice replaces the
+  /// error text; the interrupted step renders disabled behind it (T064).
+  void _emitBlocked(AppFailure failure, {PvCode? code, PvForm? form}) {
+    final blockedUntil = _detailsTime(failure.error.details, 'blocked_until');
+    if (blockedUntil == null) {
+      // A block without a date cannot be rendered from the server data
+      // (Constitution II) — the generic error text stands in.
+      final current = state;
+      if (current is PvCode) {
+        emit(
+          current.copyWith(resending: false, errorKey: 'otpBlockedUntil'),
+        );
+      } else if (current is PvForm) {
+        emit(
+          current.copyWith(
+            submitting: false,
+            generalErrorKey: 'otpBlockedUntil',
+          ),
+        );
+      }
+      return;
+    }
+    emit(
+      PvBlocked(
+        blockedUntil: blockedUntil,
+        serverTime:
+            _detailsTime(failure.error.details, 'server_time') ?? _clock(),
+        code: code,
+        form: form,
+      ),
+    );
   }
 
   void _mapStartFailure(AppFailure failure) {
@@ -561,6 +639,10 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
     } else if (code == ErrorCode.profileAlreadyComplete) {
       emit(form.copyWith(submitting: false));
       onAlreadyComplete?.call();
+    } else if (code == ErrorCode.otpSendBlocked) {
+      // The first send can already be blocked (a device key from an older
+      // account, quickstart V5): the notice shows on the form step (T064).
+      _emitBlocked(failure, form: form.copyWith(submitting: false));
     } else {
       emit(
         form.copyWith(
@@ -574,6 +656,13 @@ final class PhoneVerificationCubit extends Cubit<PvState> {
   PvForm _form(PvForm Function(PvForm) transform) {
     final current = state;
     return current is PvForm ? transform(current) : const PvForm();
+  }
+
+  /// The A8 error payload: ISO timestamps riding on `ApiError.details`
+  /// (`next_send_at`, `blocked_until`, `server_time`).
+  static DateTime? _detailsTime(Map<String, dynamic>? details, String field) {
+    final value = details?[field];
+    return value == null ? null : DateTime.parse(value as String).toUtc();
   }
 
   @override

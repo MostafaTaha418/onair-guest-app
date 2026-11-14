@@ -319,6 +319,8 @@ _Backend _mockBackend() {
     server: server,
   );
   final auth = MockAuthRepository();
+  // The same stable mock id feeds the OTP send-limit device key (US5).
+  const deviceIdentity = MemoryDeviceIdentity();
   return (
     config: const MockAppConfigSource(),
     auth: auth,
@@ -331,8 +333,11 @@ _Backend _mockBackend() {
     notifications: server,
     signals: signals,
     secureStore: secureStore,
-    deviceIdentity: const MemoryDeviceIdentity(),
-    phoneVerification: MockPhoneVerificationRepository(auth: auth),
+    deviceIdentity: deviceIdentity,
+    phoneVerification: MockPhoneVerificationRepository(
+      auth: auth,
+      deviceIdentity: deviceIdentity,
+    ),
     mockServer: server,
     stay: stay,
     mockStay: stay,

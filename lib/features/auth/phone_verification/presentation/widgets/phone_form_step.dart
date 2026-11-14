@@ -52,6 +52,10 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
       switch (key) {
         'errorValidationFailed' => l10n.errorValidationFailed,
         'authTermsChanged' => l10n.authTermsChanged,
+        'otpAttestationFailed' => l10n.otpAttestationFailed,
+        'otpTemporarilyUnavailable' => l10n.otpTemporarilyUnavailable,
+        'errorUnexpectedNoRef' => l10n.errorUnexpectedNoRef,
+        'errorNoConnection' => l10n.errorNoConnection,
         _ => null,
       };
 
@@ -60,7 +64,13 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
     final l10n = AppLocalizations.of(context);
     return BlocBuilder<PhoneVerificationCubit, PvState>(
       builder: (context, state) {
-        final form = state is PvForm ? state : const PvForm();
+        // Blocked on the form step: the same form from its snapshot with
+        // «متابعة» disabled behind the BlockedNotice (T064).
+        final (form, blocked) = switch (state) {
+          PvForm() => (state, false),
+          PvBlocked(:final form) when form != null => (form, true),
+          _ => (const PvForm(), false),
+        };
         final cubit = context.read<PhoneVerificationCubit>();
         // Keep the controllers in sync without stealing the caret.
         if (_phoneController.text != form.phoneText) {
@@ -137,7 +147,7 @@ class _PhoneFormStepState extends State<PhoneFormStep> {
                 child: OnAirPrimaryButton(
                   key: const ValueKey('confirm-phone-continue'),
                   label: l10n.confirmPhoneContinue,
-                  onPressed: valid ? cubit.submit : null,
+                  onPressed: valid && !blocked ? cubit.submit : null,
                   isLoading: form.submitting,
                   gradient: true,
                   pill: true,

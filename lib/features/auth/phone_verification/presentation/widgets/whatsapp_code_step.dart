@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_air/design_system/components/countdown_text.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/widgets/send_window_notice.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -15,7 +17,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// The WhatsApp code step (contracts/ui-screens.md §4.2): the masked target,
 /// the 6-digit field, «افتح واتساب», «تعديل الرقم» and the delivery notices.
-/// The countdown on «ابعت كود جديد» arrives with US5.
+/// The resend wait renders from the server window (R8): a `Stream<Duration>`
+/// ticking every second feeds [CountdownText], so only the text rebuilds.
+/// `OTP_SEND_BLOCKED` renders the step with its send controls disabled —
+/// the [BlockedNotice] itself lives above, on the screen (T064).
 final class WhatsAppCodeStep extends StatefulWidget {
   const WhatsAppCodeStep({required this.supportPhone, super.key});
 
@@ -29,20 +34,43 @@ final class WhatsAppCodeStep extends StatefulWidget {
 
 class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
   final _codeController = TextEditingController();
-  Timer? _countdownTicker;
 
-  @override
-  void initState() {
-    super.initState();
-    // The countdown text rebuilds alone; the field does not (§4.2, R8).
-    _countdownTicker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
+  /// The per-second remaining time of the latest window; rebuilt when the
+  /// window's `next_send_at` / `blocked_until` change (T063).
+  StreamController<Duration>? _countdown;
+  Timer? _ticker;
+  SendWindow? _countedWindow;
+
+  void _retune(SendWindow window) {
+    final counted = _countedWindow;
+    if (counted != null &&
+        window.nextSendAt == counted.nextSendAt &&
+        window.blockedUntil == counted.blockedUntil) {
+      return;
+    }
+    _countedWindow = window;
+    _ticker?.cancel();
+    unawaited(_countdown?.close());
+    final controller = StreamController<Duration>.broadcast();
+    // The window is server-stamped: its remaining never moves on its own
+    // (R8 — the device clock is ignored), so the tick subtracts the real
+    // elapsed time from the wait the window answered with.
+    final issuedAt = DateTime.now();
+    final initial = window.remainingUntilSend(issuedAt);
+    void tick() {
+      final remaining = initial - DateTime.now().difference(issuedAt);
+      controller.add(remaining.isNegative ? Duration.zero : remaining);
+    }
+
+    tick();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => tick());
+    _countdown = controller;
   }
 
   @override
   void dispose() {
-    _countdownTicker?.cancel();
+    _ticker?.cancel();
+    unawaited(_countdown?.close());
     _codeController.dispose();
     super.dispose();
   }
@@ -79,19 +107,29 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
     final colors = context.colors;
     return BlocBuilder<PhoneVerificationCubit, PvState>(
       builder: (context, state) {
-        if (state is! PvCode) return const SizedBox.shrink();
-        final code = state;
+        // Blocked renders the same step from its snapshot, disabled (T064).
+        final (code, blocked) = switch (state) {
+          PvCode() => (state, false),
+          PvBlocked(:final code) when code != null => (code, true),
+          _ => (null, false),
+        };
+        if (code == null) return const SizedBox.shrink();
+        _retune(code.challenge.window);
+        final countdown = _countdown!;
         if (_codeController.text != code.code) {
           _codeController.text = code.code;
         }
         final cubit = context.read<PhoneVerificationCubit>();
-        final noticeMessage = switch (code.notice) {
-          PvNotice.notOnWhatsApp => l10n.whatsappNotOnWhatsApp,
-          PvNotice.attestationFailed => l10n.otpAttestationFailed,
-          PvNotice.temporarilyUnavailable => l10n.otpTemporarilyUnavailable,
-          null => null,
-        };
-        final error = _errorText(code.errorKey, l10n);
+        final noticeMessage = blocked
+            ? null
+            : switch (code.notice) {
+                PvNotice.notOnWhatsApp => l10n.whatsappNotOnWhatsApp,
+                PvNotice.attestationFailed => l10n.otpAttestationFailed,
+                PvNotice.temporarilyUnavailable =>
+                  l10n.otpTemporarilyUnavailable,
+                null => null,
+              };
+        final error = blocked ? null : _errorText(code.errorKey, l10n);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -120,7 +158,7 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
             OnAirOtpField(
               key: const ValueKey('whatsapp-otp-field'),
               controller: _codeController,
-              enabled: code.codeFieldEnabled && !code.verifying,
+              enabled: !blocked && code.codeFieldEnabled && !code.verifying,
               onCompleted: (_) => cubit.verify(),
               onChanged: cubit.onCodeChanged,
             ),
@@ -143,7 +181,8 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                   key: const ValueKey('whatsapp-confirm'),
                   label: l10n.whatsappConfirm,
                   onPressed:
-                      code.code.length == 6 &&
+                      !blocked &&
+                          code.code.length == 6 &&
                           code.codeFieldEnabled &&
                           !code.verifying
                       ? cubit.verify
@@ -174,29 +213,49 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
             ),
             const SizedBox(height: Dimens.space16),
             // The server's window decides the wait (Constitution II): while
-            // `next_send_at` is ahead the button is disabled and shows the
-            // rendered remaining time.
-            BlocBuilder<PhoneVerificationCubit, PvState>(
-              builder: (context, state) {
-                final codeState = state is PvCode ? state : code;
-                final remaining = codeState.challenge.window.remainingUntilSend(
-                  DateTime.now(),
-                );
+            // the remaining time is ahead the resend is disabled and shows
+            // the rendered time; the per-second stream rebuilds the text
+            // alone and flips the button once the wait is over.
+            StreamBuilder<Duration>(
+              stream: countdown.stream,
+              builder: (context, snapshot) {
+                final remaining = snapshot.hasData
+                    ? snapshot.data!
+                    : code.challenge.window.remainingUntilSend(DateTime.now());
                 final counting = remaining > Duration.zero;
+                // The first frame renders the remaining directly: the
+                // broadcast stream's seed event lands before the
+                // subscription, so CountdownText takes over from the first
+                // tick — through its builder, so the label keeps the
+                // button's own (disabled grey while counting) style.
                 return TextButton(
                   key: const ValueKey('whatsapp-resend'),
                   onPressed:
-                      counting || codeState.resending || codeState.verifying
+                      counting || blocked || code.resending || code.verifying
                       ? null
                       : cubit.resend,
                   style: TextButton.styleFrom(
                     foregroundColor: colors['textAccent'],
                   ),
-                  child: Text(
-                    counting
-                        ? l10n.whatsappResendIn(formatSendWait(remaining, l10n))
-                        : l10n.whatsappResend,
-                  ),
+                  child: counting
+                      ? snapshot.hasData
+                            ? CountdownText(
+                                remaining: countdown.stream,
+                                format: (remaining) => l10n.whatsappResendIn(
+                                  formatSendWait(remaining, l10n),
+                                ),
+                                builder: (context, remaining) => Text(
+                                  l10n.whatsappResendIn(
+                                    formatSendWait(remaining, l10n),
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                l10n.whatsappResendIn(
+                                  formatSendWait(remaining, l10n),
+                                ),
+                              )
+                      : Text(l10n.whatsappResend),
                 );
               },
             ),
@@ -206,7 +265,7 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
               children: [
                 TextButton(
                   key: const ValueKey('whatsapp-edit-number'),
-                  onPressed: code.resending || code.verifying
+                  onPressed: blocked || code.resending || code.verifying
                       ? null
                       : cubit.editNumber,
                   style: TextButton.styleFrom(

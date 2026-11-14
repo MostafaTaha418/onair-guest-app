@@ -1,27 +1,44 @@
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_otp_server.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:uuid/uuid.dart';
 
-/// The mock «أكّد رقمك» server for `BACKEND_MODE=mock`. Phase 6 runs it
-/// **without limits** (T057); US5 swaps the internals for the ladder-driven
-/// mock OTP server. The contract mirrors node-otp.md A8: Egyptian numbers
-/// only, 6-digit codes ([MockBackend.verificationCode]), server timestamps
-/// in the windows.
+/// The mock «أكّد رقمك» server for `BACKEND_MODE=mock`. The limits (the
+/// ladder and the 7-day block) live in [MockOtpServer] (node-otp.md A8) and
+/// are keyed with the injected [DeviceIdentity]; the contract mirrors the
+/// real backend: Egyptian numbers only, 6-digit codes
+/// ([MockBackend.verificationCode]), server timestamps in the windows.
 final class MockPhoneVerificationRepository
     implements PhoneVerificationRepository {
-  MockPhoneVerificationRepository({required this._auth});
+  MockPhoneVerificationRepository({
+    required this._auth,
+    this._deviceIdentity,
+    MockOtpServer? otpServer,
+  }) : otpServer = otpServer ?? MockOtpServer();
 
   final MockAuthRepository _auth;
+  final DeviceIdentity? _deviceIdentity;
+
+  /// Shared when an app restart replays the same mock backend, so the
+  /// ladder and the block survive the reboot (quickstart V4–V6).
+  final MockOtpServer otpServer;
+
+  /// The device identity the limit keys use, exposed for the test harness.
+  DeviceIdentity? get deviceIdentity => _deviceIdentity;
+
   final Map<String, _MockChallenge> _challenges = {};
 
   /// Injectable so the US5 ladder tests and the mock-clock integration runs
-  /// can drive time.
-  DateTime Function() clock = DateTime.now;
+  /// can drive time; the default follows [MockBackend.clock] dynamically.
+  DateTime Function()? _clockOverride;
+  DateTime Function() get clock => _clockOverride ?? MockBackend.clock;
+  set clock(DateTime Function() value) => _clockOverride = value;
 
   @override
   Future<String> start(
@@ -59,19 +76,23 @@ final class MockPhoneVerificationRepository
 
   @override
   Future<WhatsAppChallenge> send(String challengeId) async {
-    final challenge = _challenge(challengeId)
-      ..sentAt = clock()
-      ..sendCount += 1;
-    // A generous window: US5 replaces it with the real ladder.
-    final now = clock();
+    final challenge = _challenge(challengeId);
+    final deviceId = await _deviceId();
+    // A8 steps 2–8: the limiter throws the mapped 429s or returns the
+    // window the counters produced.
+    final window = otpServer.send(
+      accountId: challenge.userId,
+      phone: challenge.phone,
+      deviceId: deviceId,
+    );
+    challenge
+      ..sentAt = window.serverTime
+      ..deviceId = deviceId;
     return WhatsAppChallenge(
       challengeId: challengeId,
       maskedPhone: _mask(challenge.phone),
-      expiresAt: now.add(const Duration(minutes: 10)),
-      window: SendWindow(
-        serverTime: now,
-        nextSendAt: now.add(const Duration(seconds: 30)),
-      ),
+      expiresAt: window.serverTime.add(const Duration(minutes: 10)),
+      window: window,
     );
   }
 
@@ -95,10 +116,13 @@ final class MockPhoneVerificationRepository
     return (
       status,
       failure,
-      SendWindow(
-        serverTime: now,
-        nextSendAt: now.add(const Duration(seconds: 30)),
-      ),
+      challenge.deviceId == null
+          ? SendWindow(serverTime: now)
+          : otpServer.windowOf(
+              accountId: challenge.userId,
+              phone: challenge.phone,
+              deviceId: challenge.deviceId!,
+            ),
     );
   }
 
@@ -110,11 +134,29 @@ final class MockPhoneVerificationRepository
     }
     // T057: the WhatsApp confirmation is what activates the mock account.
     _auth.activatePhone(userId: challenge.userId, phoneE164: challenge.phone);
+    // A8 "Reset on success": the keys of the last send go back to zero.
+    if (challenge.deviceId != null) {
+      otpServer.countSuccess(
+        accountId: challenge.userId,
+        phone: challenge.phone,
+        deviceId: challenge.deviceId!,
+      );
+    }
     final account = _auth.account;
     if (account == null) {
       throw AppFailure(ErrorMapper.fromCode('UNAUTHENTICATED'));
     }
     return account;
+  }
+
+  Future<String> _deviceId() async {
+    try {
+      return await _deviceIdentity?.id() ?? 'unavailable';
+    } on Object {
+      // A8 requires a device id for the WhatsApp channel; a mock without an
+      // identity still counts under a shared key.
+      return 'unavailable';
+    }
   }
 
   _MockChallenge _challenge(String challengeId) {
@@ -139,5 +181,8 @@ final class _MockChallenge {
   final String userId;
   final String phone;
   DateTime? sentAt;
-  int sendCount = 0;
+
+  /// Set by the last successful [MockPhoneVerificationRepository.send] —
+  /// the device third of the limit keys (A8 step 4).
+  String? deviceId;
 }

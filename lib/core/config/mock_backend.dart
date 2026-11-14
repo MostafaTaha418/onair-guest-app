@@ -13,6 +13,10 @@ abstract final class MockBackend {
   /// Resend countdown the mock "server" returns after sending a code.
   static const resendInterval = Duration(seconds: 30);
 
+  /// The mock server clock (S005 US5). The OTP-limit tests replace it to
+  /// drive the ladder; production code never touches [MockBackend].
+  static DateTime Function() clock = DateTime.now;
+
   static const appConfig = AppConfig(
     minSupportedBuildAndroid: 1,
     minSupportedBuildIos: 1,

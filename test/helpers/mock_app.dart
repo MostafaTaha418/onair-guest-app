@@ -6,11 +6,14 @@ import 'package:on_air/app/app.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -32,6 +35,7 @@ import 'fake_booking_backend.dart';
 Future<MockAuthRepository> bootMockApp(
   WidgetTester tester, {
   MockAuthRepository? auth,
+  MockPhoneVerificationRepository? phoneVerification,
 }) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
@@ -52,6 +56,12 @@ Future<MockAuthRepository> bootMockApp(
       : MockListingsRepository();
   auth ??= MockAuthRepository();
   addTearDown(auth.dispose);
+  final phones =
+      phoneVerification ??
+      MockPhoneVerificationRepository(
+        auth: auth,
+        deviceIdentity: const MemoryDeviceIdentity(),
+      );
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
 
@@ -62,6 +72,12 @@ Future<MockAuthRepository> bootMockApp(
           value: const MockAppConfigSource(),
         ),
         RepositoryProvider<AuthRepository>.value(value: auth),
+        // The OTP limiter and its stable device id — the same stack the
+        // real bootstrap provides (S005 US5).
+        RepositoryProvider<DeviceIdentity>.value(
+          value: phones.deviceIdentity ?? const MemoryDeviceIdentity(),
+        ),
+        RepositoryProvider<PhoneVerificationRepository>.value(value: phones),
         RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
         RepositoryProvider<ListingsRepository>.value(value: listings),
         RepositoryProvider<JsonFileCache>.value(value: cache),
