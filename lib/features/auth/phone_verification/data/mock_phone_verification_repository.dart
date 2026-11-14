@@ -4,6 +4,7 @@ import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
+import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/phone_verification/data/mock_otp_server.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
@@ -167,12 +168,8 @@ final class MockPhoneVerificationRepository
     return challenge;
   }
 
-  /// `+201012345678` → `+20 10•• ••• 678`.
-  static String _mask(String e164) {
-    final digits = e164.replaceFirst('+', '');
-    if (digits.length < 7) return e164;
-    return '+20 10•• ••• ${digits.substring(digits.length - 3)}';
-  }
+  /// The server mask — the shared [maskPhone] helper (T076).
+  static String _mask(String e164) => maskPhone(e164);
 }
 
 final class _MockChallenge {

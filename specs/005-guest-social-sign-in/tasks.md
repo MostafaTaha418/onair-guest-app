@@ -891,12 +891,12 @@ placeholder.
 **Independent Test**: a complete mock Google account → the account tab shows «طريقة الدخول:
 Google», the masked phone with «متأكد», and «تغيير» opens `/account/phone` (quickstart V12).
 
-- [ ] T075 [P] [US8] Widget test `test/features/account/account_placeholder_test.dart` (create or extend):
+- [X] T075 [P] [US8] Widget test `test/features/account/account_placeholder_test.dart` (create or extend):
   - Google account → the `accountMethodGoogle` text is shown;
   - email + google → both, joined with «، »;
   - the phone is shown masked (`+20 10•• ••• 678` style) with the `accountPhoneConfirmed` chip;
   - tapping `accountChangePhone` pushes `/account/phone`.
-- [ ] T076 [US8] In `lib/features/account/presentation/account_placeholder_screen.dart`, for a `SignedIn` state:
+- [X] T076 [US8] In `lib/features/account/presentation/account_placeholder_screen.dart`, for a `SignedIn` state:
   - add a row `accountSignInMethod` with the provider names;
   - add a row `accountPhone` with the masked phone. Write `maskPhone(String e164)` in
     `lib/features/auth/domain/egypt_phone.dart`: it keeps the first 4 digits after `+20` and the
@@ -907,7 +907,7 @@ Google», the masked phone with «متأكد», and «تغيير» opens `/accou
 
   There is no password UI now. Add a `// G4: hide «تغيير كلمة المرور» when !account.hasPassword
   (FR-043)` comment where G4 will add security settings.
-- [ ] T077 [US8] Golden `test/features/account/goldens/account_rows_golden_test.dart`: light/dark × RTL/LTR × 1.0/1.3.
+- [X] T077 [US8] Golden `test/features/account/goldens/account_rows_golden_test.dart`: light/dark × RTL/LTR × 1.0/1.3.
 
 **Checkpoint**: all stories are done.
 
