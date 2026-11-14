@@ -5,9 +5,9 @@ import 'package:on_air/core/push/push_token_source.dart';
 abstract interface class FirebaseMessagingGateway {
   Future<bool> canReadTokenWithoutPrompt();
 
-  Future<void> register();
+  Future<String?> getToken();
 
-  Stream<String> get onRegistered;
+  Stream<String> get onTokenRefresh;
 }
 
 final class PluginFirebaseMessagingGateway implements FirebaseMessagingGateway {
@@ -33,10 +33,10 @@ final class PluginFirebaseMessagingGateway implements FirebaseMessagingGateway {
   }
 
   @override
-  Future<void> register() => _messaging.register();
+  Future<String?> getToken() => _messaging.getToken();
 
   @override
-  Stream<String> get onRegistered => _messaging.onRegistered;
+  Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
 }
 
 final class FirebasePushTokenSource implements PushTokenSource {
@@ -48,15 +48,10 @@ final class FirebasePushTokenSource implements PushTokenSource {
   @override
   Future<String?> currentToken() async {
     if (!await _gateway.canReadTokenWithoutPrompt()) return null;
-    final registration = _gateway.onRegistered.first.timeout(
-      const Duration(seconds: 10),
-      onTimeout: () => '',
-    );
-    await _gateway.register();
-    final token = await registration;
-    return token.isEmpty ? null : token;
+    final token = await _gateway.getToken();
+    return token == null || token.isEmpty ? null : token;
   }
 
   @override
-  Stream<String> get tokenRefreshes => _gateway.onRegistered;
+  Stream<String> get tokenRefreshes => _gateway.onTokenRefresh;
 }
