@@ -45,31 +45,35 @@ final class BlockedNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Column(
-      key: const ValueKey('pv-blocked-notice'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        NoticeCard(
-          icon: AppIcons.blocked,
-          tone: NoticeTone.warning,
-          message: l10n.otpBlockedUntil(
-            formatCairoDayMonthTime(blockedUntil, locale: l10n.localeName),
-          ),
-          actionLabel: l10n.whatsappContactSupport,
-          onAction: onSupport,
-        ),
-        if (onSignOut != null) ...[
-          const SizedBox(height: Dimens.space8),
-          TextButton(
-            key: const ValueKey('pv-blocked-sign-out'),
-            onPressed: onSignOut,
-            style: TextButton.styleFrom(
-              foregroundColor: context.colors['textAccent'],
+    // The block replaces the whole step: announce it when it appears.
+    return Semantics(
+      liveRegion: true,
+      child: Column(
+        key: const ValueKey('pv-blocked-notice'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          NoticeCard(
+            icon: AppIcons.blocked,
+            tone: NoticeTone.warning,
+            message: l10n.otpBlockedUntil(
+              formatCairoDayMonthTime(blockedUntil, locale: l10n.localeName),
             ),
-            child: Text(l10n.signOut),
+            actionLabel: l10n.whatsappContactSupport,
+            onAction: onSupport,
           ),
+          if (onSignOut != null) ...[
+            const SizedBox(height: Dimens.space8),
+            TextButton(
+              key: const ValueKey('pv-blocked-sign-out'),
+              onPressed: onSignOut,
+              style: TextButton.styleFrom(
+                foregroundColor: context.colors['textAccent'],
+              ),
+              child: Text(l10n.signOut),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

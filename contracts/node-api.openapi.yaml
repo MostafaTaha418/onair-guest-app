@@ -7,7 +7,8 @@ info:
     The single source of names is `docs/OnAir Backend Master Plan.md` (28 Oct 2026).
 
     Changed on 28 Oct 2026:
-    - There is no SMS. Every code goes to the account's email through `POST /v1/otp/send`.
+    - There is no SMS. Phone codes go on WhatsApp; other codes by email,
+      through `POST /v1/otp/send`.
     - Push tokens moved to the RPCs `common_register_device` / `common_unregister_device`.
       The old `/v1/devices` routes are removed.
 

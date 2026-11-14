@@ -915,12 +915,12 @@ Google», the masked phone with «متأكد», and «تغيير» opens `/accou
 
 ## Phase 11: Polish & Cross-Cutting Concerns
 
-- [ ] T078 [P] Privacy/logging audit:
+- [x] T078 [P] Privacy/logging audit:
   - `grep -rn "print(\|debugPrint(\|logger\." lib/features/auth lib/core/device lib/core/network`;
   - confirm no phone, device id, idToken, App Check token or code is logged;
   - add a unit test asserting that `OtpSendInterceptor` never writes headers to `AppLogger` (fake
     logger records nothing containing `dev-1` / `att-1`).
-- [ ] T079 [P] Accessibility pass:
+- [x] T079 [P] Accessibility pass:
   - run the app with TalkBack (Android) or VoiceOver (iOS simulator) on login, «أكّد رقمك», the
     code step and blocked;
   - check that every control is announced with its label, that countdown changes are not
@@ -928,14 +928,14 @@ Google», the masked phone with «متأكد», and «تغيير» opens `/accou
     static label), and that field errors are announced.
 
   Fix any issue found.
-- [ ] T080 [P] Update `contracts/error-codes.md` and `contracts/supabase-backend.md` in the repo root `contracts/` folder:
+- [x] T080 [P] Update `contracts/error-codes.md` and `contracts/supabase-backend.md` in the repo root `contracts/` folder:
   - add the S005 codes;
   - add a short "S005 deltas" section linking to `specs/005-guest-social-sign-in/contracts/`;
   - change the statement "There is no SMS. Every code goes to the account's email" in
     `contracts/node-api.openapi.yaml` description to: "phone codes go on WhatsApp; other codes
     by email".
-- [ ] T081 Update `README.md`: the env keys `GOOGLE_SERVER_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID`, the Social mock scenario picker (long-press Google in debug mock), and a pointer to `specs/005-guest-social-sign-in/quickstart.md` §1 for the manual Meta/Firebase/Google/Apple setup.
-- [ ] T082 Full validation:
+- [x] T081 Update `README.md`: the env keys `GOOGLE_SERVER_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID`, the Social mock scenario picker (long-press Google in debug mock), and a pointer to `specs/005-guest-social-sign-in/quickstart.md` §1 for the manual Meta/Firebase/Google/Apple setup.
+- [ ] T082 Full validation: *(gates + `checklists/validation.md` done 2026-11-14; the mock-mode integration runs and the V1–V17 emulator/simulator walk are pending a device run)*
   - `dart format --set-exit-if-changed .`;
   - `flutter analyze`;
   - `flutter test`;
@@ -945,7 +945,7 @@ Google», the masked phone with «متأكد», and «تغيير» opens `/accou
 
   Record results in `specs/005-guest-social-sign-in/checklists/validation.md` (create it): one
   line per scenario with pass/fail and notes.
-- [ ] T083 Update `docs/OnAir Guest App Plan.md` §17 S005: tick the delivered user stories and add a "حالة S005 (date)" paragraph like G3's, listing what is mock-only and that remote mode waits for backend deltas A1–A9 and manual steps M1–M14.
+- [x] T083 Update `docs/OnAir Guest App Plan.md` §17 S005: tick the delivered user stories and add a "حالة S005 (date)" paragraph like G3's, listing what is mock-only and that remote mode waits for backend deltas A1–A9 and manual steps M1–M14.
 - [ ] T084 **Staging (only after the user confirms A1–A9 are deployed and M1–M13 are done)**:
   - set `BACKEND_MODE` to `remote` in `env/staging.json`;
   - run quickstart Staging checks: a real Google/Apple sign-in, a real WhatsApp code in Arabic

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/device/app_attestation.dart';
 import 'package:on_air/core/device/device_identity.dart';
+import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/otp_send_interceptor.dart';
 
 final class _FakeIdentity implements DeviceIdentity {
@@ -119,6 +120,34 @@ void main() {
     expect(
       adapter.sent.single.headers.containsKey('X-Firebase-AppCheck'),
       isFalse,
+    );
+  });
+
+  test('the OTP headers never reach the AppLogger (T078)', () async {
+    // A recording sink stands in for debugPrint: nothing the interceptor
+    // does may carry the device id or the App Check token.
+    final records = <String>[];
+    final logger = AppLogger(release: false, sink: records.add);
+    final adapter = _CapturingAdapter();
+    final dio = _dio(adapter);
+
+    await dio.post<void>('/v1/otp/send', data: <String, dynamic>{});
+
+    expect(records, isNot(contains(contains('dev-1'))));
+    expect(records, isNot(contains(contains('att-1'))));
+    expect(records, isEmpty, reason: 'the interceptor logs nothing at all');
+    // Anything that DOES reach the shared logger never carries a raw
+    // phone or token: the redaction pass scrubs them.
+    logger.info(
+      'fallback +201012345678 '
+      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NSJ9.c1g9Zx8yYz3wQ4e5',
+    );
+    expect(records.single, isNot(contains('+201012345678')));
+    expect(
+      records.single,
+      isNot(
+        contains('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NSJ9.c1g9Zx8yYz3wQ4e5'),
+      ),
     );
   });
 }

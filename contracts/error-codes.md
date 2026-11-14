@@ -11,6 +11,10 @@ lists the codes the Guest App can receive and the ARB key for each.
   the `ErrorResponse` in [node-api.openapi.yaml](node-api.openapi.yaml).
 - **Changed on 28 Oct 2026:** there is no SMS. Every code is sent to the account's email. New
   codes are marked *(new)*.
+- **S005 deltas (14 Nov 2026):** phone codes go on WhatsApp. The WhatsApp codes below are
+  *(new)*; the full deltas live in
+  [specs/005-guest-social-sign-in/contracts](../specs/005-guest-social-sign-in/contracts/)
+  (node-otp.md A8–A9, supabase-auth.md A5–A7).
 
 | Code | Phase | ARB key (camelCase) | Proposed Arabic copy | Shows reference? |
 |---|---|---|---|---|
@@ -58,6 +62,18 @@ lists the codes the Guest App can receive and the ARB key for each.
   account exists.
 - Exception: `PHONE_ALREADY_USED` at sign-up does reveal that a phone is in use. This follows
   the rule that one phone belongs to one account.
+
+| `PROFILE_ALREADY_COMPLETE` *(new)* | S005 | `authProfileIncomplete` | كمّل بياناتك للمتابعة. | no |
+| `OTP_SEND_BLOCKED` *(new)* | S005 | `otpBlockedUntil` | اتوقف إرسال الأكواد مؤقتًا لحد {date}. لو محتاج مساعدة كلّم الدعم | no |
+| `PHONE_NOT_ON_WHATSAPP` *(new)* | S005 | `whatsappNotOnWhatsApp` | الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب | no |
+| `APP_ATTESTATION_FAILED` *(new)* | S005 | `otpAttestationFailed` | مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني | no |
+| `OTP_TEMPORARILY_UNAVAILABLE` *(new)* | S005 | `otpTemporarilyUnavailable` | الخدمة مشغولة دلوقتي، جرّب بعد شوية | no |
+| `OTP_SUPERSEDED` *(new)* | S005 | `whatsappUseLatestCode` | استخدم آخر كود وصلك | no |
+| `OTP_ATTEMPTS_EXCEEDED` *(new)* | S005 | `otpAttemptsExceeded` | جربت كتير، اطلب كود جديد | no |
+
+`RATE_LIMITED` in S005 carries `details.next_send_at` (the WhatsApp ladder) and
+`OTP_SEND_BLOCKED` carries `details.blocked_until`; the app renders both verbatim and never
+computes the ladder itself.
 
 **Language note:** the tone is plain Arabic for guests, with no accounting terms
 (Constitution VI). The designer or owner may switch the copy to Modern Standard Arabic; the keys

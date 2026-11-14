@@ -35,7 +35,9 @@ the design system never import features. Generated code (`**/*.g.dart`, `**/*.fr
 ## Setup
 
 1. Create your environment file from the template and fill in the **public** Staging values
-   only (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NODE_API_BASE_URL`, `LINK_DOMAIN`).
+   only (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NODE_API_BASE_URL`, `LINK_DOMAIN`, plus the
+   Google sign-in ids `GOOGLE_SERVER_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID` — mock mode runs
+   without them).
    `env/*.json` files are git-ignored and must never contain a `service_role` key or any
    provider secret.
 
@@ -43,6 +45,15 @@ the design system never import features. Generated code (`**/*.g.dart`, `**/*.fr
    `env/example.json`) runs on in-memory data with no Supabase, Node, or Firebase connection;
    every code is `123456` and only Egyptian numbers are accepted, like the real contract.
    Set `BACKEND_MODE` to `remote` (or remove it) to use Staging. Production rejects `mock`.
+
+   In mock mode the canned social sign-in outcomes (new user, complete user, legacy user,
+   unconfirmed-email collision, cancel, failure) are picked from the **debug scenario
+   picker**: long-press the Google button on the login screen (S005 T034). The WhatsApp
+   send ladder and the 7-day block are live there too.
+
+   Remote mode needs the manual Meta/Firebase/Google/Apple setup from
+   [`specs/005-guest-social-sign-in/quickstart.md`](specs/005-guest-social-sign-in/quickstart.md)
+   §1 — WhatsApp Cloud API, App Check, and the provider consoles are account-owner work.
 
    ```bash
    cp env/example.json env/staging.json

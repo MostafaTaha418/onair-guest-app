@@ -238,23 +238,30 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
                     foregroundColor: colors['textAccent'],
                   ),
                   child: counting
-                      ? snapshot.hasData
-                            ? CountdownText(
-                                remaining: countdown.stream,
-                                format: (remaining) => l10n.whatsappResendIn(
-                                  formatSendWait(remaining, l10n),
-                                ),
-                                builder: (context, remaining) => Text(
+                      ? Semantics(
+                          // The ticking time is screen-reader noise: the
+                          // button keeps one static label while it waits
+                          // (T079).
+                          label: l10n.whatsappResend,
+                          excludeSemantics: true,
+                          child: snapshot.hasData
+                              ? CountdownText(
+                                  remaining: countdown.stream,
+                                  format: (remaining) => l10n.whatsappResendIn(
+                                    formatSendWait(remaining, l10n),
+                                  ),
+                                  builder: (context, remaining) => Text(
+                                    l10n.whatsappResendIn(
+                                      formatSendWait(remaining, l10n),
+                                    ),
+                                  ),
+                                )
+                              : Text(
                                   l10n.whatsappResendIn(
                                     formatSendWait(remaining, l10n),
                                   ),
                                 ),
-                              )
-                            : Text(
-                                l10n.whatsappResendIn(
-                                  formatSendWait(remaining, l10n),
-                                ),
-                              )
+                        )
                       : Text(l10n.whatsappResend),
                 );
               },
