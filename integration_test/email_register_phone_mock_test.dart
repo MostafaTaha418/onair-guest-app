@@ -30,16 +30,11 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tester.ensureVisible(firstCard);
-    await tester.pumpAndSettle();
-    await tester.tap(firstCard);
-    await pumpUntilFound(tester, find.text(l10n.bookNow));
+    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
-    await tester.ensureVisible(bookNow);
-    await tester.pumpAndSettle();
-    await tester.tap(bookNow);
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
+      bookNow,
       find.byKey(const ValueKey('social-google-button')),
     );
   }
@@ -58,25 +53,28 @@ void main() {
       find.byKey(const ValueKey('email-name-field')),
       'زائر بالبريد',
     );
+    await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
       'register@onair.test',
     );
+    await pumpUntilFound(tester, find.byKey(const ValueKey('password-field')));
     await tester.enterText(
       find.byKey(const ValueKey('password-field')),
       'Password123!',
     );
     await tester.pump();
-    await tester.ensureVisible(
+    await tapVisible(
+      tester,
       find.byKey(const ValueKey('email-terms-checkbox')),
+      dismissKeyboard: true,
     );
-    await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
     await tester.pump();
-    await tester.ensureVisible(
+    await tapAndWait(
+      tester,
       find.byKey(const ValueKey('email-submit-button')),
+      find.byKey(const ValueKey('otp-field')),
     );
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, find.byKey(const ValueKey('otp-field')));
   }
 
   testWidgets(
@@ -109,10 +107,11 @@ void main() {
         '01012345678',
       );
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-      await pumpUntilFound(
+      await tapAndWait(
         tester,
+        find.byKey(const ValueKey('confirm-phone-continue')),
         find.byKey(const ValueKey('whatsapp-otp-field')),
+        dismissKeyboard: true,
       );
       await tester.enterText(
         find.descendant(
@@ -144,11 +143,12 @@ void main() {
       MockAuthRepository.legacyPassword,
     );
     await tester.pump();
-    await tester.ensureVisible(
+    await tapAndWait(
+      tester,
       find.byKey(const ValueKey('email-submit-button')),
+      find.byType(DatesScreen),
+      dismissKeyboard: true,
     );
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, find.byType(DatesScreen));
 
     // An active legacy account: the WhatsApp step never opens.
     expect(
@@ -174,11 +174,12 @@ void main() {
       MockAuthRepository.legacyPassword,
     );
     await tester.pump();
-    await tester.ensureVisible(
+    await tapAndWait(
+      tester,
       find.byKey(const ValueKey('email-submit-button')),
+      find.byType(DatesScreen),
+      dismissKeyboard: true,
     );
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, find.byType(DatesScreen));
 
     // The account change entry (Phase 10 adds the row; the route exists
     // since T070).
@@ -198,10 +199,11 @@ void main() {
       '01098765432',
     );
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
+      find.byKey(const ValueKey('confirm-phone-continue')),
       find.byKey(const ValueKey('whatsapp-otp-field')),
+      dismissKeyboard: true,
     );
     // The server-masked NEW number rides the subtitle (§4.2).
     expect(find.textContaining('••• 432'), findsOneWidget);

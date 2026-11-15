@@ -30,16 +30,11 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tester.ensureVisible(firstCard);
-    await tester.pumpAndSettle();
-    await tester.tap(firstCard);
-    await pumpUntilFound(tester, find.text(l10n.bookNow));
+    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
-    await tester.ensureVisible(bookNow);
-    await tester.pumpAndSettle();
-    await tester.tap(bookNow);
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
+      bookNow,
       find.byKey(const ValueKey('social-google-button')),
     );
   }
@@ -51,8 +46,11 @@ void main() {
       auth.scenario = MockSocialScenario.completeUser;
       await openLoginFromApartment(tester);
 
-      await tester.tap(find.byKey(const ValueKey('social-google-button')));
-      await tester.pumpAndSettle();
+      await tapAndWait(
+        tester,
+        find.byKey(const ValueKey('social-google-button')),
+        find.byType(DatesScreen),
+      );
 
       expect(find.byType(DatesScreen), findsOneWidget);
       expect(
@@ -70,7 +68,10 @@ void main() {
       auth.scenario = MockSocialScenario.cancel;
       await openLoginFromApartment(tester);
 
-      await tester.tap(find.byKey(const ValueKey('social-google-button')));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('social-google-button')),
+      );
       await tester.pumpAndSettle();
 
       expect(
@@ -104,9 +105,9 @@ void main() {
       await openLoginFromApartment(tester);
 
       // The incomplete account is sent to «أكّد رقمك» (T047).
-      await tester.tap(find.byKey(const ValueKey('social-google-button')));
-      await pumpUntilFound(
+      await tapAndWait(
         tester,
+        find.byKey(const ValueKey('social-google-button')),
         find.byKey(const ValueKey('confirm-phone-field')),
       );
       // The provider name pre-fills the name field (T046); the terms are
@@ -116,12 +117,16 @@ void main() {
         '01012345678',
       );
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
-      await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-      await pumpUntilFound(
+      await tapVisible(
         tester,
+        find.byKey(const ValueKey('confirm-phone-terms')),
+      );
+      await tester.pump();
+      await tapAndWait(
+        tester,
+        find.byKey(const ValueKey('confirm-phone-continue')),
         find.byKey(const ValueKey('whatsapp-otp-field')),
+        dismissKeyboard: true,
       );
 
       await tester.enterText(
@@ -148,9 +153,9 @@ void main() {
       backend.scenario = MockSocialScenario.newUser;
       await openLoginFromApartment(tester);
 
-      await tester.tap(find.byKey(const ValueKey('social-google-button')));
-      await pumpUntilFound(
+      await tapAndWait(
         tester,
+        find.byKey(const ValueKey('social-google-button')),
         find.byKey(const ValueKey('confirm-phone-field')),
       );
       await tester.enterText(
@@ -158,12 +163,16 @@ void main() {
         '01012345678',
       );
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
-      await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-      await pumpUntilFound(
+      await tapVisible(
         tester,
+        find.byKey(const ValueKey('confirm-phone-terms')),
+      );
+      await tester.pump();
+      await tapAndWait(
+        tester,
+        find.byKey(const ValueKey('confirm-phone-continue')),
         find.byKey(const ValueKey('whatsapp-otp-field')),
+        dismissKeyboard: true,
       );
 
       await tester.enterText(
@@ -207,8 +216,11 @@ void main() {
 
       // Google joins the seeded legacy account directly (V13, FR-039): the
       // booking entry opens, never «أكّد رقمك».
-      await tester.tap(find.byKey(const ValueKey('social-google-button')));
-      await pumpUntilFound(tester, find.byType(DatesScreen));
+      await tapAndWait(
+        tester,
+        find.byKey(const ValueKey('social-google-button')),
+        find.byType(DatesScreen),
+      );
       expect(
         find.byKey(const ValueKey('confirm-phone-field')),
         findsNothing,

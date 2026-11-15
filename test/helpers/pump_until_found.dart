@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Waits for async mock data or route transitions on slower device runners.
@@ -17,4 +18,54 @@ Future<void> pumpUntilFound(
     await tester.pump(const Duration(milliseconds: 250));
   }
   expect(finder, findsWidgets);
+}
+
+/// Makes a control hit-testable on real simulators before tapping it.
+///
+/// iOS keeps the software keyboard open after [WidgetTester.enterText], which
+/// can leave a visually built submit button outside the tappable viewport.
+Future<void> tapVisible(
+  WidgetTester tester,
+  Finder finder, {
+  bool dismissKeyboard = false,
+}) async {
+  await pumpUntilFound(tester, finder);
+  if (dismissKeyboard) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+  }
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pump();
+}
+
+/// Taps a navigation control and waits for its destination, retrying only
+/// while the original control is still present. This absorbs occasional
+/// missed native-device taps without hiding a broken route transition.
+Future<void> tapAndWait(
+  WidgetTester tester,
+  Finder finder,
+  Finder destination, {
+  bool dismissKeyboard = false,
+  int tapAttempts = 3,
+}) async {
+  await pumpUntilFound(tester, finder);
+  for (var tapAttempt = 0; tapAttempt < tapAttempts; tapAttempt++) {
+    if (tester.any(destination)) return;
+    if (!tester.any(finder)) break;
+    await tapVisible(
+      tester,
+      finder,
+      dismissKeyboard: dismissKeyboard,
+    );
+    for (
+      var pumpAttempt = 0;
+      pumpAttempt < 20 && !tester.any(destination);
+      pumpAttempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+  }
+  await pumpUntilFound(tester, destination);
 }

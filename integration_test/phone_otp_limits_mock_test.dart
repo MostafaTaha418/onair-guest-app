@@ -34,16 +34,11 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tester.ensureVisible(firstCard);
-    await tester.pumpAndSettle();
-    await tester.tap(firstCard);
-    await pumpUntilFound(tester, find.text(l10n.bookNow));
+    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
-    await tester.ensureVisible(bookNow);
-    await tester.pumpAndSettle();
-    await tester.tap(bookNow);
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
+      bookNow,
       find.byKey(const ValueKey('social-google-button')),
     );
   }
@@ -57,9 +52,9 @@ void main() {
   ) async {
     auth.scenario = MockSocialScenario.newUser;
     await openLoginFromApartment(tester);
-    await tester.tap(find.byKey(const ValueKey('social-google-button')));
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
+      find.byKey(const ValueKey('social-google-button')),
       find.byKey(const ValueKey('confirm-phone-field')),
     );
     await tester.enterText(
@@ -67,12 +62,16 @@ void main() {
       '01012345678',
     );
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-    await pumpUntilFound(
+    await tapVisible(
       tester,
+      find.byKey(const ValueKey('confirm-phone-terms')),
+    );
+    await tester.pump();
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('confirm-phone-continue')),
       find.byKey(const ValueKey('whatsapp-otp-field')),
+      dismissKeyboard: true,
     );
     return tester
             .element(find.byType(OnAirApp))
@@ -141,12 +140,16 @@ void main() {
       '01012345678',
     );
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-    await pumpUntilFound(
+    await tapVisible(
       tester,
+      find.byKey(const ValueKey('confirm-phone-terms')),
+    );
+    await tester.pump();
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('confirm-phone-continue')),
       find.byKey(const ValueKey('pv-blocked-notice')),
+      dismissKeyboard: true,
     );
   }
 
@@ -259,17 +262,20 @@ Future<void> reachBlockViaFormAfterSignIn(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
-  await tester.tap(find.byType(PropertyCard).first);
-  await pumpUntilFound(tester, find.text(l10n.bookNow));
-  await tester.tap(find.text(l10n.bookNow));
-  await pumpUntilFound(
+  await tapAndWait(
     tester,
+    find.byType(PropertyCard).first,
+    find.text(l10n.bookNow),
+  );
+  await tapAndWait(
+    tester,
+    find.text(l10n.bookNow),
     find.byKey(const ValueKey('social-google-button')),
   );
   auth.scenario = MockSocialScenario.newUser;
-  await tester.tap(find.byKey(const ValueKey('social-google-button')));
-  await pumpUntilFound(
+  await tapAndWait(
     tester,
+    find.byKey(const ValueKey('social-google-button')),
     find.byKey(const ValueKey('confirm-phone-field')),
   );
   final nameField = find.byKey(const ValueKey('confirm-phone-name-field'));
@@ -282,11 +288,15 @@ Future<void> reachBlockViaFormAfterSignIn(
     '01098765432',
   );
   await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('confirm-phone-terms')));
-  await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('confirm-phone-continue')));
-  await pumpUntilFound(
+  await tapVisible(
     tester,
+    find.byKey(const ValueKey('confirm-phone-terms')),
+  );
+  await tester.pump();
+  await tapAndWait(
+    tester,
+    find.byKey(const ValueKey('confirm-phone-continue')),
     find.byKey(const ValueKey('pv-blocked-notice')),
+    dismissKeyboard: true,
   );
 }
