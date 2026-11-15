@@ -35,6 +35,27 @@ Future<void> pumpUntilFound(
   expect(_hasMatch(finder), isTrue, reason: 'Expected to find $finder');
 }
 
+/// Waits until an asynchronously rendered collection reaches [count].
+Future<void> pumpUntilCount(
+  WidgetTester tester,
+  Finder finder,
+  int count, {
+  int maxAttempts = 80,
+}) async {
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      if (finder.evaluate().length >= count) break;
+      // A chained finder can temporarily lose its parent during navigation,
+      // so this Error is an expected transient absence.
+      // ignore: avoid_catching_errors
+    } on StateError {
+      // Keep pumping until the requested collection has rendered.
+    }
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(finder, findsNWidgets(count));
+}
+
 /// Makes a control hit-testable on real simulators before tapping it.
 ///
 /// iOS keeps the software keyboard open after [WidgetTester.enterText], which

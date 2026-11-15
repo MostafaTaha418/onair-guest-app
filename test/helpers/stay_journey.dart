@@ -488,11 +488,11 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   await pumpUntilFound(tester, find.text(l10n.claimProtection));
   expect(find.text(l10n.claimStatusOpen), findsOneWidget);
   // The mock image URLs always fail, so the placeholders show.
-  await pumpUntilFound(
+  await pumpUntilCount(
     tester,
     find.byIcon(AppIcons.imageNotSupportedOutlined),
+    2,
   );
-  expect(find.byIcon(AppIcons.imageNotSupportedOutlined), findsNWidgets(2));
   expect(find.byKey(const ValueKey('claim-agree')), findsOneWidget);
 
   // A 5-character dispute shows the length error and sends nothing.
