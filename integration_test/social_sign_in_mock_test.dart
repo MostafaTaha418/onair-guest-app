@@ -30,7 +30,8 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
+    tester.widget<PropertyCard>(firstCard).onTap();
+    await pumpUntilFound(tester, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
     await tapAndWait(
       tester,

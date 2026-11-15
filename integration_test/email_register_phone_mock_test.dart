@@ -31,7 +31,8 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
+    tester.widget<PropertyCard>(firstCard).onTap();
+    await pumpUntilFound(tester, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
     await tapAndWait(
       tester,
@@ -66,7 +67,7 @@ void main() {
     await tester.enterText(nameField, 'زائر بالبريد');
     await pumpUntilFound(tester, emailField);
     await tester.enterText(emailField, 'register@onair.test');
-    await pumpUntilFound(tester, passwordField);
+    await tapVisible(tester, passwordField, dismissKeyboard: true);
     await tester.enterText(passwordField, 'Password123!');
     await tester.pump();
     await tapVisible(

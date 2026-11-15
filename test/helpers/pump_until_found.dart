@@ -40,11 +40,11 @@ Future<void> tapVisible(
   Finder finder, {
   bool dismissKeyboard = false,
 }) async {
-  await pumpUntilFound(tester, finder);
   if (dismissKeyboard) {
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
   }
+  await pumpUntilFound(tester, finder);
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
@@ -61,6 +61,10 @@ Future<void> tapAndWait(
   bool dismissKeyboard = false,
   int tapAttempts = 3,
 }) async {
+  if (dismissKeyboard) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+  }
   await pumpUntilFound(tester, finder);
   for (var tapAttempt = 0; tapAttempt < tapAttempts; tapAttempt++) {
     if (_hasMatch(destination)) return;
@@ -68,7 +72,6 @@ Future<void> tapAndWait(
     await tapVisible(
       tester,
       finder,
-      dismissKeyboard: dismissKeyboard,
     );
     for (
       var pumpAttempt = 0;

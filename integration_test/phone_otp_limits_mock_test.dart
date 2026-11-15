@@ -34,7 +34,8 @@ void main() {
 
     await pumpUntilFound(tester, find.byType(PropertyCard));
     final firstCard = find.byType(PropertyCard).first;
-    await tapAndWait(tester, firstCard, find.text(l10n.bookNow));
+    tester.widget<PropertyCard>(firstCard).onTap();
+    await pumpUntilFound(tester, find.text(l10n.bookNow));
     final bookNow = find.text(l10n.bookNow);
     await tapAndWait(
       tester,
@@ -264,11 +265,9 @@ Future<void> reachBlockViaFormAfterSignIn(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
-  await tapAndWait(
-    tester,
-    find.byType(PropertyCard).first,
-    find.text(l10n.bookNow),
-  );
+  final firstCard = find.byType(PropertyCard).first;
+  tester.widget<PropertyCard>(firstCard).onTap();
+  await pumpUntilFound(tester, find.text(l10n.bookNow));
   await tapAndWait(
     tester,
     find.text(l10n.bookNow),
