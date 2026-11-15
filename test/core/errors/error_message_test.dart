@@ -46,17 +46,24 @@ void main() {
 
   test('any other code falls back to the unexpected-error message', () {
     expect(
-      apiErrorMessage(errorOf(ErrorCode.unauthenticated), l10n),
+      apiErrorMessage(errorOf(ErrorCode.internal), l10n),
       l10n.errorUnexpectedNoRef,
     );
   });
 
-  test('rate limited shows its own wait time (zero when absent)', () {
-    // G2 gives the rate-limit code its own message; without server metadata
-    // the wait renders as 0:00.
+  test('a session that ended says so (S005 review round 2)', () {
+    expect(
+      apiErrorMessage(errorOf(ErrorCode.unauthenticated), l10n),
+      l10n.errorUnauthenticated,
+    );
+  });
+
+  test('rate limited without a wait never says 0:00', () {
+    // Without server metadata there is no wait to show: the plain
+    // "try again in a little while" text replaces «0:00» (review round 2).
     expect(
       apiErrorMessage(errorOf(ErrorCode.rateLimited), l10n),
-      l10n.authRateLimited('0:00'),
+      l10n.authRateLimitedNoTime,
     );
   });
 }

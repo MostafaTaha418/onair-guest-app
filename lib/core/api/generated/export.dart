@@ -19,6 +19,7 @@ export 'models/details.dart';
 export 'models/error.dart';
 export 'models/entity_type.dart';
 export 'models/mime_type.dart';
+export 'models/otp_sent_channel.dart';
 export 'models/payment_session_currency.dart';
 // Root client
 export 'rest_client.dart';

@@ -9,6 +9,7 @@ import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
@@ -18,6 +19,8 @@ import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/features/booking/presentation/payment_verification_cubit.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
@@ -207,6 +210,13 @@ Future<void> bootApp(
           value: const MockAppConfigSource(),
         ),
         RepositoryProvider<AuthRepository>.value(value: auth),
+        // «أكّد رقمك» opens for incomplete sessions (S005 US6).
+        RepositoryProvider<DeviceIdentity>.value(
+          value: const MemoryDeviceIdentity(),
+        ),
+        RepositoryProvider<PhoneVerificationRepository>.value(
+          value: MockPhoneVerificationRepository(auth: auth),
+        ),
         RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
         RepositoryProvider<ListingsRepository>.value(value: listings),
         RepositoryProvider<JsonFileCache>.value(value: cache),

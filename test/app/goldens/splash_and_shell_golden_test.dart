@@ -78,7 +78,7 @@ Widget _shell(ThemeMode mode, double scale, double width) {
   );
   final auth = FakeAuthRepository();
   addTearDown(auth.dispose);
-  final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
+  final authCubit = AuthCubit(auth);
   addTearDown(authCubit.close);
   final favoritesCubit = FavoritesCubit(
     repository: MemoryFavoritesRepository(),

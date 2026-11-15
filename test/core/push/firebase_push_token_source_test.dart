@@ -8,24 +8,23 @@ final class _Gateway implements FirebaseMessagingGateway {
 
   final bool allowed;
   final String? token;
-  final StreamController<String> registrations =
+  final StreamController<String> refreshes =
       StreamController<String>.broadcast();
-  int registrationRequests = 0;
+  int tokenReads = 0;
 
   @override
   Future<bool> canReadTokenWithoutPrompt() async => allowed;
 
   @override
-  Stream<String> get onRegistered => registrations.stream;
-
-  @override
-  Future<void> register() async {
-    registrationRequests += 1;
-    final value = token;
-    if (value != null) registrations.add(value);
+  Future<String?> getToken() async {
+    tokenReads += 1;
+    return token;
   }
 
-  Future<void> close() => registrations.close();
+  @override
+  Stream<String> get onTokenRefresh => refreshes.stream;
+
+  Future<void> close() => refreshes.close();
 }
 
 void main() {
@@ -34,7 +33,7 @@ void main() {
     final source = FirebasePushTokenSource(gateway);
 
     expect(await source.currentToken(), isNull);
-    expect(gateway.registrationRequests, 0);
+    expect(gateway.tokenReads, 0);
 
     await gateway.close();
   });
@@ -44,7 +43,7 @@ void main() {
     final source = FirebasePushTokenSource(gateway);
 
     expect(await source.currentToken(), 'token');
-    expect(gateway.registrationRequests, 1);
+    expect(gateway.tokenReads, 1);
 
     await gateway.close();
   });
@@ -54,7 +53,7 @@ void main() {
     final source = FirebasePushTokenSource(gateway);
     final refreshed = expectLater(source.tokenRefreshes, emits('refreshed'));
 
-    gateway.registrations.add('refreshed');
+    gateway.refreshes.add('refreshed');
 
     await refreshed;
     await gateway.close();

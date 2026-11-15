@@ -1,5 +1,6 @@
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 
 final class AuthRateLimited implements Exception {
   const AuthRateLimited(this.until);
@@ -39,21 +40,33 @@ abstract interface class AuthRepository {
   Stream<GuestAccount?> get authStateChanges;
 
   Future<GuestAccount?> restoreSession();
-  Future<CodeChallenge> requestPhoneCode(String phone);
-  Future<GuestAccount> verifyPhoneCode(String phone, String code);
+
+  /// Native Google sign-in: the sheet produces an ID token that the server
+  /// exchanges for a session. Cancelled sheets throw
+  /// [SocialSignInCancelled] and never reach the UI as an error.
+  Future<SocialSignInResult> signInWithGoogle();
+
+  /// Native Apple sign-in (iOS only); off-platform this throws
+  /// [SocialSignInUnavailable].
+  Future<SocialSignInResult> signInWithApple();
+
+  /// Re-reads the server context for the current session. Completeness,
+  /// providers and the password flag come from the server (S005), so the
+  /// router reacts to `PROFILE_INCOMPLETE` / `PHONE_NOT_VERIFIED` by calling
+  /// this (research R9).
+  Future<GuestAccount?> refreshAccount();
   Future<CodeChallenge> signUpEmail(
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  );
+    String termsVersion, {
+    String locale = 'ar',
+  });
   Future<CodeChallenge> requestEmailVerification(String email);
   Future<GuestAccount> verifyEmailCode(String email, String code);
   Future<GuestAccount> signInEmail(String email, String password);
   Future<CodeChallenge> requestRecovery(String email);
   Future<void> verifyRecovery(String email, String code);
   Future<GuestAccount> setNewPassword(String password);
-  Future<GuestAccount> completeProfile(String name, String termsVersion);
   Future<void> signOut();
 }

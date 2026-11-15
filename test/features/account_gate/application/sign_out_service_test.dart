@@ -144,4 +144,43 @@ void main() {
 
     expect(events, ['unregister', 'caches', 'preferences']);
   });
+
+  group('S005 social sign-out (T035)', () {
+    test('socialSignOut is called exactly once during sign-out', () async {
+      var calls = 0;
+      final service = SignOutService(
+        devices: _DeviceRepository(events),
+        auth: auth,
+        pushTokens: _PushTokens('fcm-token'),
+        caches: _CacheCleaner(events),
+        preferences: _PreferenceCleaner(events),
+        socialSignOut: () async => calls += 1,
+      );
+
+      await service.signOut();
+
+      expect(calls, 1);
+      expect(events, ['unregister', 'signOut', 'caches', 'preferences']);
+    });
+
+    test('a social sign-out failure never blocks the local sign-out', () async {
+      var calls = 0;
+      final service = SignOutService(
+        devices: _DeviceRepository(events),
+        auth: auth,
+        pushTokens: _PushTokens('fcm-token'),
+        caches: _CacheCleaner(events),
+        preferences: _PreferenceCleaner(events),
+        socialSignOut: () async {
+          calls += 1;
+          throw Exception('provider offline');
+        },
+      );
+
+      await service.signOut();
+
+      expect(calls, 1);
+      expect(events, ['unregister', 'signOut', 'caches', 'preferences']);
+    });
+  });
 }

@@ -56,6 +56,7 @@ final class SignOutService implements SignOutCoordinator {
     required this.pushTokens,
     required this.caches,
     required this.preferences,
+    this.socialSignOut,
   });
 
   // last_search_v1 holds no personal data (spec Assumptions), so it stays.
@@ -73,6 +74,11 @@ final class SignOutService implements SignOutCoordinator {
   final CacheCleaner caches;
   final PreferenceCleaner preferences;
 
+  /// Clears the provider-side session (e.g. `GoogleSignIn.signOut()`). Its
+  /// failure never blocks the local sign-out; `device_install_id` is NOT
+  /// cleared here (research R13: abuse keys must outlive sessions).
+  final Future<void> Function()? socialSignOut;
+
   @override
   Future<void> signOut() async {
     try {
@@ -89,9 +95,13 @@ final class SignOutService implements SignOutCoordinator {
       await auth.signOut();
     } on Object {
       // Continue: personal data must still be cleared (FR-034, SC-008).
-    } finally {
-      await caches.clearCaches();
-      await preferences.clearExcept(preservedPreferenceKeys);
     }
+    try {
+      await socialSignOut?.call();
+    } on Object {
+      // The provider session is best-effort (T035).
+    }
+    await caches.clearCaches();
+    await preferences.clearExcept(preservedPreferenceKeys);
   }
 }

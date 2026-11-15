@@ -41,6 +41,20 @@ enum ErrorCode {
   otpInvalid('OTP_INVALID'),
   @JsonValue('OTP_EXPIRED')
   otpExpired('OTP_EXPIRED'),
+  @JsonValue('OTP_SUPERSEDED')
+  otpSuperseded('OTP_SUPERSEDED'),
+  @JsonValue('OTP_ATTEMPTS_EXCEEDED')
+  otpAttemptsExceeded('OTP_ATTEMPTS_EXCEEDED'),
+  @JsonValue('OTP_SEND_BLOCKED')
+  otpSendBlocked('OTP_SEND_BLOCKED'),
+  @JsonValue('OTP_TEMPORARILY_UNAVAILABLE')
+  otpTemporarilyUnavailable('OTP_TEMPORARILY_UNAVAILABLE'),
+  @JsonValue('PHONE_NOT_ON_WHATSAPP')
+  phoneNotOnWhatsapp('PHONE_NOT_ON_WHATSAPP'),
+  @JsonValue('APP_ATTESTATION_FAILED')
+  appAttestationFailed('APP_ATTESTATION_FAILED'),
+  @JsonValue('PROFILE_ALREADY_COMPLETE')
+  profileAlreadyComplete('PROFILE_ALREADY_COMPLETE'),
   @JsonValue('TERMS_CHANGED')
   termsChanged('TERMS_CHANGED'),
   @JsonValue('PROFILE_INCOMPLETE')

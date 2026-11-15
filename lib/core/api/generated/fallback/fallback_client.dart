@@ -28,10 +28,16 @@ abstract class FallbackClient {
   /// The caller must be the challenge's requester or its recipient. The code goes to the.
   /// **recipient's account email** through Resend, and only its hash is stored. Calling.
   /// again before `retry_after_seconds` returns 429.
+  ///
+  /// [xDeviceId] - Reinstall-stable device key (iOS Keychain UUID or Android ANDROID_ID) for the WhatsApp send-limit keys (S005 A8). Required for channel=whatsapp; ignored for email.
+  ///
+  /// [xFirebaseAppCheck] - Firebase App Check limited-use token (S005 A8). Required for channel=whatsapp; ignored for email.
   @POST('/v1/otp/send')
   Future<OtpSent> sendOtpCode({
     @Header('x-request-id') required String xRequestId,
     @Body() required V1OtpSendRequestBody body,
+    @Header('X-Device-Id') String? xDeviceId,
+    @Header('X-Firebase-AppCheck') String? xFirebaseAppCheck,
   });
 
   /// Create the booking from a quote and open a Kashier payment session.

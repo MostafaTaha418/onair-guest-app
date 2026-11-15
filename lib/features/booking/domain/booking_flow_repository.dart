@@ -67,27 +67,10 @@ final class VerificationStatus {
   int get hashCode => Object.hash(emailConfirmed, phoneConfirmed, email, phone);
 }
 
-/// The phone-change challenge created by `common_request_phone_change`.
-@immutable
-final class PhoneChallenge {
-  const PhoneChallenge({required this.challengeId, this.retryAfter});
-
-  final String challengeId;
-  final Duration? retryAfter;
-
-  @override
-  bool operator ==(Object other) =>
-      other is PhoneChallenge &&
-      other.challengeId == challengeId &&
-      other.retryAfter == retryAfter;
-
-  @override
-  int get hashCode => Object.hash(challengeId, retryAfter);
-}
-
 /// The booking flow's data layer: quote, payment start, and the
-/// verify-before-booking challenges. Every method throws `AppFailure` on
-/// error.
+/// verify-before-booking status. Every method throws `AppFailure` on
+/// error. The phone confirmation is the account's «أكّد رقمك» step
+/// (S005 US6) — the flow only reads its status.
 abstract interface class BookingFlowRepository {
   Future<VerificationStatus> verificationStatus();
 
@@ -112,14 +95,4 @@ abstract interface class BookingFlowRepository {
     required String bookingId,
     required String attemptKey,
   });
-
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  });
-
-  Future<void> sendCode(String challengeId);
-
-  Future<void> verifyCode({required String challengeId, required String code});
 }

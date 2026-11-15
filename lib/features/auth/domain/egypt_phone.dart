@@ -35,3 +35,15 @@ final class EgyptPhone {
   @override
   String toString() => e164;
 }
+
+/// `+201012345678` → `+20 10•• ••• 678` — the server's `masked_target`
+/// style (node-otp.md A8): the operator prefix opens the display, the last
+/// 3 digits stay readable, and everything in between is bullets. Numbers
+/// too short to mask come back unchanged.
+String maskPhone(String e164) {
+  final digits = e164.replaceAll(RegExp(r'\D'), '');
+  final rest = digits.startsWith('20') ? digits.substring(2) : digits;
+  if (rest.length < 6) return e164;
+  return '+20 ${rest.substring(0, 2)}•• '
+      '••• ${rest.substring(rest.length - 3)}';
+}

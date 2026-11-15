@@ -17,6 +17,7 @@ import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/favorites/data/memory_favorites_repository.dart';
@@ -128,6 +129,7 @@ void main() {
     }
     if (signedIn) {
       auth.account = GuestAccount(
+        status: AccountStatus.active,
         id: 'guest',
         phone: '+201012345678',
         phoneVerified: true,
@@ -136,7 +138,7 @@ void main() {
         acceptedTermsAt: DateTime.utc(2026),
       );
     }
-    final authCubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final authCubit = AuthCubit(auth);
     unawaited(authCubit.restore());
     addTearDown(authCubit.close);
     final favoritesCubit = FavoritesCubit(

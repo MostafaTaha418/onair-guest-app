@@ -5,9 +5,14 @@ final class FakeAppConfigRepository implements AppConfigSource {
   FakeAppConfigRepository(this.config);
   AppConfig config;
   int loadCount = 0;
+
+  /// When set, `load` throws this instead of serving the config — the
+  /// offline-config scenarios (review fix 9).
+  Exception? loadError;
   @override
   Future<AppConfig> load({bool refresh = false}) async {
     loadCount++;
+    if (loadError case final error?) throw error;
     return config;
   }
 

@@ -30,7 +30,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpOnAirApp(
-      const LoginScreen(phoneAuthEnabled: false),
+      const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -55,35 +55,17 @@ void main() {
     expect(auth.lastPassword, 'abc');
   });
 
-  testWidgets('phone sign in validates on first tap and clears on correction', (
-    tester,
-  ) async {
-    await tester.pumpOnAirApp(
-      const LoginScreen(),
-      authRepository: auth,
-      appConfigRepository: config,
-    );
-    await tester.tap(find.byKey(const ValueKey('send-code-button')));
-    await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsOneWidget);
-    expect(auth.requestPhoneCalls, 0);
-    await tester.enterText(find.byKey(const ValueKey('phone-field')), '123');
-    await tester.pump();
-    expect(find.text('اكتب رقم موبايل مصري صحيح من 11 رقم.'), findsOneWidget);
-    await tester.enterText(
-      find.byKey(const ValueKey('phone-field')),
-      '01012345678',
-    );
-    await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsNothing);
-    expect(find.text('اكتب رقم موبايل مصري صحيح من 11 رقم.'), findsNothing);
-  });
-
   testWidgets('email registration marks all empty fields and terms', (
     tester,
   ) async {
+    // A tall surface keeps every field built (the social row lengthens the
+    // form), so all three required errors are on screen after the tap —
+    // no phone field since S005 US6 (T067).
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await tester.pumpOnAirApp(
-      const RegisterScreen(phoneAuthEnabled: false),
+      const RegisterScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -96,7 +78,7 @@ void main() {
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pump();
-    expect(find.text('الحقل ده مطلوب.'), findsNWidgets(4));
+    expect(find.text('الحقل ده مطلوب.'), findsNWidgets(3));
     expect(find.text('لازم توافق على الشروط للمتابعة.'), findsOneWidget);
     expect(auth.signUpEmailCalls, 0);
   });

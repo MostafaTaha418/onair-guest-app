@@ -37,12 +37,17 @@ void main() {
       'مستأجر تجريبي',
       'guest@mock.onair.test',
       'Password123!',
-      '01000000001',
       MockBackend.termsVersion,
     );
     await auth.verifyEmailCode(
       'guest@mock.onair.test',
       MockBackend.verificationCode,
+    );
+    // The WhatsApp step activates the mock account (S005 US6); the journey
+    // seeds the confirmed number directly.
+    auth.activatePhone(
+      userId: auth.account!.id,
+      phoneE164: '+201000000001',
     );
 
     await bootApp(tester, backend, auth);

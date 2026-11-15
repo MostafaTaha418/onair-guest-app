@@ -1,16 +1,20 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
@@ -19,16 +23,29 @@ import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
+import 'fake_connectivity.dart';
 
 /// Boots the full [OnAirApp] on the mock backend: in-memory repositories,
 /// no Supabase/Firebase connection. Shared by the integration tests that
 /// exercise the real shell (the T095 journey, the T105 scroll-perf run).
 ///
 /// On the host, rootBundle never completes under the fake async zone — the
+/// Returns the mock auth repository so social-scenario tests can pick the
+/// canned outcome and read the call counter.
+///
 /// fixture files are read directly (the same reason T027 added `loader`).
-Future<void> bootMockApp(WidgetTester tester) async {
+Future<MockAuthRepository> bootMockApp(
+  WidgetTester tester, {
+  MockAuthRepository? auth,
+  MockPhoneVerificationRepository? phoneVerification,
+}) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
+  // Detach a previously booted app so calling this helper again in the same
+  // test is a genuine process-style restart, not an update of OnAirApp's
+  // existing State object.
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump();
   // Sync IO: async dart:io futures never complete under the fake async
   // zone of a host widget test.
   final directory = Directory.systemTemp.createTempSync('on_air_mock_app');
@@ -44,10 +61,25 @@ Future<void> bootMockApp(WidgetTester tester) async {
           loader: (path) async => File(path).readAsStringSync(),
         )
       : MockListingsRepository();
-  final auth = MockAuthRepository();
-  addTearDown(auth.dispose);
+  final ownsAuth = auth == null;
+  auth ??= MockAuthRepository();
+  if (ownsAuth) addTearDown(auth.dispose);
+  final phones =
+      phoneVerification ??
+      MockPhoneVerificationRepository(
+        auth: auth,
+        deviceIdentity: const MemoryDeviceIdentity(),
+      );
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
+  // Integration runners can briefly report `ConnectivityResult.none` while
+  // the simulator is booting. Mock-mode journeys use an in-process backend,
+  // so tying them to the host network makes otherwise deterministic screens
+  // (notably My Bookings) render their empty offline state intermittently.
+  final connectivity = FakeConnectivity();
+  final connectivityCubit = connectivity.createCubit();
+  addTearDown(connectivity.dispose);
+  addTearDown(connectivityCubit.close);
 
   await tester.pumpWidget(
     MultiRepositoryProvider(
@@ -56,6 +88,12 @@ Future<void> bootMockApp(WidgetTester tester) async {
           value: const MockAppConfigSource(),
         ),
         RepositoryProvider<AuthRepository>.value(value: auth),
+        // The OTP limiter and its stable device id — the same stack the
+        // real bootstrap provides (S005 US5).
+        RepositoryProvider<DeviceIdentity>.value(
+          value: phones.deviceIdentity ?? const MemoryDeviceIdentity(),
+        ),
+        RepositoryProvider<PhoneVerificationRepository>.value(value: phones),
         RepositoryProvider<AppLogger>.value(value: AppLogger(sink: (_) {})),
         RepositoryProvider<ListingsRepository>.value(value: listings),
         RepositoryProvider<JsonFileCache>.value(value: cache),
@@ -71,8 +109,9 @@ Future<void> bootMockApp(WidgetTester tester) async {
         ),
         ...bookingBackend.appProviders(),
       ],
-      child: const OnAirApp(),
+      child: OnAirApp(connectivityCubit: connectivityCubit),
     ),
   );
   await tester.pumpAndSettle();
+  return auth;
 }

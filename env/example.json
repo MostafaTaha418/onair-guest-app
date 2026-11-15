@@ -4,5 +4,7 @@
   "SUPABASE_ANON_KEY": "replace-with-public-anon-key",
   "NODE_API_BASE_URL": "https://api.example.invalid",
   "LINK_DOMAIN": "example.invalid",
-  "BACKEND_MODE": "mock"
+  "BACKEND_MODE": "mock",
+  "GOOGLE_SERVER_CLIENT_ID": "",
+  "GOOGLE_IOS_CLIENT_ID": ""
 }

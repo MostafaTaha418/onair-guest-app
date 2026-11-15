@@ -15,11 +15,16 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
+import 'package:on_air/features/account/presentation/account_suspended_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/domain/auth_state.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/confirm_phone_screen.dart';
+import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
-import 'package:on_air/features/auth/presentation/complete_profile_screen.dart';
 import 'package:on_air/features/auth/presentation/forgot_password_screen.dart';
 import 'package:on_air/features/auth/presentation/login_screen.dart';
 import 'package:on_air/features/auth/presentation/new_password_screen.dart';
@@ -76,6 +81,7 @@ import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dar
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
+import 'package:on_air/l10n/generated/app_localizations.dart';
 
 bool _defaultUpdateRequired() => false;
 
@@ -127,12 +133,12 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.login,
       name: 'login',
-      builder: (_, _) => const LoginScreen(phoneAuthEnabled: false),
+      builder: (_, _) => const LoginScreen(),
     ),
     GoRoute(
       path: AppRoutes.register,
       name: 'register',
-      builder: (_, _) => const RegisterScreen(phoneAuthEnabled: false),
+      builder: (_, _) => const RegisterScreen(),
     ),
     GoRoute(
       path: AppRoutes.otp,
@@ -142,7 +148,74 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.completeProfile,
       name: 'complete-profile',
-      builder: (_, _) => const CompleteProfileScreen(),
+      builder: (context, state) => Builder(
+        builder: (builderContext) {
+          // The cubit is route-scoped: its flags come from the same account
+          // snapshot the screen renders (T047). The locale reads in a real
+          // build phase — a route builder can run during the initial route
+          // resolution, where an InheritedWidget lookup asserts (review
+          // fix 8).
+          final locale = AppLocalizations.of(builderContext).localeName;
+          final authState = builderContext.read<AuthCubit>().state;
+          final account = authState is SignedIn ? authState.account : null;
+          final phoneRepository = builderContext
+              .read<PhoneVerificationRepository>();
+          final clock = phoneRepository is MockPhoneVerificationRepository
+              ? phoneRepository.clock
+              : null;
+          return BlocProvider<PhoneVerificationCubit>(
+            create: (context) => PhoneVerificationCubit(
+              phoneRepository,
+              purpose: PhoneVerificationPurpose.register,
+              needsName: account?.fullName == null,
+              needsTerms: account?.acceptedTermsVersion == null,
+              prefilledName: builderContext.read<AuthCubit>().providerFullName,
+              locale: locale,
+              currentTermsVersion: null,
+              onAlreadyComplete: () =>
+                  builderContext.read<AuthCubit>().refreshAccount(),
+              clock: clock,
+            ),
+            child: ConfirmPhoneScreen(
+              purpose: PhoneVerificationPurpose.register,
+              from: state.uri.queryParameters['from'],
+              clock: clock,
+            ),
+          );
+        },
+      ),
+    ),
+    // The change-number screen (S005 US6, T070): an active account only —
+    // name and terms are long settled, and the cubit carries no completion
+    // callbacks (a success pops with `true`).
+    GoRoute(
+      path: AppRoutes.accountPhone,
+      name: 'account-phone',
+      builder: (context, state) => Builder(
+        builder: (builderContext) {
+          final locale = AppLocalizations.of(builderContext).localeName;
+          final phoneRepository = builderContext
+              .read<PhoneVerificationRepository>();
+          final clock = phoneRepository is MockPhoneVerificationRepository
+              ? phoneRepository.clock
+              : null;
+          return BlocProvider<PhoneVerificationCubit>(
+            create: (context) => PhoneVerificationCubit(
+              phoneRepository,
+              purpose: PhoneVerificationPurpose.change,
+              needsName: false,
+              needsTerms: false,
+              locale: locale,
+              currentTermsVersion: null,
+              clock: clock,
+            ),
+            child: ConfirmPhoneScreen(
+              purpose: PhoneVerificationPurpose.change,
+              clock: clock,
+            ),
+          );
+        },
+      ),
     ),
     GoRoute(
       path: AppRoutes.forgotPassword,
@@ -158,6 +231,13 @@ GoRouter createAppRouter({
       path: AppRoutes.notAvailable,
       name: 'not-available',
       builder: (_, _) => const NotAvailableScreen(),
+    ),
+    // A suspended/deleted account keeps its session but sees this notice on
+    // account-gated routes (review fix 6).
+    GoRoute(
+      path: AppRoutes.accountSuspended,
+      name: 'account-suspended',
+      builder: (_, _) => const AccountSuspendedScreen(),
     ),
     GoRoute(
       path: AppRoutes.updateRequired,

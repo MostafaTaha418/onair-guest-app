@@ -113,48 +113,6 @@ final class SupabaseBookingFlowRepository implements BookingFlowRepository {
     }
   }
 
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => _guard(() async {
-    final response = await _rpc('common_request_phone_change', {
-      'p_new_phone': phoneE164,
-      'p_has_whatsapp': hasWhatsapp,
-      'p_whatsapp_e164': ?whatsappE164,
-    });
-    final json = Map<String, dynamic>.from(response! as Map);
-    return PhoneChallenge(challengeId: json['challenge_id'] as String);
-  });
-
-  @override
-  Future<void> sendCode(String challengeId) async {
-    try {
-      await _node.sendOtpCode(
-        xRequestId: const Uuid().v4(),
-        body: V1OtpSendRequestBody(challengeId: challengeId),
-      );
-    } on DioException catch (error) {
-      final inner = error.error;
-      // A 429 keeps its `retryAfter` through the shared ApiError.
-      throw AppFailure(
-        inner is ApiError ? inner : ErrorMapper.noResponse(),
-      );
-    }
-  }
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => _guard(() async {
-    await _rpc('common_verify_otp', {
-      'p_challenge_id': challengeId,
-      'p_code': code,
-    });
-  });
-
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();

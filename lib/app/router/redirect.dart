@@ -1,4 +1,5 @@
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 
 final class RedirectContext {
@@ -74,7 +75,24 @@ String? resolveRedirect(RedirectContext context) {
           path == AppRoutes.newPassword)) {
     return AppRoutes.login;
   }
-  if (state is SignedIn && !state.isComplete) {
+  if (state is! SignedIn && path == AppRoutes.accountSuspended) {
+    // The suspended notice only means something for a signed-in account.
+    return AppRoutes.home;
+  }
+  if (state is SignedIn &&
+      (state.account.status == AccountStatus.suspended ||
+          state.account.status == AccountStatus.deleted)) {
+    // The session survives, but account-gated surfaces — and «أكّد رقمك» or
+    // any auth screen a sign-in lands on — show the suspended screen; public
+    // routes still work.
+    if (path == AppRoutes.accountSuspended) return null;
+    if (AppRoutes.requiresAccount(context.location) ||
+        AppRoutes.isAuthLocation(context.location)) {
+      return AppRoutes.accountSuspended;
+    }
+    return null;
+  }
+  if (state is SignedIn && state.account.needsPhoneStep) {
     if (path == AppRoutes.completeProfile) return null;
     final returnTo = AppRoutes.isAuthLocation(context.location)
         ? (_safeReturnLocation(context.from) ?? AppRoutes.home)
@@ -85,7 +103,7 @@ String? resolveRedirect(RedirectContext context) {
     ).toString();
   }
   if (state is SignedIn &&
-      state.isComplete &&
+      !state.account.needsPhoneStep &&
       AppRoutes.isAuthLocation(context.location)) {
     return _safeReturnLocation(context.from) ?? AppRoutes.home;
   }

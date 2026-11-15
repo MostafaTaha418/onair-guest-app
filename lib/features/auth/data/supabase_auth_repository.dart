@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:on_air/features/auth/data/profile_repository.dart';
+import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class PhoneAuthUser {
@@ -37,15 +38,19 @@ String? _nonBlank(String? value) =>
 abstract interface class PhoneAuthClient {
   PhoneAuthUser? get currentUser;
   Stream<PhoneAuthUser?> get userChanges;
-  Future<void> requestOtp(String phone);
-  Future<PhoneAuthUser> verifySmsOtp(String phone, String token);
+  Future<AuthResponse> signInWithIdToken({
+    required OAuthProvider provider,
+    required String idToken,
+    String? accessToken,
+    String? nonce,
+  });
   Future<void> signUpWithEmail(
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  );
+    String termsVersion, {
+    required String locale,
+  });
   Future<void> resendSignupEmail(String email);
   Future<PhoneAuthUser> verifySignupEmailOtp(String email, String token);
   Future<PhoneAuthUser> signInWithEmailPassword(
@@ -77,38 +82,35 @@ final class SupabasePhoneAuthClient implements PhoneAuthClient {
   );
 
   @override
-  Future<void> requestOtp(String phone) =>
-      _client.signInWithOtp(phone: phone, shouldCreateUser: true);
-
-  @override
-  Future<PhoneAuthUser> verifySmsOtp(String phone, String token) async {
-    final response = await _client.verifyOTP(
-      phone: phone,
-      token: token,
-      type: OtpType.sms,
-    );
-    final user = response.user;
-    if (user == null) throw const AuthException('OTP returned no user');
-    return PhoneAuthUser.fromSupabase(user);
-  }
+  Future<AuthResponse> signInWithIdToken({
+    required OAuthProvider provider,
+    required String idToken,
+    String? accessToken,
+    String? nonce,
+  }) => _client.signInWithIdToken(
+    provider: provider,
+    idToken: idToken,
+    accessToken: accessToken,
+    nonce: nonce,
+  );
 
   @override
   Future<void> signUpWithEmail(
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    required String locale,
+  }) async {
     await _client.signUp(
       email: email,
       password: password,
+      // The phone is gone from registration (S005 US6): «أكّد رقمك» owns
+      // the number after the email code.
       data: {
         'full_name': name.trim(),
-        'phone_e164': phone,
-        'phone_has_whatsapp': false,
         'accepted_terms_version': termsVersion,
-        'locale': 'ar',
+        'locale': locale,
       },
     );
   }
@@ -180,11 +182,14 @@ final class SupabaseAuthRepository implements AuthRepository {
     this._auth,
     this._profiles, {
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+    SocialCredentialSource? socialCredentials,
+  }) : _clock = clock ?? DateTime.now,
+       _socialCredentials = socialCredentials ?? GoogleAppleCredentialSource();
 
   final PhoneAuthClient _auth;
   final ProfileSource _profiles;
   final DateTime Function() _clock;
+  final SocialCredentialSource _socialCredentials;
 
   @override
   Stream<GuestAccount?> get authStateChanges =>
@@ -195,44 +200,58 @@ final class SupabaseAuthRepository implements AuthRepository {
       _accountFor(_auth.currentUser);
 
   @override
-  Future<CodeChallenge> requestPhoneCode(String phone) async {
-    final parsed = EgyptPhone.tryParse(phone);
-    if (parsed == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    try {
-      await _auth.requestOtp(parsed.e164);
-      // GoTrue does not expose resend headers. An immediate deadline avoids
-      // inventing a client-side interval; server rate limits remain authoritative.
-      return CodeChallenge(
-        channel: VerificationChannel.sms,
-        target: parsed.e164,
-        resendAt: _clock().toUtc(),
-      );
-    } on AuthException catch (error) {
-      throw _mapRequestError(error);
-    }
-  }
+  Future<GuestAccount?> refreshAccount() async =>
+      _accountFor(_auth.currentUser);
 
   @override
-  Future<GuestAccount> verifyPhoneCode(String phone, String code) async {
+  Future<SocialSignInResult> signInWithGoogle() =>
+      _signInWithSocial(SocialProvider.google);
+
+  @override
+  Future<SocialSignInResult> signInWithApple() =>
+      _signInWithSocial(SocialProvider.apple);
+
+  Future<SocialSignInResult> _signInWithSocial(
+    SocialProvider provider,
+  ) async {
+    final credential = switch (provider) {
+      SocialProvider.google => await _socialCredentials.google(),
+      SocialProvider.apple => await _socialCredentials.apple(),
+    };
     try {
-      final user = await _auth.verifySmsOtp(EgyptPhone.parse(phone).e164, code);
-      return (await _accountFor(user))!;
+      final response = await _auth.signInWithIdToken(
+        provider: switch (provider) {
+          SocialProvider.google => OAuthProvider.google,
+          SocialProvider.apple => OAuthProvider.apple,
+        },
+        idToken: credential.idToken,
+        accessToken: credential.accessToken,
+        nonce: credential.rawNonce,
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const AuthException('Social sign-in returned no user');
+      }
+      final account = await _accountFor(PhoneAuthUser.fromSupabase(user));
+      if (account == null) {
+        throw const AuthException('Social sign-in returned no session');
+      }
+      return SocialSignInResult(
+        account: account,
+        providerFullName: _socialFullName(credential),
+      );
     } on AuthException catch (error) {
-      throw _mapVerifyError(error);
+      if (_isNetwork(error)) throw const AuthNetworkFailure();
+      throw const AuthRequestRejected('SOCIAL_FAILED');
     }
   }
 
-  Exception _mapRequestError(AuthException error) {
-    if (_isNetwork(error)) return const AuthNetworkFailure();
-    if (_isRateLimited(error)) return AuthRateLimited(_retryDeadline(error));
-    if (error.code == 'phone_provider_disabled' ||
-        error.code == 'phone_country_not_supported' ||
-        error.message.toLowerCase().contains('country')) {
-      return const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    return AuthRequestRejected(error.code ?? 'INTERNAL');
+  String? _socialFullName(SocialCredential credential) {
+    final joined =
+        '${credential.givenName ?? ''} '
+                '${credential.familyName ?? ''}'
+            .trim();
+    return joined.isNotEmpty ? joined : credential.displayName;
   }
 
   Exception _mapVerifyError(AuthException error) {
@@ -269,42 +288,17 @@ final class SupabaseAuthRepository implements AuthRepository {
     final profile = await _profiles.loadOwnProfile(user.id);
     return GuestAccount(
       id: user.id,
+      status: profile.status,
       phone: profile.phone ?? user.phone,
       phoneVerified: profile.phoneVerified || user.phoneVerified,
-      email: user.email,
-      emailVerified: user.emailVerified,
+      email: profile.email ?? user.email,
+      emailVerified: profile.emailVerified || user.emailVerified,
       fullName: profile.fullName,
+      authProviders: profile.authProviders,
+      hasPassword: profile.hasPassword,
       acceptedTermsVersion: profile.acceptedTermsVersion,
       acceptedTermsAt: profile.acceptedTermsAt,
     );
-  }
-
-  @override
-  Future<GuestAccount> completeProfile(
-    String name,
-    String termsVersion,
-  ) async {
-    try {
-      final profile = await _profiles.completeProfile(name, termsVersion);
-      final user = _auth.currentUser;
-      if (user == null) throw const AuthException('Session missing');
-      return GuestAccount(
-        id: user.id,
-        phone: profile.phone ?? user.phone,
-        phoneVerified: profile.phoneVerified || user.phoneVerified,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        fullName: profile.fullName,
-        acceptedTermsVersion: profile.acceptedTermsVersion,
-        acceptedTermsAt: profile.acceptedTermsAt,
-      );
-    } on PostgrestException catch (error) {
-      if (error.code == 'TERMS_CHANGED' ||
-          error.message.contains('TERMS_CHANGED')) {
-        throw const ProfileTermsChanged();
-      }
-      rethrow;
-    }
   }
 
   @override
@@ -315,20 +309,16 @@ final class SupabaseAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  ) async {
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     try {
-      final parsedPhone = EgyptPhone.tryParse(phone);
-      if (parsedPhone == null) {
-        throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-      }
       await _auth.signUpWithEmail(
         name,
         _normalizeEmail(email),
         password,
-        parsedPhone.e164,
         termsVersion,
+        locale: locale,
       );
       return _emailChallenge(VerificationChannel.emailSignup, email);
     } on AuthRequestRejected {

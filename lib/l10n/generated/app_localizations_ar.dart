@@ -143,6 +143,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorUnexpectedNoRef => 'حصلت مشكلة غير متوقعة. جرّب تاني.';
 
   @override
+  String get listSeparator => '، ';
+
+  @override
   String get errorCancelled => 'تم إلغاء العملية.';
 
   @override
@@ -191,16 +194,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authRegisterTitle => 'أنشئ حسابك';
 
   @override
-  String get authPhoneHint => 'مثال: 01012345678';
-
-  @override
   String get authPhoneInvalid => 'اكتب رقم موبايل مصري صحيح من 11 رقم.';
-
-  @override
-  String get authPhoneTab => 'الموبايل';
-
-  @override
-  String get authEmailTab => 'البريد الإلكتروني';
 
   @override
   String get authEmailComingSoon => 'التسجيل بالبريد الإلكتروني هيتاح قريبًا.';
@@ -238,9 +232,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String authResendIn(String time) {
     return 'إعادة الإرسال بعد $time';
   }
-
-  @override
-  String get authChangePhone => 'تغيير رقم الموبايل';
 
   @override
   String get authCompleteProfileTitle => 'كمّل بياناتك';
@@ -937,23 +928,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyEmailCodeHint => 'اكتب الكود اللي وصلك على البريد';
-
-  @override
-  String get verifyHasWhatsapp => 'الرقم ده عليه واتساب';
-
-  @override
-  String get verifyWhatsappNumber => 'رقم الواتساب (اختياري)';
-
-  @override
-  String get verifyCodeSentToEmail => 'بعتنا كود من 6 أرقام على بريدك.';
-
-  @override
-  String get verifyResend => 'ابعت الكود تاني';
-
-  @override
-  String verifyResendIn(String seconds) {
-    return 'تقدر تبعت الكود تاني بعد $seconds ثانية';
-  }
 
   @override
   String get bookingsTabCurrent => 'الحالية';
@@ -1956,4 +1930,144 @@ class AppLocalizationsAr extends AppLocalizations {
   String placeAreaCity(String area, String city) {
     return '$area، $city';
   }
+
+  @override
+  String get authOr => 'أو';
+
+  @override
+  String get authContinueWithGoogle => 'المتابعة بـ Google';
+
+  @override
+  String get authContinueWithApple => 'المتابعة بـ Apple';
+
+  @override
+  String get authSocialFailed => 'تعذر تسجيل الدخول، حاول مرة أخرى';
+
+  @override
+  String get confirmPhoneTitle => 'أكّد رقمك';
+
+  @override
+  String get confirmPhoneNewTitle => 'تغيير رقم الهاتف';
+
+  @override
+  String get confirmPhoneSubtitle =>
+      'هنبعتلك كود على واتساب الرقم ده عشان نتأكد إنه بتاعك';
+
+  @override
+  String get confirmPhoneEmailLabel => 'حسابك';
+
+  @override
+  String get confirmPhoneContinue => 'متابعة';
+
+  @override
+  String get confirmPhoneCancel => 'إلغاء';
+
+  @override
+  String get confirmPhoneLeaveTitle => 'تخرج من التسجيل؟';
+
+  @override
+  String get confirmPhoneLeaveBody => 'لو خرجت، التسجيل مش هيكمل';
+
+  @override
+  String get confirmPhoneLeaveConfirm => 'خروج';
+
+  @override
+  String get confirmPhoneLeaveStay => 'كمّل';
+
+  @override
+  String get whatsappCodeTitle => 'اكتب الكود';
+
+  @override
+  String whatsappCodeSentTo(String phone) {
+    return 'بعتنا كود على واتساب $phone';
+  }
+
+  @override
+  String get whatsappOpen => 'افتح واتساب';
+
+  @override
+  String get whatsappConfirm => 'تأكيد';
+
+  @override
+  String get whatsappResend => 'ابعت كود جديد';
+
+  @override
+  String whatsappResendIn(String time) {
+    return 'تقدر تطلب كود جديد بعد $time';
+  }
+
+  @override
+  String durationHoursMinutes(String hours, String minutes) {
+    return '$hours ساعة و$minutes دقيقة';
+  }
+
+  @override
+  String get whatsappEditNumber => 'تعديل الرقم';
+
+  @override
+  String get whatsappNotOnWhatsApp =>
+      'الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب';
+
+  @override
+  String get whatsappContactSupport => 'كلّم الدعم';
+
+  @override
+  String get whatsappUseLatestCode => 'استخدم آخر كود وصلك';
+
+  @override
+  String otpBlockedUntil(String date) {
+    return 'اتوقف إرسال الأكواد مؤقتًا لحد $date. لو محتاج مساعدة كلّم الدعم';
+  }
+
+  @override
+  String get otpBlockedNoDate =>
+      'اتوقف إرسال الأكواد مؤقتًا. لو محتاج مساعدة كلّم الدعم';
+
+  @override
+  String get authRateLimitedNoTime => 'محاولات كتير. جرّب تاني بعد شوية.';
+
+  @override
+  String whatsappNotSentYet(String phone) {
+    return 'لسه ما بعتناش كود على $phone. تقدر تطلب كود بعد ما العداد يخلص';
+  }
+
+  @override
+  String get otpAttestationFailed =>
+      'مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني';
+
+  @override
+  String get otpTemporarilyUnavailable => 'الخدمة مشغولة دلوقتي، جرّب بعد شوية';
+
+  @override
+  String get otpAttemptsExceeded => 'جربت كتير، اطلب كود جديد';
+
+  @override
+  String get confirmPhoneWelcome => 'أهلًا بيك في OnAir';
+
+  @override
+  String get phoneChanged => 'رقمك اتغيّر';
+
+  @override
+  String get accountSignInMethod => 'طريقة الدخول';
+
+  @override
+  String get accountMethodGoogle => 'Google';
+
+  @override
+  String get accountMethodApple => 'Apple';
+
+  @override
+  String get accountMethodEmail => 'البريد';
+
+  @override
+  String get accountPhone => 'رقم الهاتف';
+
+  @override
+  String get accountPhoneConfirmed => 'متأكد';
+
+  @override
+  String get accountChangePhone => 'تغيير';
+
+  @override
+  String get verifyPhoneOnWhatsApp => 'أكّد رقمك على واتساب';
 }

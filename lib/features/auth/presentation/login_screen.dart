@@ -1,19 +1,22 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
+import 'package:on_air/core/env/env_config.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
+import 'package:on_air/design_system/components/social_sign_in_button.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/password_rule.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_error_message.dart';
@@ -24,43 +27,62 @@ import 'package:on_air/features/auth/presentation/widgets/rapid_submit_guard.dar
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class LoginScreen extends StatefulWidget {
-  const LoginScreen({
-    this.initialPhone,
-    this.registration = false,
-    this.phoneAuthEnabled = true,
-    super.key,
-  });
+  const LoginScreen({this.registration = false, super.key});
 
-  final String? initialPhone;
   final bool registration;
-  final bool phoneAuthEnabled;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 final class _LoginScreenState extends State<LoginScreen> {
-  late final _phone = TextEditingController(text: widget.initialPhone);
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _showValidation = false;
   bool _loading = false;
-  late bool _emailTab = !widget.phoneAuthEnabled;
   bool _acceptedTerms = false;
   String? _requestError;
   String? _generalError;
   final _submitGuard = RapidSubmitGuard();
+  final _socialSubmitGuard = RapidSubmitGuard();
+  AuthCubit? _cubit;
 
   @override
   void initState() {
     super.initState();
-    for (final controller in [_phone, _name, _email, _password]) {
+    for (final controller in [_name, _email, _password]) {
       controller.addListener(_submitGuard.reset);
     }
   }
 
-  bool get _validPhone => EgyptPhone.tryParse(_phone.text) != null;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Harnesses that pump the raw screen (goldens) have no AuthCubit.
+    AuthCubit? cubit;
+    try {
+      cubit = context.read<AuthCubit>();
+    } on ProviderNotFoundException {
+      cubit = null;
+    }
+    if (!identical(cubit, _cubit)) {
+      _detach(_cubit);
+      _cubit = cubit?..social.addListener(_onSocialChanged);
+    }
+  }
+
+  void _onSocialChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// The cubit may close before this screen unmounts; a disposed notifier
+  /// must not be touched again.
+  void _detach(AuthCubit? cubit) {
+    if (cubit == null || cubit.isClosed) return;
+    cubit.social.removeListener(_onSocialChanged);
+  }
+
   bool get _validEmail => RegExp(
     r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
   ).hasMatch(_email.text.trim());
@@ -74,7 +96,7 @@ final class _LoginScreenState extends State<LoginScreen> {
       (widget.registration
           ? PasswordRule.isValid(_password.text)
           : _password.text.isNotEmpty) &&
-      (!widget.registration || (_validName && _validPhone && _acceptedTerms));
+      (!widget.registration || (_validName && _acceptedTerms));
 
   String? _requiredOrInvalid(
     String value,
@@ -97,22 +119,11 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _phone.dispose();
+    _detach(_cubit);
     _name.dispose();
     _email.dispose();
     _password.dispose();
     super.dispose();
-  }
-
-  Future<void> _submitPhone() async {
-    if (_loading) return;
-    if (!_validPhone) {
-      setState(() => _showValidation = true);
-      return;
-    }
-    await _runRequest(
-      () => context.read<AuthCubit>().requestPhoneCode(_phone.text),
-    );
   }
 
   Future<void> _submitEmail() async {
@@ -127,15 +138,16 @@ final class _LoginScreenState extends State<LoginScreen> {
           refresh: true,
         );
         if (!mounted) return;
-        context.read<AuthCubit>().updateTermsVersion(
-          config.currentTermsVersion,
-        );
+        // No phone here any more (S005 US6): «أكّد رقمك» collects it after
+        // the email code.
+        // The signup metadata carries the app's language (FR-016), the same
+        // way «أكّد رقمك» sends it with the phone.
         await context.read<AuthCubit>().requestEmailSignup(
           _name.text,
           _email.text,
           _password.text,
-          _phone.text,
           config.currentTermsVersion,
+          locale: Localizations.localeOf(context).languageCode,
         );
       } else {
         await context.read<AuthCubit>().signInEmail(
@@ -160,13 +172,16 @@ final class _LoginScreenState extends State<LoginScreen> {
       if (authState is SignedIn) {
         final origin = GoRouterState.of(context).uri.queryParameters['from'];
         final destination = resolveAuthReturnDestination(origin);
+        // Only an explicitly incomplete account enters «أكّد رقمك»; a
+        // suspended or unknown one goes to the destination and the redirect
+        // decides from there.
         context.go(
-          authState.isComplete
-              ? destination
-              : Uri(
+          authState.account.needsPhoneStep
+              ? Uri(
                   path: AppRoutes.completeProfile,
                   queryParameters: {'from': destination},
-                ).toString(),
+                ).toString()
+              : destination,
         );
         return;
       }
@@ -213,10 +228,139 @@ final class _LoginScreenState extends State<LoginScreen> {
   }
 
   /// Codes that already have their own message next to the related field.
-  static const _inlineCodes = {
-    'PHONE_COUNTRY_NOT_SUPPORTED',
-    'INVALID_CREDENTIALS',
-  };
+  static const _inlineCodes = {'INVALID_CREDENTIALS'};
+
+  bool get _socialBusy => _cubit?.social.value.busy != null;
+
+  void _signInWithGoogle() =>
+      unawaited(_signInWithSocial((cubit) => cubit.signInWithGoogle()));
+
+  void _signInWithApple() =>
+      unawaited(_signInWithSocial((cubit) => cubit.signInWithApple()));
+
+  Future<void> _signInWithSocial(
+    Future<void> Function(AuthCubit cubit) signIn,
+  ) async {
+    if (!_socialSubmitGuard.tryEnter()) return;
+    final cubit = _cubit;
+    if (cubit == null) return;
+    final router = GoRouter.maybeOf(context);
+    final origin = router == null
+        ? null
+        : GoRouterState.of(context).uri.queryParameters['from'];
+    await signIn(cubit);
+    if (!mounted) return;
+    final authState = cubit.state;
+    if (authState is! SignedIn || router == null) return;
+    final destination = resolveAuthReturnDestination(origin);
+    router.go(
+      authState.account.needsPhoneStep
+          ? Uri(
+              path: AppRoutes.completeProfile,
+              queryParameters: {'from': destination},
+            ).toString()
+          : destination,
+    );
+  }
+
+  bool _googleVisible(BuildContext context) {
+    try {
+      final env = context.read<EnvConfig>();
+      // Mock mode always shows it (no client id exists there).
+      if (env.backendMode == BackendMode.mock) return true;
+      return env.googleServerClientId != null;
+    } on ProviderNotFoundException {
+      // Harnesses without an env (tests) behave like mock mode.
+      return true;
+    }
+  }
+
+  bool _isMockMode(BuildContext context) {
+    try {
+      return context.read<EnvConfig>().backendMode == BackendMode.mock;
+    } on ProviderNotFoundException {
+      return true;
+    }
+  }
+
+  /// Debug-only scenario picker so testers can reach every mock social
+  /// outcome (T034).
+  Future<void> _pickMockScenario(BuildContext context) async {
+    final repo = context.read<AuthRepository>();
+    if (repo is! MockAuthRepository) return;
+    final picked = await showDialog<MockSocialScenario>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Mock social scenario'),
+        children: [
+          for (final scenario in MockSocialScenario.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(dialogContext, scenario),
+              child: Text(scenario.name),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) repo.scenario = picked;
+  }
+
+  Widget _socialSection(AppLocalizations l10n) {
+    final social = _cubit?.social.value ?? const SocialSignInUiState();
+    final showApple = defaultTargetPlatform == TargetPlatform.iOS;
+    final showGoogle = _googleVisible(context);
+    if (!showApple && !showGoogle) return const SizedBox.shrink();
+    final mockPicker = kDebugMode && _isMockMode(context)
+        ? () => _pickMockScenario(context)
+        : null;
+    return Column(
+      children: [
+        if (social.errorKey != null) ...[
+          const SizedBox(height: Dimens.space12),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.authSocialFailed,
+              key: const ValueKey('social-auth-error'),
+              style: TextStyle(color: context.colors.errorText),
+            ),
+          ),
+        ],
+        const SizedBox(height: Dimens.space24),
+        Row(
+          children: [
+            const Expanded(child: Divider()),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: Dimens.space12,
+              ),
+              child: Text(l10n.authOr),
+            ),
+            const Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: Dimens.space16),
+        Wrap(
+          spacing: Dimens.space16,
+          alignment: WrapAlignment.center,
+          children: [
+            if (showApple)
+              SocialSignInButton(
+                provider: SocialProvider.apple,
+                onPressed: _socialBusy ? null : _signInWithApple,
+                busy: social.busy == SocialProvider.apple,
+              ),
+            if (showGoogle)
+              SocialSignInButton(
+                provider: SocialProvider.google,
+                onPressed: _socialBusy ? null : _signInWithGoogle,
+                busy: social.busy == SocialProvider.google,
+                onLongPress: mockPicker,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _generalErrorText() => Padding(
     padding: const EdgeInsetsDirectional.only(top: Dimens.space12),
@@ -234,16 +378,9 @@ final class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final compact = MediaQuery.sizeOf(context).height < 700;
-    final invalidPhone = _showValidation && !_validPhone;
-    final countryUnsupported = _requestError == 'PHONE_COUNTRY_NOT_SUPPORTED';
     final invalidCredentials = _requestError == 'INVALID_CREDENTIALS';
     if (!widget.registration) {
-      return _buildSignIn(
-        l10n,
-        invalidPhone: invalidPhone,
-        countryUnsupported: countryUnsupported,
-        invalidCredentials: invalidCredentials,
-      );
+      return _buildSignIn(l10n, invalidCredentials: invalidCredentials);
     }
     return AuthFlowScaffold(
       topSpaceFactor: 0.08,
@@ -257,34 +394,13 @@ final class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: Dimens.space4),
         _accountSwitch(l10n),
         const SizedBox(height: Dimens.space24),
-        if (widget.phoneAuthEnabled) ...[
-          SegmentedButton<bool>(
-            segments: [
-              ButtonSegment(value: false, label: Text(l10n.authPhoneTab)),
-              ButtonSegment(value: true, label: Text(l10n.authEmailTab)),
-            ],
-            selected: {_emailTab},
-            onSelectionChanged: (selection) => setState(() {
-              _emailTab = selection.single;
-              _showValidation = false;
-              _requestError = null;
-              _generalError = null;
-            }),
-          ),
-          const SizedBox(height: Dimens.space24),
-        ],
-        if (_emailTab)
-          ..._emailFields(l10n, invalidCredentials)
-        else
-          ..._phoneFields(l10n, invalidPhone, countryUnsupported),
+        ..._emailFields(l10n, invalidCredentials),
       ],
     );
   }
 
   Widget _buildSignIn(
     AppLocalizations l10n, {
-    required bool invalidPhone,
-    required bool countryUnsupported,
     required bool invalidCredentials,
   }) {
     final colors = context.colors;
@@ -338,36 +454,7 @@ final class _LoginScreenState extends State<LoginScreen> {
                         child: _accountSwitch(l10n),
                       ),
                       const SizedBox(height: Dimens.space40),
-                      if (widget.phoneAuthEnabled) ...[
-                        SegmentedButton<bool>(
-                          segments: [
-                            ButtonSegment(
-                              value: false,
-                              label: Text(l10n.authPhoneTab),
-                            ),
-                            ButtonSegment(
-                              value: true,
-                              label: Text(l10n.authEmailTab),
-                            ),
-                          ],
-                          selected: {_emailTab},
-                          onSelectionChanged: (selection) => setState(() {
-                            _emailTab = selection.single;
-                            _showValidation = false;
-                            _requestError = null;
-                            _generalError = null;
-                          }),
-                        ),
-                        const SizedBox(height: Dimens.space24),
-                      ],
-                      if (_emailTab)
-                        ..._signInEmailFields(l10n, invalidCredentials)
-                      else
-                        ..._signInPhoneFields(
-                          l10n,
-                          invalidPhone,
-                          countryUnsupported,
-                        ),
+                      ..._signInEmailFields(l10n, invalidCredentials),
                     ],
                   ),
                 ),
@@ -448,7 +535,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: OnAirPrimaryButton(
           key: const ValueKey('email-submit-button'),
           label: l10n.signIn,
-          onPressed: _loading ? null : _submitEmail,
+          onPressed: (_loading || _socialBusy) ? null : _submitEmail,
           isLoading: _loading,
           gradient: true,
           pill: true,
@@ -456,6 +543,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     ),
+    _socialSection(l10n),
   ];
 
   bool get _forgotBelowField =>
@@ -468,69 +556,6 @@ final class _LoginScreenState extends State<LoginScreen> {
     style: TextButton.styleFrom(foregroundColor: context.colors['textAccent']),
     child: Text(l10n.authForgotPassword),
   );
-
-  List<Widget> _signInPhoneFields(
-    AppLocalizations l10n,
-    bool invalidPhone,
-    bool countryUnsupported,
-  ) => [
-    OnAirTextField(
-      key: const ValueKey('phone-field'),
-      controller: _phone,
-      label: l10n.phoneNumber,
-      hint: l10n.authPhoneHint,
-      prefixIcon: AppIcons.phoneOutlined,
-      pill: true,
-      keyboardType: TextInputType.phone,
-      enabled: !_loading,
-      errorText: invalidPhone
-          ? _requiredOrInvalid(
-              _phone.text,
-              _validPhone,
-              l10n.authPhoneInvalid,
-              l10n,
-            )
-          : null,
-      onChanged: (_) => setState(() {
-        _requestError = null;
-        _generalError = null;
-      }),
-    ),
-    if (countryUnsupported) ...[
-      const SizedBox(height: Dimens.space12),
-      Semantics(
-        liveRegion: true,
-        child: Text(l10n.authPhoneCountryNotSupported),
-      ),
-      TextButton(
-        key: const ValueKey('use-email-action'),
-        onPressed: () => setState(() => _emailTab = true),
-        child: Text(l10n.authEmailTab),
-      ),
-    ],
-    if (_generalError != null) _generalErrorText(),
-    const SizedBox(height: Dimens.space40),
-    Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: SizedBox(
-        width: 205,
-        child: OnAirPrimaryButton(
-          key: const ValueKey('send-code-button'),
-          label: l10n.sendCode,
-          onPressed: _loading ? null : _submitPhone,
-          isLoading: _loading,
-          gradient: true,
-          pill: true,
-          height: 62,
-        ),
-      ),
-    ),
-    const SizedBox(height: Dimens.space24),
-    Text(
-      '${l10n.authTermsPrefix} ${l10n.terms} و${l10n.privacy}',
-      textAlign: TextAlign.center,
-    ),
-  ];
 
   void _cancelSignIn() {
     final router = GoRouter.of(context);
@@ -560,25 +585,6 @@ final class _LoginScreenState extends State<LoginScreen> {
           _name.text,
           _validName,
           l10n.authNameInvalid,
-          l10n,
-        ),
-        onChanged: (_) => setState(() => _generalError = null),
-      ),
-      const SizedBox(height: Dimens.space20),
-      OnAirTextField(
-        key: const ValueKey('email-phone-field'),
-        controller: _phone,
-        label: l10n.phoneNumber,
-        hint: l10n.authPhoneHint,
-        prefixIcon: AppIcons.phoneOutlined,
-        pill: true,
-        keyboardType: TextInputType.phone,
-        enabled: !_loading,
-        textInputAction: TextInputAction.next,
-        errorText: _requiredOrInvalid(
-          _phone.text,
-          _validPhone,
-          l10n.authPhoneInvalid,
           l10n,
         ),
         onChanged: (_) => setState(() => _generalError = null),
@@ -663,7 +669,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         child: OnAirPrimaryButton(
           key: const ValueKey('email-submit-button'),
           label: l10n.authSignUpWithEmail,
-          onPressed: _loading ? null : _submitEmail,
+          onPressed: (_loading || _socialBusy) ? null : _submitEmail,
           isLoading: _loading,
           gradient: true,
           pill: true,
@@ -671,69 +677,7 @@ final class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     ),
-  ];
-
-  List<Widget> _phoneFields(
-    AppLocalizations l10n,
-    bool invalidPhone,
-    bool countryUnsupported,
-  ) => [
-    OnAirTextField(
-      key: const ValueKey('phone-field'),
-      controller: _phone,
-      label: l10n.phoneNumber,
-      hint: l10n.authPhoneHint,
-      prefixIcon: AppIcons.phoneOutlined,
-      pill: true,
-      keyboardType: TextInputType.phone,
-      enabled: !_loading,
-      errorText: invalidPhone
-          ? _requiredOrInvalid(
-              _phone.text,
-              _validPhone,
-              l10n.authPhoneInvalid,
-              l10n,
-            )
-          : null,
-      onChanged: (_) => setState(() {
-        _requestError = null;
-        _generalError = null;
-      }),
-    ),
-    if (countryUnsupported) ...[
-      const SizedBox(height: Dimens.space12),
-      Semantics(
-        liveRegion: true,
-        child: Text(l10n.authPhoneCountryNotSupported),
-      ),
-      TextButton(
-        key: const ValueKey('use-email-action'),
-        onPressed: () => setState(() => _emailTab = true),
-        child: Text(l10n.authEmailTab),
-      ),
-    ],
-    if (_generalError != null) _generalErrorText(),
-    const SizedBox(height: Dimens.space20),
-    Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: SizedBox(
-        width: 205,
-        child: OnAirPrimaryButton(
-          key: const ValueKey('send-code-button'),
-          label: l10n.sendCode,
-          onPressed: _loading ? null : _submitPhone,
-          isLoading: _loading,
-          gradient: true,
-          pill: true,
-          height: 62,
-        ),
-      ),
-    ),
-    const SizedBox(height: Dimens.space16),
-    Text(
-      '${l10n.authTermsPrefix} ${l10n.terms} و${l10n.privacy}',
-      textAlign: TextAlign.center,
-    ),
+    _socialSection(l10n),
   ];
 
   Widget _accountSwitch(AppLocalizations l10n) => Wrap(

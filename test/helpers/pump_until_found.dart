@@ -1,4 +1,20 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
+
+const _mockBookingPropertyId = '00000000-0000-4000-8000-00000000001f';
+
+bool _hasMatch(Finder finder) {
+  try {
+    return finder.evaluate().isNotEmpty;
+    // Chained finders such as `find.byType(...).first` throw when their
+    // parent disappears during a route transition, so this Error is expected.
+    // ignore: avoid_catching_errors
+  } on StateError {
+    return false;
+  }
+}
 
 /// Waits for async mock data or route transitions on slower device runners.
 ///
@@ -11,10 +27,109 @@ Future<void> pumpUntilFound(
 }) async {
   for (
     var attempt = 0;
-    attempt < maxAttempts && !tester.any(finder);
+    attempt < maxAttempts && !_hasMatch(finder);
     attempt++
   ) {
     await tester.pump(const Duration(milliseconds: 250));
   }
-  expect(finder, findsWidgets);
+  expect(_hasMatch(finder), isTrue, reason: 'Expected to find $finder');
+}
+
+/// Waits until an asynchronously rendered collection reaches [count].
+Future<void> pumpUntilCount(
+  WidgetTester tester,
+  Finder finder,
+  int count, {
+  int maxAttempts = 80,
+}) async {
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      if (finder.evaluate().length >= count) break;
+      // A chained finder can temporarily lose its parent during navigation,
+      // so this Error is an expected transient absence.
+      // ignore: avoid_catching_errors
+    } on StateError {
+      // Keep pumping until the requested collection has rendered.
+    }
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(finder, findsNWidgets(count));
+}
+
+/// Makes a control hit-testable on real simulators before tapping it.
+///
+/// iOS keeps the software keyboard open after [WidgetTester.enterText], which
+/// can leave a visually built submit button outside the tappable viewport.
+Future<void> tapVisible(
+  WidgetTester tester,
+  Finder finder, {
+  bool dismissKeyboard = false,
+}) async {
+  if (dismissKeyboard) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+  }
+  await pumpUntilFound(tester, finder);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pump();
+}
+
+/// Taps a navigation control and waits for its destination, retrying only
+/// while the original control is still present. This absorbs occasional
+/// missed native-device taps without hiding a broken route transition.
+Future<void> tapAndWait(
+  WidgetTester tester,
+  Finder finder,
+  Finder destination, {
+  bool dismissKeyboard = false,
+  int tapAttempts = 3,
+}) async {
+  if (dismissKeyboard) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+  }
+  await pumpUntilFound(tester, finder);
+  for (var tapAttempt = 0; tapAttempt < tapAttempts; tapAttempt++) {
+    if (_hasMatch(destination)) return;
+    if (!_hasMatch(finder)) break;
+    await tapVisible(
+      tester,
+      finder,
+    );
+    for (
+      var pumpAttempt = 0;
+      pumpAttempt < 20 && !_hasMatch(destination);
+      pumpAttempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+  }
+  await pumpUntilFound(tester, destination);
+}
+
+/// Opens the auth gate with the same return contract as «احجز الآن».
+///
+/// These auth integration suites do not need to reload the property details
+/// fixture before every scenario. Starting from a loaded Home still verifies
+/// the full app router, while `from` proves that a successful sign-in resumes
+/// at the booking entry.
+Future<void> openBookingLoginFromHome(WidgetTester tester) async {
+  final home = find.byKey(const ValueKey('home-search-box'));
+  await pumpUntilFound(tester, home);
+  final context = tester.element(home);
+  GoRouter.of(context).go(
+    Uri(
+      path: AppRoutes.login,
+      queryParameters: {
+        'from': AppRoutes.bookingEntry(_mockBookingPropertyId),
+        'cancelTo': AppRoutes.home,
+      },
+    ).toString(),
+  );
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('social-google-button')),
+  );
 }

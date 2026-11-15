@@ -117,6 +117,16 @@ targetRules = ["generic-api-key"]
 paths = ['''^test/features/booking/presentation/payment_verification_cubit_test\.dart$''']
 commits = ["7a8a83db2bb6936ca06563cf04ba36792d9b3baa"]
 
+# This historical unit-test fixture verifies that AppLogger redacts JWT-shaped
+# values. It is intentionally fake and is scoped to its introducing commit,
+# exact file, and the default JWT rule so real JWT findings remain enabled.
+[[allowlists]]
+description = "Synthetic JWT used by historical AppLogger redaction test"
+condition = "AND"
+targetRules = ["jwt"]
+paths = ['''^test/core/network/otp_send_interceptor_test\.dart$''']
+commits = ["a2d7974232c125c3258d701900afb388a6472995"]
+
 # Firebase API keys are public client configuration (Constitution IV allows "public
 # Firebase config"); they are restricted per service in the Firebase console. Scope the
 # default GCP and generic key rules away from the FlutterFire config files only.

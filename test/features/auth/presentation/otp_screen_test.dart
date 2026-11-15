@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/platform/secure_screen.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -13,13 +14,6 @@ import 'package:on_air/features/auth/presentation/otp_screen.dart';
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/pump_app.dart';
-
-final class _NoSms implements SmsCodeReader {
-  @override
-  Future<void> cancel() async {}
-  @override
-  Future<String?> readCode() async => null;
-}
 
 final class _NoSecure implements SecureScreenControl {
   @override
@@ -36,12 +30,17 @@ void main() {
     auth = FakeAuthRepository()
       ..account = GuestAccount(
         id: 'guest',
+        status: AccountStatus.active,
         phone: '+201012345678',
         phoneVerified: true,
+        email: 'guest@example.com',
+        emailVerified: true,
+        fullName: 'Guest',
+        acceptedTermsVersion: 'v1',
       )
       ..challenge = CodeChallenge(
-        channel: VerificationChannel.sms,
-        target: '+201012345678',
+        channel: VerificationChannel.emailSignup,
+        target: 'guest@example.com',
         resendAt: now.add(const Duration(seconds: 30)),
       );
     config = FakeAppConfigRepository(
@@ -52,16 +51,12 @@ void main() {
         currentTermsVersion: 'v1',
       ),
     );
-    cubit = AuthCubit(auth, currentTermsVersion: 'v1', clock: () => now);
-    await cubit.requestPhoneCode('+201012345678');
+    cubit = AuthCubit(auth, clock: () => now);
+    await cubit.requestEmailVerification('guest@example.com');
   });
 
   Future<void> pump(WidgetTester tester) => tester.pumpOnAirApp(
-    OtpScreen(
-      codeReader: _NoSms(),
-      secureScreen: _NoSecure(),
-      clock: () => now,
-    ),
+    OtpScreen(secureScreen: _NoSecure(), clock: () => now),
     authRepository: auth,
     appConfigRepository: config,
     authCubit: cubit,
@@ -89,7 +84,7 @@ void main() {
   });
 
   testWidgets('wrong code is announced under the field', (tester) async {
-    auth.verifyPhoneError = const AuthCodeRejected('OTP_INVALID');
+    auth.verifyEmailError = const AuthCodeRejected('OTP_INVALID');
     await pump(tester);
     await tester.enterText(find.byType(TextField), '000000');
     await tester.pump();
@@ -110,14 +105,14 @@ void main() {
 
   testWidgets('resend ignores a rapid second tap', (tester) async {
     auth.challenge = CodeChallenge(
-      channel: VerificationChannel.sms,
-      target: '+201012345678',
+      channel: VerificationChannel.emailSignup,
+      target: 'guest@example.com',
       resendAt: now,
     );
-    await cubit.requestPhoneCode('+201012345678');
-    final baseline = auth.requestPhoneCalls;
+    await cubit.requestEmailVerification('guest@example.com');
+    final baseline = auth.requestEmailVerificationCalls;
     final barrier = Completer<void>();
-    auth.requestPhoneBarrier = barrier.future;
+    auth.requestEmailVerificationBarrier = barrier.future;
     await pump(tester);
 
     final resend = find.byKey(const ValueKey('resend-button'));
@@ -125,27 +120,27 @@ void main() {
     await tester.tap(resend);
     await tester.pump();
 
-    expect(auth.requestPhoneCalls, baseline + 1);
+    expect(auth.requestEmailVerificationCalls, baseline + 1);
     barrier.complete();
     await tester.pump();
   });
 
-  testWidgets('rate limit disables entry and change phone clears state', (
+  testWidgets('rate limit disables entry and change email clears state', (
     tester,
   ) async {
     auth.rateLimit = AuthRateLimited(now.add(const Duration(seconds: 45)));
-    await cubit.requestPhoneCode('+201012345678');
+    await cubit.requestEmailVerification('guest@example.com');
     await pump(tester);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     expect(find.textContaining('45'), findsWidgets);
 
-    final changePhone = find.byKey(const ValueKey('change-phone-button'));
+    final changeEmail = find.byKey(const ValueKey('change-email-button'));
     await tester.scrollUntilVisible(
-      changePhone,
+      changeEmail,
       120,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(changePhone);
+    await tester.tap(changeEmail);
     await tester.pump();
     expect(cubit.state, isA<SignedOut>());
   });

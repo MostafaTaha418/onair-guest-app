@@ -15,6 +15,8 @@ final class EnvConfig {
     required this.nodeApiBaseUrl,
     required this.linkDomain,
     required this.backendMode,
+    this.googleServerClientId,
+    this.googleIosClientId,
   });
 
   factory EnvConfig.fromMap(Map<String, String> values) {
@@ -85,6 +87,15 @@ final class EnvConfig {
         'Mock backend is not allowed in production',
       );
     }
+    String? publicValue(String key) {
+      final value = values[key]?.trim();
+      if (value == null || value.isEmpty) return null;
+      if (value.toLowerCase().contains('secret')) {
+        throw ArgumentError.value('[redacted]', key, 'Secret forbidden');
+      }
+      return value;
+    }
+
     return EnvConfig._(
       flavor: flavor,
       supabaseUrl: supabaseUrl,
@@ -92,6 +103,8 @@ final class EnvConfig {
       nodeApiBaseUrl: nodeApiBaseUrl,
       linkDomain: domain,
       backendMode: backendMode,
+      googleServerClientId: publicValue('GOOGLE_SERVER_CLIENT_ID'),
+      googleIosClientId: publicValue('GOOGLE_IOS_CLIENT_ID'),
     );
   }
 
@@ -102,6 +115,12 @@ final class EnvConfig {
     'NODE_API_BASE_URL': const String.fromEnvironment('NODE_API_BASE_URL'),
     'LINK_DOMAIN': const String.fromEnvironment('LINK_DOMAIN'),
     'BACKEND_MODE': const String.fromEnvironment('BACKEND_MODE'),
+    'GOOGLE_SERVER_CLIENT_ID': const String.fromEnvironment(
+      'GOOGLE_SERVER_CLIENT_ID',
+    ),
+    'GOOGLE_IOS_CLIENT_ID': const String.fromEnvironment(
+      'GOOGLE_IOS_CLIENT_ID',
+    ),
   });
 
   final String flavor;
@@ -110,6 +129,12 @@ final class EnvConfig {
   final String nodeApiBaseUrl;
   final String linkDomain;
   final BackendMode backendMode;
+
+  /// Public Google OAuth client ID for the server (Android), optional.
+  final String? googleServerClientId;
+
+  /// Public Google OAuth client ID for iOS, optional.
+  final String? googleIosClientId;
 
   static String? _jwtRole(String key) {
     final parts = key.split('.');

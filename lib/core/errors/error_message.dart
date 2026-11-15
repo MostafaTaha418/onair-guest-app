@@ -36,9 +36,21 @@ String apiErrorMessage(ApiError error, AppLocalizations l10n) =>
       ErrorCode.cashAmountChanged => l10n.stayCashAmountChanged,
       ErrorCode.claimAlreadyAnswered => l10n.claimAlreadyAnswered,
       ErrorCode.offerNotAvailable => l10n.offerNotAvailable,
-      ErrorCode.rateLimited => l10n.authRateLimited(
-        _waitText(error.retryAfter),
-      ),
+      ErrorCode.rateLimited =>
+        error.retryAfter == null
+            ? l10n.authRateLimitedNoTime
+            : l10n.authRateLimited(_waitText(error.retryAfter)),
+      ErrorCode.unauthenticated => l10n.errorUnauthenticated,
+      ErrorCode.appVersionUnsupported => l10n.appUpdateRequired,
+      ErrorCode.profileIncomplete => l10n.authProfileIncomplete,
+      // S005: the WhatsApp phone confirmation. A block date is rendered by
+      // the BlockedNotice; this text is the fallback without one.
+      ErrorCode.otpSendBlocked => l10n.otpBlockedNoDate,
+      ErrorCode.phoneNotOnWhatsApp => l10n.whatsappNotOnWhatsApp,
+      ErrorCode.appAttestationFailed => l10n.otpAttestationFailed,
+      ErrorCode.otpTemporarilyUnavailable => l10n.otpTemporarilyUnavailable,
+      ErrorCode.otpSuperseded => l10n.whatsappUseLatestCode,
+      ErrorCode.otpAttemptsExceeded => l10n.otpAttemptsExceeded,
       _ => l10n.errorUnexpectedNoRef,
     };
 

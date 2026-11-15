@@ -7,6 +7,7 @@ enum ErrorCode {
   validationFailed,
   termsChanged,
   profileIncomplete,
+  profileAlreadyComplete,
   appVersionUnsupported,
   phoneNotVerified,
   emailNotVerified,
@@ -30,6 +31,12 @@ enum ErrorCode {
   cashAmountChanged,
   claimAlreadyAnswered,
   offerNotAvailable,
+  otpSendBlocked,
+  phoneNotOnWhatsApp,
+  appAttestationFailed,
+  otpTemporarilyUnavailable,
+  otpSuperseded,
+  otpAttemptsExceeded,
   internal,
   network,
   cancelled,
@@ -40,12 +47,17 @@ final class ApiError {
     required this.code,
     required this.messageKey,
     this.requestId,
+    this.details,
     this.retryAfter,
   });
 
   final ErrorCode code;
   final String messageKey;
   final String? requestId;
+
+  /// Server-provided payload (e.g. `next_send_at`, `blocked_until`) that the
+  /// UI renders verbatim — the app never computes the ladder (Constitution II).
+  final Map<String, dynamic>? details;
   final Duration? retryAfter;
 }
 

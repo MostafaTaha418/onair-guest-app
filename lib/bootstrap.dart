@@ -1,7 +1,9 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/core/api/generated/export.dart';
@@ -9,6 +11,8 @@ import 'package:on_air/core/auth/secure_session_storage.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/core/device/app_attestation.dart';
+import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/env/env_config.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
@@ -29,8 +33,12 @@ import 'package:on_air/features/account_gate/data/mock_device_repository.dart';
 import 'package:on_air/features/account_gate/presentation/session_listener.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/data/profile_repository.dart';
+import 'package:on_air/features/auth/data/social_credential_source.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/data/supabase_phone_verification_repository.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:on_air/features/booking/data/payment_attempt_store.dart';
 import 'package:on_air/features/booking/data/supabase_booking_flow_repository.dart';
 import 'package:on_air/features/booking/domain/booking_flow_repository.dart';
@@ -79,6 +87,7 @@ Future<void> bootstrap(String flavor) async {
     BackendMode.remote => await _remoteBackend(environment),
     BackendMode.mock => _mockBackend(),
   };
+  final deviceIdentity = backend.deviceIdentity;
   final favorites = environment.backendMode == BackendMode.remote
       ? SupabaseFavoritesRepository(Supabase.instance.client)
       : MemoryFavoritesRepository();
@@ -100,6 +109,10 @@ Future<void> bootstrap(String flavor) async {
     pushTokens: pushTokens,
     caches: AppConfigCacheCleaner(configSource),
     preferences: const SharedPreferencesCleaner(),
+    // The provider session is cleared too; the device abuse key stays (R13).
+    socialSignOut: environment.backendMode == BackendMode.remote
+        ? GoogleSignIn.instance.signOut
+        : null,
   );
   final sessionEventSource = backend.sessionEvents;
   final discoveryCache = await JsonFileCache.appSupport(
@@ -127,6 +140,11 @@ Future<void> bootstrap(String flavor) async {
       providers: [
         RepositoryProvider<EnvConfig>.value(value: environment),
         RepositoryProvider<AppLogger>.value(value: logger),
+        // Needed later by the mock OTP server (US5) and the send interceptor.
+        RepositoryProvider<DeviceIdentity>.value(value: deviceIdentity),
+        RepositoryProvider<PhoneVerificationRepository>.value(
+          value: backend.phoneVerification,
+        ),
         RepositoryProvider<AppConfigSource>.value(value: configSource),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<PushTokenSource>.value(value: pushTokens),
@@ -210,6 +228,8 @@ typedef _Backend = ({
   NotificationsRepository notifications,
   NotificationSignalSource signals,
   SecureStore secureStore,
+  DeviceIdentity deviceIdentity,
+  PhoneVerificationRepository phoneVerification,
   MockBookingServer? mockServer,
   StayRepository stay,
   MockStayServer? mockStay,
@@ -223,6 +243,16 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
   // auto-created [DEFAULT] app and lets Apple initialize from its plist;
   // supplying generated options here duplicates [DEFAULT] in Android release.
   await Firebase.initializeApp();
+  // Play Integrity / App Attest protect the WhatsApp OTP send route (R3);
+  // debug builds use the debug providers so emulators can run.
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: kDebugMode
+        ? const AndroidDebugProvider()
+        : const AndroidPlayIntegrityProvider(),
+    providerApple: kDebugMode
+        ? const AppleDebugProvider()
+        : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+  );
   await Supabase.initialize(
     url: environment.supabaseUrl,
     publishableKey: environment.supabaseAnonKey,
@@ -231,15 +261,23 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
   final client = Supabase.instance.client;
   Future<dynamic> rpc(String fn, Map<String, dynamic> params) =>
       client.rpc<dynamic>(fn, params: params);
+  final deviceIdentity = platformDeviceIdentity();
   final dio = createNodeDio(
     baseUrl: environment.nodeApiBaseUrl,
     tokens: SupabaseTokenSource(client),
+    deviceIdentity: deviceIdentity,
+    attestation: const FirebaseAppAttestation(),
+  );
+  final socialCredentials = GoogleAppleCredentialSource(
+    serverClientId: environment.googleServerClientId,
+    iosClientId: environment.googleIosClientId,
   );
   return (
     config: AppConfigRepository(client),
     auth: SupabaseAuthRepository(
       SupabasePhoneAuthClient(client.auth),
       ProfileRepository(client),
+      socialCredentials: socialCredentials,
     ),
     pushTokens: FirebasePushTokenSource(),
     devices: DeviceRepository(client),
@@ -253,6 +291,14 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     notifications: SupabaseNotificationsRepository(rpc: rpc),
     signals: SupabaseNotificationSignalSource(client),
     secureStore: FlutterSecureStore(),
+    deviceIdentity: deviceIdentity,
+    phoneVerification: SupabasePhoneVerificationRepository(
+      rpc: rpc,
+      node: FallbackClient(dio),
+      // common_verify_otp may answer with the profile shape alone; the
+      // session is the identity then (review fix 1).
+      currentUserId: () => client.auth.currentUser?.id,
+    ),
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
     mockStay: null,
@@ -275,9 +321,12 @@ _Backend _mockBackend() {
     inner: rawListings,
     server: server,
   );
+  final auth = MockAuthRepository();
+  // The same stable mock id feeds the OTP send-limit device key (US5).
+  const deviceIdentity = MemoryDeviceIdentity();
   return (
     config: const MockAppConfigSource(),
-    auth: MockAuthRepository(),
+    auth: auth,
     pushTokens: const NoopPushTokenSource(),
     devices: MockDeviceTokenRepository(),
     sessionEvents: const NoopSessionEventSource(),
@@ -287,6 +336,11 @@ _Backend _mockBackend() {
     notifications: server,
     signals: signals,
     secureStore: secureStore,
+    deviceIdentity: deviceIdentity,
+    phoneVerification: MockPhoneVerificationRepository(
+      auth: auth,
+      deviceIdentity: deviceIdentity,
+    ),
     mockServer: server,
     stay: stay,
     mockStay: stay,

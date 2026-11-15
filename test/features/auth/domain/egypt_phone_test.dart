@@ -26,4 +26,16 @@ void main() {
       }
     });
   });
+
+  group('maskPhone', () {
+    test('renders the server masked_target style', () {
+      expect(maskPhone('+201012345678'), '+20 10•• ••• 678');
+      expect(maskPhone('+201098765432'), '+20 10•• ••• 432');
+      expect(maskPhone('+201155544400'), '+20 11•• ••• 400');
+    });
+
+    test('keeps a too-short number unchanged', () {
+      expect(maskPhone('+20100'), '+20100');
+    });
+  });
 }

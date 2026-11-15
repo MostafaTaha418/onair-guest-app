@@ -1,12 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/app/router/redirect.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 
 void main() {
   const uuid = '550e8400-e29b-41d4-a716-446655440000';
   final account = GuestAccount(
+    status: AccountStatus.active,
     id: 'guest',
     phone: '+201012345678',
     phoneVerified: true,

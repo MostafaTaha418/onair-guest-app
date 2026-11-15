@@ -41,12 +41,17 @@ Future<void> runRemainingPaymentJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);
@@ -109,12 +114,17 @@ Future<void> runCashJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);
@@ -221,12 +231,17 @@ Future<void> runStayAckJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);
@@ -294,12 +309,17 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);
@@ -443,12 +463,17 @@ Future<void> runClaimJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);
@@ -463,11 +488,11 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   await pumpUntilFound(tester, find.text(l10n.claimProtection));
   expect(find.text(l10n.claimStatusOpen), findsOneWidget);
   // The mock image URLs always fail, so the placeholders show.
-  await pumpUntilFound(
+  await pumpUntilCount(
     tester,
     find.byIcon(AppIcons.imageNotSupportedOutlined),
+    2,
   );
-  expect(find.byIcon(AppIcons.imageNotSupportedOutlined), findsNWidgets(2));
   expect(find.byKey(const ValueKey('claim-agree')), findsOneWidget);
 
   // A 5-character dispute shows the length error and sends nothing.
@@ -525,12 +550,17 @@ Future<void> runOfferJourney(WidgetTester tester) async {
     'مستأجر تجريبي',
     'guest@mock.onair.test',
     'Password123!',
-    '01000000001',
     MockBackend.termsVersion,
   );
   await auth.verifyEmailCode(
     'guest@mock.onair.test',
     MockBackend.verificationCode,
+  );
+  // The WhatsApp step activates the mock account (S005 US6); the journey
+  // seeds the confirmed number directly.
+  auth.activatePhone(
+    userId: auth.account!.id,
+    phoneE164: '+201000000001',
   );
 
   await bootApp(tester, backend, auth);

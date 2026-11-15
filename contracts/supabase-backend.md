@@ -158,3 +158,22 @@ With two Staging test accounts A and B:
 | `profiles` columns | `id, full_name, accepted_terms_*` | + `email`, `phone_e164`, `phone_verified_at`, `phone_has_whatsapp`, `whatsapp_e164`, `locale`, `status` |
 | Push tokens | Node `POST /v1/devices`, `DELETE /v1/devices/{token}` | RPC `common_register_device` / `common_unregister_device` |
 | Error codes | — | Add `PHONE_ALREADY_USED`, `NOT_FOUND`, `PERMISSION_DENIED`, `ACCOUNT_SUSPENDED`, `ACCOUNT_HAS_ACTIVE_BOOKINGS`. `PROFILE_INCOMPLETE` stays mapped but is no longer expected in the normal flow |
+
+## 9. S005 deltas (14 Nov 2026)
+
+The full deltas live in
+[specs/005-guest-social-sign-in/contracts](../specs/005-guest-social-sign-in/contracts/).
+Summary of what the Guest App now assumes:
+
+- **Sign-up carries no phone.** `signUp(data:)` sends `full_name`,
+  `accepted_terms_version`, `locale` — the `phone_e164` / `phone_has_whatsapp` /
+  `whatsapp_e164` keys are gone (supabase-auth.md A4).
+- **`profiles.status`** is `incomplete` until the WhatsApp confirmation succeeds
+  (`common_verify_otp` sets it); the app redirects every incomplete session to
+  `/auth/complete-profile` (A3).
+- **Phone confirmation RPCs**: `common_start_phone_verification`,
+  `common_request_phone_change`, `common_get_otp_status` (A5–A7), and
+  `common_verify_otp` returns the profile in the A4 context shape.
+- **Codes**: the WhatsApp channel rides `POST /v1/otp/send` (node-otp.md A8–A9) with the
+  `X-Device-Id` / `X-Firebase-AppCheck` headers, the send ladder and the 7-day block; the new
+  error codes are listed in [error-codes.md](error-codes.md).

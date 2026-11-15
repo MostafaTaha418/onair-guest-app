@@ -78,7 +78,7 @@ void main() {
 
   Future<void> pumpHost(WidgetTester tester, {FakeShareService? share}) async {
     final authRepository = FakeAuthRepository();
-    final authCubit = AuthCubit(authRepository, currentTermsVersion: 'v1');
+    final authCubit = AuthCubit(authRepository);
     final favoritesCubit = FavoritesCubit(
       repository: MemoryFavoritesRepository(),
       listings: listings,

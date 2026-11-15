@@ -1,23 +1,50 @@
 import 'dart:async';
 
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
-import 'package:on_air/features/auth/domain/egypt_phone.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
+import 'package:on_air/features/auth/domain/social_identity.dart';
+
+/// The canned social sign-in outcomes the mock can serve. Testers pick one
+/// via the long-press debug dialog on the Google button (T034).
+enum MockSocialScenario {
+  newUser,
+  incompleteUser,
+  completeUser,
+  legacyUser,
+  unconfirmedEmailCollision,
+  cancel,
+  failure,
+}
 
 /// In-memory auth for `BACKEND_MODE=mock` (Guest Plan §2.6).
 ///
-/// Follows the same contract as the Supabase implementation: Egyptian
-/// numbers only, 6-digit codes ([MockBackend.verificationCode]), uniform
-/// messages that never reveal whether an account exists, unconfirmed email
-/// continues on the code screen, and terms version checks. Data lives only
-/// for the app session.
+/// Follows the same contract as the Supabase implementation: 6-digit codes
+/// ([MockBackend.verificationCode]), uniform messages that never reveal
+/// whether an account exists, unconfirmed email continues on the code screen,
+/// and every new account starts `incomplete` without a phone — the WhatsApp
+/// step activates it (S005). Data lives only for the app session.
 final class MockAuthRepository implements AuthRepository {
   MockAuthRepository({
     DateTime Function()? clock,
     this.currentTermsVersion = MockBackend.termsVersion,
-  }) : _clock = clock ?? DateTime.now;
+  }) : _clock = clock ?? DateTime.now {
+    // The S005 legacy account (T069): active, confirmed phone, no WhatsApp
+    // step — the same object the `legacyUser` social scenario and the
+    // `legacy@onair.test` email sign-in return (US7's one-account rule in
+    // mock form).
+    final legacy = _MockUser('mock-guest-legacy')
+      ..email = 'legacy@onair.test'
+      ..emailVerified = true
+      ..password = legacyPassword
+      ..status = AccountStatus.active
+      ..phone = '+201012340000'
+      ..phoneVerified = true
+      ..fullName = 'Legacy Guest';
+    _usersById[legacy.id] = legacy;
+  }
 
   final DateTime Function() _clock;
   final String currentTermsVersion;
@@ -27,29 +54,91 @@ final class MockAuthRepository implements AuthRepository {
   String? _recoveryEmail;
   int _nextId = 1;
 
+  /// The password of the seeded legacy mock user (and of every journey
+  /// seed) — the mock accepts any sign-in with it.
+  static const legacyPassword = 'Passw0rd!';
+
+  /// The next social sign-in outcome; reset to [MockSocialScenario.newUser]
+  /// after every served sign-in.
+  MockSocialScenario scenario = MockSocialScenario.newUser;
+  int socialSignInCalls = 0;
+
   @override
   Stream<GuestAccount?> get authStateChanges => _changes.stream;
+
+  /// The current account for tests and the debug harness.
+  GuestAccount? get account => _current?.toAccount();
 
   @override
   Future<GuestAccount?> restoreSession() async => _current?.toAccount();
 
   @override
-  Future<CodeChallenge> requestPhoneCode(String phone) async {
-    final parsed = EgyptPhone.tryParse(phone);
-    if (parsed == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
-    return _challenge(VerificationChannel.sms, parsed.e164);
-  }
+  Future<GuestAccount?> refreshAccount() async => _current?.toAccount();
 
   @override
-  Future<GuestAccount> verifyPhoneCode(String phone, String code) async {
-    _checkCode(code);
-    final e164 = EgyptPhone.parse(phone).e164;
-    final user = (_findBy((u) => u.phone == e164) ?? _create())
-      ..phone = e164
-      ..phoneVerified = true;
-    return _signIn(user);
+  Future<SocialSignInResult> signInWithGoogle() =>
+      _signInWithSocial(SocialProvider.google);
+
+  @override
+  Future<SocialSignInResult> signInWithApple() =>
+      _signInWithSocial(SocialProvider.apple);
+
+  Future<SocialSignInResult> _signInWithSocial(SocialProvider provider) async {
+    socialSignInCalls += 1;
+    final picked = scenario;
+    scenario = MockSocialScenario.newUser;
+    switch (picked) {
+      case MockSocialScenario.cancel:
+        throw const SocialSignInCancelled();
+      case MockSocialScenario.failure:
+        throw const AuthRequestRejected('SOCIAL_FAILED');
+      case MockSocialScenario.newUser || MockSocialScenario.incompleteUser:
+        final user = _create()
+          ..email = provider == SocialProvider.apple
+              ? 'x7k2@privaterelay.appleid.com'
+              : 'social-new@onair.test'
+          ..emailVerified = true;
+        final account = _signIn(user);
+        return SocialSignInResult(
+          account: account,
+          providerFullName:
+              provider == SocialProvider.google &&
+                  picked == MockSocialScenario.newUser
+              ? 'Mona Adel'
+              : null,
+        );
+      case MockSocialScenario.completeUser:
+        final user = _create()
+          ..status = AccountStatus.active
+          ..email = 'social-complete@onair.test'
+          ..emailVerified = true
+          ..phone = '+201012345678'
+          ..phoneVerified = true
+          ..fullName = 'زائر تجريبي';
+        return SocialSignInResult(account: _signIn(user));
+      case MockSocialScenario.legacyUser:
+        // The seeded legacy account itself — the same id the email sign-in
+        // returns (T069).
+        return SocialSignInResult(
+          account: _signIn(_usersById['mock-guest-legacy']!),
+        );
+      case MockSocialScenario.unconfirmedEmailCollision:
+        // A2 (FR-040): the provider takes an UNCONFIRMED email over — the
+        // same account id, the email confirmed by the provider, and the
+        // old password cleared so it stops working. A fresh visitor keeps
+        // the same uniform shape.
+        final existing = _findBy((u) => u.email == 'collide@onair.test');
+        if (existing != null && !existing.emailVerified) {
+          existing
+            ..emailVerified = true
+            ..password = null;
+          return SocialSignInResult(account: _signIn(existing));
+        }
+        final user = _create()
+          ..email = 'collide@onair.test'
+          ..emailVerified = true;
+        return SocialSignInResult(account: _signIn(user));
+    }
   }
 
   @override
@@ -57,13 +146,9 @@ final class MockAuthRepository implements AuthRepository {
     String name,
     String email,
     String password,
-    String phone,
-    String termsVersion,
-  ) async {
-    final parsedPhone = EgyptPhone.tryParse(phone);
-    if (parsedPhone == null) {
-      throw const AuthRequestRejected('PHONE_COUNTRY_NOT_SUPPORTED');
-    }
+    String termsVersion, {
+    String locale = 'ar',
+  }) async {
     if (termsVersion != currentTermsVersion) throw const ProfileTermsChanged();
     final normalized = _normalize(email);
     // Uniform result: an existing email gets the same response.
@@ -72,7 +157,6 @@ final class MockAuthRepository implements AuthRepository {
         ..email = normalized
         ..password = password
         ..fullName = name.trim()
-        ..phone = parsedPhone.e164
         ..acceptedTermsVersion = termsVersion
         ..acceptedTermsAt = _clock().toUtc();
     }
@@ -88,9 +172,9 @@ final class MockAuthRepository implements AuthRepository {
     _checkCode(code);
     final user = _findBy((u) => u.email == _normalize(email));
     if (user == null) throw const AuthCodeRejected('OTP_INVALID');
-    user
-      ..emailVerified = true
-      ..phoneVerified = true;
+    user.emailVerified = true;
+    // S005 US6: the email code never completes an account — only «أكّد
+    // رقمك» (US3–US5) confirms the phone and activates it.
     return _signIn(user);
   }
 
@@ -136,29 +220,21 @@ final class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<GuestAccount> completeProfile(String name, String termsVersion) async {
-    final user = _current;
-    if (user == null) throw const AuthRequestRejected('UNAUTHENTICATED');
-    if (termsVersion != currentTermsVersion) {
-      throw const ProfileTermsChanged();
-    }
-    final trimmed = name.trim();
-    if (trimmed.length < 2 || trimmed.length > 80) {
-      throw const AuthRequestRejected('VALIDATION_FAILED');
-    }
-    user
-      ..fullName = trimmed
-      ..acceptedTermsVersion = termsVersion
-      ..acceptedTermsAt = _clock().toUtc();
-    final account = user.toAccount();
-    _changes.add(account);
-    return account;
-  }
-
-  @override
   Future<void> signOut() async {
     _current = null;
     _changes.add(null);
+  }
+
+  /// S005 mock: «أكّد رقمك» confirms the number and activates the
+  /// account (the WhatsApp step's success path, US4).
+  void activatePhone({required String userId, required String phoneE164}) {
+    final user = _usersById[userId];
+    if (user == null) return;
+    user
+      ..phone = phoneE164
+      ..phoneVerified = true
+      ..status = AccountStatus.active;
+    if (identical(user, _current)) _changes.add(user.toAccount());
   }
 
   Future<void> dispose() => _changes.close();
@@ -203,6 +279,7 @@ final class _MockUser {
   _MockUser(this.id);
 
   final String id;
+  AccountStatus status = AccountStatus.incomplete;
   String? phone;
   bool phoneVerified = false;
   String? email;
@@ -212,13 +289,19 @@ final class _MockUser {
   String? acceptedTermsVersion;
   DateTime? acceptedTermsAt;
 
+  /// A2: `has_password` is the stored password being non-empty — social
+  /// sign-ins and a provider takeover leave it false.
+  bool get hasPassword => password != null && password!.isNotEmpty;
+
   GuestAccount toAccount() => GuestAccount(
     id: id,
+    status: status,
     phone: phone,
     phoneVerified: phoneVerified,
     email: email,
     emailVerified: emailVerified,
     fullName: fullName,
+    hasPassword: hasPassword,
     acceptedTermsVersion: acceptedTermsVersion,
     acceptedTermsAt: acceptedTermsAt,
   );

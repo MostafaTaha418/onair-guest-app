@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/platform/secure_screen.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
@@ -16,13 +17,6 @@ import 'package:on_air/features/auth/presentation/register_screen.dart';
 import '../../../helpers/fake_app_config_repository.dart';
 import '../../../helpers/fake_auth_repository.dart';
 import '../../../helpers/pump_app.dart';
-
-final class _NoSms implements SmsCodeReader {
-  @override
-  Future<void> cancel() async {}
-  @override
-  Future<String?> readCode() async => null;
-}
 
 final class _NoSecure implements SecureScreenControl {
   @override
@@ -37,6 +31,9 @@ void main() {
     auth = FakeAuthRepository()
       ..account = GuestAccount(
         id: 'email-guest',
+        status: AccountStatus.active,
+        phone: '+201012345678',
+        phoneVerified: true,
         email: 'guest@example.com',
         emailVerified: true,
         fullName: 'Guest',
@@ -53,14 +50,12 @@ void main() {
     );
   });
 
-  testWidgets('email tab signs in with email and password', (tester) async {
+  testWidgets('sign-in opens on email fields', (tester) async {
     await tester.pumpOnAirApp(
       const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
       'guest@example.com',
@@ -83,11 +78,11 @@ void main() {
     expect(auth.lastPassword, 'password1');
   });
 
-  testWidgets('remote sign-in opens on email without a phone tab', (
+  testWidgets('sign-in shows no phone field and no segmented control', (
     tester,
   ) async {
     await tester.pumpOnAirApp(
-      const LoginScreen(phoneAuthEnabled: false),
+      const LoginScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
@@ -97,18 +92,17 @@ void main() {
     expect(find.byType(SegmentedButton<bool>), findsNothing);
   });
 
-  testWidgets('email registration collects the required phone', (tester) async {
+  testWidgets('email registration has no phone field (T067)', (tester) async {
     await tester.pumpOnAirApp(
       const RegisterScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('email-name-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('email-field')), findsOneWidget);
-    expect(find.byKey(const ValueKey('email-phone-field')), findsOneWidget);
+    // S005 US6: «أكّد رقمك» owns the number after the email code.
+    expect(find.byKey(const ValueKey('email-phone-field')), findsNothing);
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('password-field')),
       180,
@@ -117,7 +111,7 @@ void main() {
     expect(find.byKey(const ValueKey('password-field')), findsOneWidget);
   });
 
-  testWidgets('email registration sends phone and current terms', (
+  testWidgets('email registration sends the current terms only', (
     tester,
   ) async {
     await tester.pumpOnAirApp(
@@ -125,15 +119,9 @@ void main() {
       authRepository: auth,
       appConfigRepository: config,
     );
-    await tester.tap(find.text('البريد الإلكتروني'));
-    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('email-name-field')),
       'Guest Name',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('email-phone-field')),
-      '01012345678',
     );
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
@@ -171,8 +159,61 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('email-submit-button')));
     await tester.pump();
 
-    expect(auth.lastPhone, '01012345678');
     expect(auth.lastTermsVersion, 'v1');
+    expect(auth.lastName, 'Guest Name');
+    expect(auth.lastLocale, 'ar');
+  });
+
+  testWidgets('email registration sends the app language (en)', (
+    tester,
+  ) async {
+    await tester.pumpOnAirApp(
+      const RegisterScreen(),
+      authRepository: auth,
+      appConfigRepository: config,
+      locale: const Locale('en'),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-name-field')),
+      'Guest Name',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email-field')),
+      'guest@example.com',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('password-field')),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('password-field')),
+      'password1',
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-terms-checkbox')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('email-terms-checkbox')));
+    await tester.pump();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('email-submit-button')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
+    await tester.pump();
+
+    expect(auth.lastLocale, 'en');
   });
 
   testWidgets('email registration ignores a rapid second submit', (
@@ -181,17 +222,13 @@ void main() {
     final barrier = Completer<void>();
     auth.signUpEmailBarrier = barrier.future;
     await tester.pumpOnAirApp(
-      const RegisterScreen(phoneAuthEnabled: false),
+      const RegisterScreen(),
       authRepository: auth,
       appConfigRepository: config,
     );
     await tester.enterText(
       find.byKey(const ValueKey('email-name-field')),
       'Guest Name',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('email-phone-field')),
-      '01012345678',
     );
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
@@ -284,7 +321,7 @@ void main() {
       target: 'guest@example.com',
       resendAt: DateTime.utc(2026),
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final cubit = AuthCubit(auth);
     await cubit.requestRecovery('guest@example.com');
     await cubit.verifyRecovery('123456');
     await tester.pumpOnAirApp(
@@ -311,7 +348,7 @@ void main() {
       target: 'guest@example.com',
       resendAt: DateTime.utc(2026),
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1');
+    final cubit = AuthCubit(auth);
     await cubit.requestRecovery('guest@example.com');
     await cubit.verifyRecovery('123456');
     final barrier = Completer<void>();
@@ -344,20 +381,15 @@ void main() {
       target: 'guest@example.com',
       resendAt: now,
     );
-    final cubit = AuthCubit(auth, currentTermsVersion: 'v1', clock: () => now);
+    final cubit = AuthCubit(auth, clock: () => now);
     await cubit.requestEmailSignup(
       'Guest',
       'guest@example.com',
       'password1',
-      '01012345678',
       'v1',
     );
     await tester.pumpOnAirApp(
-      OtpScreen(
-        codeReader: _NoSms(),
-        secureScreen: _NoSecure(),
-        clock: () => now,
-      ),
+      OtpScreen(secureScreen: _NoSecure(), clock: () => now),
       authRepository: auth,
       appConfigRepository: config,
       authCubit: cubit,

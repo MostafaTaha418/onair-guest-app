@@ -67,26 +67,6 @@ final class RecordingFlowRepository implements BookingFlowRepository {
     guests: guests,
     termsHash: termsHash,
   );
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => _inner.requestPhoneChange(
-    phoneE164: phoneE164,
-    hasWhatsapp: hasWhatsapp,
-    whatsappE164: whatsappE164,
-  );
-
-  @override
-  Future<void> sendCode(String challengeId) => _inner.sendCode(challengeId);
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => _inner.verifyCode(challengeId: challengeId, code: code);
 }
 
 final class _ThrowingFlowRepository implements BookingFlowRepository {
@@ -119,22 +99,6 @@ final class _ThrowingFlowRepository implements BookingFlowRepository {
     required String bookingId,
     required String attemptKey,
   }) => throw AppFailure(ErrorMapper.noResponse());
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => throw UnimplementedError();
-
-  @override
-  Future<void> sendCode(String challengeId) async {}
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) async {}
 }
 
 final class _RemainingFlowRepository implements BookingFlowRepository {
@@ -193,26 +157,6 @@ final class _RemainingFlowRepository implements BookingFlowRepository {
     guests: guests,
     termsHash: termsHash,
   );
-
-  @override
-  Future<PhoneChallenge> requestPhoneChange({
-    required String phoneE164,
-    required bool hasWhatsapp,
-    String? whatsappE164,
-  }) => _inner.requestPhoneChange(
-    phoneE164: phoneE164,
-    hasWhatsapp: hasWhatsapp,
-    whatsappE164: whatsappE164,
-  );
-
-  @override
-  Future<void> sendCode(String challengeId) => _inner.sendCode(challengeId);
-
-  @override
-  Future<void> verifyCode({
-    required String challengeId,
-    required String code,
-  }) => _inner.verifyCode(challengeId: challengeId, code: code);
 }
 
 void main() {

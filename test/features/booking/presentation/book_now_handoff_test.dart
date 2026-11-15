@@ -13,6 +13,7 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/design_system/components/counter_stepper.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/booking/presentation/booking_flow_cubit.dart';
@@ -157,6 +158,7 @@ void main() {
     );
     // The account must exist before the cubit's restore reads it.
     auth.account = GuestAccount(
+      status: AccountStatus.active,
       id: 'guest',
       phone: '+201012345678',
       phoneVerified: true,
@@ -164,7 +166,7 @@ void main() {
       acceptedTermsVersion: 'mock-terms-1',
       acceptedTermsAt: DateTime.utc(2026),
     );
-    final authCubit = AuthCubit(auth, currentTermsVersion: 'mock-terms-1');
+    final authCubit = AuthCubit(auth);
     unawaited(authCubit.restore());
     addTearDown(authCubit.close);
     await tester.pumpOnAirApp(

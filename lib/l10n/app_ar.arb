@@ -42,6 +42,7 @@
   "errorUnexpected": "حصلت مشكلة غير متوقعة. رقم المرجع: {ref}",
   "errorNoConnection": "مفيش اتصال بالإنترنت.",
   "errorUnexpectedNoRef": "حصلت مشكلة غير متوقعة. جرّب تاني.",
+  "listSeparator": "، ",
   "errorCancelled": "تم إلغاء العملية.",
   "authInvalidCredentials": "البريد أو كلمة المرور غير صحيحة.",
   "authCodeSent": "بعتنا لك كود التأكيد.",
@@ -79,10 +80,7 @@
   "accountEmpty": "بيانات حسابك هتظهر هنا.",
   "authLoginTitle": "أهلًا بيك في OnAir",
   "authRegisterTitle": "أنشئ حسابك",
-  "authPhoneHint": "مثال: 01012345678",
   "authPhoneInvalid": "اكتب رقم موبايل مصري صحيح من 11 رقم.",
-  "authPhoneTab": "الموبايل",
-  "authEmailTab": "البريد الإلكتروني",
   "authEmailComingSoon": "التسجيل بالبريد الإلكتروني هيتاح قريبًا.",
   "authTermsPrefix": "بالمتابعة أنت توافق على",
   "terms": "الشروط والأحكام",
@@ -108,7 +106,6 @@
       }
     }
   },
-  "authChangePhone": "تغيير رقم الموبايل",
   "authCompleteProfileTitle": "كمّل بياناتك",
   "authNameInvalid": "الاسم لازم يكون من حرفين إلى 80 حرف.",
   "authAcceptTerms": "أوافق على الشروط والأحكام وسياسة الخصوصية",
@@ -526,18 +523,6 @@
   "verifyTitle": "تأكيد بياناتك",
   "verifyIntro": "قبل أول حجز لازم نأكد بريدك ورقم موبايلك بكود يوصلك على البريد.",
   "verifyEmailCodeHint": "اكتب الكود اللي وصلك على البريد",
-  "verifyHasWhatsapp": "الرقم ده عليه واتساب",
-  "verifyWhatsappNumber": "رقم الواتساب (اختياري)",
-  "verifyCodeSentToEmail": "بعتنا كود من 6 أرقام على بريدك.",
-  "verifyResend": "ابعت الكود تاني",
-  "verifyResendIn": "تقدر تبعت الكود تاني بعد {seconds} ثانية",
-  "@verifyResendIn": {
-    "placeholders": {
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
   "bookingsTabCurrent": "الحالية",
   "bookingsTabPast": "السابقة",
   "bookingsTabCancelled": "الملغاة",
@@ -1074,5 +1059,85 @@
         "type": "String"
       }
     }
-  }
+  },
+  "authOr": "أو",
+  "authContinueWithGoogle": "المتابعة بـ Google",
+  "authContinueWithApple": "المتابعة بـ Apple",
+  "authSocialFailed": "تعذر تسجيل الدخول، حاول مرة أخرى",
+  "confirmPhoneTitle": "أكّد رقمك",
+  "confirmPhoneNewTitle": "تغيير رقم الهاتف",
+  "confirmPhoneSubtitle": "هنبعتلك كود على واتساب الرقم ده عشان نتأكد إنه بتاعك",
+  "confirmPhoneEmailLabel": "حسابك",
+  "confirmPhoneContinue": "متابعة",
+  "confirmPhoneCancel": "إلغاء",
+  "confirmPhoneLeaveTitle": "تخرج من التسجيل؟",
+  "confirmPhoneLeaveBody": "لو خرجت، التسجيل مش هيكمل",
+  "confirmPhoneLeaveConfirm": "خروج",
+  "confirmPhoneLeaveStay": "كمّل",
+  "whatsappCodeTitle": "اكتب الكود",
+  "whatsappCodeSentTo": "بعتنا كود على واتساب {phone}",
+  "@whatsappCodeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappOpen": "افتح واتساب",
+  "whatsappConfirm": "تأكيد",
+  "whatsappResend": "ابعت كود جديد",
+  "whatsappResendIn": "تقدر تطلب كود جديد بعد {time}",
+  "@whatsappResendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours} ساعة و{minutes} دقيقة",
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappEditNumber": "تعديل الرقم",
+  "whatsappNotOnWhatsApp": "الرقم ده مش عليه واتساب. استخدم رقم عليه واتساب",
+  "whatsappContactSupport": "كلّم الدعم",
+  "whatsappUseLatestCode": "استخدم آخر كود وصلك",
+  "otpBlockedUntil": "اتوقف إرسال الأكواد مؤقتًا لحد {date}. لو محتاج مساعدة كلّم الدعم",
+  "otpBlockedNoDate": "اتوقف إرسال الأكواد مؤقتًا. لو محتاج مساعدة كلّم الدعم",
+  "authRateLimitedNoTime": "محاولات كتير. جرّب تاني بعد شوية.",
+  "whatsappNotSentYet": "لسه ما بعتناش كود على {phone}. تقدر تطلب كود بعد ما العداد يخلص",
+  "@whatsappNotSentYet": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "@otpBlockedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "otpAttestationFailed": "مش قادرين نتأكد إن التطبيق أصلي. حدّث التطبيق من المتجر وجرّب تاني",
+  "otpTemporarilyUnavailable": "الخدمة مشغولة دلوقتي، جرّب بعد شوية",
+  "otpAttemptsExceeded": "جربت كتير، اطلب كود جديد",
+  "confirmPhoneWelcome": "أهلًا بيك في OnAir",
+  "phoneChanged": "رقمك اتغيّر",
+  "accountSignInMethod": "طريقة الدخول",
+  "accountMethodGoogle": "Google",
+  "accountMethodApple": "Apple",
+  "accountMethodEmail": "البريد",
+  "accountPhone": "رقم الهاتف",
+  "accountPhoneConfirmed": "متأكد",
+  "accountChangePhone": "تغيير",
+  "verifyPhoneOnWhatsApp": "أكّد رقمك على واتساب"
 }

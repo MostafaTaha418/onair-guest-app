@@ -15,8 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OtpSent {
 
-/// Masked email, e.g. "a***@gmail.com"
-@JsonKey(name: 'sent_to_masked') String get sentToMasked;@JsonKey(name: 'retry_after_seconds') int get retryAfterSeconds;@JsonKey(name: 'expires_at') DateTime get expiresAt;
+/// Where the code went (S005 A8).
+ OtpSentChannel get channel;/// Masked destination: the email for `email`, the phone for `whatsapp` (e.g. "+20 10•• ••• 678").
+@JsonKey(name: 'masked_target') String get maskedTarget;@JsonKey(name: 'expires_at') DateTime get expiresAt;@JsonKey(name: 'server_time') DateTime get serverTime;@JsonKey(name: 'next_send_at') DateTime? get nextSendAt;@JsonKey(name: 'blocked_until') DateTime? get blockedUntil;/// Masked email, e.g. "a***@gmail.com"
+@JsonKey(name: 'sent_to_masked') String? get sentToMasked;@JsonKey(name: 'retry_after_seconds') int? get retryAfterSeconds;
 /// Create a copy of OtpSent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +31,16 @@ $OtpSentCopyWith<OtpSent> get copyWith => _$OtpSentCopyWithImpl<OtpSent>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OtpSent&&(identical(other.sentToMasked, sentToMasked) || other.sentToMasked == sentToMasked)&&(identical(other.retryAfterSeconds, retryAfterSeconds) || other.retryAfterSeconds == retryAfterSeconds)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OtpSent&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.maskedTarget, maskedTarget) || other.maskedTarget == maskedTarget)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.serverTime, serverTime) || other.serverTime == serverTime)&&(identical(other.nextSendAt, nextSendAt) || other.nextSendAt == nextSendAt)&&(identical(other.blockedUntil, blockedUntil) || other.blockedUntil == blockedUntil)&&(identical(other.sentToMasked, sentToMasked) || other.sentToMasked == sentToMasked)&&(identical(other.retryAfterSeconds, retryAfterSeconds) || other.retryAfterSeconds == retryAfterSeconds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sentToMasked,retryAfterSeconds,expiresAt);
+int get hashCode => Object.hash(runtimeType,channel,maskedTarget,expiresAt,serverTime,nextSendAt,blockedUntil,sentToMasked,retryAfterSeconds);
 
 @override
 String toString() {
-  return 'OtpSent(sentToMasked: $sentToMasked, retryAfterSeconds: $retryAfterSeconds, expiresAt: $expiresAt)';
+  return 'OtpSent(channel: $channel, maskedTarget: $maskedTarget, expiresAt: $expiresAt, serverTime: $serverTime, nextSendAt: $nextSendAt, blockedUntil: $blockedUntil, sentToMasked: $sentToMasked, retryAfterSeconds: $retryAfterSeconds)';
 }
 
 
@@ -49,7 +51,7 @@ abstract mixin class $OtpSentCopyWith<$Res>  {
   factory $OtpSentCopyWith(OtpSent value, $Res Function(OtpSent) _then) = _$OtpSentCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'sent_to_masked') String sentToMasked,@JsonKey(name: 'retry_after_seconds') int retryAfterSeconds,@JsonKey(name: 'expires_at') DateTime expiresAt
+ OtpSentChannel channel,@JsonKey(name: 'masked_target') String maskedTarget,@JsonKey(name: 'expires_at') DateTime expiresAt,@JsonKey(name: 'server_time') DateTime serverTime,@JsonKey(name: 'next_send_at') DateTime? nextSendAt,@JsonKey(name: 'blocked_until') DateTime? blockedUntil,@JsonKey(name: 'sent_to_masked') String? sentToMasked,@JsonKey(name: 'retry_after_seconds') int? retryAfterSeconds
 });
 
 
@@ -66,12 +68,17 @@ class _$OtpSentCopyWithImpl<$Res>
 
 /// Create a copy of OtpSent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sentToMasked = null,Object? retryAfterSeconds = null,Object? expiresAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? channel = null,Object? maskedTarget = null,Object? expiresAt = null,Object? serverTime = null,Object? nextSendAt = freezed,Object? blockedUntil = freezed,Object? sentToMasked = freezed,Object? retryAfterSeconds = freezed,}) {
   return _then(_self.copyWith(
-sentToMasked: null == sentToMasked ? _self.sentToMasked : sentToMasked // ignore: cast_nullable_to_non_nullable
-as String,retryAfterSeconds: null == retryAfterSeconds ? _self.retryAfterSeconds : retryAfterSeconds // ignore: cast_nullable_to_non_nullable
-as int,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as OtpSentChannel,maskedTarget: null == maskedTarget ? _self.maskedTarget : maskedTarget // ignore: cast_nullable_to_non_nullable
+as String,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as DateTime,serverTime: null == serverTime ? _self.serverTime : serverTime // ignore: cast_nullable_to_non_nullable
+as DateTime,nextSendAt: freezed == nextSendAt ? _self.nextSendAt : nextSendAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,blockedUntil: freezed == blockedUntil ? _self.blockedUntil : blockedUntil // ignore: cast_nullable_to_non_nullable
+as DateTime?,sentToMasked: freezed == sentToMasked ? _self.sentToMasked : sentToMasked // ignore: cast_nullable_to_non_nullable
+as String?,retryAfterSeconds: freezed == retryAfterSeconds ? _self.retryAfterSeconds : retryAfterSeconds // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -156,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'sent_to_masked')  String sentToMasked, @JsonKey(name: 'retry_after_seconds')  int retryAfterSeconds, @JsonKey(name: 'expires_at')  DateTime expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OtpSentChannel channel, @JsonKey(name: 'masked_target')  String maskedTarget, @JsonKey(name: 'expires_at')  DateTime expiresAt, @JsonKey(name: 'server_time')  DateTime serverTime, @JsonKey(name: 'next_send_at')  DateTime? nextSendAt, @JsonKey(name: 'blocked_until')  DateTime? blockedUntil, @JsonKey(name: 'sent_to_masked')  String? sentToMasked, @JsonKey(name: 'retry_after_seconds')  int? retryAfterSeconds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OtpSent() when $default != null:
-return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case _:
+return $default(_that.channel,_that.maskedTarget,_that.expiresAt,_that.serverTime,_that.nextSendAt,_that.blockedUntil,_that.sentToMasked,_that.retryAfterSeconds);case _:
   return orElse();
 
 }
@@ -177,10 +184,10 @@ return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'sent_to_masked')  String sentToMasked, @JsonKey(name: 'retry_after_seconds')  int retryAfterSeconds, @JsonKey(name: 'expires_at')  DateTime expiresAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OtpSentChannel channel, @JsonKey(name: 'masked_target')  String maskedTarget, @JsonKey(name: 'expires_at')  DateTime expiresAt, @JsonKey(name: 'server_time')  DateTime serverTime, @JsonKey(name: 'next_send_at')  DateTime? nextSendAt, @JsonKey(name: 'blocked_until')  DateTime? blockedUntil, @JsonKey(name: 'sent_to_masked')  String? sentToMasked, @JsonKey(name: 'retry_after_seconds')  int? retryAfterSeconds)  $default,) {final _that = this;
 switch (_that) {
 case _OtpSent():
-return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case _:
+return $default(_that.channel,_that.maskedTarget,_that.expiresAt,_that.serverTime,_that.nextSendAt,_that.blockedUntil,_that.sentToMasked,_that.retryAfterSeconds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +204,10 @@ return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'sent_to_masked')  String sentToMasked, @JsonKey(name: 'retry_after_seconds')  int retryAfterSeconds, @JsonKey(name: 'expires_at')  DateTime expiresAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OtpSentChannel channel, @JsonKey(name: 'masked_target')  String maskedTarget, @JsonKey(name: 'expires_at')  DateTime expiresAt, @JsonKey(name: 'server_time')  DateTime serverTime, @JsonKey(name: 'next_send_at')  DateTime? nextSendAt, @JsonKey(name: 'blocked_until')  DateTime? blockedUntil, @JsonKey(name: 'sent_to_masked')  String? sentToMasked, @JsonKey(name: 'retry_after_seconds')  int? retryAfterSeconds)?  $default,) {final _that = this;
 switch (_that) {
 case _OtpSent() when $default != null:
-return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case _:
+return $default(_that.channel,_that.maskedTarget,_that.expiresAt,_that.serverTime,_that.nextSendAt,_that.blockedUntil,_that.sentToMasked,_that.retryAfterSeconds);case _:
   return null;
 
 }
@@ -212,13 +219,20 @@ return $default(_that.sentToMasked,_that.retryAfterSeconds,_that.expiresAt);case
 @JsonSerializable()
 
 class _OtpSent implements OtpSent {
-  const _OtpSent({@JsonKey(name: 'sent_to_masked') required this.sentToMasked, @JsonKey(name: 'retry_after_seconds') required this.retryAfterSeconds, @JsonKey(name: 'expires_at') required this.expiresAt});
+  const _OtpSent({required this.channel, @JsonKey(name: 'masked_target') required this.maskedTarget, @JsonKey(name: 'expires_at') required this.expiresAt, @JsonKey(name: 'server_time') required this.serverTime, @JsonKey(name: 'next_send_at') this.nextSendAt, @JsonKey(name: 'blocked_until') this.blockedUntil, @JsonKey(name: 'sent_to_masked') this.sentToMasked, @JsonKey(name: 'retry_after_seconds') this.retryAfterSeconds});
   factory _OtpSent.fromJson(Map<String, dynamic> json) => _$OtpSentFromJson(json);
 
-/// Masked email, e.g. "a***@gmail.com"
-@override@JsonKey(name: 'sent_to_masked') final  String sentToMasked;
-@override@JsonKey(name: 'retry_after_seconds') final  int retryAfterSeconds;
+/// Where the code went (S005 A8).
+@override final  OtpSentChannel channel;
+/// Masked destination: the email for `email`, the phone for `whatsapp` (e.g. "+20 10•• ••• 678").
+@override@JsonKey(name: 'masked_target') final  String maskedTarget;
 @override@JsonKey(name: 'expires_at') final  DateTime expiresAt;
+@override@JsonKey(name: 'server_time') final  DateTime serverTime;
+@override@JsonKey(name: 'next_send_at') final  DateTime? nextSendAt;
+@override@JsonKey(name: 'blocked_until') final  DateTime? blockedUntil;
+/// Masked email, e.g. "a***@gmail.com"
+@override@JsonKey(name: 'sent_to_masked') final  String? sentToMasked;
+@override@JsonKey(name: 'retry_after_seconds') final  int? retryAfterSeconds;
 
 /// Create a copy of OtpSent
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OtpSent&&(identical(other.sentToMasked, sentToMasked) || other.sentToMasked == sentToMasked)&&(identical(other.retryAfterSeconds, retryAfterSeconds) || other.retryAfterSeconds == retryAfterSeconds)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OtpSent&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.maskedTarget, maskedTarget) || other.maskedTarget == maskedTarget)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.serverTime, serverTime) || other.serverTime == serverTime)&&(identical(other.nextSendAt, nextSendAt) || other.nextSendAt == nextSendAt)&&(identical(other.blockedUntil, blockedUntil) || other.blockedUntil == blockedUntil)&&(identical(other.sentToMasked, sentToMasked) || other.sentToMasked == sentToMasked)&&(identical(other.retryAfterSeconds, retryAfterSeconds) || other.retryAfterSeconds == retryAfterSeconds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sentToMasked,retryAfterSeconds,expiresAt);
+int get hashCode => Object.hash(runtimeType,channel,maskedTarget,expiresAt,serverTime,nextSendAt,blockedUntil,sentToMasked,retryAfterSeconds);
 
 @override
 String toString() {
-  return 'OtpSent(sentToMasked: $sentToMasked, retryAfterSeconds: $retryAfterSeconds, expiresAt: $expiresAt)';
+  return 'OtpSent(channel: $channel, maskedTarget: $maskedTarget, expiresAt: $expiresAt, serverTime: $serverTime, nextSendAt: $nextSendAt, blockedUntil: $blockedUntil, sentToMasked: $sentToMasked, retryAfterSeconds: $retryAfterSeconds)';
 }
 
 
@@ -253,7 +267,7 @@ abstract mixin class _$OtpSentCopyWith<$Res> implements $OtpSentCopyWith<$Res> {
   factory _$OtpSentCopyWith(_OtpSent value, $Res Function(_OtpSent) _then) = __$OtpSentCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'sent_to_masked') String sentToMasked,@JsonKey(name: 'retry_after_seconds') int retryAfterSeconds,@JsonKey(name: 'expires_at') DateTime expiresAt
+ OtpSentChannel channel,@JsonKey(name: 'masked_target') String maskedTarget,@JsonKey(name: 'expires_at') DateTime expiresAt,@JsonKey(name: 'server_time') DateTime serverTime,@JsonKey(name: 'next_send_at') DateTime? nextSendAt,@JsonKey(name: 'blocked_until') DateTime? blockedUntil,@JsonKey(name: 'sent_to_masked') String? sentToMasked,@JsonKey(name: 'retry_after_seconds') int? retryAfterSeconds
 });
 
 
@@ -270,12 +284,17 @@ class __$OtpSentCopyWithImpl<$Res>
 
 /// Create a copy of OtpSent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sentToMasked = null,Object? retryAfterSeconds = null,Object? expiresAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? channel = null,Object? maskedTarget = null,Object? expiresAt = null,Object? serverTime = null,Object? nextSendAt = freezed,Object? blockedUntil = freezed,Object? sentToMasked = freezed,Object? retryAfterSeconds = freezed,}) {
   return _then(_OtpSent(
-sentToMasked: null == sentToMasked ? _self.sentToMasked : sentToMasked // ignore: cast_nullable_to_non_nullable
-as String,retryAfterSeconds: null == retryAfterSeconds ? _self.retryAfterSeconds : retryAfterSeconds // ignore: cast_nullable_to_non_nullable
-as int,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as OtpSentChannel,maskedTarget: null == maskedTarget ? _self.maskedTarget : maskedTarget // ignore: cast_nullable_to_non_nullable
+as String,expiresAt: null == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as DateTime,serverTime: null == serverTime ? _self.serverTime : serverTime // ignore: cast_nullable_to_non_nullable
+as DateTime,nextSendAt: freezed == nextSendAt ? _self.nextSendAt : nextSendAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,blockedUntil: freezed == blockedUntil ? _self.blockedUntil : blockedUntil // ignore: cast_nullable_to_non_nullable
+as DateTime?,sentToMasked: freezed == sentToMasked ? _self.sentToMasked : sentToMasked // ignore: cast_nullable_to_non_nullable
+as String?,retryAfterSeconds: freezed == retryAfterSeconds ? _self.retryAfterSeconds : retryAfterSeconds // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
