@@ -23,6 +23,7 @@ import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
+import 'fake_connectivity.dart';
 
 /// Boots the full [OnAirApp] on the mock backend: in-memory repositories,
 /// no Supabase/Firebase connection. Shared by the integration tests that
@@ -71,6 +72,14 @@ Future<MockAuthRepository> bootMockApp(
       );
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
+  // Integration runners can briefly report `ConnectivityResult.none` while
+  // the simulator is booting. Mock-mode journeys use an in-process backend,
+  // so tying them to the host network makes otherwise deterministic screens
+  // (notably My Bookings) render their empty offline state intermittently.
+  final connectivity = FakeConnectivity();
+  final connectivityCubit = connectivity.createCubit();
+  addTearDown(connectivity.dispose);
+  addTearDown(connectivityCubit.close);
 
   await tester.pumpWidget(
     MultiRepositoryProvider(
@@ -100,7 +109,7 @@ Future<MockAuthRepository> bootMockApp(
         ),
         ...bookingBackend.appProviders(),
       ],
-      child: const OnAirApp(),
+      child: OnAirApp(connectivityCubit: connectivityCubit),
     ),
   );
   await tester.pumpAndSettle();
