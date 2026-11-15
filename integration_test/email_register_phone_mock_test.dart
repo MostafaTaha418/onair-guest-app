@@ -9,6 +9,7 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
+import 'package:on_air/features/auth/presentation/login_screen.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -42,27 +43,31 @@ void main() {
   /// The email registration form, submitted to the code screen.
   Future<void> registerByEmail(WidgetTester tester) async {
     await openLoginFromApartment(tester);
-    await tester.ensureVisible(find.text(l10n.authCreateAccount));
-    await tester.pump();
-    await tester.tap(find.text(l10n.authCreateAccount));
-    await pumpUntilFound(
+    final registrationForm = find.byWidgetPredicate(
+      (widget) => widget is LoginScreen && widget.registration,
+    );
+    final nameField = find.descendant(
+      of: registrationForm,
+      matching: find.byKey(const ValueKey('email-name-field')),
+    );
+    final emailField = find.descendant(
+      of: registrationForm,
+      matching: find.byKey(const ValueKey('email-field')),
+    );
+    final passwordField = find.descendant(
+      of: registrationForm,
+      matching: find.byKey(const ValueKey('password-field')),
+    );
+    await tapAndWait(
       tester,
-      find.byKey(const ValueKey('email-name-field')),
+      find.text(l10n.authCreateAccount),
+      nameField,
     );
-    await tester.enterText(
-      find.byKey(const ValueKey('email-name-field')),
-      'زائر بالبريد',
-    );
-    await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
-    await tester.enterText(
-      find.byKey(const ValueKey('email-field')),
-      'register@onair.test',
-    );
-    await pumpUntilFound(tester, find.byKey(const ValueKey('password-field')));
-    await tester.enterText(
-      find.byKey(const ValueKey('password-field')),
-      'Password123!',
-    );
+    await tester.enterText(nameField, 'زائر بالبريد');
+    await pumpUntilFound(tester, emailField);
+    await tester.enterText(emailField, 'register@onair.test');
+    await pumpUntilFound(tester, passwordField);
+    await tester.enterText(passwordField, 'Password123!');
     await tester.pump();
     await tapVisible(
       tester,

@@ -120,6 +120,7 @@ void main() {
       await tapVisible(
         tester,
         find.byKey(const ValueKey('confirm-phone-terms')),
+        dismissKeyboard: true,
       );
       await tester.pump();
       await tapAndWait(
@@ -166,6 +167,7 @@ void main() {
       await tapVisible(
         tester,
         find.byKey(const ValueKey('confirm-phone-terms')),
+        dismissKeyboard: true,
       );
       await tester.pump();
       await tapAndWait(

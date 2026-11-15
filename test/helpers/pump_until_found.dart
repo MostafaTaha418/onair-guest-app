@@ -1,6 +1,17 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+bool _hasMatch(Finder finder) {
+  try {
+    return finder.evaluate().isNotEmpty;
+    // Chained finders such as `find.byType(...).first` throw when their
+    // parent disappears during a route transition, so this Error is expected.
+    // ignore: avoid_catching_errors
+  } on StateError {
+    return false;
+  }
+}
+
 /// Waits for async mock data or route transitions on slower device runners.
 ///
 /// The default covers the slowest observed iOS runner (~15 s of real time
@@ -12,12 +23,12 @@ Future<void> pumpUntilFound(
 }) async {
   for (
     var attempt = 0;
-    attempt < maxAttempts && !tester.any(finder);
+    attempt < maxAttempts && !_hasMatch(finder);
     attempt++
   ) {
     await tester.pump(const Duration(milliseconds: 250));
   }
-  expect(finder, findsWidgets);
+  expect(_hasMatch(finder), isTrue, reason: 'Expected to find $finder');
 }
 
 /// Makes a control hit-testable on real simulators before tapping it.
@@ -52,8 +63,8 @@ Future<void> tapAndWait(
 }) async {
   await pumpUntilFound(tester, finder);
   for (var tapAttempt = 0; tapAttempt < tapAttempts; tapAttempt++) {
-    if (tester.any(destination)) return;
-    if (!tester.any(finder)) break;
+    if (_hasMatch(destination)) return;
+    if (!_hasMatch(finder)) break;
     await tapVisible(
       tester,
       finder,
@@ -61,7 +72,7 @@ Future<void> tapAndWait(
     );
     for (
       var pumpAttempt = 0;
-      pumpAttempt < 20 && !tester.any(destination);
+      pumpAttempt < 20 && !_hasMatch(destination);
       pumpAttempt++
     ) {
       await tester.pump(const Duration(milliseconds: 250));
