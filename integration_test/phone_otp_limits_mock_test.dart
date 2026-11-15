@@ -5,7 +5,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
-import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
@@ -26,22 +25,13 @@ void main() {
   var serverAhead = Duration.zero;
   void advanceServer(Duration delta) => serverAhead += delta;
 
-  /// Home → first apartment → «احجز الآن» → the login screen's Google row.
+  /// Home → booking auth gate → the login screen's Google row.
   Future<void> openLoginFromApartment(WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await pumpUntilFound(tester, find.byType(PropertyCard));
-    final firstCard = find.byType(PropertyCard).first;
-    tester.widget<PropertyCard>(firstCard).onTap();
-    await pumpUntilFound(tester, find.text(l10n.bookNow));
-    final bookNow = find.text(l10n.bookNow);
-    await tapAndWait(
-      tester,
-      bookNow,
-      find.byKey(const ValueKey('social-google-button')),
-    );
+    await openBookingLoginFromHome(tester);
   }
 
   /// The «أكّد رقمك» journey down to the code step: a fresh Google user,
@@ -221,7 +211,10 @@ void main() {
       // (d) Signed out, a brand-new account on the same device: still
       // blocked.
       await tester.tap(find.byKey(const ValueKey('pv-blocked-sign-out')));
-      await pumpUntilFound(tester, find.byType(PropertyCard));
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('home-search-box')),
+      );
       await reachBlockViaFormAfterSignIn(tester, auth);
     },
   );
@@ -260,19 +253,11 @@ Future<void> reachBlockViaFormAfterSignIn(
   WidgetTester tester,
   MockAuthRepository auth,
 ) async {
-  final l10n = lookupAppLocalizations(const Locale('ar'));
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
-  final firstCard = find.byType(PropertyCard).first;
-  tester.widget<PropertyCard>(firstCard).onTap();
-  await pumpUntilFound(tester, find.text(l10n.bookNow));
-  await tapAndWait(
-    tester,
-    find.text(l10n.bookNow),
-    find.byKey(const ValueKey('social-google-button')),
-  );
+  await openBookingLoginFromHome(tester);
   auth.scenario = MockSocialScenario.newUser;
   await tapAndWait(
     tester,

@@ -1,5 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
+
+const _mockBookingPropertyId = '00000000-0000-4000-8000-00000000001f';
 
 bool _hasMatch(Finder finder) {
   try {
@@ -82,4 +86,29 @@ Future<void> tapAndWait(
     }
   }
   await pumpUntilFound(tester, destination);
+}
+
+/// Opens the auth gate with the same return contract as «احجز الآن».
+///
+/// These auth integration suites do not need to reload the property details
+/// fixture before every scenario. Starting from a loaded Home still verifies
+/// the full app router, while `from` proves that a successful sign-in resumes
+/// at the booking entry.
+Future<void> openBookingLoginFromHome(WidgetTester tester) async {
+  final home = find.byKey(const ValueKey('home-search-box'));
+  await pumpUntilFound(tester, home);
+  final context = tester.element(home);
+  GoRouter.of(context).go(
+    Uri(
+      path: AppRoutes.login,
+      queryParameters: {
+        'from': AppRoutes.bookingEntry(_mockBookingPropertyId),
+        'cancelTo': AppRoutes.home,
+      },
+    ).toString(),
+  );
+  await pumpUntilFound(
+    tester,
+    find.byKey(const ValueKey('social-google-button')),
+  );
 }

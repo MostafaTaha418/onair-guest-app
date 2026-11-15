@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/mock_backend.dart';
-import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/presentation/login_screen.dart';
@@ -23,22 +22,13 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   final l10n = lookupAppLocalizations(const Locale('ar'));
 
-  /// Home → first apartment → «احجز الآن» → the login screen.
+  /// Home → booking auth gate → the login screen.
   Future<void> openLoginFromApartment(WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await pumpUntilFound(tester, find.byType(PropertyCard));
-    final firstCard = find.byType(PropertyCard).first;
-    tester.widget<PropertyCard>(firstCard).onTap();
-    await pumpUntilFound(tester, find.text(l10n.bookNow));
-    final bookNow = find.text(l10n.bookNow);
-    await tapAndWait(
-      tester,
-      bookNow,
-      find.byKey(const ValueKey('social-google-button')),
-    );
+    await openBookingLoginFromHome(tester);
   }
 
   /// The email registration form, submitted to the code screen.
