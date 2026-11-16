@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/files/file_url_cache.dart';
 import 'package:on_air/core/money/money.dart';
@@ -277,9 +279,25 @@ final class _ReadyBody extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(
                         top: Dimens.space8,
                       ),
-                      child: SelectableText(
-                        l10n.claimCaseNumber(claim.supportCaseNumber!),
-                      ),
+                      child: claim.supportCaseId == null
+                          ? SelectableText(
+                              l10n.claimCaseNumber(claim.supportCaseNumber!),
+                            )
+                          : Semantics(
+                              link: true,
+                              child: TextButton(
+                                onPressed: () => context.push(
+                                  AppRoutes.supportCase(
+                                    claim.supportCaseId!,
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.claimCaseNumber(
+                                    claim.supportCaseNumber!,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                 ],
                 if (claim.resolution != null) ...[

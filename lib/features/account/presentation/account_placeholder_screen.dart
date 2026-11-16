@@ -107,6 +107,18 @@ final class _SignedInBody extends StatelessWidget {
             child: Text(l10n.authVerifyNow),
           ),
         ],
+        const SizedBox(height: Dimens.space16),
+        ListTile(
+          key: const ValueKey('account-support-row'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Dimens.radiusCard),
+            side: BorderSide(color: colors.border),
+          ),
+          leading: const Icon(Icons.support_agent_outlined),
+          title: Text(l10n.supportTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.support),
+        ),
         const SizedBox(height: Dimens.space24),
         const _SignOutButton(),
       ],

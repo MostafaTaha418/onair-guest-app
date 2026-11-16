@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,10 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/device/app_attestation.dart';
 import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/env/env_config.dart';
+import 'package:on_air/core/files/attachment_picker.dart';
+import 'package:on_air/core/files/file_url_cache.dart';
+import 'package:on_air/core/files/image_sanitizer.dart';
+import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
@@ -65,6 +70,10 @@ import 'package:on_air/features/stay/data/action_attempt_store.dart';
 import 'package:on_air/features/stay/data/mock_stay_server.dart';
 import 'package:on_air/features/stay/data/supabase_stay_repository.dart';
 import 'package:on_air/features/stay/domain/stay_repository.dart';
+import 'package:on_air/features/support/data/case_live_channel.dart';
+import 'package:on_air/features/support/data/mock_support_server.dart';
+import 'package:on_air/features/support/data/supabase_support_repository.dart';
+import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> bootstrap(String flavor) async {
@@ -133,6 +142,7 @@ Future<void> bootstrap(String flavor) async {
   final actionAttempts = ActionAttemptStore(backend.secureStore);
   final bookingsCache = BookingsCache(bookingsFileCache);
   final notificationPermission = backend.permission;
+  final fileUrls = FileUrlCache(backend.stay);
   final pushPermissionCoordinator = PushPermissionCoordinator(
     permission: notificationPermission,
     devices: deviceRegistrationService,
@@ -188,6 +198,18 @@ Future<void> bootstrap(String flavor) async {
           value: backend.mockServer,
         ),
         RepositoryProvider<StayRepository>.value(value: backend.stay),
+        RepositoryProvider<SupportRepository>.value(value: backend.support),
+        RepositoryProvider<MockSupportServer?>.value(
+          value: backend.mockSupport,
+        ),
+        RepositoryProvider<AttachmentPicker>.value(
+          value: PluginAttachmentPicker(),
+        ),
+        RepositoryProvider<ImageSanitizer>.value(value: ImageSanitizer()),
+        RepositoryProvider<PrivateFileUploader>.value(
+          value: backend.uploader,
+        ),
+        RepositoryProvider<FileUrlCache>.value(value: fileUrls),
         RepositoryProvider<MockStayServer?>.value(value: backend.mockStay),
         RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
         RepositoryProvider<NotificationPermission>.value(
@@ -237,6 +259,9 @@ typedef _Backend = ({
   MockBookingServer? mockServer,
   StayRepository stay,
   MockStayServer? mockStay,
+  SupportRepository support,
+  MockSupportServer? mockSupport,
+  PrivateFileUploader uploader,
   PushMessageSource pushes,
   NotificationPermission permission,
 });
@@ -306,6 +331,15 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
     mockStay: null,
+    support: SupabaseSupportRepository(
+      rpc: rpc,
+      live: SupabaseCaseLiveChannel(client),
+    ),
+    mockSupport: null,
+    uploader: PrivateFileUploader(
+      signer: GeneratedUploadSigner(FallbackClient(dio)),
+      putClient: DioRawPutClient(),
+    ),
     pushes: FirebasePushMessageSource(),
     permission: FirebaseNotificationPermission(),
   );
@@ -320,6 +354,7 @@ _Backend _mockBackend() {
   // fixtures (FR-026).
   final server = MockBookingServer(listings: rawListings, signals: signals);
   final stay = MockStayServer(bookings: server);
+  final support = MockSupportServer();
   final secureStore = InMemorySecureStore();
   final listings = MockHomeFeedWithBookings(
     inner: rawListings,
@@ -348,7 +383,41 @@ _Backend _mockBackend() {
     mockServer: server,
     stay: stay,
     mockStay: stay,
+    support: support,
+    mockSupport: support,
+    uploader: const PrivateFileUploader(
+      signer: _MockUploadSigner(),
+      putClient: _MockRawPutClient(),
+    ),
     pushes: const NoopPushMessageSource(),
     permission: FakeNotificationPermission(),
   );
+}
+
+final class _MockUploadSigner implements UploadSigner {
+  const _MockUploadSigner();
+
+  @override
+  Future<UploadSignResponse> sign(UploadSignRequest request) async =>
+      UploadSignResponse(
+        attachmentId: 'mock-${DateTime.now().microsecondsSinceEpoch}',
+        uploadUrl: Uri.parse('https://mock.invalid/upload'),
+      );
+}
+
+final class _MockRawPutClient implements RawPutClient {
+  const _MockRawPutClient();
+
+  @override
+  Future<void> put({
+    required Uri url,
+    required String filePath,
+    required String mime,
+    required int sizeBytes,
+    required CancelToken cancelToken,
+    required void Function(int sent, int total) onProgress,
+  }) async {
+    if (cancelToken.isCancelled) return;
+    onProgress(sizeBytes, sizeBytes);
+  }
 }

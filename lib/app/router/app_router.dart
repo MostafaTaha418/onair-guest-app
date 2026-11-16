@@ -80,6 +80,11 @@ import 'package:on_air/features/stay/presentation/claims/damage_claim_resolver_s
 import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
+import 'package:on_air/features/support/domain/support_repository.dart';
+import 'package:on_air/features/support/presentation/case/case_details_cubit.dart';
+import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
+import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
+import 'package:on_air/features/support/presentation/home/support_home_screen.dart';
 import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -369,7 +374,18 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.support,
       name: 'support',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, _) => BlocProvider<SupportHomeCubit>(
+        create: (context) {
+          final cubit = SupportHomeCubit(
+            repository: context.read<SupportRepository>(),
+            signals: context.read<NotificationSignalSource>(),
+            connection: context.read<ConnectivityCubit>(),
+          );
+          unawaited(cubit.load());
+          return cubit;
+        },
+        child: const SupportHomeScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.supportFaq,
@@ -562,7 +578,21 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.supportCasePattern,
       name: 'linked-support-case',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, state) {
+        final caseId = state.pathParameters['caseId'] ?? '';
+        if (!AppRoutes.isUuidV4(caseId)) return const NotAvailableScreen();
+        return BlocProvider<CaseDetailsCubit>(
+          create: (context) {
+            final cubit = CaseDetailsCubit(
+              caseId: caseId,
+              repository: context.read<SupportRepository>(),
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+          child: CaseDetailsScreen(caseId: caseId),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.paymentReturnPath,

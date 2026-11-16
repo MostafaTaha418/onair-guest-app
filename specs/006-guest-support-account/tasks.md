@@ -346,14 +346,14 @@ uses.
 
 ### Tests for US1
 
-- [ ] T029 [P] [US1] Write `test/features/support/domain/support_case_test.dart`:
+- [X] T029 [P] [US1] Write `test/features/support/domain/support_case_test.dart`:
   - `SupportCase.fromJson` maps every field of the contracts U1 list item;
   - `CaseType`/`CaseStatus` unknown values → `unknown(raw)`;
   - `isOpen` is true only for `open|in_progress|waiting_user`;
   - `isReplyable` is false only for `closed`;
   - the list order is open first, then `lastActivityAt` descending;
   - `CaseMessage` maps `author: guest|onair` and attachments (`kind image|pdf`, size, width/height).
-- [ ] T030 [P] [US1] Write `test/features/support/data/mock_support_server_test.dart`. It must assert:
+- [X] T030 [P] [US1] Write `test/features/support/data/mock_support_server_test.dart`. It must assert:
   - the seeds (3 cases + 1 system `damage_dispute` case);
   - `list` paginates 20 per page with a cursor;
   - `get` on a foreign or unknown id → `NOT_FOUND`;
@@ -364,18 +364,18 @@ uses.
   - a reply on `waiting_user` → `in_progress`;
   - a body outside 1–4000 → `VALIDATION_FAILED`;
   - a staff auto-reply is scheduled 3 s after a guest message (`fake_async`) and emits a change signal.
-- [ ] T031 [P] [US1] Write `test/features/support/data/supabase_support_repository_test.dart` with a fake `rpc(fn, params)`:
+- [X] T031 [P] [US1] Write `test/features/support/data/supabase_support_repository_test.dart` with a fake `rpc(fn, params)`:
   - exact function names and parameter names from the Reference table (`p_case_id`, `p_draft_id`, `p_attachment_ids`, `p_body`, `p_cursor`, `p_limit`, `p_before_cursor`);
   - response mapping;
   - errors go through `ErrorMapper`.
-- [ ] T032 [P] [US1] Write `test/features/support/presentation/support_home_cubit_test.dart` (`bloc_test`):
+- [X] T032 [P] [US1] Write `test/features/support/presentation/support_home_cubit_test.dart` (`bloc_test`):
   - loading → ready(cases, hasMore);
   - empty;
   - error with a reference;
   - offline keeps the last list and sets `offline: true`;
   - `loadMore` appends and stops at a `null` cursor;
   - a refresh on the `support.staff_replied` notification signal re-reads once.
-- [ ] T033 [P] [US1] Write `test/features/support/presentation/case_details_cubit_test.dart` (`bloc_test` + `fake_async` + a controllable live channel):
+- [X] T033 [P] [US1] Write `test/features/support/presentation/case_details_cubit_test.dart` (`bloc_test` + `fake_async` + a controllable live channel):
   - load → ready, messages ascending;
   - a channel event → exactly one re-read;
   - channel not subscribed → a 10 s poll, which stops once subscribed and on `close()`;
@@ -385,35 +385,35 @@ uses.
   - a resolved case reply → the status from the response (`open`) is shown;
   - `NOT_FOUND` → notFound;
   - `send` is blocked while any attachment is not `uploaded`.
-- [ ] T034 [P] [US1] Write `test/features/support/presentation/reply_composer_test.dart` (widget):
+- [X] T034 [P] [US1] Write `test/features/support/presentation/reply_composer_test.dart` (widget):
   - the send button is disabled when the trimmed body is empty or an upload is pending/failed, and while offline;
   - attach opens the 3-option sheet;
   - the limit hint uses `UploadLimits.maxFiles`;
   - the remove/retry Semantics labels exist;
   - the composer stays visible with the keyboard open.
-- [ ] T035 [P] [US1] Write `test/features/support/presentation/support_home_screen_test.dart` and `case_details_screen_test.dart` (widget), covering skeleton / empty / error + reference / offline banner / success; the closed notice + «افتح حالة جديدة» navigating to `/support/new?booking=<id>`; the resolved notice above the composer; and the not-found view with «الرجوع للدعم».
-- [ ] T036 [P] [US1] Write goldens `test/features/support/goldens/support_home_golden_test.dart` (empty, list open + finished, offline) and `case_details_golden_test.dart` (conversation with attachments, resolved, closed; keyboard open), using the matrix in contracts/ui-screens.md §5.
+- [X] T035 [P] [US1] Write `test/features/support/presentation/support_home_screen_test.dart` and `case_details_screen_test.dart` (widget), covering skeleton / empty / error + reference / offline banner / success; the closed notice + «افتح حالة جديدة» navigating to `/support/new?booking=<id>`; the resolved notice above the composer; and the not-found view with «الرجوع للدعم».
+- [X] T036 [P] [US1] Write goldens `test/features/support/goldens/support_home_golden_test.dart` (empty, list open + finished, offline) and `case_details_golden_test.dart` (conversation with attachments, resolved, closed; keyboard open), using the matrix in contracts/ui-screens.md §5.
 
 ### Implementation for US1
 
-- [ ] T037 [P] [US1] Create `lib/features/support/domain/support_case.dart` (`SupportCase`, `CaseType`, `CaseStatus` with `isOpen`/`isReplyable`, `CasePage`, `CaseDetails`, `CaseMessage`, `MessageAuthor`, `MessageSendState`, `AttachmentRef`) exactly per data-model §1–§2, including `CaseType.guestSelectable = [booking, payment, refund, propertyIssue, other]`. Makes T029 pass.
-- [ ] T038 [P] [US1] Create `lib/features/support/domain/attachment_draft.dart` (`AttachmentDraft`, `AttachmentUploadState`) and `lib/features/support/domain/support_repository.dart` (interface: `listCases({cursor})`, `getCase(id, {beforeCursor})`, `createCase(NewCaseDraft)`, `reply(caseId, ReplyDraft)`, `listFaq()`, `Stream<void> caseChanges(caseId)` + `Stream<bool> liveConnected`).
-- [ ] T039 [US1] Create `lib/features/support/data/mock_support_server.dart` with the seeds, rules and auto-reply from T030, plus the debug tools sheet `lib/features/support/presentation/mock_support_tools_sheet.dart` (long press on the case app bar, debug + mock only, with «رد من OnAir», «اتحلّت», «اتقفلت»). Makes T030 pass.
-- [ ] T040 [US1] Create `lib/features/support/data/supabase_support_repository.dart` (RPCs from the Reference table) and `lib/features/support/data/case_live_channel.dart`:
+- [X] T037 [P] [US1] Create `lib/features/support/domain/support_case.dart` (`SupportCase`, `CaseType`, `CaseStatus` with `isOpen`/`isReplyable`, `CasePage`, `CaseDetails`, `CaseMessage`, `MessageAuthor`, `MessageSendState`, `AttachmentRef`) exactly per data-model §1–§2, including `CaseType.guestSelectable = [booking, payment, refund, propertyIssue, other]`. Makes T029 pass.
+- [X] T038 [P] [US1] Create `lib/features/support/domain/attachment_draft.dart` (`AttachmentDraft`, `AttachmentUploadState`) and `lib/features/support/domain/support_repository.dart` (interface: `listCases({cursor})`, `getCase(id, {beforeCursor})`, `createCase(NewCaseDraft)`, `reply(caseId, ReplyDraft)`, `listFaq()`, `Stream<void> caseChanges(caseId)` + `Stream<bool> liveConnected`).
+- [X] T039 [US1] Create `lib/features/support/data/mock_support_server.dart` with the seeds, rules and auto-reply from T030, plus the debug tools sheet `lib/features/support/presentation/mock_support_tools_sheet.dart` (long press on the case app bar, debug + mock only, with «رد من OnAir», «اتحلّت», «اتقفلت»). Makes T030 pass.
+- [X] T040 [US1] Create `lib/features/support/data/supabase_support_repository.dart` (RPCs from the Reference table) and `lib/features/support/data/case_live_channel.dart`:
   - a Supabase channel `support-case-<id>` with `postgres_changes` INSERT on `case_messages` (`case_id=eq.<id>`) and UPDATE on `support_cases` (`id=eq.<id>`);
   - it emits `void` only (the payload is never read) and reports the subscription status;
   - `dispose()` unsubscribes.
 
   Copy the structure of `lib/core/realtime/notification_signal.dart`, including a `Controllable*` fake. Makes T031 pass.
-- [ ] T041 [US1] Wire `SupportRepository` in `lib/bootstrap.dart`: remote → `SupabaseSupportRepository(rpc, client)`, mock → `MockSupportServer`. Also provide `PrivateFileUploader`, `ImageSanitizer`, `AttachmentPicker` and `FileUrlCache` as `RepositoryProvider`s.
-- [ ] T042 [US1] Create `lib/features/support/presentation/home/support_home_cubit.dart` and `support_home_screen.dart`:
+- [X] T041 [US1] Wire `SupportRepository` in `lib/bootstrap.dart`: remote → `SupabaseSupportRepository(rpc, client)`, mock → `MockSupportServer`. Also provide `PrivateFileUploader`, `ImageSanitizer`, `AttachmentPicker` and `FileUrlCache` as `RepositoryProvider`s.
+- [X] T042 [US1] Create `lib/features/support/presentation/home/support_home_cubit.dart` and `support_home_screen.dart`:
   - the FAQ Hero gradient header with «حالة جديدة» / «الأسئلة الشائعة» pills (the FAQ pill navigates to `AppRoutes.supportFaq`, which is wired in US3);
   - the sliver list of case cards (code, type label, `CaseStatusChip`, linked booking line, «آخر تحديث {relative}», unread dot), with the «حالات منتهية» divider before the first non-open case;
   - empty and offline states, pull-to-refresh, pagination.
 
   Makes T032 and T035 (home) pass.
-- [ ] T043 [US1] Create `lib/features/support/presentation/widgets/attachment_strip.dart` (a horizontal list of `AttachmentTile` + «إضافة» tile; uses `AttachmentPicker` → `ImageSanitizer` → `UploadLimits.validate` → `PrivateFileUploader`; shows rejections with `supportAttachmentRejected*`) and `reply_composer.dart` (a text field, attach, a send icon button of 48 dp with Semantics `supportSend`, `RapidSubmitGuard`). Makes T034 pass.
-- [ ] T044 [US1] Create `lib/features/support/presentation/case/case_details_cubit.dart` and `case_details_screen.dart`:
+- [X] T043 [US1] Create `lib/features/support/presentation/widgets/attachment_strip.dart` (a horizontal list of `AttachmentTile` + «إضافة» tile; uses `AttachmentPicker` → `ImageSanitizer` → `UploadLimits.validate` → `PrivateFileUploader`; shows rejections with `supportAttachmentRejected*`) and `reply_composer.dart` (a text field, attach, a send icon button of 48 dp with Semantics `supportSend`, `RapidSubmitGuard`). Makes T034 pass.
+- [X] T044 [US1] Create `lib/features/support/presentation/case/case_details_cubit.dart` and `case_details_screen.dart`:
   - the app bar with code + `CaseStatusChip`;
   - a collapsible info card (the linked booking taps to `/bookings/:id`);
   - `MessageBubble` list with older pages on scroll-up;
@@ -421,9 +421,9 @@ uses.
   - opening the live channel on enter and closing it on dispose; the 10 s fallback poll.
 
   Makes T033, T035 (details) and T036 pass.
-- [ ] T045 [US1] Wire `/support` → `SupportHomeScreen` and `/support/:caseId` → `CaseDetailsScreen` (validate UUID v4, else `NotAvailableScreen`) in `lib/app/router/app_router.dart`, pushed on the root navigator.
-- [ ] T046 [US1] Add a «الدعم» entry to the current account screen (`lib/features/account/presentation/account_placeholder_screen.dart`; US5 replaces the whole screen later). In `lib/features/stay/presentation/claims/damage_claim_screen.dart`, make the «رقم الحالة» text tappable to `/support/<support_case_id>` when the claim JSON has `support_case_id` (add the field to `DamageClaim` in `lib/features/stay/domain/damage_claim.dart`, nullable).
-- [ ] T047 [US1] Security test `test/features/support/security/case_isolation_test.dart` (mock): a deep link to another guest's case id and to `/support/not-a-uuid` both show the neutral not-found view, make no extra calls, and reveal no case data. Add a Staging variant `integration_test/support_isolation_staging_test.dart` (skipped unless `BACKEND_MODE=remote`) that also asserts no `internal` message body appears.
+- [X] T045 [US1] Wire `/support` → `SupportHomeScreen` and `/support/:caseId` → `CaseDetailsScreen` (validate UUID v4, else `NotAvailableScreen`) in `lib/app/router/app_router.dart`, pushed on the root navigator.
+- [X] T046 [US1] Add a «الدعم» entry to the current account screen (`lib/features/account/presentation/account_placeholder_screen.dart`; US5 replaces the whole screen later). In `lib/features/stay/presentation/claims/damage_claim_screen.dart`, make the «رقم الحالة» text tappable to `/support/<support_case_id>` when the claim JSON has `support_case_id` (add the field to `DamageClaim` in `lib/features/stay/domain/damage_claim.dart`, nullable).
+- [X] T047 [US1] Security test `test/features/support/security/case_isolation_test.dart` (mock): a deep link to another guest's case id and to `/support/not-a-uuid` both show the neutral not-found view, make no extra calls, and reveal no case data. Add a Staging variant `integration_test/support_isolation_staging_test.dart` (skipped unless `BACKEND_MODE=remote`) that also asserts no `internal` message body appears.
 
 **Checkpoint**: US1 works end-to-end in mock mode. Notifications open the case.
 
