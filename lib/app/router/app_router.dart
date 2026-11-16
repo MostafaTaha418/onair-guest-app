@@ -80,9 +80,12 @@ import 'package:on_air/features/stay/presentation/claims/damage_claim_resolver_s
 import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
+import 'package:on_air/features/support/data/faq_cache.dart';
 import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:on_air/features/support/presentation/case/case_details_cubit.dart';
 import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
+import 'package:on_air/features/support/presentation/faq/faq_cubit.dart';
+import 'package:on_air/features/support/presentation/faq/faq_screen.dart';
 import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
 import 'package:on_air/features/support/presentation/home/support_home_screen.dart';
 import 'package:on_air/features/support/presentation/new_case/new_case_cubit.dart';
@@ -391,7 +394,17 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.supportFaq,
       name: 'support-faq',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, _) => BlocProvider<FaqCubit>(
+        create: (context) {
+          final cubit = FaqCubit(
+            repository: context.read<SupportRepository>(),
+            cache: context.read<FaqCache>(),
+          );
+          unawaited(cubit.load());
+          return cubit;
+        },
+        child: const FaqScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.supportNew,

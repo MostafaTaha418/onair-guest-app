@@ -71,6 +71,7 @@ import 'package:on_air/features/stay/data/mock_stay_server.dart';
 import 'package:on_air/features/stay/data/supabase_stay_repository.dart';
 import 'package:on_air/features/stay/domain/stay_repository.dart';
 import 'package:on_air/features/support/data/case_live_channel.dart';
+import 'package:on_air/features/support/data/faq_cache.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/features/support/data/supabase_support_repository.dart';
 import 'package:on_air/features/support/domain/support_repository.dart';
@@ -141,6 +142,10 @@ Future<void> bootstrap(String flavor) async {
   final arrivalInstructions = ArrivalInstructionsStore(backend.secureStore);
   final actionAttempts = ActionAttemptStore(backend.secureStore);
   final bookingsCache = BookingsCache(bookingsFileCache);
+  // Public FAQ content: deliberately not in any sign-out cleaner (T059).
+  final faqCache = FaqCache(
+    await JsonFileCache.appSupport(fileName: 'faq_v1.json', schema: 1),
+  );
   final notificationPermission = backend.permission;
   final fileUrls = FileUrlCache(backend.stay);
   final pushPermissionCoordinator = PushPermissionCoordinator(
@@ -210,6 +215,7 @@ Future<void> bootstrap(String flavor) async {
           value: backend.uploader,
         ),
         RepositoryProvider<FileUrlCache>.value(value: fileUrls),
+        RepositoryProvider<FaqCache>.value(value: faqCache),
         RepositoryProvider<MockStayServer?>.value(value: backend.mockStay),
         RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
         RepositoryProvider<NotificationPermission>.value(

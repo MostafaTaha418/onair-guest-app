@@ -199,18 +199,12 @@ class _ConfirmPhoneScreenState extends State<ConfirmPhoneScreen> {
                 ),
                 const SizedBox(height: Dimens.space16),
                 if (state.code != null)
-                  WhatsAppCodeStep(
-                    supportPhone: _supportPhone ?? '',
-                    clock: widget.clock,
-                  )
+                  WhatsAppCodeStep(clock: widget.clock)
                 else
                   form,
               ],
             ),
-            PvCode() => WhatsAppCodeStep(
-              supportPhone: _supportPhone ?? '',
-              clock: widget.clock,
-            ),
+            PvCode() => WhatsAppCodeStep(clock: widget.clock),
             _ => form,
           },
         ),

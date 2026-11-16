@@ -12,6 +12,7 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
 import 'package:on_air/features/support/presentation/support_texts.dart';
+import 'package:on_air/features/support/presentation/widgets/call_support_button.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 final class SupportHomeScreen extends StatefulWidget {
@@ -150,6 +151,17 @@ final class _SupportHomeScreenState extends State<SupportHomeScreen> {
                 },
               ),
             ),
+          // «اتصل بخدمة العملاء» + hours at the bottom when a number is
+          // published (US3-4); hidden otherwise.
+          SliverPadding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              Dimens.screenSide,
+              items.isEmpty ? 0 : Dimens.space8,
+              Dimens.screenSide,
+              Dimens.space24,
+            ),
+            sliver: const SliverToBoxAdapter(child: CallSupportButton()),
+          ),
         ],
       ),
     );

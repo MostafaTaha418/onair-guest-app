@@ -24,6 +24,7 @@ import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:on_air/features/support/data/faq_cache.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,6 +87,13 @@ Future<MockAuthRepository> bootMockApp(
   addTearDown(bookingBackend.dispose);
   final supportServer = support ?? MockSupportServer();
   final supportPicker = attachmentPicker ?? const EmptyAttachmentPicker();
+  final faqCache = FaqCache(
+    JsonFileCache(
+      directory: directory,
+      fileName: 'faq_v1.json',
+      schema: 1,
+    ),
+  );
   // Integration runners can briefly report `ConnectivityResult.none` while
   // the simulator is booting. Mock-mode journeys use an in-process backend,
   // so tying them to the host network makes otherwise deterministic screens
@@ -136,6 +144,7 @@ Future<MockAuthRepository> bootMockApp(
         RepositoryProvider<FileUrlCache>.value(
           value: FileUrlCache(bookingBackend.stay),
         ),
+        RepositoryProvider<FaqCache>.value(value: faqCache),
       ],
       child: OnAirApp(connectivityCubit: connectivityCubit),
     ),

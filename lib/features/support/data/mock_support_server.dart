@@ -335,7 +335,81 @@ final class MockSupportServer implements SupportRepository {
   });
 
   @override
-  Future<List<Map<String, dynamic>>> listFaq() async => const [];
+  Future<List<Map<String, dynamic>>> listFaq() => _delayed(() {
+    return [
+      for (var index = 0; index < _faqSeed.length; index++)
+        {
+          'id': 'f0000000-0000-4000-8000-00000000000$index',
+          ..._faqSeed[index],
+          'sort_order': index + 1,
+        },
+    ];
+  });
+
+  static const _faqSeed = [
+    {
+      'question_ar': 'إزاي أحجز شقة؟',
+      'answer_ar':
+          'اختار الشقة، حدد المواعيد وعدد الأفراد، وادفع العربون من'
+          ' وسيلة الدفع اللي تفضلها. الحجز يتأكد فورًا بعد الدفع.',
+      'question_en': 'How do I book an apartment?',
+      'answer_en':
+          'Pick an apartment, set your dates and guests, and pay the'
+          ' deposit with your preferred method. The booking is confirmed'
+          ' right after the payment.',
+    },
+    {
+      'question_ar': 'إيه طرق الدفع المتاحة؟',
+      'answer_ar':
+          'فيزا أو ماستركارد عبر كاشير، أو دفع كاش لموظف OnAir حسب'
+          ' بيان سياسة الشقة.',
+      'question_en': 'What are the payment methods?',
+      'answer_en':
+          'Visa or Mastercard through Kashier, or cash payment to an'
+          ' OnAir agent, as the apartment policy states.',
+    },
+    {
+      'question_ar': 'الاسترداد بيرجع في وقت قد إيه؟',
+      'answer_ar':
+          'الاسترداد بيتنفذ على نفس وسيلة الدفع خلال 5-7 أيام عمل'
+          ' بعد اعتماد الطلب.',
+      'question_en': 'When does a refund arrive?',
+      'answer_en':
+          'Refunds go back to the original payment method within'
+          ' 5-7 business days after approval.',
+    },
+    {
+      'question_ar': 'أقدر ألغي حجزي؟',
+      'answer_ar':
+          'أيوه، من تفاصيل الحجز اضغط «إلغاء الحجز». سياسة الإلغاء'
+          ' بتحدد المبلغ المسترد حسب موعد الإلغاء.',
+      'question_en': 'Can I cancel my booking?',
+      'answer_en':
+          'Yes, tap "Cancel booking" in the booking details. The'
+          ' cancellation policy decides the refundable amount based on when'
+          ' you cancel.',
+    },
+    {
+      'question_ar': 'إزاي أدخل الشقة يوم الوصول؟',
+      'answer_ar':
+          'بعد تأكيد تسجيل الوصول هتلاقي تعليمات الدخول وكود البوابة'
+          ' في تفاصيل الحجز.',
+      'question_en': 'How do I check in?',
+      'answer_en':
+          'After you confirm check-in, the access instructions and'
+          ' gate code appear in the booking details.',
+    },
+    {
+      'question_ar': 'لقيت ضرر في الشقة، أعمل إيه؟',
+      'answer_ar':
+          'افتح تفاصيل الحجز ← «الضرر»، وصوّر الضرر وأبلغ عنه. فريق'
+          ' OnAir بيراجع الاعتراض مع الموظف.',
+      'question_en': 'I found damage in the apartment, what do I do?',
+      'answer_en':
+          'Open the booking details, go to Damage, photograph it and'
+          ' report it. The OnAir team reviews the dispute with the owner.',
+    },
+  ];
 
   @override
   Stream<void> caseChanges(String caseId) {

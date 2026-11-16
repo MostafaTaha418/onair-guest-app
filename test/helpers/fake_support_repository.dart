@@ -23,6 +23,8 @@ final class FakeSupportRepository implements SupportRepository {
   final List<String?> beforeCursors = [];
   final List<ReplyDraft> replies = [];
   final List<NewCaseDraft> creations = [];
+  List<Map<String, dynamic>> faqRows = [];
+  Exception? nextFaqError;
   int getCalls = 0;
   int closeLiveCalls = 0;
   String? liveCaseId;
@@ -84,7 +86,13 @@ final class FakeSupportRepository implements SupportRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> listFaq() async => const [];
+  Future<List<Map<String, dynamic>>> listFaq() async {
+    if (nextFaqError case final error?) {
+      nextFaqError = null;
+      throw error;
+    }
+    return faqRows;
+  }
 }
 
 SupportCase sampleSupportCase({

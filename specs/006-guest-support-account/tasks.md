@@ -493,30 +493,30 @@ uses.
 
 ### Tests for US3
 
-- [ ] T056 [P] [US3] Write `test/features/support/presentation/faq_cubit_test.dart`:
+- [X] T056 [P] [US3] Write `test/features/support/presentation/faq_cubit_test.dart`:
   - load → items sorted by `sortOrder`, localized by the current locale (`question_ar/answer_ar` or `_en`);
   - the result is written to the cache;
   - offline + cache → items + `stale: true`;
   - offline without cache → the offline error;
   - search normalizes Arabic (أ/إ/آ→ا, ة→ه, ى→ي, diacritics removed), is case-insensitive over question + answer, and empty results → `noResults`.
-- [ ] T057 [P] [US3] Write `test/features/support/presentation/call_support_button_test.dart`:
+- [X] T057 [P] [US3] Write `test/features/support/presentation/call_support_button_test.dart`:
   - hidden when `supportContact.phone == null`;
   - shows the hours line when present;
   - a tap launches `tel:<E.164>`;
   - when `canLaunchUrl` is false → a sheet with the number and a copy action (snackbar `supportCallCopied`);
   - the Semantics label is `supportCall`.
-- [ ] T058 [P] [US3] Write `test/features/support/presentation/faq_screen_test.dart` (widget: skeleton, list, no results with «افتح حالة جديدة» routing a visitor to login with a return path, stale banner, error) and golden `test/features/support/goldens/faq_golden_test.dart`.
+- [X] T058 [P] [US3] Write `test/features/support/presentation/faq_screen_test.dart` (widget: skeleton, list, no results with «افتح حالة جديدة» routing a visitor to login with a return path, stale banner, error) and golden `test/features/support/goldens/faq_golden_test.dart`.
 
 ### Implementation for US3
 
-- [ ] T059 [P] [US3] Create `lib/features/support/domain/faq_item.dart` and `lib/features/support/data/faq_cache.dart`:
+- [X] T059 [P] [US3] Create `lib/features/support/domain/faq_item.dart` and `lib/features/support/data/faq_cache.dart`:
   - a `JsonFileCache.appSupport(name: 'faq_v1')` cache;
   - public data, so it is **not** cleared on sign-out: add nothing to `CacheCleaner`.
 
   Implement `listFaq()` (`common_list_faq('guest')`, callable by anon) in both repositories, with 6 seeded Q&As in Arabic and English in the mock.
-- [ ] T060 [US3] Create `lib/features/support/presentation/faq/faq_cubit.dart` and `faq_screen.dart` (FAQ Hero header with a search field, expandable cards, stale banner, call button at the bottom). Wire `/support/faq` → `FaqScreen` as a **public** route. Makes T056 and T058 pass.
-- [ ] T061 [P] [US3] Create `lib/features/support/presentation/widgets/call_support_button.dart` reading `AppConfig.supportContact`. Use it in `SupportHomeScreen`, `FaqScreen` and `lib/features/account/presentation/account_suspended_screen.dart` (also add a «الأسئلة الشائعة» link there). Makes T057 pass.
-- [ ] T062 [US3] In the S005 WhatsApp code step (`lib/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart`), point «كلّم الدعم» to `/support/faq` for `incomplete` accounts (the call button is on that screen), instead of `/support/new` (contracts/app-routes.md). Update its widget test.
+- [X] T060 [US3] Create `lib/features/support/presentation/faq/faq_cubit.dart` and `faq_screen.dart` (FAQ Hero header with a search field, expandable cards, stale banner, call button at the bottom). Wire `/support/faq` → `FaqScreen` as a **public** route. Makes T056 and T058 pass.
+- [X] T061 [P] [US3] Create `lib/features/support/presentation/widgets/call_support_button.dart` reading `AppConfig.supportContact`. Use it in `SupportHomeScreen`, `FaqScreen` and `lib/features/account/presentation/account_suspended_screen.dart` (also add a «الأسئلة الشائعة» link there). Makes T057 pass.
+- [X] T062 [US3] In the S005 WhatsApp code step (`lib/features/auth/phone_verification/presentation/widgets/whatsapp_code_step.dart`), point «كلّم الدعم» to `/support/faq` for `incomplete` accounts (the call button is on that screen), instead of `/support/new` (contracts/app-routes.md). Update its widget test.
 
 **Checkpoint**: The FAQ and the call button work for visitors and suspended accounts.
 
