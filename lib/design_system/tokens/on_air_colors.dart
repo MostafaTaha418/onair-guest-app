@@ -16,6 +16,16 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
   Color get errorText => this['errorText'];
   Color get onPrimary => this['onPrimary'];
   Color get transparent => this['transparent'];
+  Color get settingsIconBlueBg => this['settingsIconBlueBg'];
+  Color get settingsIconBlueFg => this['settingsIconBlueFg'];
+  Color get settingsIconTealBg => this['settingsIconTealBg'];
+  Color get settingsIconTealFg => this['settingsIconTealFg'];
+  Color get settingsIconOrangeBg => this['settingsIconOrangeBg'];
+  Color get settingsIconOrangeFg => this['settingsIconOrangeFg'];
+  Color get settingsIconNeutralBg => this['settingsIconNeutralBg'];
+  Color get settingsIconNeutralFg => this['settingsIconNeutralFg'];
+  Color get settingsIconDangerBg => this['settingsIconDangerBg'];
+  Color get settingsIconDangerFg => this['settingsIconDangerFg'];
 
   static const light = OnAirColors({
     'transparent': Color(0x00000000),
@@ -111,6 +121,16 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
     'settingsNeutralIcon': Color(0xFF6B7280),
     'settingsDangerBg': Color(0xFFFDECEA),
     'settingsDangerIcon': Color(0xFFC62828),
+    'settingsIconBlueBg': Color(0xFFD6EBF7),
+    'settingsIconBlueFg': Color(0xFF006399),
+    'settingsIconTealBg': Color(0xFFD1F0EA),
+    'settingsIconTealFg': Color(0xFF00796B),
+    'settingsIconOrangeBg': Color(0xFFFFE8CC),
+    'settingsIconOrangeFg': Color(0xFFE65100),
+    'settingsIconNeutralBg': Color(0xFFE8E8E8),
+    'settingsIconNeutralFg': Color(0xFF6B7280),
+    'settingsIconDangerBg': Color(0xFFFDECEA),
+    'settingsIconDangerFg': Color(0xFFC62828),
     'socialFill': Color(0xFFFFFFFF),
     'socialStoredFill': Color(0xFFD9D9D9),
     'headerStart': Color(0xFF147DBC),
@@ -220,6 +240,16 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
     'settingsNeutralIcon': Color(0xFFB0BEC5),
     'settingsDangerBg': Color(0xFF3D1B1F),
     'settingsDangerIcon': Color(0xFFEF9A9A),
+    'settingsIconBlueBg': Color(0xFF1E3A5F),
+    'settingsIconBlueFg': Color(0xFF81D4FA),
+    'settingsIconTealBg': Color(0xFF1A3D38),
+    'settingsIconTealFg': Color(0xFF80CBC4),
+    'settingsIconOrangeBg': Color(0xFF3D2E1B),
+    'settingsIconOrangeFg': Color(0xFFFFB74D),
+    'settingsIconNeutralBg': Color(0xFF2A3340),
+    'settingsIconNeutralFg': Color(0xFFB0BEC5),
+    'settingsIconDangerBg': Color(0xFF3D1B1F),
+    'settingsIconDangerFg': Color(0xFFEF9A9A),
     'socialFill': Color(0xFF1A2332),
     'socialStoredFill': Color(0xFF4A4A4A),
     'headerStart': Color(0xFF0A3D62),

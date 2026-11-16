@@ -216,16 +216,16 @@ metadata in `app_en.arb`, like the existing `authRateLimited`.
 **Purpose**: Dependencies, platform permissions, contract files, tokens and copy that every story
 uses.
 
-- [ ] T001 Add `image_picker`, `file_picker` and `flutter_image_compress` (latest stable versions that support Flutter 3.44 / Dart 3.12) to `dependencies` in `pubspec.yaml`, alphabetically. Run `flutter pub get` and commit `pubspec.lock`. Note the app-size delta (`flutter build apk --analyze-size --target-platform android-arm64 --flavor staging -t lib/main_staging.dart`) in the PR description (Constitution VII).
-- [ ] T002 [P] Add `NSCameraUsageDescription` («OnAir بيستخدم الكاميرا عشان تصوّر مرفقات لحالة الدعم») and `NSPhotoLibraryUsageDescription` («OnAir بيستخدم الصور عشان ترفق صور لحالة الدعم») to `ios/Runner/Info.plist`, with English in `ios/Runner/en.lproj/InfoPlist.strings` (create it if missing). Add no Android storage permission (the system photo picker needs none).
-- [ ] T003 [P] Update `contracts/node-api.openapi.yaml`:
+- [X] T001 Add `image_picker`, `file_picker` and `flutter_image_compress` (latest stable versions that support Flutter 3.44 / Dart 3.12) to `dependencies` in `pubspec.yaml`, alphabetically. Run `flutter pub get` and commit `pubspec.lock`. Note the app-size delta (`flutter build apk --analyze-size --target-platform android-arm64 --flavor staging -t lib/main_staging.dart`) in the PR description (Constitution VII).
+- [X] T002 [P] Add `NSCameraUsageDescription` («OnAir بيستخدم الكاميرا عشان تصوّر مرفقات لحالة الدعم») and `NSPhotoLibraryUsageDescription` («OnAir بيستخدم الصور عشان ترفق صور لحالة الدعم») to `ios/Runner/Info.plist`, with English in `ios/Runner/en.lproj/InfoPlist.strings` (create it if missing). Add no Android storage permission (the system photo picker needs none).
+- [X] T003 [P] Update `contracts/node-api.openapi.yaml`:
   - add `support_draft` to the `entity_type` enum of `/v1/uploads/sign`;
   - add `POST /v1/account/password`, `operationId: changePassword`, exactly as in `specs/006-guest-support-account/contracts/node-account.md` U8.
 
   Then run `dart run swagger_parser` and `dart run build_runner build --delete-conflicting-outputs`. Verify that `lib/core/api/generated/models/entity_type.dart` has `supportDraft('support_draft')` and that `rest_client.dart` has `changePassword`.
-- [ ] T004 [P] Add the G4 rows to `contracts/error-codes.md` (code, phase `G4`, l10n key, Arabic copy, show-reference = no) for every "New error codes" value in the Reference table. Also note `details.blockers` on `ACCOUNT_HAS_ACTIVE_BOOKINGS`.
-- [ ] T005 [P] Add every key from "Localization keys" to `lib/l10n/app_ar.arb` and `lib/l10n/app_en.arb`, with placeholder metadata, and run `flutter gen-l10n`.
-- [ ] T006 [P] Add the Settings Icons tones to `lib/design_system/tokens/on_air_colors.dart` as `settingsIconBlueBg/Fg`, `settingsIconTealBg/Fg`, `settingsIconOrangeBg/Fg`, `settingsIconNeutralBg/Fg` and `settingsIconDangerBg/Fg`. Use the light and dark values from `docs/UI_UX_DESIGN_SYSTEM.md` §«Settings Icons» exactly (Blue `#D6EBF7/#006399` · dark `#1E3A5F/#81D4FA`; Teal `#D1F0EA/#00796B` · `#1A3D38/#80CBC4`; Orange `#FFE8CC/#E65100` · `#3D2E1B/#FFB74D`; Neutral `#E8E8E8/#6B7280` · `#2A3340/#B0BEC5`; Danger `#FDECEA/#C62828` · `#3D1B1F/#EF9A9A`), including in `copyWith`/`lerp`. Extend `test/design_system/` token tests to assert them.
+- [X] T004 [P] Add the G4 rows to `contracts/error-codes.md` (code, phase `G4`, l10n key, Arabic copy, show-reference = no) for every "New error codes" value in the Reference table. Also note `details.blockers` on `ACCOUNT_HAS_ACTIVE_BOOKINGS`.
+- [X] T005 [P] Add every key from "Localization keys" to `lib/l10n/app_ar.arb` and `lib/l10n/app_en.arb`, with placeholder metadata, and run `flutter gen-l10n`.
+- [X] T006 [P] Add the Settings Icons tones to `lib/design_system/tokens/on_air_colors.dart` as `settingsIconBlueBg/Fg`, `settingsIconTealBg/Fg`, `settingsIconOrangeBg/Fg`, `settingsIconNeutralBg/Fg` and `settingsIconDangerBg/Fg`. Use the light and dark values from `docs/UI_UX_DESIGN_SYSTEM.md` §«Settings Icons» exactly (Blue `#D6EBF7/#006399` · dark `#1E3A5F/#81D4FA`; Teal `#D1F0EA/#00796B` · `#1A3D38/#80CBC4`; Orange `#FFE8CC/#E65100` · `#3D2E1B/#FFB74D`; Neutral `#E8E8E8/#6B7280` · `#2A3340/#B0BEC5`; Danger `#FDECEA/#C62828` · `#3D1B1F/#EF9A9A`), including in `copyWith`/`lerp`. Extend `test/design_system/` token tests to assert them.
 
 **Checkpoint**: `flutter analyze` is clean, `flutter gen-l10n` succeeds, and the generated client compiles.
 

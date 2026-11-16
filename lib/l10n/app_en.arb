@@ -891,5 +891,196 @@
   "accountPhone": "Phone number",
   "accountPhoneConfirmed": "Confirmed",
   "accountChangePhone": "Change",
-  "verifyPhoneOnWhatsApp": "Confirm your number on WhatsApp"
+  "verifyPhoneOnWhatsApp": "Confirm your number on WhatsApp",
+  "supportTitle": "Support",
+  "supportSubtitle": "We're here to help",
+  "supportMyCases": "My cases",
+  "supportFinishedCases": "Finished cases",
+  "supportNewCase": "New case",
+  "supportEmpty": "You haven't opened any cases yet",
+  "supportLastUpdate": "Updated {time}",
+  "@supportLastUpdate": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "supportStatusOpen": "Open",
+  "supportStatusInProgress": "In progress",
+  "supportStatusWaitingUser": "Waiting for you",
+  "supportStatusResolved": "Resolved",
+  "supportStatusClosed": "Closed",
+  "supportStatusUnknown": "Unknown status",
+  "supportTypeBooking": "Booking",
+  "supportTypePayment": "Payment",
+  "supportTypeRefund": "Refund",
+  "supportTypePropertyIssue": "Apartment problem",
+  "supportTypeOther": "Other",
+  "supportTypeDamageDispute": "Damage dispute",
+  "supportTypeComplaint": "Complaint",
+  "supportTypeStayException": "Stay exception",
+  "supportTypeUnknown": "Other",
+  "supportType": "Issue type",
+  "supportLinkBooking": "Link a booking",
+  "supportLinkedBooking": "Booking {code}",
+  "@supportLinkedBooking": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "supportLinkedProperty": "Apartment: {title}",
+  "@supportLinkedProperty": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "supportDescription": "Describe what happened",
+  "supportDescriptionTooShort": "Write at least 10 characters",
+  "supportSend": "Send",
+  "supportCreated": "We got your case {code}",
+  "@supportCreated": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "supportDiscardTitle": "Leave without sending?",
+  "supportDiscard": "Discard",
+  "supportKeepEditing": "Keep editing",
+  "supportReplyHint": "Write a reply",
+  "supportOnAir": "OnAir",
+  "supportCaseClosed": "This case is closed",
+  "supportOpenNewCase": "Open a new case",
+  "supportResolvedNotice": "This case was resolved. Still need help? Reply here and we'll reopen it.",
+  "supportCaseNotFound": "This case isn't available",
+  "supportBackToSupport": "Back to support",
+  "supportAttach": "Add",
+  "supportAttachCamera": "Camera",
+  "supportAttachGallery": "Photos",
+  "supportAttachPdf": "PDF file",
+  "supportAttachHint": "Up to {count} files, photos or PDF",
+  "@supportAttachHint": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "supportAttachRemove": "Remove file",
+  "supportAttachRetry": "Retry",
+  "supportAttachFailed": "Upload failed",
+  "supportAttachmentRejectedTooLarge": "The file is larger than {size} MB",
+  "@supportAttachmentRejectedTooLarge": {
+    "placeholders": {
+      "size": { "type": "int" }
+    }
+  },
+  "supportAttachmentRejectedType": "This type isn't allowed. Photos or PDF only",
+  "supportAttachmentRejectedTooMany": "Limit reached: {count} files",
+  "@supportAttachmentRejectedTooMany": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "supportFaq": "FAQ",
+  "supportFaqSearch": "Search questions",
+  "supportFaqNoResults": "No results",
+  "supportFaqStale": "This information may be out of date",
+  "supportCall": "Call customer service",
+  "supportCallHours": "Working hours: {hours}",
+  "@supportCallHours": {
+    "placeholders": {
+      "hours": { "type": "String" }
+    }
+  },
+  "supportCallCopied": "Number copied",
+  "accountEdit": "Edit",
+  "accountEditName": "Edit name",
+  "accountNameLabel": "Name",
+  "accountNameInvalid": "Name must be 2–80 characters",
+  "accountSave": "Save",
+  "accountSectionGeneral": "General",
+  "accountSectionSecurity": "Security",
+  "accountSectionSupport": "Support",
+  "accountSectionLegal": "Legal",
+  "accountNotifications": "Notifications",
+  "accountAppearance": "Appearance",
+  "accountLanguage": "Language",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageEnglish": "English",
+  "accountSecurityRow": "Security & devices",
+  "accountTerms": "Terms & conditions",
+  "accountPrivacy": "Privacy policy",
+  "accountSignOut": "Sign out",
+  "accountSignOutConfirm": "Sign out of your account?",
+  "accountDelete": "Delete account",
+  "accountVisitorTitle": "Sign in to manage your bookings",
+  "accountChangePassword": "Change password",
+  "accountCurrentPassword": "Current password",
+  "accountNewPassword": "New password",
+  "accountConfirmPassword": "Confirm password",
+  "accountPasswordMismatch": "Passwords don't match",
+  "accountPasswordSameAsOld": "Choose a password different from the current one",
+  "accountPasswordIncorrect": "Current password is incorrect",
+  "accountPasswordChanged": "Password changed, and other devices were signed out",
+  "accountDevices": "Signed-in devices",
+  "accountThisDevice": "This device",
+  "accountLastActive": "Last active {time}",
+  "@accountLastActive": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "accountUnknownDevice": "Device",
+  "accountEndSession": "Sign out",
+  "accountEndOthers": "Sign out of all other devices",
+  "accountEndOthersConfirm": "You'll be signed out everywhere except this device",
+  "accountSessionIsCurrent": "This is your current device. Use \"Sign out\"",
+  "prefsDeviceBlocked": "Device notifications are off for this app",
+  "prefsOpenSettings": "Open settings",
+  "prefsPush": "Device notifications",
+  "prefsEmail": "Email",
+  "prefsMandatory": "Essential booking and payment notifications can't be turned off",
+  "prefsMandatoryLabel": "Required",
+  "prefsSaveFailed": "Couldn't save the change",
+  "notifCategoryBooking": "Bookings",
+  "notifCategoryPayment": "Payments",
+  "notifCategorySupport": "Support",
+  "notifCategoryReminders": "Reminders",
+  "notifCategoryReview": "Reviews",
+  "notifCategoryAccount": "Account security",
+  "notifCategoryUnknown": "Other",
+  "deleteTitle": "Delete account",
+  "deleteWhatGoes": "We'll erase your personal data: name, email, phone, favorites and preferences",
+  "deleteWhatStays": "Past bookings and payments stay on record without your personal data, as the law requires",
+  "deleteFinal": "Deletion is final and can't be undone",
+  "deleteUnderstand": "I understand deletion is final",
+  "deleteCta": "Delete my account",
+  "deleteBlockedTitle": "You can't delete your account yet",
+  "deleteBlockerBooking": "Active booking {code}",
+  "@deleteBlockerBooking": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteBlockerRefund": "Refund in progress {code}",
+  "@deleteBlockerRefund": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteBlockerClaim": "Open claim {code}",
+  "@deleteBlockerClaim": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteCodeSent": "We sent a code to {email}",
+  "@deleteCodeSent": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "deleteConfirm": "Confirm deletion",
+  "deleteDone": "Your account was deleted",
+  "accountHasActiveBookings": "You can't delete your account while a booking or refund is still active"
 }

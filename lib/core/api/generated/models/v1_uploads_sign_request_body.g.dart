@@ -28,6 +28,7 @@ const _$EntityTypeEnumMap = {
   EntityType.supportCase: 'support_case',
   EntityType.caseMessage: 'case_message',
   EntityType.damageClaim: 'damage_claim',
+  EntityType.supportDraft: 'support_draft',
   EntityType.$unknown: r'$unknown',
 };
 
