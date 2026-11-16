@@ -51,14 +51,16 @@ void main() {
       async.flushMicrotasks();
       expect(pollRepository.getCalls, 1);
 
-      async.elapse(const Duration(seconds: 10));
-      async.flushMicrotasks();
+      async
+        ..elapse(const Duration(seconds: 10))
+        ..flushMicrotasks();
       expect(pollRepository.getCalls, 2);
 
       pollRepository.connected.add(true);
-      async.flushMicrotasks();
-      async.elapse(const Duration(seconds: 20));
-      async.flushMicrotasks();
+      async
+        ..flushMicrotasks()
+        ..elapse(const Duration(seconds: 20))
+        ..flushMicrotasks();
       expect(pollRepository.getCalls, 2);
 
       unawaited(local.close());

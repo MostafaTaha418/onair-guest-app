@@ -8,15 +8,21 @@ final class FakeSupportRepository implements SupportRepository {
   final List<CaseDetails> detailPages = [];
   Exception? nextError;
   Exception? nextReplyError;
+  Exception? nextCreateError;
   ReplyResult replyResult = const ReplyResult(
     messageId: 'm-server',
     caseStatus: CaseStatus.inProgress,
+  );
+  CreatedCase createResult = const CreatedCase(
+    caseId: 'c-new',
+    code: 'SC-2001',
   );
   final StreamController<void> changes = StreamController<void>.broadcast();
   final StreamController<bool> connected = StreamController<bool>.broadcast();
   final List<String?> listCursors = [];
   final List<String?> beforeCursors = [];
   final List<ReplyDraft> replies = [];
+  final List<NewCaseDraft> creations = [];
   int getCalls = 0;
   int closeLiveCalls = 0;
   String? liveCaseId;
@@ -68,8 +74,14 @@ final class FakeSupportRepository implements SupportRepository {
   }
 
   @override
-  Future<CreatedCase> createCase(NewCaseDraft draft) =>
-      throw UnimplementedError();
+  Future<CreatedCase> createCase(NewCaseDraft draft) async {
+    creations.add(draft);
+    if (nextCreateError case final error?) {
+      nextCreateError = null;
+      throw error;
+    }
+    return createResult;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> listFaq() async => const [];

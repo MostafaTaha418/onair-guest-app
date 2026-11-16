@@ -8,6 +8,10 @@ import 'package:on_air/core/cache/json_file_cache.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/device/device_identity.dart';
+import 'package:on_air/core/files/attachment_picker.dart';
+import 'package:on_air/core/files/file_url_cache.dart';
+import 'package:on_air/core/files/image_sanitizer.dart';
+import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
@@ -20,14 +24,20 @@ import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:on_air/features/support/data/mock_support_server.dart';
+import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_booking_backend.dart';
 import 'fake_connectivity.dart';
+import 'fake_support_files.dart';
 
 /// Boots the full [OnAirApp] on the mock backend: in-memory repositories,
 /// no Supabase/Firebase connection. Shared by the integration tests that
 /// exercise the real shell (the T095 journey, the T105 scroll-perf run).
+///
+/// [support] and [attachmentPicker] let the support journeys (T055) share
+/// the server instance and feed canned picks through the real pipeline.
 ///
 /// On the host, rootBundle never completes under the fake async zone — the
 /// Returns the mock auth repository so social-scenario tests can pick the
@@ -38,6 +48,8 @@ Future<MockAuthRepository> bootMockApp(
   WidgetTester tester, {
   MockAuthRepository? auth,
   MockPhoneVerificationRepository? phoneVerification,
+  MockSupportServer? support,
+  AttachmentPicker? attachmentPicker,
 }) async {
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
@@ -72,6 +84,8 @@ Future<MockAuthRepository> bootMockApp(
       );
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
+  final supportServer = support ?? MockSupportServer();
+  final supportPicker = attachmentPicker ?? const EmptyAttachmentPicker();
   // Integration runners can briefly report `ConnectivityResult.none` while
   // the simulator is booting. Mock-mode journeys use an in-process backend,
   // so tying them to the host network makes otherwise deterministic screens
@@ -108,6 +122,20 @@ Future<MockAuthRepository> bootMockApp(
           value: bookingBackend.signals,
         ),
         ...bookingBackend.appProviders(),
+        // The G4 support stack, mirroring bootstrap's mock mode.
+        RepositoryProvider<SupportRepository>.value(value: supportServer),
+        RepositoryProvider<MockSupportServer?>.value(value: supportServer),
+        RepositoryProvider<AttachmentPicker>.value(value: supportPicker),
+        RepositoryProvider<ImageSanitizer>.value(value: ImageSanitizer()),
+        RepositoryProvider<PrivateFileUploader>.value(
+          value: PrivateFileUploader(
+            signer: UniqueUploadSigner(),
+            putClient: const FakeRawPutClient(),
+          ),
+        ),
+        RepositoryProvider<FileUrlCache>.value(
+          value: FileUrlCache(bookingBackend.stay),
+        ),
       ],
       child: OnAirApp(connectivityCubit: connectivityCubit),
     ),

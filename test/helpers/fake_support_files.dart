@@ -23,6 +23,17 @@ final class FakeUploadSigner implements UploadSigner {
       );
 }
 
+/// Gives every upload its own attachment id, like the real Node signer.
+final class UniqueUploadSigner implements UploadSigner {
+  int _counter = 0;
+  @override
+  Future<UploadSignResponse> sign(UploadSignRequest request) async =>
+      UploadSignResponse(
+        attachmentId: 'attachment-${++_counter}',
+        uploadUrl: Uri.parse('https://example.invalid/upload'),
+      );
+}
+
 final class FakeRawPutClient implements RawPutClient {
   const FakeRawPutClient();
   @override

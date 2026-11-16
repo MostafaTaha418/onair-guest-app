@@ -85,7 +85,8 @@ import 'package:on_air/features/support/presentation/case/case_details_cubit.dar
 import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
 import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
 import 'package:on_air/features/support/presentation/home/support_home_screen.dart';
-import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
+import 'package:on_air/features/support/presentation/new_case/new_case_cubit.dart';
+import 'package:on_air/features/support/presentation/new_case/new_case_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 bool _defaultUpdateRequired() => false;
@@ -396,10 +397,24 @@ GoRouter createAppRouter({
       path: AppRoutes.supportNew,
       name: 'support-new',
       builder: (_, state) {
-        final booking = state.uri.queryParameters['booking'];
-        return SupportEntryPlaceholderScreen(
-          propertyId: state.uri.queryParameters['property'],
-          bookingId: AppRoutes.isUuidV4(booking ?? '') ? booking : null,
+        String? validUuid(String? value) =>
+            value != null && AppRoutes.isUuidV4(value) ? value : null;
+        return BlocProvider<NewCaseCubit>(
+          create: (context) =>
+              NewCaseCubit(
+                repository: context.read<SupportRepository>(),
+                bookings: context.read<BookingsRepository>(),
+                resolvePropertyTitle: (propertyId) async =>
+                    (await context.read<ListingsRepository>().property(
+                      propertyId,
+                    )).title,
+                connection: context.read<ConnectivityCubit>(),
+              )..open(
+                bookingId: validUuid(state.uri.queryParameters['booking']),
+                propertyId: validUuid(state.uri.queryParameters['property']),
+                type: state.uri.queryParameters['type'],
+              ),
+          child: const NewCaseScreen(),
         );
       },
     ),

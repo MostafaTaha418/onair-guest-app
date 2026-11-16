@@ -422,8 +422,6 @@
     }
   },
   "galleryEmpty": "This property has no photos.",
-  "supportEntryTitle": "Contact OnAir",
-  "supportEntryComingSoon": "Support in the app opens soon.",
   "errorAccountSuspended": "Your account is suspended. Please contact support.",
   "authPhoneAlreadyUsed": "This number is already used by another account.",
   "bookingPolicyOutOfBounds": "The price is not fixed for these dates. Try other dates or contact support.",

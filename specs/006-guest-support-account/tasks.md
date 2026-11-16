@@ -437,14 +437,14 @@ uses.
 
 ### Tests for US2
 
-- [ ] T048 [P] [US2] Extend `test/features/support/data/mock_support_server_test.dart` for create:
+- [X] T048 [P] [US2] Extend `test/features/support/data/mock_support_server_test.dart` for create:
   - the type must be in `guestSelectable`, else `VALIDATION_FAILED`;
   - the description is "trimmed, **10–4000** characters";
   - the same `draftId` twice → the same `case_id`/`code`;
   - attachments must belong to the draft, and > `max_files` → `ATTACHMENT_REJECTED too_many`;
   - a foreign `bookingId` → `NOT_FOUND`;
   - the new case is listed first.
-- [ ] T049 [P] [US2] Write `test/features/support/presentation/new_case_cubit_test.dart`:
+- [X] T049 [P] [US2] Write `test/features/support/presentation/new_case_cubit_test.dart`:
   - the initial state from `?booking=<uuid>` → booking linked + type `booking`;
   - `?property=<uuid>` → property linked + type `other`;
   - an invalid uuid param is ignored;
@@ -453,7 +453,7 @@ uses.
   - a double submit → one call;
   - success → `created(caseId, code)`;
   - `hasContent` drives the discard prompt.
-- [ ] T050 [P] [US2] Write `test/features/support/presentation/new_case_screen_test.dart` (widget):
+- [X] T050 [P] [US2] Write `test/features/support/presentation/new_case_screen_test.dart` (widget):
   - the type chips are required;
   - the counter shows `n/4000` and «اكتب 10 حروف على الأقل»;
   - the linked chip is removable;
@@ -461,12 +461,12 @@ uses.
   - back with content → the discard sheet;
   - offline → send disabled with the banner;
   - success → replaced by `/support/<id>` with the `supportCreated` snackbar.
-- [ ] T051 [P] [US2] Golden `test/features/support/goldens/new_case_golden_test.dart`: prefilled booking, uploading + failed tiles, ready; keyboard open; full matrix.
+- [X] T051 [P] [US2] Golden `test/features/support/goldens/new_case_golden_test.dart`: prefilled booking, uploading + failed tiles, ready; keyboard open; full matrix.
 
 ### Implementation for US2
 
-- [ ] T052 [US2] Implement `createCase` in `lib/features/support/data/mock_support_server.dart` and `supabase_support_repository.dart` (`common_create_support_case` with `p_type, p_body, p_draft_id, p_booking_id, p_property_id, p_attachment_ids`). Makes T048 pass.
-- [ ] T053 [US2] Create `lib/features/support/presentation/new_case/new_case_cubit.dart` (`NewCaseDraft` per data-model §3) and `new_case_screen.dart`:
+- [X] T052 [US2] Implement `createCase` in `lib/features/support/data/mock_support_server.dart` and `supabase_support_repository.dart` (`common_create_support_case` with `p_type, p_body, p_draft_id, p_booking_id, p_property_id, p_attachment_ids`). Makes T048 pass.
+- [X] T053 [US2] Create `lib/features/support/presentation/new_case/new_case_cubit.dart` (`NewCaseDraft` per data-model §3) and `new_case_screen.dart`:
   - type chips; the linked booking/property chip;
   - the «اربط بحجز» bottom sheet using `BookingsRepository` (only the guest's own bookings, code + dates);
   - a multiline `OnAirTextField` with a counter;
@@ -475,8 +475,8 @@ uses.
   - `PopScope` discard confirmation via `OnAirConfirmSheet`.
 
   Makes T049–T051 pass.
-- [ ] T054 [US2] Wire `/support/new` → `NewCaseScreen` in `lib/app/router/app_router.dart` (query `booking`, `property` and `type`, UUID-validated), delete `lib/features/support/presentation/support_entry_placeholder_screen.dart` and `test/features/support/support_entry_placeholder_test.dart`, and confirm the booking details, `contact_support` action and property entry points still build the same URLs (`booking_action_ui.dart`, `booking_details_screen.dart`, `property_screen.dart`).
-- [ ] T055 [US2] Write `integration_test/support_case_mock_test.dart`:
+- [X] T054 [US2] Wire `/support/new` → `NewCaseScreen` in `lib/app/router/app_router.dart` (query `booking`, `property` and `type`, UUID-validated), delete `lib/features/support/presentation/support_entry_placeholder_screen.dart` and `test/features/support/support_entry_placeholder_test.dart`, and confirm the booking details, `contact_support` action and property entry points still build the same URLs (`booking_action_ui.dart`, `booking_details_screen.dart`, `property_screen.dart`).
+- [X] T055 [US2] Write `integration_test/support_case_mock_test.dart`:
   - booking details → «تواصل مع OnAir» → 2 photos (`FakeAttachmentPicker`) → double-tap send → one case;
   - the staff reply arrives (mock auto-reply) → mark resolved via the tools → reply → status «مفتوحة»;
   - mark closed → «افتح حالة جديدة» pre-links the booking.

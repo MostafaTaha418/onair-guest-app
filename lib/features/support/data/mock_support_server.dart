@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
+import 'package:on_air/core/files/upload_limits.dart';
 import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:uuid/uuid.dart';
@@ -25,11 +26,17 @@ final class MockSupportServer implements SupportRepository {
   final DateTime Function() _now;
   final Map<String, _MockCaseRecord> _cases = {};
   final Map<String, ReplyResult> _replyResults = {};
+  final Map<String, CreatedCase> _createResults = {};
+  // Attachment ids bound to a draft, as the real upload flow produces through
+  // Node `/v1/uploads/sign` with `entity_type: support_draft`.
+  final Map<String, Map<String, String>> _draftAttachments = {};
   final StreamController<String> _changes =
       StreamController<String>.broadcast();
   final StreamController<bool> _connected = StreamController<bool>.broadcast();
   String? _openedCaseId;
   int replyCalls = 0;
+  int createCalls = 0;
+  int createdCount = 0;
   int getCalls = 0;
   String? get openedCaseId => _openedCaseId;
 
@@ -145,6 +152,22 @@ final class MockSupportServer implements SupportRepository {
 
   Never _fail(String code) => throw AppFailure(ErrorMapper.fromCode(code));
 
+  Never _failDetailed(String code, Map<String, dynamic> details) =>
+      throw AppFailure(ErrorMapper.fromCode(code, details: details));
+
+  /// Models a completed `support_draft` upload, so [createCase] can verify
+  /// that every attachment id belongs to the draft (U1/U2).
+  void registerDraftAttachment(
+    String draftId,
+    String attachmentId, {
+    String kind = 'image',
+  }) {
+    _draftAttachments.putIfAbsent(
+      draftId,
+      () => <String, String>{},
+    )[attachmentId] = kind;
+  }
+
   @override
   Future<CasePage> listCases({String? cursor}) => _delayed(() {
     final items =
@@ -245,8 +268,71 @@ final class MockSupportServer implements SupportRepository {
   void sendStaffReply(String caseId) => _staffReply(caseId);
 
   @override
-  Future<CreatedCase> createCase(NewCaseDraft draft) async =>
-      _fail('ACTION_NOT_ALLOWED');
+  Future<CreatedCase> createCase(NewCaseDraft draft) => _delayed(() {
+    createCalls++;
+    // Idempotent on the draft id (FR-009): a repeated call returns the first
+    // result and creates nothing.
+    final previous = _createResults[draft.draftId];
+    if (previous != null) return previous;
+    if (!CaseType.guestSelectable.contains(draft.type)) {
+      _fail('VALIDATION_FAILED');
+    }
+    final body = draft.body.trim();
+    if (body.length < 10 || body.length > 4000) _fail('VALIDATION_FAILED');
+    if (draft.bookingId != null && draft.bookingId != linkedBookingId) {
+      _fail('NOT_FOUND');
+    }
+    final bound = _draftAttachments[draft.draftId] ?? const <String, String>{};
+    for (final id in draft.attachmentIds) {
+      if (!bound.containsKey(id)) _fail('NOT_FOUND');
+    }
+    if (draft.attachmentIds.length > const UploadLimits().maxFiles) {
+      _failDetailed('ATTACHMENT_REJECTED', {'reason': 'too_many'});
+    }
+    final now = _now();
+    final id =
+        'c0000000-0000-4000-8000-'
+        '${(100 + createdCount).toString().padLeft(12, '0')}';
+    final code = 'SC-${1043 + createdCount}';
+    _cases[id] = _MockCaseRecord(
+      data: {
+        'id': id,
+        'code': code,
+        'type': draft.type.raw,
+        'status': 'open',
+        'booking_id': draft.bookingId,
+        'booking_code': draft.bookingId == null ? null : 'OA-2042',
+        'property_id': draft.propertyId,
+        'property_title': null,
+        'created_at': now.toIso8601String(),
+        'last_activity_at': now.toIso8601String(),
+        'has_unread_staff_reply': false,
+      },
+      messages: [
+        {
+          'id': 'm-$id',
+          'author': 'guest',
+          'body': body,
+          'created_at': now.toIso8601String(),
+          'attachments': [
+            for (final attachmentId in draft.attachmentIds)
+              {
+                'id': attachmentId,
+                'kind': bound[attachmentId],
+                'size_bytes': 1024,
+              },
+          ],
+        },
+      ],
+    );
+    final result = CreatedCase(caseId: id, code: code);
+    _createResults[draft.draftId] = result;
+    createdCount++;
+    // The demo auto-reply applies to the new case's first guest message too,
+    // so the basic loop is visible end-to-end in mock mode.
+    Timer(const Duration(seconds: 3), () => _staffReply(id));
+    return result;
+  });
 
   @override
   Future<List<Map<String, dynamic>>> listFaq() async => const [];

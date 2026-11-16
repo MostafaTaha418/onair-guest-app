@@ -735,12 +735,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryEmpty => 'مفيش صور للشقة دي.';
 
   @override
-  String get supportEntryTitle => 'تواصل مع OnAir';
-
-  @override
-  String get supportEntryComingSoon => 'خدمة الدعم من التطبيق هتتفتح قريب.';
-
-  @override
   String get errorAccountSuspended => 'الحساب موقوف. تواصل مع خدمة العملاء.';
 
   @override

@@ -1298,18 +1298,6 @@ abstract class AppLocalizations {
   /// **'مفيش صور للشقة دي.'**
   String get galleryEmpty;
 
-  /// No description provided for @supportEntryTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'تواصل مع OnAir'**
-  String get supportEntryTitle;
-
-  /// No description provided for @supportEntryComingSoon.
-  ///
-  /// In ar, this message translates to:
-  /// **'خدمة الدعم من التطبيق هتتفتح قريب.'**
-  String get supportEntryComingSoon;
-
   /// No description provided for @errorAccountSuspended.
   ///
   /// In ar, this message translates to:

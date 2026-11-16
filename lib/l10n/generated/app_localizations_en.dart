@@ -731,12 +731,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryEmpty => 'This property has no photos.';
 
   @override
-  String get supportEntryTitle => 'Contact OnAir';
-
-  @override
-  String get supportEntryComingSoon => 'Support in the app opens soon.';
-
-  @override
   String get errorAccountSuspended =>
       'Your account is suspended. Please contact support.';
 
