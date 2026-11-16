@@ -367,6 +367,16 @@ GoRouter createAppRouter({
       ],
     ),
     GoRoute(
+      path: AppRoutes.support,
+      name: 'support',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.supportFaq,
+      name: 'support-faq',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
       path: AppRoutes.supportNew,
       name: 'support-new',
       builder: (_, state) {
@@ -376,6 +386,26 @@ GoRouter createAppRouter({
           bookingId: AppRoutes.isUuidV4(booking ?? '') ? booking : null,
         );
       },
+    ),
+    GoRoute(
+      path: AppRoutes.accountSecurity,
+      name: 'account-security',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.accountPassword,
+      name: 'account-password',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.accountNotifications,
+      name: 'account-notifications',
+      builder: (_, _) => const NotAvailableScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.accountDelete,
+      name: 'account-delete',
+      builder: (_, _) => const NotAvailableScreen(),
     ),
     GoRoute(
       path: AppRoutes.bookingDetailsPattern,

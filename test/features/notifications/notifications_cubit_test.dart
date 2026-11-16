@@ -169,7 +169,7 @@ void main() {
     final location = await cubit.open(
       (cubit.state as NotificationsReady).items.first,
     );
-    expect(location, '/support/new');
+    expect(location, '/support/$_uuid');
     expect(
       (cubit.state as NotificationsReady).items.first.isUnread,
       isFalse,

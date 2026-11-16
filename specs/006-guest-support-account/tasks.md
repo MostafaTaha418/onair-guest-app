@@ -237,39 +237,39 @@ uses.
 
 ### Tests first (Phase 2)
 
-- [ ] T007 [P] Extend `test/core/errors/error_mapper_test.dart`: each new code (`CASE_CLOSED`, `ATTACHMENT_REJECTED`, `SESSION_REVOKED`, `SESSION_IS_CURRENT`, `PASSWORD_INCORRECT`, `PASSWORD_WEAK`) maps to its `ErrorCode` and l10n key (data-model §9). `details` is kept, and `ATTACHMENT_REJECTED` exposes `details['reason']`.
-- [ ] T008 [P] Extend the `AppConfig` parsing test (`test/core/config/app_config_test.dart`, create if missing):
+- [X] T007 [P] Extend `test/core/errors/error_mapper_test.dart`: each new code (`CASE_CLOSED`, `ATTACHMENT_REJECTED`, `SESSION_REVOKED`, `SESSION_IS_CURRENT`, `PASSWORD_INCORRECT`, `PASSWORD_WEAK`) maps to its `ErrorCode` and l10n key (data-model §9). `details` is kept, and `ATTACHMENT_REJECTED` exposes `details['reason']`.
+- [X] T008 [P] Extend the `AppConfig` parsing test (`test/core/config/app_config_test.dart`, create if missing):
   - parse `support_hours_ar/en`, `guest_terms_url_ar/en`, `privacy_url_ar/en`, `upload_limits` and `english_enabled`;
   - missing `upload_limits` → `image_mb: 10, pdf_mb: 15, max_files: 5`;
   - missing `english_enabled` → `true`;
   - empty `support_phone` → `supportContact.phone == null`.
-- [ ] T009 [P] Write `test/core/files/image_sanitizer_test.dart` with a fake compressor port. It must assert:
+- [X] T009 [P] Write `test/core/files/image_sanitizer_test.dart` with a fake compressor port. It must assert:
   - the request is JPEG, quality 80, `minWidth/minHeight` that keep the longest side ≤ 2048, `keepExif: false`;
   - the output goes to the temp dir;
   - an error → `AttachmentPrepareFailure`;
   - a PDF passes through unchanged.
-- [ ] T010 [P] Write `test/core/files/private_file_uploader_test.dart` (fake signer + fake PUT client, `fake_async`). It must assert:
+- [X] T010 [P] Write `test/core/files/private_file_uploader_test.dart` (fake signer + fake PUT client, `fake_async`). It must assert:
   - preparing → uploading(progress) → uploaded(attachmentId);
   - sign returns `ATTACHMENT_REJECTED too_large` → failed(tooLarge) and no PUT;
   - a PUT network error → failed(network), and retry signs again;
   - cancel aborts the PUT and deletes the temp file;
   - the temp file is deleted after success;
   - the sign request uses `entity_type: support_draft` and `entity_id: <draftId>`.
-- [ ] T011 [P] Write `test/core/files/upload_limits_test.dart`:
+- [X] T011 [P] Write `test/core/files/upload_limits_test.dart`:
   - type allowed: image or pdf only;
   - size checked **after** sanitizing against `image_mb`/`pdf_mb` × 1024²;
   - count check: the 6th file with `max_files: 5` → `tooMany`.
-- [ ] T012 [P] Write `test/app/settings/app_settings_cubit_test.dart` (in-memory `SharedPreferences.setMockInitialValues`):
+- [X] T012 [P] Write `test/app/settings/app_settings_cubit_test.dart` (in-memory `SharedPreferences.setMockInitialValues`):
   - the defaults are `ar` + `system`;
   - a change persists to `localeCode`/`themeMode` and survives a new cubit instance;
   - `en` is refused when `englishEnabled == false`;
   - when signed in, a language change calls the profile-locale sync once, and a failure sets `pendingLocaleSync` that is retried on `start()`.
-- [ ] T013 [P] Extend `test/app/router/routes_test.dart` (or the existing routes test found with `grep -rl requiresAccount test/`):
+- [X] T013 [P] Extend `test/app/router/routes_test.dart` (or the existing routes test found with `grep -rl requiresAccount test/`):
   - `/support`, `/account/security`, `/account/security/password`, `/account/notifications` and `/account/delete` require an account;
   - `/support/faq` does **not**;
   - `/support/<uuid v4>` requires an account and is linkable;
   - `/support/new` and `/support/faq` never match `_supportCase`.
-- [ ] T014 [P] Extend `test/app/router/notification_router_test.dart`:
+- [X] T014 [P] Extend `test/app/router/notification_router_test.dart`:
   - `support.staff_replied` and `support.case_resolved` with a UUID `entityId` → `/support/<id>`;
   - a non-UUID `entityId` → `/support`;
   - `account.password_changed` → `/account/security`;
@@ -277,8 +277,8 @@ uses.
 
 ### Implementation (Phase 2)
 
-- [ ] T015 Add `caseClosed`, `attachmentRejected`, `sessionRevoked`, `sessionIsCurrent`, `passwordIncorrect` and `passwordWeak` to `ErrorCode` in `lib/core/errors/api_error.dart`, and map them in `lib/core/errors/error_mapper.dart` (keys from data-model §9: `supportCaseClosed`, `supportAttachmentRejected*` by reason, `errorUnauthenticated`, `accountSessionIsCurrent`, `accountPasswordIncorrect`, `authPasswordRule`). Makes T007 pass.
-- [ ] T016 Extend `AppConfig` in `lib/core/config/app_config.dart`:
+- [X] T015 Add `caseClosed`, `attachmentRejected`, `sessionRevoked`, `sessionIsCurrent`, `passwordIncorrect` and `passwordWeak` to `ErrorCode` in `lib/core/errors/api_error.dart`, and map them in `lib/core/errors/error_mapper.dart` (keys from data-model §9: `supportCaseClosed`, `supportAttachmentRejected*` by reason, `errorUnauthenticated`, `accountSessionIsCurrent`, `accountPasswordIncorrect`, `authPasswordRule`). Makes T007 pass.
+- [X] T016 Extend `AppConfig` in `lib/core/config/app_config.dart`:
   - `SupportContact supportContact` (phone, `hoursAr`, `hoursEn`);
   - `LegalLinks legal` (`termsUrl`/`privacyUrl` per locale);
   - `UploadLimits uploadLimits`;
@@ -292,25 +292,25 @@ uses.
   - English enabled.
 
   Makes T008 pass.
-- [ ] T017 [P] Create `lib/core/files/upload_limits.dart`: `UploadLimits`, `AttachmentKind { image, pdf }`, and `AttachmentCheck validate({kind, sizeBytes, currentCount})` returning `ok | tooLarge(maxMb) | typeNotAllowed | tooMany(max)`. Makes T011 pass.
-- [ ] T018 [P] Create `lib/core/files/attachment_picker.dart`: the `AttachmentPicker` interface with `pickCamera()`, `pickGallery({int max})` and `pickPdf()`, each returning `List<PickedFile{path, name, sizeBytes, mime}>` (`[]` on cancel). Implement `PluginAttachmentPicker` with `image_picker` (`ImageSource.camera`/`pickMultiImage(limit:)`) and `file_picker` (`FileType.custom`, `allowedExtensions: ['pdf']`, `withData: false`). Add `FakeAttachmentPicker` in `test/helpers/`.
-- [ ] T019 [P] Create `lib/core/files/image_sanitizer.dart`: `ImageSanitizer.prepare(PickedFile) → PreparedFile{tempPath, sizeBytes, mime:'image/jpeg'|'application/pdf', width?, height?}` using `FlutterImageCompress.compressAndGetFile` with the values from the Reference table. PDFs are copied as-is (a size check only). Put the plugin call behind a small `CompressorPort` so tests use a fake. Makes T009 pass.
-- [ ] T020 Create `lib/core/files/private_file_uploader.dart`:
+- [X] T017 [P] Create `lib/core/files/upload_limits.dart`: `UploadLimits`, `AttachmentKind { image, pdf }`, and `AttachmentCheck validate({kind, sizeBytes, currentCount})` returning `ok | tooLarge(maxMb) | typeNotAllowed | tooMany(max)`. Makes T011 pass.
+- [X] T018 [P] Create `lib/core/files/attachment_picker.dart`: the `AttachmentPicker` interface with `pickCamera()`, `pickGallery({int max})` and `pickPdf()`, each returning `List<PickedFile{path, name, sizeBytes, mime}>` (`[]` on cancel). Implement `PluginAttachmentPicker` with `image_picker` (`ImageSource.camera`/`pickMultiImage(limit:)`) and `file_picker` (`FileType.custom`, `allowedExtensions: ['pdf']`, `withData: false`). Add `FakeAttachmentPicker` in `test/helpers/`.
+- [X] T019 [P] Create `lib/core/files/image_sanitizer.dart`: `ImageSanitizer.prepare(PickedFile) → PreparedFile{tempPath, sizeBytes, mime:'image/jpeg'|'application/pdf', width?, height?}` using `FlutterImageCompress.compressAndGetFile` with the values from the Reference table. PDFs are copied as-is (a size check only). Put the plugin call behind a small `CompressorPort` so tests use a fake. Makes T009 pass.
+- [X] T020 Create `lib/core/files/private_file_uploader.dart`:
   - `PrivateFileUploader.upload(PreparedFile, {required String draftId, CancelToken?}) → Stream<UploadProgress>`;
   - steps: generated `signUpload` (`support_draft`, draftId, mime, size), then a raw `Dio().put(uploadUrl, data: file stream, headers: {Content-Type: mime, Content-Length: size})` with **no auth header**, emitting progress, then `uploaded(attachmentId)`;
   - map server errors through `ErrorMapper`;
   - always delete `tempPath` at the end (success, failure after the final retry is abandoned, or cancel).
 
   Makes T010 pass.
-- [ ] T021 Move `lib/features/stay/presentation/claims/evidence_url_cache.dart` to `lib/core/files/file_url_cache.dart` (rename the class to `FileUrlCache`, memory only, refresh < 30 s to expiry or after 403), update its G3 imports and tests (`grep -rl EvidenceUrlCache lib test`), and keep the G3 behaviour unchanged.
-- [ ] T022 Create `lib/app/settings/app_settings_store.dart` (read/write `localeCode`/`themeMode`) and `lib/app/settings/app_settings_cubit.dart` (`AppSettings{locale, themeMode, englishEnabled, pendingLocaleSync}`; `setLocale`, `setThemeMode`; an injected `Future<void> Function(String locale)? syncProfileLocale`). Then:
+- [X] T021 Move `lib/features/stay/presentation/claims/evidence_url_cache.dart` to `lib/core/files/file_url_cache.dart` (rename the class to `FileUrlCache`, memory only, refresh < 30 s to expiry or after 403), update its G3 imports and tests (`grep -rl EvidenceUrlCache lib test`), and keep the G3 behaviour unchanged.
+- [X] T022 Create `lib/app/settings/app_settings_store.dart` (read/write `localeCode`/`themeMode`) and `lib/app/settings/app_settings_cubit.dart` (`AppSettings{locale, themeMode, englishEnabled, pendingLocaleSync}`; `setLocale`, `setThemeMode`; an injected `Future<void> Function(String locale)? syncProfileLocale`). Then:
   - provide the cubit above `MaterialApp.router` in `lib/app/app.dart`;
   - replace the hard-coded `locale: const Locale('ar')` and `themeMode: ThemeMode.system` with the cubit state;
   - wire it in `lib/bootstrap.dart`.
 
   Makes T012 pass.
-- [ ] T023 [P] Create `lib/design_system/components/settings_row.dart` (`SettingsRow` + `SettingsGroup` + `SettingsIconTone {blue, teal, orange, neutral, danger}`) per contracts/ui-screens.md §1: 56 dp minimum height, a 40 dp tinted icon tile with radius 12, title/subtitle/trailing slots, a mirrored chevron, and `enabled`/`locked` variants with merged Semantics. Add `test/design_system/goldens/settings_row_golden_test.dart` (all tones, value/chevron/switch trailing, disabled, locked) in Light/Dark, RTL/LTR, 1.0/1.3.
-- [ ] T024 [P] Create `lib/design_system/components/message_bubble.dart`:
+- [X] T023 [P] Create `lib/design_system/components/settings_row.dart` (`SettingsRow` + `SettingsGroup` + `SettingsIconTone {blue, teal, orange, neutral, danger}`) per contracts/ui-screens.md §1: 56 dp minimum height, a 40 dp tinted icon tile with radius 12, title/subtitle/trailing slots, a mirrored chevron, and `enabled`/`locked` variants with merged Semantics. Add `test/design_system/goldens/settings_row_golden_test.dart` (all tones, value/chevron/switch trailing, disabled, locked) in Light/Dark, RTL/LTR, 1.0/1.3.
+- [X] T024 [P] Create `lib/design_system/components/message_bubble.dart`:
   - `MessageBubble(author, body, time, attachments, sendState)`;
   - guest bubbles are end-aligned in the primary container, OnAir bubbles start-aligned on surface with an «OnAir» label;
   - the time is in Cairo time via the shared formatter;
@@ -318,21 +318,21 @@ uses.
   - Semantics read «{author}، {time}: {body}».
 
   Golden test `test/design_system/goldens/message_bubble_golden_test.dart`.
-- [ ] T025 [P] Create `lib/design_system/components/attachment_tile.dart`:
+- [X] T025 [P] Create `lib/design_system/components/attachment_tile.dart`:
   - `AttachmentTile` with the states preparing / uploading(progress) / failed(retry) / ready, in image-thumb or PDF variants;
   - a remove button with Semantics `supportAttachRemove`;
   - 72 dp in the composer, adaptive in the bubble grid;
   - the image builder is injected, so the screen supplies `FileUrlCache` images.
 
   Golden test `test/design_system/goldens/attachment_tile_golden_test.dart`.
-- [ ] T026 [P] Add `CaseStatusChip` to `lib/design_system/components/status_chip.dart`, with text + icon per status and tokens from contracts/ui-screens.md §1 (never color only). Extend the existing status chip golden test.
-- [ ] T027 Add the route constants from the Reference table to `lib/app/router/routes.dart`:
+- [X] T026 [P] Add `CaseStatusChip` to `lib/design_system/components/status_chip.dart`, with text + icon per status and tokens from contracts/ui-screens.md §1 (never color only). Extend the existing status chip golden test.
+- [X] T027 Add the route constants from the Reference table to `lib/app/router/routes.dart`:
   - add the new paths to `requiresAccount`, and the static paths to the allowed set;
   - keep `/support/faq` public;
   - declare `/support/faq` and `/support/new` before `/support/:caseId` in `lib/app/router/app_router.dart` (temporarily building `NotAvailableScreen` for the new paths until each story wires its screen).
 
   Makes T013 pass.
-- [ ] T028 Update `lib/app/router/notification_router.dart`: `support.*` → `AppRoutes.supportCase(entityId)` when it is a UUID v4, else `AppRoutes.support`; `account.password_changed` → `accountSecurity`; other `account.*` → `account`. Add the `AppRoutes.supportCase(String id)` builder. Makes T014 pass.
+- [X] T028 Update `lib/app/router/notification_router.dart`: `support.*` → `AppRoutes.supportCase(entityId)` when it is a UUID v4, else `AppRoutes.support`; `account.password_changed` → `accountSecurity`; other `account.*` → `account`. Add the `AppRoutes.supportCase(String id)` builder. Makes T014 pass.
 
 **Checkpoint**: all Phase 2 tests pass, the app runs unchanged in mock mode, and the components' goldens are approved.
 

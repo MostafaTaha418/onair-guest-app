@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
+import 'package:on_air/app/settings/app_settings_store.dart';
 import 'package:on_air/core/api/generated/export.dart';
 import 'package:on_air/core/auth/secure_session_storage.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
@@ -92,6 +93,7 @@ Future<void> bootstrap(String flavor) async {
       ? SupabaseFavoritesRepository(Supabase.instance.client)
       : MemoryFavoritesRepository();
   final configSource = backend.config;
+  const appSettingsStore = AppSettingsStore();
   final authRepository = backend.auth;
   final pushTokens = backend.pushTokens;
   final devices = backend.devices;
@@ -146,6 +148,7 @@ Future<void> bootstrap(String flavor) async {
           value: backend.phoneVerification,
         ),
         RepositoryProvider<AppConfigSource>.value(value: configSource),
+        RepositoryProvider<AppSettingsStore>.value(value: appSettingsStore),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<PushTokenSource>.value(value: pushTokens),
         RepositoryProvider<DeviceTokenRepository>.value(value: devices),
@@ -196,6 +199,7 @@ Future<void> bootstrap(String flavor) async {
         ),
       ],
       child: OnAirApp(
+        appSettingsStore: appSettingsStore,
         favoritesRepository: favorites,
         signOutCoordinator: signOutCoordinator,
         sessionEventSource: sessionEventSource,
