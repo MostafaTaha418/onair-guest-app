@@ -14,8 +14,12 @@ import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/account/presentation/account_suspended_screen.dart';
+import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
+import 'package:on_air/features/account/presentation/delete/delete_account_cubit.dart';
+import 'package:on_air/features/account/presentation/delete/delete_account_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -449,7 +453,13 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.accountDelete,
       name: 'account-delete',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, _) => BlocProvider<DeleteAccountCubit>(
+        create: (context) => DeleteAccountCubit(
+          repository: context.read<AccountRepository>(),
+          auth: context.read<AuthCubit>(),
+        ),
+        child: const DeleteAccountScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.bookingDetailsPattern,
@@ -670,7 +680,7 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.home,
               name: 'home',
-              builder: (context, _) => BlocProvider<HomeCubit>(
+              builder: (context, state) => BlocProvider<HomeCubit>(
                 create: (context) {
                   final cubit = HomeCubit(
                     repo: context.read<ListingsRepository>(),
@@ -682,7 +692,11 @@ GoRouter createAppRouter({
                   unawaited(cubit.start());
                   return cubit;
                 },
-                child: const HomeScreen(),
+                // After a deletion the navigation lands here with a one-shot
+                // extra; the screen renders «حسابك اتحذف» once (T070).
+                child: HomeScreen(
+                  deletedNotice: state.extra is AccountDeletedNotice,
+                ),
               ),
             ),
           ],

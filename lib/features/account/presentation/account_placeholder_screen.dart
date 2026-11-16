@@ -119,6 +119,26 @@ final class _SignedInBody extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push(AppRoutes.support),
         ),
+        const SizedBox(height: Dimens.space16),
+        // The store-required deletion entry (US4, T071): temporary until
+        // US5 replaces this screen with the full settings surface.
+        ListTile(
+          key: const ValueKey('account-delete-row'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Dimens.radiusCard),
+            side: BorderSide(color: colors['destructive']),
+          ),
+          leading: Icon(
+            Icons.delete_forever_outlined,
+            color: colors['destructive'],
+          ),
+          title: Text(
+            l10n.deleteTitle,
+            style: TextStyle(color: colors['destructive']),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.accountDelete),
+        ),
         const SizedBox(height: Dimens.space24),
         const _SignOutButton(),
       ],

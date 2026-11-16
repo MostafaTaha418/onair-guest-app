@@ -122,6 +122,10 @@ abstract final class ErrorMapper {
       'accountPasswordIncorrect',
     ),
     'PASSWORD_WEAK': (ErrorCode.passwordWeak, 'authPasswordRule'),
+    'ACCOUNT_HAS_ACTIVE_BOOKINGS': (
+      ErrorCode.accountHasActiveBookings,
+      'accountHasActiveBookings',
+    ),
     'INTERNAL': (ErrorCode.internal, 'errorUnexpected'),
   };
 

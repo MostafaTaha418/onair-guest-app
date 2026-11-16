@@ -44,6 +44,17 @@ final class MockAuthRepository implements AuthRepository {
       ..phoneVerified = true
       ..fullName = 'Legacy Guest';
     _usersById[legacy.id] = legacy;
+    // The G4 deletion fixture (T064): the account whose active booking
+    // makes `common_request_account_deletion` refuse.
+    final blocked = _MockUser('mock-guest-blocked')
+      ..email = 'blocked@onair.test'
+      ..emailVerified = true
+      ..password = legacyPassword
+      ..status = AccountStatus.active
+      ..phone = '+201012340001'
+      ..phoneVerified = true
+      ..fullName = 'Blocked Guest';
+    _usersById[blocked.id] = blocked;
   }
 
   final DateTime Function() _clock;

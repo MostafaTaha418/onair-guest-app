@@ -530,19 +530,19 @@ uses.
 
 ### Tests for US4
 
-- [ ] T063 [P] [US4] Write `test/features/account/domain/deletion_test.dart`: `DeletionBlocker.fromDetails` parses `details.blockers` (`kind booking|refund|damage_claim`, `id`, `code`); an unknown kind is kept as `other` and still listed; empty or missing blockers → an empty list.
-- [ ] T064 [P] [US4] Write `test/features/account/data/mock_account_server_test.dart` (deletion part):
+- [X] T063 [P] [US4] Write `test/features/account/domain/deletion_test.dart`: `DeletionBlocker.fromDetails` parses `details.blockers` (`kind booking|refund|damage_claim`, `id`, `code`); an unknown kind is kept as `other` and still listed; empty or missing blockers → an empty list.
+- [X] T064 [P] [US4] Write `test/features/account/data/mock_account_server_test.dart` (deletion part):
   - `blocked@onair.test` → `ACCOUNT_HAS_ACTIVE_BOOKINGS` with one booking blocker;
   - otherwise → `challengeId` + `maskedEmail`;
   - confirm with a wrong code → `OTP_INVALID`;
   - with `123456` → deleted;
   - a blocker added between request and confirm → `ACCOUNT_HAS_ACTIVE_BOOKINGS` at confirm.
-- [ ] T065 [P] [US4] Write `test/features/account/presentation/delete_account_cubit_test.dart`:
+- [X] T065 [P] [US4] Write `test/features/account/presentation/delete_account_cubit_test.dart`:
   - explain → checking → blocked | codeStep(challengeId, maskedEmail, SendWindow from `/v1/otp/send`);
   - double tap on «احذف حسابي» → one request and one send;
   - `OTP_INVALID`/`OTP_EXPIRED`/`OTP_ATTEMPTS_EXCEEDED`/`RATE_LIMITED` map to the existing email-code messages;
   - confirm success → calls `SignOutService.signOut()` once (even if server sign-out throws) → `deleted`.
-- [ ] T066 [P] [US4] Write `test/features/account/presentation/delete_account_screen_test.dart` (widget):
+- [X] T066 [P] [US4] Write `test/features/account/presentation/delete_account_screen_test.dart` (widget):
   - the 3 bullets;
   - «احذف حسابي» disabled until «فاهم إن الحذف نهائي» is checked;
   - the blocked view lists blockers that tap to `/bookings/<id>`, plus «كلّم الدعم» → `/support`;
@@ -550,23 +550,23 @@ uses.
   - offline disables the buttons.
 
   Golden `test/features/account/goldens/delete_account_golden_test.dart` (explain, blocked, code step; full matrix).
-- [ ] T067 [P] [US4] Write `integration_test/delete_account_mock_test.dart`: the blocked account → the blocked view; a normal account → code → visitor home with the `deleteDone` snackbar shown once (not again after a restart); `/bookings` now asks for sign-in.
+- [X] T067 [P] [US4] Write `integration_test/delete_account_mock_test.dart`: the blocked account → the blocked view; a normal account → code → visitor home with the `deleteDone` snackbar shown once (not again after a restart); `/bookings` now asks for sign-in.
 
 ### Implementation for US4
 
-- [ ] T068 [P] [US4] Create `lib/features/account/domain/account_repository.dart`, the interface that grows in later stories: `requestDeletion() → DeletionRequest{challengeId, maskedEmail}`, `sendDeletionCode(challengeId) → SendWindow`, `confirmDeletion(challengeId, code)`. Also create `lib/features/account/domain/deletion.dart` (`DeletionBlocker`, `DeletionBlockedException(blockers)`). Makes T063 pass.
-- [ ] T069 [US4] Create `lib/features/account/data/mock_account_server.dart` (deletion rules from T064) and `lib/features/account/data/supabase_account_repository.dart`:
+- [X] T068 [P] [US4] Create `lib/features/account/domain/account_repository.dart`, the interface that grows in later stories: `requestDeletion() → DeletionRequest{challengeId, maskedEmail}`, `sendDeletionCode(challengeId) → SendWindow`, `confirmDeletion(challengeId, code)`. Also create `lib/features/account/domain/deletion.dart` (`DeletionBlocker`, `DeletionBlockedException(blockers)`). Makes T063 pass.
+- [X] T069 [US4] Create `lib/features/account/data/mock_account_server.dart` (deletion rules from T064) and `lib/features/account/data/supabase_account_repository.dart`:
   - `common_request_account_deletion()`;
   - Node `/v1/otp/send` through the generated client, the same way the cash code is sent in `lib/features/stay/data/supabase_stay_repository.dart` `sendCashCode`;
   - `common_confirm_account_deletion(p_challenge_id, p_code)`.
 
   Wire both in `lib/bootstrap.dart`. Makes T064 pass.
-- [ ] T070 [US4] Create `lib/features/account/presentation/delete/delete_account_cubit.dart` and `delete_account_screen.dart` per contracts/ui-screens.md «Delete account»:
+- [X] T070 [US4] Create `lib/features/account/presentation/delete/delete_account_cubit.dart` and `delete_account_screen.dart` per contracts/ui-screens.md «Delete account»:
   - reuse `OnAirOtpField`, `CountdownText` and the `SendWindow` rendering from S005/G3;
   - after success: `context.go(AppRoutes.home, extra: const AccountDeletedNotice())`, and show the snackbar once from the home screen when that extra is present.
 
   Makes T065 and T066 pass.
-- [ ] T071 [US4] Wire `/account/delete` → `DeleteAccountScreen` in `lib/app/router/app_router.dart`. Add a temporary «حذف الحساب» Danger row to the current account screen (US5 replaces it). Make sure `SignOutService` tolerates a failed server sign-out after deletion and still clears the session, the device token record, caches and personal Cubits (`lib/features/account_gate/application/sign_out_service.dart`); add a unit test for that path.
+- [X] T071 [US4] Wire `/account/delete` → `DeleteAccountScreen` in `lib/app/router/app_router.dart`. Add a temporary «حذف الحساب» Danger row to the current account screen (US5 replaces it). Make sure `SignOutService` tolerates a failed server sign-out after deletion and still clears the session, the device token record, caches and personal Cubits (`lib/features/account_gate/application/sign_out_service.dart`); add a unit test for that path.
 
 **Checkpoint**: Store-required deletion works in mock mode. MVP (US1–US4) is complete.
 

@@ -43,6 +43,7 @@ enum ErrorCode {
   sessionIsCurrent,
   passwordIncorrect,
   passwordWeak,
+  accountHasActiveBookings,
   internal,
   network,
   cancelled,

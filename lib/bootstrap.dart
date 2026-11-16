@@ -31,6 +31,9 @@ import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/storage/secure_store.dart';
 import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/features/account/data/mock_account_server.dart';
+import 'package:on_air/features/account/data/supabase_account_repository.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
@@ -216,6 +219,13 @@ Future<void> bootstrap(String flavor) async {
         ),
         RepositoryProvider<FileUrlCache>.value(value: fileUrls),
         RepositoryProvider<FaqCache>.value(value: faqCache),
+        RepositoryProvider<AccountRepository>.value(value: backend.account),
+        RepositoryProvider<MockAccountServer?>.value(
+          value: backend.mockAccount,
+        ),
+        RepositoryProvider<SignOutCoordinator>.value(
+          value: signOutCoordinator,
+        ),
         RepositoryProvider<MockStayServer?>.value(value: backend.mockStay),
         RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
         RepositoryProvider<NotificationPermission>.value(
@@ -267,6 +277,8 @@ typedef _Backend = ({
   MockStayServer? mockStay,
   SupportRepository support,
   MockSupportServer? mockSupport,
+  AccountRepository account,
+  MockAccountServer? mockAccount,
   PrivateFileUploader uploader,
   PushMessageSource pushes,
   NotificationPermission permission,
@@ -342,6 +354,8 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
       live: SupabaseCaseLiveChannel(client),
     ),
     mockSupport: null,
+    account: SupabaseAccountRepository(rpc: rpc, node: FallbackClient(dio)),
+    mockAccount: null,
     uploader: PrivateFileUploader(
       signer: GeneratedUploadSigner(FallbackClient(dio)),
       putClient: DioRawPutClient(),
@@ -367,6 +381,7 @@ _Backend _mockBackend() {
     server: server,
   );
   final auth = MockAuthRepository();
+  final accountServer = MockAccountServer(auth: auth);
   // The same stable mock id feeds the OTP send-limit device key (US5).
   const deviceIdentity = MemoryDeviceIdentity();
   return (
@@ -391,6 +406,8 @@ _Backend _mockBackend() {
     mockStay: stay,
     support: support,
     mockSupport: support,
+    account: accountServer,
+    mockAccount: accountServer,
     uploader: const PrivateFileUploader(
       signer: _MockUploadSigner(),
       putClient: _MockRawPutClient(),

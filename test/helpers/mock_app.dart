@@ -15,6 +15,8 @@ import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
+import 'package:on_air/features/account/data/mock_account_server.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/phone_verification/data/mock_phone_verification_repository.dart';
@@ -87,6 +89,7 @@ Future<MockAuthRepository> bootMockApp(
   addTearDown(bookingBackend.dispose);
   final supportServer = support ?? MockSupportServer();
   final supportPicker = attachmentPicker ?? const EmptyAttachmentPicker();
+  final accountServer = MockAccountServer(auth: auth);
   final faqCache = FaqCache(
     JsonFileCache(
       directory: directory,
@@ -145,6 +148,8 @@ Future<MockAuthRepository> bootMockApp(
           value: FileUrlCache(bookingBackend.stay),
         ),
         RepositoryProvider<FaqCache>.value(value: faqCache),
+        RepositoryProvider<AccountRepository>.value(value: accountServer),
+        RepositoryProvider<MockAccountServer?>.value(value: accountServer),
       ],
       child: OnAirApp(connectivityCubit: connectivityCubit),
     ),
