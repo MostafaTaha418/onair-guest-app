@@ -253,6 +253,9 @@ Future<void> bootstrap(String flavor) async {
           arrivalInstructions.clearAll,
           actionAttempts.clearAll,
           backend.signals.stop,
+          // Private signed URLs live in memory only (T099); sign-out
+          // drops them with the rest of the personal data.
+          () async => fileUrls.clear(),
         ]),
         deviceRegistrationService: deviceRegistrationService,
         uriLinkSource: uriLinkSource,

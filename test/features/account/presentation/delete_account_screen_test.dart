@@ -37,11 +37,16 @@ class _FakeAccountRepository extends Fake implements AccountRepository {
   }
 
   @override
-  Future<SendWindow> sendDeletionCode(String challengeId) async => SendWindow(
-    serverTime: DateTime.utc(2026, 11, 17, 12),
-    receivedAt: DateTime.utc(2026, 11, 17, 12),
-    nextSendAt: DateTime.utc(2026, 11, 17, 12, 1),
-  );
+  Future<SendWindow> sendDeletionCode(String challengeId) async {
+    // Relative to the real clock: the screen computes the countdown from
+    // `DateTime.now()`, so a fixed date goes stale at wall-clock noon.
+    final now = DateTime.now().toUtc();
+    return SendWindow(
+      serverTime: now,
+      receivedAt: now,
+      nextSendAt: now.add(const Duration(minutes: 1)),
+    );
+  }
 
   @override
   Future<void> confirmDeletion(String challengeId, String code) async {
