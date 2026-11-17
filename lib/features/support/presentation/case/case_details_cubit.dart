@@ -89,6 +89,7 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
   StreamSubscription<bool>? _connectionSubscription;
   Timer? _pollTimer;
   bool _refreshing = false;
+  bool _refreshQueued = false;
 
   Future<void> load() async {
     _changeSubscription ??= repository
@@ -102,7 +103,14 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
   }
 
   Future<void> refresh({bool showLoading = false}) async {
-    if (_refreshing || isClosed) return;
+    if (_refreshing) {
+      // A live INSERT landing while a read is in flight must not be
+      // dropped: run one more pass once this one settles (the read may
+      // have raced the insert on the server).
+      if (!isClosed) _refreshQueued = true;
+      return;
+    }
+    if (isClosed) return;
     _refreshing = true;
     final previous = state;
     if (showLoading) emit(const CaseDetailsLoading());
@@ -124,6 +132,10 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
       }
     } finally {
       _refreshing = false;
+      if (_refreshQueued && !isClosed) {
+        _refreshQueued = false;
+        unawaited(refresh());
+      }
     }
   }
 
@@ -145,8 +157,10 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
     final current = state;
     if (current is! CaseDetailsReady || !current.canSend) return;
     final trimmed = current.body.trim();
+    final draftId = current.draftId;
+    final localId = 'local-$draftId';
     final optimistic = CaseMessage(
-      id: 'local-${current.draftId}',
+      id: localId,
       author: MessageAuthor.guest,
       body: trimmed,
       createdAt: DateTime.now().toUtc(),
@@ -159,7 +173,7 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
           ),
       ],
       sendState: MessageSendState.sending,
-      draftId: current.draftId,
+      draftId: draftId,
     );
     emit(
       current.copyWith(
@@ -173,7 +187,7 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
       final result = await repository.reply(
         caseId,
         ReplyDraft(
-          draftId: current.draftId,
+          draftId: draftId,
           body: trimmed,
           attachmentIds: [
             for (final attachment in current.attachments)
@@ -182,18 +196,37 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
         ),
       );
       if (isClosed) return;
-      final sent = optimistic.copyWith(
-        id: result.messageId,
-        sendState: MessageSendState.sent,
-      );
+      // The conversation may have moved while the reply was in flight
+      // (a refresh landed): rebuild on the state on screen now.
+      final fresh = state;
+      if (fresh is! CaseDetailsReady) return;
+      final sent = _promoteSent(fresh, localId, draftId, result);
       emit(
-        current.copyWith(
-          details: current.details.copyWith(
-            supportCase: current.details.supportCase.copyWith(
+        fresh.copyWith(
+          details: fresh.details.copyWith(
+            supportCase: fresh.details.supportCase.copyWith(
               status: result.caseStatus,
-              lastActivityAt: sent.createdAt,
+              lastActivityAt:
+                  sent?.createdAt ?? fresh.details.supportCase.lastActivityAt,
             ),
-            messages: [...current.details.messages, sent],
+            messages:
+                sent == null
+                      ? _withoutOptimistic(
+                          fresh,
+                          localId,
+                          draftId,
+                          result.messageId,
+                        )
+                      : [
+                          ..._withoutOptimistic(
+                            fresh,
+                            localId,
+                            draftId,
+                            result.messageId,
+                          ),
+                          sent,
+                        ]
+                  ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
           ),
           body: '',
           attachments: const [],
@@ -205,22 +238,66 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
       if (isClosed) return;
       if (failure.error.code == ErrorCode.notFound) {
         emit(const CaseDetailsNotFound());
-      } else if (failure.error.code == ErrorCode.caseClosed) {
+        return;
+      }
+      // Build on the current state, not the copy taken before the await:
+      // a refresh during the failed reply must survive.
+      final fresh = state;
+      if (fresh is CaseDetailsReady) {
         emit(
-          current.copyWith(
-            details: current.details.copyWith(
-              supportCase: current.details.supportCase.copyWith(
-                status: CaseStatus.closed,
-              ),
+          fresh.copyWith(
+            details: fresh.details.copyWith(
+              supportCase: failure.error.code == ErrorCode.caseClosed
+                  ? fresh.details.supportCase.copyWith(
+                      status: CaseStatus.closed,
+                    )
+                  : null,
+              messages: _withoutOptimistic(fresh, localId, draftId, null),
             ),
+            // The typed text, the picked attachments and the draft id all
+            // stay, so the retry is idempotent per draft id.
             submitting: false,
           ),
         );
-      } else {
-        emit(current.copyWith(submitting: false));
       }
     }
   }
+
+  /// The optimistic row of [draftId], promoted to its server id — or the
+  /// server's own echo when a refresh already delivered it.
+  CaseMessage? _promoteSent(
+    CaseDetailsReady fresh,
+    String localId,
+    String draftId,
+    ReplyResult result,
+  ) {
+    final local = fresh.details.messages
+        .where((message) => message.id == localId)
+        .firstOrNull;
+    final echoed = fresh.details.messages
+        .where((message) => message.draftId == draftId && message.id != localId)
+        .firstOrNull;
+    return (local ?? echoed)?.copyWith(
+      id: result.messageId,
+      sendState: MessageSendState.sent,
+    );
+  }
+
+  /// Every copy of the optimistic row: the local one, a server echo by
+  /// message id, and anything sharing the draft id.
+  List<CaseMessage> _withoutOptimistic(
+    CaseDetailsReady fresh,
+    String localId,
+    String draftId,
+    String? messageId,
+  ) => fresh.details.messages
+      .where(
+        (message) =>
+            message.id != localId &&
+            message.draftId != draftId &&
+            message.id != messageId,
+      )
+      .toList();
 
   Future<void> loadOlder() async {
     final current = state;
@@ -236,11 +313,18 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
     try {
       final older = await repository.getCase(caseId, beforeCursor: cursor);
       if (isClosed) return;
-      final messages = [...older.messages, ...current.details.messages]
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      // A refresh may have landed while the older page was in flight:
+      // merge with the state on screen now.
+      final fresh = state;
+      if (fresh is! CaseDetailsReady) return;
+      final seen = <String>{};
+      final messages = [
+        for (final message in [...older.messages, ...fresh.details.messages])
+          if (seen.add(message.id)) message,
+      ]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
       emit(
-        current.copyWith(
-          details: current.details.copyWith(
+        fresh.copyWith(
+          details: fresh.details.copyWith(
             messages: messages,
             nextOlderCursor: older.nextOlderCursor,
           ),
@@ -248,7 +332,10 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
         ),
       );
     } on Object {
-      if (!isClosed) emit(current.copyWith(loadingOlder: false));
+      final fresh = state;
+      if (!isClosed && fresh is CaseDetailsReady) {
+        emit(fresh.copyWith(loadingOlder: false));
+      }
     }
   }
 
@@ -256,18 +343,29 @@ final class CaseDetailsCubit extends Cubit<CaseDetailsState> {
     CaseDetails incoming,
     CaseDetailsReady current,
   ) {
+    final serverIds = incoming.messages.map((message) => message.id).toSet();
     final serverDrafts = incoming.messages
         .map((message) => message.draftId)
         .whereType<String>()
         .toSet();
-    final pending = current.details.messages.where(
+    // The server page wins for its own rows and for optimistic rows it
+    // echoed back by draft id. Everything else already in memory —
+    // in-flight optimistic rows and older pages loaded above the newest
+    // one — survives the refresh.
+    final kept = current.details.messages.where(
       (message) =>
-          message.sendState != MessageSendState.sent &&
-          !serverDrafts.contains(message.draftId),
+          !serverIds.contains(message.id) &&
+          (message.sendState == MessageSendState.sent ||
+              !serverDrafts.contains(message.draftId)),
     );
-    final messages = [...incoming.messages, ...pending]
+    final messages = [...kept, ...incoming.messages]
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    return incoming.copyWith(messages: messages);
+    // The oldest loaded page is still on screen: keep its cursor, or the
+    // scroll-up pagination would jump back to the newest page.
+    return incoming.copyWith(
+      messages: messages,
+      nextOlderCursor: current.details.nextOlderCursor,
+    );
   }
 
   void _setLiveConnected(bool connected) {

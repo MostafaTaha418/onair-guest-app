@@ -29,6 +29,12 @@ final class FakeSupportRepository implements SupportRepository {
   int closeLiveCalls = 0;
   String? liveCaseId;
 
+  // Per-call gates: a non-null completer holds the matching call in
+  // flight (consumed once) so tests can land other events meanwhile.
+  Completer<void>? holdGetCase;
+  Completer<void>? holdOlderGetCase;
+  Completer<void>? holdReply;
+
   @override
   Future<CasePage> listCases({String? cursor}) async {
     listCursors.add(cursor);
@@ -43,6 +49,15 @@ final class FakeSupportRepository implements SupportRepository {
   Future<CaseDetails> getCase(String id, {String? beforeCursor}) async {
     getCalls++;
     beforeCursors.add(beforeCursor);
+    final gate = beforeCursor == null ? holdGetCase : holdOlderGetCase;
+    if (gate != null) {
+      if (beforeCursor == null) {
+        holdGetCase = null;
+      } else {
+        holdOlderGetCase = null;
+      }
+      await gate.future;
+    }
     if (nextError case final error?) {
       nextError = null;
       throw error;
@@ -53,6 +68,11 @@ final class FakeSupportRepository implements SupportRepository {
   @override
   Future<ReplyResult> reply(String caseId, ReplyDraft draft) async {
     replies.add(draft);
+    final gate = holdReply;
+    if (gate != null) {
+      holdReply = null;
+      await gate.future;
+    }
     if (nextReplyError case final error?) {
       nextReplyError = null;
       throw error;
