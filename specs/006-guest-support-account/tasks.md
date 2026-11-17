@@ -580,11 +580,11 @@ uses.
 
 ### Tests for US5
 
-- [ ] T072 [P] [US5] Extend `test/features/account/data/mock_account_server_test.dart` + a supabase repository test for `updateProfile({fullName, locale})` → `common_update_profile(p_full_name, p_locale)`:
+- [X] T072 [P] [US5] Extend `test/features/account/data/mock_account_server_test.dart` + a supabase repository test for `updateProfile({fullName, locale})` → `common_update_profile(p_full_name, p_locale)`:
   - a null parameter is omitted from the update;
   - the name is "trimmed, **2–80** characters" else `VALIDATION_FAILED`;
   - the locale is `ar|en`.
-- [ ] T073 [P] [US5] Write `test/features/account/presentation/account_screen_test.dart` (widget, replacing `account_placeholder_test.dart`):
+- [X] T073 [P] [US5] Write `test/features/account/presentation/account_screen_test.dart` (widget, replacing `account_placeholder_test.dart`):
   - email user: all rows; the S005 phone row with «متأكد»/«تغيير»;
   - Google user: the sign-in method shows Google;
   - visitor: the sign-in card + language, appearance, FAQ, terms, privacy only (FR-028);
@@ -592,7 +592,7 @@ uses.
   - the call row is hidden without a number;
   - sign-out asks for confirmation, then calls `SignOutService.signOut()` once;
   - terms/privacy open the locale URL in the in-app browser (`LaunchMode.inAppBrowserView`).
-- [ ] T074 [P] [US5] Write `test/features/account/presentation/edit_name_sheet_test.dart`:
+- [X] T074 [P] [US5] Write `test/features/account/presentation/edit_name_sheet_test.dart`:
   - live validation of 2–80 characters after trim (`accountNameInvalid`);
   - save disabled while invalid or saving;
   - a double tap → one call;
@@ -602,20 +602,20 @@ uses.
   And `settings_sheets_test.dart`:
   - language and appearance radios apply immediately through `AppSettingsCubit`;
   - English is hidden when `englishEnabled == false`.
-- [ ] T075 [P] [US5] Golden `test/features/account/goldens/account_screen_golden_test.dart` (email user, Google user, visitor) and `edit_name_sheet_golden_test.dart` (valid, too short; keyboard open), full matrix.
+- [X] T075 [P] [US5] Golden `test/features/account/goldens/account_screen_golden_test.dart` (email user, Google user, visitor) and `edit_name_sheet_golden_test.dart` (valid, too short; keyboard open), full matrix.
 
 ### Implementation for US5
 
-- [ ] T076 [US5] Add `updateProfile({String? fullName, String? locale})` to `AccountRepository`, implemented in the mock and the Supabase repository (`common_update_profile`). After a name change, refresh `AuthCubit` (`refreshAccount()` from S005) so `GuestAccount.fullName` updates everywhere. Add `GuestAccount.initials` (the first letters of the first two name words, upper-cased for Latin). Makes T072 pass.
-- [ ] T077 [US5] Create `lib/features/account/presentation/account_screen.dart` (replacing `account_placeholder_screen.dart`; delete the placeholder and its test) per contracts/ui-screens.md «Account»:
+- [X] T076 [US5] Add `updateProfile({String? fullName, String? locale})` to `AccountRepository`, implemented in the mock and the Supabase repository (`common_update_profile`). After a name change, refresh `AuthCubit` (`refreshAccount()` from S005) so `GuestAccount.fullName` updates everywhere. Add `GuestAccount.initials` (the first letters of the first two name words, upper-cased for Latin). Makes T072 pass.
+- [X] T077 [US5] Create `lib/features/account/presentation/account_screen.dart` (replacing `account_placeholder_screen.dart`; delete the placeholder and its test) per contracts/ui-screens.md «Account»:
   - the #12-style header;
   - `SettingsGroup`s «عام» / «الأمان» / «الدعم» / «قانوني», plus the Danger rows;
   - reuse the S005 sign-in method and phone row widgets (move them to `lib/features/account/presentation/widgets/` if they are private classes);
   - the visitor variant.
 
   Wire `/account` to it. Makes T073 pass.
-- [ ] T078 [P] [US5] Create `lib/features/account/presentation/edit_name_sheet.dart` and `lib/features/account/presentation/settings_sheets.dart` (language and appearance radio sheets). Wire the `AppSettingsCubit.syncProfileLocale` callback to `AccountRepository.updateProfile(locale:)` when signed in (in `lib/bootstrap.dart`). Makes T074 and T075 pass.
-- [ ] T079 [US5] Write `integration_test/account_settings_mock_test.dart` (part 1):
+- [X] T078 [P] [US5] Create `lib/features/account/presentation/edit_name_sheet.dart` and `lib/features/account/presentation/settings_sheets.dart` (language and appearance radio sheets). Wire the `AppSettingsCubit.syncProfileLocale` callback to `AccountRepository.updateProfile(locale:)` when signed in (in `lib/bootstrap.dart`). Makes T074 and T075 pass.
+- [X] T079 [US5] Write `integration_test/account_settings_mock_test.dart` (part 1):
   - edit the name → the header changes;
   - switch to English → the UI is LTR;
   - dark mode;

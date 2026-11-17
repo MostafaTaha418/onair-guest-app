@@ -51,4 +51,8 @@ abstract interface class SupportRepository {
   Stream<void> caseChanges(String caseId);
   Stream<bool> get liveConnected;
   Future<void> closeCaseChanges();
+
+  /// Whether any case on the first page still carries a staff reply the
+  /// guest has not read — the account screen's support-row dot (T073).
+  Future<bool> anyUnreadStaffReply();
 }

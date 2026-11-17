@@ -73,6 +73,12 @@ final class SupabaseSupportRepository implements SupportRepository {
       });
 
   @override
+  Future<bool> anyUnreadStaffReply() async {
+    final page = await listCases();
+    return page.items.any((item) => item.hasUnreadStaffReply);
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> listFaq() => _guard(() async {
     final response = await rpc('common_list_faq', {'p_audience': 'guest'});
     return [for (final row in response! as List) _asMap(row)];

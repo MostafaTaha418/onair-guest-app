@@ -335,6 +335,13 @@ final class MockSupportServer implements SupportRepository {
   });
 
   @override
+  Future<bool> anyUnreadStaffReply() => _delayed(() {
+    return _cases.values.any(
+      (record) => record.data['has_unread_staff_reply'] == true,
+    );
+  });
+
+  @override
   Future<List<Map<String, dynamic>>> listFaq() => _delayed(() {
     return [
       for (var index = 0; index < _faqSeed.length; index++)

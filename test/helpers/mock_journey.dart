@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
@@ -128,7 +129,16 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   // reach the account screen through the router to sign out.
   GoRouter.of(tester.element(find.text(apartmentTitle))).go('/account');
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('sign-out-button')));
+  final signOutRow = find.byKey(const ValueKey('account-sign-out-row'));
+  await tester.ensureVisible(signOutRow);
+  await tester.tap(signOutRow);
+  await tester.pumpAndSettle();
+  await tester.tap(
+    find.descendant(
+      of: find.byType(OnAirConfirmSheet),
+      matching: find.text(l10n.accountSignOut),
+    ),
+  );
   await tester.pumpAndSettle();
   // A members-only route ends the session straight into sign-in;
   // cancelling lands on home (resolveAuthCancelDestination).

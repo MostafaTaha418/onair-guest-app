@@ -238,6 +238,8 @@ Future<void> bootstrap(String flavor) async {
       ],
       child: OnAirApp(
         appSettingsStore: appSettingsStore,
+        syncProfileLocale: (locale) =>
+            backend.account.updateProfile(locale: locale),
         favoritesRepository: favorites,
         signOutCoordinator: signOutCoordinator,
         sessionEventSource: sessionEventSource,

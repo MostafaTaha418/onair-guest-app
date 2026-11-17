@@ -161,7 +161,10 @@ final class SettingsGroup extends StatelessWidget {
   });
 
   final String? label;
-  final List<SettingsRow> children;
+
+  /// Mostly [SettingsRow]s; an occasional heterogeneous row (the account
+  /// screen's config-backed call row) widens this to widgets.
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {

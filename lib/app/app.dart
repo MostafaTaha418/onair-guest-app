@@ -21,6 +21,7 @@ import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
@@ -62,6 +63,7 @@ final class OnAirApp extends StatefulWidget {
     this.pushMessages,
     this.favoritesRepository,
     this.appSettingsStore,
+    this.syncProfileLocale,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -85,6 +87,7 @@ final class OnAirApp extends StatefulWidget {
   final PushMessageSource? pushMessages;
   final FavoritesRepository? favoritesRepository;
   final AppSettingsStore? appSettingsStore;
+  final Future<void> Function(String locale)? syncProfileLocale;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -170,6 +173,11 @@ final class _OnAirAppState extends State<OnAirApp> {
       loadEnglishEnabled: () async =>
           (await context.read<AppConfigSource>().load()).englishEnabled,
       isSignedIn: () => _authCubit.state is SignedIn,
+      syncProfileLocale:
+          widget.syncProfileLocale ??
+          (locale) => context.read<AccountRepository>().updateProfile(
+            locale: locale,
+          ),
     );
     unawaited(_appSettingsCubit.start());
     _connectivityCubit = widget.connectivityCubit ?? ConnectivityCubit();

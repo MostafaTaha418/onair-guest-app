@@ -66,6 +66,17 @@ final class SupabaseAccountRepository implements AccountRepository {
     },
   );
 
+  @override
+  Future<void> updateProfile({String? fullName, String? locale}) => _guard(
+    () async {
+      // U7: a null parameter leaves the field unchanged.
+      final params = <String, dynamic>{};
+      if (fullName != null) params['p_full_name'] = fullName;
+      if (locale != null) params['p_locale'] = locale;
+      await _rpc('common_update_profile', params);
+    },
+  );
+
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();

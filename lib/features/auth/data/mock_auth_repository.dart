@@ -236,6 +236,16 @@ final class MockAuthRepository implements AuthRepository {
     _changes.add(null);
   }
 
+  /// The mock's `common_update_profile` name write (G4 T076): renames the
+  /// signed-in user and notifies the stream so `AuthCubit.refreshAccount()`
+  /// observes the new name.
+  void renameCurrentUser(String fullName) {
+    final user = _current;
+    if (user == null) return;
+    user.fullName = fullName;
+    _changes.add(user.toAccount());
+  }
+
   /// S005 mock: «أكّد رقمك» confirms the number and activates the
   /// account (the WhatsApp step's success path, US4).
   void activatePhone({required String userId, required String phoneE164}) {

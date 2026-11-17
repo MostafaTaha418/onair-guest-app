@@ -31,4 +31,9 @@ abstract interface class AccountRepository {
   /// `common_confirm_account_deletion(p_challenge_id, p_code)` — the
   /// session is over when this returns.
   Future<void> confirmDeletion(String challengeId, String code);
+
+  /// `common_update_profile(p_full_name, p_locale)` (contracts U7, task
+  /// T076): a null parameter leaves the field unchanged. The name is
+  /// trimmed 2–80 characters server-side; the locale is `ar|en`.
+  Future<void> updateProfile({String? fullName, String? locale});
 }

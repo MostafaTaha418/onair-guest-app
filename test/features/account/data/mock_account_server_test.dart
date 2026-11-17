@@ -103,4 +103,72 @@ void main() {
       expect(server.deleted, isFalse);
     },
   );
+
+  group('updateProfile (T072)', () {
+    setUp(() async {
+      await auth.signInEmail(
+        'legacy@onair.test',
+        MockAuthRepository.legacyPassword,
+      );
+    });
+
+    test('a null parameter is omitted from the update', () async {
+      await server.updateProfile(locale: 'en');
+      final update = server.profileUpdates.single;
+      expect(update.fullName, isNull);
+      expect(update.locale, 'en');
+      expect(server.profileLocale, 'en');
+      expect(server.updateProfileCalls, 1);
+    });
+
+    test('the name is trimmed and 2-80 characters', () async {
+      await server.updateProfile(fullName: '  زائر تجريبي  ');
+      expect(auth.account!.fullName, 'زائر تجريبي');
+      await expectLater(
+        server.updateProfile(fullName: 'ا'),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.validationFailed,
+          ),
+        ),
+      );
+      await expectLater(
+        server.updateProfile(fullName: List.filled(81, 'x').join()),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.validationFailed,
+          ),
+        ),
+      );
+      await expectLater(
+        server.updateProfile(fullName: '!!'),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.validationFailed,
+          ),
+        ),
+      );
+    });
+
+    test('the locale is ar|en', () async {
+      await server.updateProfile(locale: 'ar');
+      expect(server.profileLocale, 'ar');
+      await expectLater(
+        server.updateProfile(locale: 'fr'),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.validationFailed,
+          ),
+        ),
+      );
+    });
+  });
 }

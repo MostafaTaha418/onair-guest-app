@@ -14,10 +14,76 @@ import 'package:url_launcher/url_launcher.dart';
 typedef UrlCanLaunch = Future<bool> Function(Uri uri);
 typedef UrlLaunch = Future<bool> Function(Uri uri);
 
-Future<bool> _defaultCanLaunch(Uri uri) => canLaunchUrl(uri);
+Future<bool> defaultCanLaunch(Uri uri) => canLaunchUrl(uri);
 
-Future<bool> _defaultLaunch(Uri uri) =>
+Future<bool> defaultLaunch(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
+
+/// Dials [phone] (US3-5), or opens the copy sheet when no dialer is
+/// available. Shared by [CallSupportButton] and the account screen's call
+/// row (US5).
+Future<void> launchSupportDial(
+  BuildContext context,
+  String phone, {
+  UrlCanLaunch canLaunch = defaultCanLaunch,
+  UrlLaunch launch = defaultLaunch,
+}) async {
+  final uri = Uri.parse('tel:$phone');
+  try {
+    if (await canLaunch(uri)) {
+      await launch(uri);
+      return;
+    }
+  } on Object {
+    // Fall through to the copy sheet.
+  }
+  if (!context.mounted) return;
+  await showSupportNumberSheet(context, phone);
+}
+
+/// The «الرقم + نسخ» sheet (US3-5).
+Future<void> showSupportNumberSheet(BuildContext context, String phone) {
+  final l10n = AppLocalizations.of(context);
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(Dimens.space16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: SelectableText(
+                phone,
+                style: Theme.of(sheetContext).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(height: Dimens.space16),
+            FilledButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: phone));
+                if (!sheetContext.mounted) return;
+                Navigator.of(sheetContext).pop();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(content: Text(l10n.supportCallCopied)),
+                  );
+              },
+              icon: const Icon(Icons.copy_rounded),
+              label: Text(l10n.supportCallCopied),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
 /// «اتصل بخدمة العملاء» + the working hours, reading
 /// `AppConfig.supportContact` (task T061). Without a published number the
@@ -25,8 +91,8 @@ Future<bool> _defaultLaunch(Uri uri) =>
 /// opens in a sheet with a copy action (US3-5).
 final class CallSupportButton extends StatefulWidget {
   const CallSupportButton({
-    this.canLaunch = _defaultCanLaunch,
-    this.launch = _defaultLaunch,
+    this.canLaunch = defaultCanLaunch,
+    this.launch = defaultLaunch,
     super.key,
   });
 
@@ -58,60 +124,12 @@ final class _CallSupportButtonState extends State<CallSupportButton> {
     }
   }
 
-  Future<void> _call(String phone) async {
-    final uri = Uri.parse('tel:$phone');
-    try {
-      if (await widget.canLaunch(uri)) {
-        await widget.launch(uri);
-        return;
-      }
-    } on Object {
-      // Fall through to the copy sheet.
-    }
-    if (mounted) await _showNumberSheet(phone);
-  }
-
-  Future<void> _showNumberSheet(String phone) async {
-    final l10n = AppLocalizations.of(context);
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(Dimens.space16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: SelectableText(
-                  phone,
-                  style: Theme.of(sheetContext).textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ),
-              const SizedBox(height: Dimens.space16),
-              FilledButton.icon(
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: phone));
-                  if (!sheetContext.mounted) return;
-                  Navigator.of(sheetContext).pop();
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(content: Text(l10n.supportCallCopied)),
-                    );
-                },
-                icon: const Icon(Icons.copy_rounded),
-                label: Text(l10n.supportCallCopied),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _call(String phone) => launchSupportDial(
+    context,
+    phone,
+    canLaunch: widget.canLaunch,
+    launch: widget.launch,
+  );
 
   @override
   Widget build(BuildContext context) {

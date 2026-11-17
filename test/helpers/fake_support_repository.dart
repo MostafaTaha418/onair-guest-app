@@ -85,6 +85,11 @@ final class FakeSupportRepository implements SupportRepository {
     return createResult;
   }
 
+  bool anyUnread = false;
+
+  @override
+  Future<bool> anyUnreadStaffReply() async => anyUnread;
+
   @override
   Future<List<Map<String, dynamic>>> listFaq() async {
     if (nextFaqError case final error?) {

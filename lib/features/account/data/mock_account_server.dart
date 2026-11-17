@@ -29,6 +29,9 @@ final class MockAccountServer implements AccountRepository {
   int requestCalls = 0;
   int sendCalls = 0;
   int confirmCalls = 0;
+  int updateProfileCalls = 0;
+  final List<({String? fullName, String? locale})> profileUpdates = [];
+  String? profileLocale;
   bool deleted = false;
 
   /// Open deletion challenges (tests assert the request opened one).
@@ -109,6 +112,25 @@ final class MockAccountServer implements AccountRepository {
     deleted = true;
   });
 
+  @override
+  Future<void> updateProfile({String? fullName, String? locale}) =>
+      _delayed(() {
+        updateProfileCalls++;
+        profileUpdates.add((fullName: fullName, locale: locale));
+        if (fullName != null) {
+          final trimmed = fullName.trim();
+          final hasLetter = RegExp(r'[A-Za-z\u0621-\u064A]').hasMatch(trimmed);
+          if (trimmed.length < 2 || trimmed.length > 80 || !hasLetter) {
+            _fail('VALIDATION_FAILED');
+          }
+          auth.renameCurrentUser(trimmed);
+        }
+        if (locale != null) {
+          if (locale != 'ar' && locale != 'en') _fail('VALIDATION_FAILED');
+          profileLocale = locale;
+        }
+      });
+
   /// The server's masking (contracts U5): `a***@g***.com`.
   static String _maskEmail(String email) {
     final at = email.indexOf('@');
@@ -120,4 +142,6 @@ final class MockAccountServer implements AccountRepository {
     final domainTail = dot <= 0 ? '' : domain.substring(dot);
     return '${local[0]}***@${domainHead[0]}***$domainTail';
   }
+
+  Never _fail(String code) => throw AppFailure(ErrorMapper.fromCode(code));
 }

@@ -39,6 +39,13 @@ final class AppSettingsCubit extends Cubit<AppSettings> {
   }) : _isSignedIn = isSignedIn ?? (() => false),
        super(AppSettings(englishEnabled: englishEnabled));
 
+  /// Deterministic presentation state for goldens and focused widget tests.
+  AppSettingsCubit.seeded(super.initialState)
+    : store = const AppSettingsStore(),
+      loadEnglishEnabled = null,
+      _isSignedIn = _neverSignedIn,
+      syncProfileLocale = null;
+
   final AppSettingsStore store;
   final Future<bool> Function()? loadEnglishEnabled;
   final bool Function() _isSignedIn;
@@ -94,3 +101,5 @@ final class AppSettingsCubit extends Cubit<AppSettings> {
     }
   }
 }
+
+bool _neverSignedIn() => false;

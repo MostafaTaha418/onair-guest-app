@@ -15,7 +15,7 @@ import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
-import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
+import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/account/presentation/account_suspended_screen.dart';
 import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
 import 'package:on_air/features/account/presentation/delete/delete_account_cubit.dart';
@@ -767,7 +767,7 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.account,
               name: 'account',
-              builder: (_, _) => const AccountPlaceholderScreen(),
+              builder: (_, _) => const AccountScreen(),
             ),
           ],
         ),

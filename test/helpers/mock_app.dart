@@ -53,9 +53,10 @@ Future<MockAuthRepository> bootMockApp(
   MockPhoneVerificationRepository? phoneVerification,
   MockSupportServer? support,
   AttachmentPicker? attachmentPicker,
+  bool resetPreferences = true,
 }) async {
   CairoTime.initialize();
-  SharedPreferences.setMockInitialValues({});
+  if (resetPreferences) SharedPreferences.setMockInitialValues({});
   // Detach a previously booted app so calling this helper again in the same
   // test is a genuine process-style restart, not an update of OnAirApp's
   // existing State object.
