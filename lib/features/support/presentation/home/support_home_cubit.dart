@@ -149,6 +149,14 @@ final class SupportHomeCubit extends Cubit<SupportHomeState> {
     } else if (current is SupportHomeReady && current.offline) {
       emit(current.copyWith(offline: false));
       unawaited(refresh(silent: true));
+    } else if ((current is SupportHomeEmpty && current.offline) ||
+        (current is SupportHomeFailed &&
+            current.error.code == ErrorCode.network)) {
+      // Nothing on screen worth preserving: an offline «empty» screen or
+      // a failed network load retries visibly (Loading → content) on the
+      // first reconnect, while the Ready list above stays put with a
+      // silent refresh.
+      unawaited(refresh());
     }
   }
 

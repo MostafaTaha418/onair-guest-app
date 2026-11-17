@@ -104,4 +104,40 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(repository.listCursors, [null, null]);
   });
+
+  test('reconnecting retries an offline empty screen', () async {
+    connectivity.goOffline();
+    await Future<void>.delayed(Duration.zero);
+    await cubit.load();
+    final empty = cubit.state as SupportHomeEmpty;
+    expect(empty.offline, isTrue);
+    expect(repository.listCursors, isEmpty);
+
+    repository.pages.add(
+      CasePage(items: [sampleSupportCase()], nextCursor: null),
+    );
+    connectivity.goOnline();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.listCursors, hasLength(1));
+    final ready = cubit.state as SupportHomeReady;
+    expect(ready.items, hasLength(1));
+    expect(ready.offline, isFalse);
+  });
+
+  test('reconnecting retries a failed network load', () async {
+    repository.nextError = AppFailure(ErrorMapper.noResponse());
+    await cubit.load();
+    expect(cubit.state, isA<SupportHomeFailed>());
+    expect(repository.listCursors, hasLength(1));
+
+    repository.pages.add(
+      CasePage(items: [sampleSupportCase()], nextCursor: null),
+    );
+    connectivity.goOnline();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.listCursors, hasLength(2));
+    expect(cubit.state, isA<SupportHomeReady>());
+  });
 }
