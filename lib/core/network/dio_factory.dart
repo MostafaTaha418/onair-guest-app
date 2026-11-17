@@ -16,12 +16,18 @@ Dio createNodeDio({
   required SessionTokenSource tokens,
   DeviceIdentity? deviceIdentity,
   AppAttestation? attestation,
+  String? userAgent,
 }) {
   final uri = Uri.tryParse(baseUrl);
   if (uri == null || uri.scheme != 'https') {
     throw ArgumentError.value(baseUrl, 'baseUrl', 'HTTPS required');
   }
-  final dio = Dio(BaseOptions(baseUrl: baseUrl));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      headers: {'User-Agent': ?userAgent},
+    ),
+  );
   dio.interceptors.addAll([
     RequestIdInterceptor(),
     AuthInterceptor(tokens),

@@ -1,0 +1,190 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
+import 'package:on_air/core/api/generated/export.dart';
+import 'package:on_air/core/errors/api_error.dart';
+import 'package:on_air/core/errors/error_mapper.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
+import 'package:on_air/features/account/domain/active_session.dart';
+import 'package:on_air/features/account/domain/deletion.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
+import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+/// The Supabase-backed [AccountRepository] (contracts U5 + Node
+/// `/v1/otp/send`, task T069).
+final class SupabaseAccountRepository implements AccountRepository {
+  SupabaseAccountRepository({
+    required Future<dynamic> Function(String fn, Map<String, dynamic> params)
+    rpc,
+    required FallbackClient node,
+  }) : this._(rpc, node);
+
+  SupabaseAccountRepository._(this._rpc, this._node);
+
+  final Future<dynamic> Function(String fn, Map<String, dynamic> params) _rpc;
+
+  /// The generated Node client, the same one the cash code uses
+  /// (`sendCashCode`, G3).
+  final FallbackClient _node;
+
+  @override
+  Future<DeletionRequest> requestDeletion() => _guard(() async {
+    final response = await _rpc('common_request_account_deletion', {});
+    return DeletionRequest.fromJson(_asMap(response));
+  });
+
+  @override
+  Future<SendWindow> sendDeletionCode(String challengeId) async {
+    OtpSent sent;
+    try {
+      sent = await _node.sendOtpCode(
+        xRequestId: const Uuid().v4(),
+        body: V1OtpSendRequestBody(challengeId: challengeId),
+      );
+    } on DioException catch (error) {
+      final inner = error.error;
+      throw AppFailure(inner is ApiError ? inner : ErrorMapper.noResponse());
+    }
+    return SendWindow(
+      serverTime: sent.serverTime,
+      receivedAt: DateTime.now().toUtc(),
+      nextSendAt: sent.nextSendAt,
+      blockedUntil: sent.blockedUntil,
+    );
+  }
+
+  @override
+  Future<void> confirmDeletion(String challengeId, String code) => _guard(
+    () async {
+      await _rpc('common_confirm_account_deletion', {
+        'p_challenge_id': challengeId,
+        'p_code': code,
+      });
+    },
+  );
+
+  @override
+  Future<void> updateProfile({String? fullName, String? locale}) => _guard(
+    () async {
+      // U7: a null parameter leaves the field unchanged.
+      final params = <String, dynamic>{};
+      if (fullName != null) params['p_full_name'] = fullName;
+      if (locale != null) params['p_locale'] = locale;
+      await _rpc('common_update_profile', params);
+    },
+  );
+
+  @override
+  Future<List<ActiveSession>> listSessions() => _guard(() async {
+    final response = await _rpc('common_list_my_sessions', {});
+    return ActiveSession.sorted(
+      (response as List<dynamic>).map(
+        (row) => ActiveSession.fromJson(Map<String, dynamic>.from(row as Map)),
+      ),
+    );
+  });
+
+  @override
+  Future<void> endSession(String id) => _guard(
+    () async => _rpc('common_end_session', {'p_session_id': id}),
+  );
+
+  @override
+  Future<void> endOtherSessions() => _guard(
+    () async => _rpc('common_end_other_sessions', {}),
+  );
+
+  @override
+  Future<void> changePassword({
+    required String current,
+    required String next,
+  }) => _guardNode(
+    () => _node.changePassword(
+      xRequestId: const Uuid().v4(),
+      body: V1AccountPasswordRequestBody(
+        currentPassword: current,
+        newPassword: next,
+      ),
+    ),
+  );
+
+  @override
+  Future<void> heartbeat() => _guard(
+    () async => _rpc('common_heartbeat', {}),
+  );
+
+  @override
+  Future<List<NotificationPreference>> getPreferences() => _guard(() async {
+    final response = await _rpc('common_get_notification_preferences', {});
+    return (response as List<dynamic>)
+        .map(
+          (row) => NotificationPreference.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        )
+        .toList(growable: false);
+  });
+
+  @override
+  Future<void> setPreference(
+    String category,
+    NotificationChannel channel,
+    bool enabled,
+  ) => _guard(
+    () async => _rpc('common_set_notification_preferences', {
+      'p_items': [
+        {'category': category, 'channel': channel.name, 'enabled': enabled},
+      ],
+    }),
+  );
+
+  Future<T> _guardNode<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on DioException catch (error) {
+      final inner = error.error;
+      throw AppFailure(inner is ApiError ? inner : ErrorMapper.noResponse());
+    }
+  }
+
+  Future<T> _guard<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on PostgrestException catch (error) {
+      final code = [error.message, ?error.code].firstWhere(
+        ErrorMapper.hasCode,
+        orElse: () => 'INTERNAL',
+      );
+      if (code == 'ACCOUNT_HAS_ACTIVE_BOOKINGS') {
+        final rawDetails = error.details;
+        final details = DeletionBlockedException.parseDetailsJson(
+          rawDetails is String
+              ? rawDetails
+              : rawDetails == null
+              ? null
+              : jsonEncode(rawDetails),
+        );
+        throw DeletionBlockedException(DeletionBlocker.fromDetails(details));
+      }
+      throw AppFailure(ErrorMapper.fromCode(code));
+    } on SocketException {
+      throw AppFailure(ErrorMapper.noResponse());
+    } on TimeoutException {
+      throw AppFailure(ErrorMapper.noResponse());
+    } on http.ClientException {
+      throw AppFailure(ErrorMapper.noResponse());
+    } on AppFailure {
+      rethrow;
+    } on Object {
+      throw AppFailure(ErrorMapper.fromCode('INTERNAL'));
+    }
+  }
+
+  static Map<String, dynamic> _asMap(Object? value) =>
+      Map<String, dynamic>.from(value! as Map);
+}

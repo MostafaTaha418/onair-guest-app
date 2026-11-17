@@ -44,6 +44,17 @@ final class MockAuthRepository implements AuthRepository {
       ..phoneVerified = true
       ..fullName = 'Legacy Guest';
     _usersById[legacy.id] = legacy;
+    // The G4 deletion fixture (T064): the account whose active booking
+    // makes `common_request_account_deletion` refuse.
+    final blocked = _MockUser('mock-guest-blocked')
+      ..email = 'blocked@onair.test'
+      ..emailVerified = true
+      ..password = legacyPassword
+      ..status = AccountStatus.active
+      ..phone = '+201012340001'
+      ..phoneVerified = true
+      ..fullName = 'Blocked Guest';
+    _usersById[blocked.id] = blocked;
   }
 
   final DateTime Function() _clock;
@@ -223,6 +234,28 @@ final class MockAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     _current = null;
     _changes.add(null);
+  }
+
+  /// The mock's `common_update_profile` name write (G4 T076): renames the
+  /// signed-in user and notifies the stream so `AuthCubit.refreshAccount()`
+  /// observes the new name.
+  void renameCurrentUser(String fullName) {
+    final user = _current;
+    if (user == null) return;
+    user.fullName = fullName;
+    _changes.add(user.toAccount());
+  }
+
+  bool get currentHasPassword => _current?.hasPassword ?? false;
+
+  bool currentPasswordMatches(String password) =>
+      _current?.password == password;
+
+  void changeCurrentPassword(String password) {
+    final user = _current;
+    if (user == null) throw const AuthRequestRejected('UNAUTHENTICATED');
+    user.password = password;
+    _changes.add(user.toAccount());
   }
 
   /// S005 mock: «أكّد رقمك» confirms the number and activates the

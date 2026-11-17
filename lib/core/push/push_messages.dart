@@ -73,3 +73,28 @@ final class NoopPushMessageSource implements PushMessageSource {
   @override
   Future<PushMessage?> initial() async => null;
 }
+
+/// Controllable source used by the in-process mock backend and journeys.
+final class MockPushMessageSource implements PushMessageSource {
+  final StreamController<PushMessage> _foreground =
+      StreamController<PushMessage>.broadcast();
+  final StreamController<PushMessage> _opened =
+      StreamController<PushMessage>.broadcast();
+
+  @override
+  Stream<PushMessage> get foreground => _foreground.stream;
+
+  @override
+  Stream<PushMessage> get opened => _opened.stream;
+
+  @override
+  Future<PushMessage?> initial() async => null;
+
+  void emitForeground(PushMessage message) => _foreground.add(message);
+  void emitOpened(PushMessage message) => _opened.add(message);
+
+  Future<void> dispose() async {
+    await _foreground.close();
+    await _opened.close();
+  }
+}

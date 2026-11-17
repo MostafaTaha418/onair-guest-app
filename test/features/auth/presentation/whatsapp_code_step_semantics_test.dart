@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -84,7 +86,6 @@ void main() {
               body: ListView(
                 children: [
                   WhatsAppCodeStep(
-                    supportPhone: '+201000000000',
                     // The frozen emit instant: the countdown text cannot
                     // race the real second hand in the test.
                     clock: () => now,
@@ -113,5 +114,66 @@ void main() {
     expect(semantics.label, l10n.whatsappResend);
     expect(semantics.label, isNot(contains(':')));
     handle.dispose();
+  });
+
+  testWidgets('«كلّم الدعم» opens the public FAQ, not a dialer', (
+    tester,
+  ) async {
+    final now = DateTime.now().toUtc();
+    final cubit =
+        PhoneVerificationCubit(
+          _StubRepository(),
+          purpose: PhoneVerificationPurpose.register,
+          needsName: false,
+          needsTerms: false,
+          locale: 'ar',
+          currentTermsVersion: 'v1',
+        )..emit(
+          PvCode(
+            challenge: WhatsAppChallenge(
+              challengeId: 'challenge-1',
+              maskedPhone: '+20 10•• ••• 678',
+              expiresAt: now.add(const Duration(minutes: 10)),
+              window: SendWindow(
+                serverTime: now,
+                receivedAt: now,
+                nextSendAt: now.add(const Duration(seconds: 30)),
+              ),
+            ),
+            // The delivery notice is what carries the «كلّم الدعم» action.
+            notice: PvNotice.notOnWhatsApp,
+          ),
+        );
+    final router = GoRouter(
+      initialLocation: '/confirm-phone',
+      routes: [
+        GoRoute(
+          path: '/confirm-phone',
+          builder: (context, state) =>
+              BlocProvider<PhoneVerificationCubit>.value(
+                value: cubit,
+                child: Scaffold(body: WhatsAppCodeStep(clock: () => now)),
+              ),
+        ),
+        GoRoute(
+          path: AppRoutes.supportFaq,
+          builder: (_, _) => const Text('faq'),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: OnAirTheme.light,
+        routerConfig: router,
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text(l10n.whatsappContactSupport));
+    await tester.pumpAndSettle();
+    expect(find.text('faq'), findsOneWidget);
   });
 }

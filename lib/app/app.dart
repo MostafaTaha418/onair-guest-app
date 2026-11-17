@@ -10,6 +10,8 @@ import 'package:on_air/app/router/incoming_links.dart';
 import 'package:on_air/app/router/link_parser.dart';
 import 'package:on_air/app/router/notification_router.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/app/settings/app_settings_cubit.dart';
+import 'package:on_air/app/settings/app_settings_store.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/core/config/version_gate.dart';
 import 'package:on_air/core/connectivity/connectivity_cubit.dart';
@@ -17,8 +19,10 @@ import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/payments/in_app_browser.dart';
 import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
+import 'package:on_air/core/session/session_heartbeat.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
@@ -59,6 +63,9 @@ final class OnAirApp extends StatefulWidget {
     this.inAppBrowser,
     this.pushMessages,
     this.favoritesRepository,
+    this.appSettingsStore,
+    this.syncProfileLocale,
+    this.heartbeat,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -81,12 +88,16 @@ final class OnAirApp extends StatefulWidget {
   /// backend mode (FCM or nothing).
   final PushMessageSource? pushMessages;
   final FavoritesRepository? favoritesRepository;
+  final AppSettingsStore? appSettingsStore;
+  final Future<void> Function(String locale)? syncProfileLocale;
+  final Future<void> Function()? heartbeat;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
 
 final class _OnAirAppState extends State<OnAirApp> {
   late final AuthCubit _authCubit;
+  late final AppSettingsCubit _appSettingsCubit;
   late final ConnectivityCubit _connectivityCubit;
   late final SearchCubit _searchCubit;
   late final FavoritesCubit _favoritesCubit;
@@ -113,6 +124,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   final List<StreamSubscription<PushMessage>> _pushSubscriptions = [];
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
+  late final SessionHeartbeat _sessionHeartbeat;
 
   @override
   void initState() {
@@ -160,6 +172,18 @@ final class _OnAirAppState extends State<OnAirApp> {
       context.read<AuthRepository>(),
       signOutCoordinator: widget.signOutCoordinator,
     );
+    _appSettingsCubit = AppSettingsCubit(
+      store: widget.appSettingsStore ?? const AppSettingsStore(),
+      loadEnglishEnabled: () async =>
+          (await context.read<AppConfigSource>().load()).englishEnabled,
+      isSignedIn: () => _authCubit.state is SignedIn,
+      syncProfileLocale:
+          widget.syncProfileLocale ??
+          (locale) => context.read<AccountRepository>().updateProfile(
+            locale: locale,
+          ),
+    );
+    unawaited(_appSettingsCubit.start());
     _connectivityCubit = widget.connectivityCubit ?? ConnectivityCubit();
     _searchCubit = SearchCubit(
       repo: context.read<ListingsRepository>(),
@@ -188,6 +212,13 @@ final class _OnAirAppState extends State<OnAirApp> {
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
+    _sessionHeartbeat = SessionHeartbeat(
+      heartbeat: widget.heartbeat ?? _createHeartbeat(),
+      isSignedIn: () => _authCubit.state is SignedIn,
+      onSessionEnded: () => _authCubit.sessionEnded(
+        _router.routerDelegate.currentConfiguration.uri.toString(),
+      ),
+    )..start();
     // One live channel per signed-in guest (Guest Plan §12.3): open on the
     // session, close on sign-out and session end.
     _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
@@ -201,6 +232,9 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(_signals.start(account.id));
       unawaited(_unreadCountCubit.refresh());
       unawaited(_refreshUnfinished());
+      // A fresh session in the same app run must watch for revocation
+      // again (the heartbeat stops permanently after one).
+      _sessionHeartbeat.rearm();
     }(),
     SignedOut() || SessionEnded() => () {
       unawaited(_signals.stop());
@@ -227,6 +261,15 @@ final class _OnAirAppState extends State<OnAirApp> {
       return context.read<PushMessageSource>();
     } on ProviderNotFoundException {
       return const NoopPushMessageSource();
+    }
+  }
+
+  Future<void> Function() _createHeartbeat() {
+    try {
+      return context.read<AccountRepository>().heartbeat;
+    } on ProviderNotFoundException {
+      // Older isolated app harnesses do not install the account repository.
+      return () async {};
     }
   }
 
@@ -307,6 +350,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     // The restored session opens the channel too (no state change may fire
     // for a restored sign-in).
     _onAuthStateChanged(_authCubit.state);
+    unawaited(_sessionHeartbeat.checkNow());
     unawaited(_paymentAttemptCubit.restore());
     final source = widget.uriLinkSource;
     final domain = widget.linkDomain;
@@ -333,6 +377,7 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   @override
   void dispose() {
+    _sessionHeartbeat.dispose();
     _lifecycle.dispose();
     _bannerHideTimer?.cancel();
     _banner.dispose();
@@ -354,6 +399,7 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(source.close());
     }
     unawaited(_authCubit.close());
+    unawaited(_appSettingsCubit.close());
     unawaited(_favoritesCubit.close());
     unawaited(_searchCubit.close());
     if (widget.connectivityCubit == null) {
@@ -366,6 +412,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   Widget build(BuildContext context) => MultiBlocProvider(
     providers: [
       BlocProvider<AuthCubit>.value(value: _authCubit),
+      BlocProvider<AppSettingsCubit>.value(value: _appSettingsCubit),
       BlocProvider<FavoritesCubit>.value(value: _favoritesCubit),
       BlocProvider<ConnectivityCubit>.value(value: _connectivityCubit),
       BlocProvider<PaymentAttemptCubit>.value(value: _paymentAttemptCubit),
@@ -376,63 +423,63 @@ final class _OnAirAppState extends State<OnAirApp> {
     ],
     child: RepositoryProvider<InAppBrowser>.value(
       value: _browser,
-      child: MaterialApp.router(
-        routerConfig: _router,
-        locale: const Locale('ar'),
-        supportedLocales: const [Locale('ar'), Locale('en')],
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: OnAirTheme.light,
-        darkTheme: OnAirTheme.dark,
-        // Explicit product choice; keep visible when changing app defaults.
-        // ignore: avoid_redundant_argument_values
-        themeMode: ThemeMode.system,
-        builder: (context, child) => SessionListener(
-          router: _router,
-          eventSource: _sessionEventSource,
-          personalDataResetter: _personalDataResetter,
-          deviceRegistrationService: widget.deviceRegistrationService,
-          child: MediaQuery.withClampedTextScaling(
-            maxScaleFactor: 1.3,
-            child: Stack(
-              children: [
-                ?child,
-                BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                  builder: (context, state) => state.isOnline
-                      ? const SizedBox.shrink()
-                      : const Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: OfflineBanner(),
-                        ),
-                ),
-                ValueListenableBuilder<PushMessage?>(
-                  valueListenable: _banner,
-                  builder: (context, message, _) => message == null
-                      ? const SizedBox.shrink()
-                      : Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: InAppNotificationBanner(
-                            message: message,
-                            onOpen: (opened) {
-                              _banner.value = null;
-                              unawaited(
-                                _router.push(
-                                  NotificationRouter.locationFor(
-                                    opened.type,
-                                    '',
-                                    opened.targetId,
-                                  ),
-                                ),
-                              );
-                            },
-                            onDismiss: () => _banner.value = null,
+      child: BlocBuilder<AppSettingsCubit, AppSettings>(
+        builder: (context, settings) => MaterialApp.router(
+          routerConfig: _router,
+          locale: settings.locale,
+          supportedLocales: const [Locale('ar'), Locale('en')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          theme: OnAirTheme.light,
+          darkTheme: OnAirTheme.dark,
+          themeMode: settings.themeMode,
+          builder: (context, child) => SessionListener(
+            router: _router,
+            eventSource: _sessionEventSource,
+            personalDataResetter: _personalDataResetter,
+            deviceRegistrationService: widget.deviceRegistrationService,
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: Stack(
+                children: [
+                  ?child,
+                  BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                    builder: (context, state) => state.isOnline
+                        ? const SizedBox.shrink()
+                        : const Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: OfflineBanner(),
                           ),
-                        ),
-                ),
-              ],
+                  ),
+                  ValueListenableBuilder<PushMessage?>(
+                    valueListenable: _banner,
+                    builder: (context, message, _) => message == null
+                        ? const SizedBox.shrink()
+                        : Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: InAppNotificationBanner(
+                              message: message,
+                              onOpen: (opened) {
+                                _banner.value = null;
+                                unawaited(
+                                  _router.push(
+                                    NotificationRouter.locationFor(
+                                      opened.type,
+                                      '',
+                                      opened.targetId,
+                                    ),
+                                  ),
+                                );
+                              },
+                              onDismiss: () => _banner.value = null,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

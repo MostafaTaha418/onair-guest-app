@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:on_air/core/files/file_url_cache.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/features/stay/domain/damage_claim.dart';
-import 'package:on_air/features/stay/presentation/claims/evidence_url_cache.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// Full-screen evidence viewer: pinch/zoom only — no download, no share.
@@ -15,7 +15,7 @@ final class EvidenceViewer extends StatefulWidget {
 
   final List<EvidenceRef> evidence;
   final int initialIndex;
-  final EvidenceUrlCache cache;
+  final FileUrlCache cache;
 
   @override
   State<EvidenceViewer> createState() => _EvidenceViewerState();

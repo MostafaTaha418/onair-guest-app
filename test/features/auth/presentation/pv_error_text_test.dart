@@ -128,7 +128,7 @@ void main() {
       await pumpStep(
         tester,
         PvCode(challenge: challenge(), error: error),
-        const WhatsAppCodeStep(supportPhone: '+201000000000'),
+        const WhatsAppCodeStep(),
       );
       expect(find.text(text), findsOneWidget);
     });
@@ -163,7 +163,7 @@ void main() {
     await pumpStep(
       tester,
       PvCode(challenge: challenge(), codeSent: false),
-      const WhatsAppCodeStep(supportPhone: '+201000000000'),
+      const WhatsAppCodeStep(),
     );
     expect(
       find.text(l10n.whatsappNotSentYet('+20 10•• ••• 678')),

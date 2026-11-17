@@ -12,3 +12,7 @@ These contracts are drafts for the backend implementer to review and confirm. Th
 - `supabase-stay.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.
 - `app-routes-g3.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.
 - `ui-screens-g3.md` is a G3 draft whose reviewed source is `specs/004-guest-stay-cancellation/contracts/`.
+- G4 (support & account) has no new drafts here: its deltas live directly in
+  `specs/006-guest-support-account/contracts/` — `supabase-support-account.md` (U1–U7, U9–U10),
+  `node-account.md` (U2, U8), `app-routes.md` and `ui-screens.md`;
+  `supabase-backend.md` §10 summarises what the app code assumes.
