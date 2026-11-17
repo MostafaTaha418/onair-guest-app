@@ -35,7 +35,9 @@ final class SessionHeartbeat with WidgetsBindingObserver {
   /// The guest signed in again after a revoked session in the same app
   /// run: forget the ended flag, restore the schedule and check at once.
   void rearm() {
-    if (!_started) return;
+    // Only a revoked session needs rearming; a routine SignedIn refresh
+    // keeps the running schedule without an extra heartbeat call.
+    if (!_started || !_ended) return;
     _ended = false;
     _schedule();
     unawaited(checkNow());

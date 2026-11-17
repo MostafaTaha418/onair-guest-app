@@ -147,7 +147,12 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
     _replace(draft, insert: true);
     try {
       final prepared = await widget.sanitizer.prepare(file);
-      if (!mounted) return;
+      if (!mounted || _removed.contains(localId)) {
+        // Unmounted or removed while sanitizing: drop the prepared temp
+        // file and never report a rejection for a tile that is gone.
+        await widget.uploader.abandon(prepared);
+        return;
+      }
       final afterPrepare = widget.limits.validate(
         kind: kind,
         sizeBytes: prepared.sizeBytes,
@@ -158,11 +163,6 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
         if (!mounted) return;
         _remove(localId);
         _showRejection(afterPrepare);
-        return;
-      }
-      if (_removed.contains(localId)) {
-        // Removed while sanitizing: the prepared file is dropped.
-        await widget.uploader.abandon(prepared);
         return;
       }
       final token = CancelToken();
