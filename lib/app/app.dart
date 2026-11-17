@@ -232,6 +232,9 @@ final class _OnAirAppState extends State<OnAirApp> {
       unawaited(_signals.start(account.id));
       unawaited(_unreadCountCubit.refresh());
       unawaited(_refreshUnfinished());
+      // A fresh session in the same app run must watch for revocation
+      // again (the heartbeat stops permanently after one).
+      _sessionHeartbeat.rearm();
     }(),
     SignedOut() || SessionEnded() => () {
       unawaited(_signals.stop());

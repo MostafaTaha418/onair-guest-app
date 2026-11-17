@@ -63,4 +63,39 @@ void main() {
       expect(cubit.state.pendingLocaleSync, isFalse);
     },
   );
+
+  test(
+    'a failed english check still applies the stored locale and theme',
+    () async {
+      const store = AppSettingsStore();
+      await store.writeLocale(const Locale('en'));
+      await store.writeThemeMode(ThemeMode.dark);
+      final cubit = AppSettingsCubit(
+        store: store,
+        loadEnglishEnabled: () async => throw StateError('offline'),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.start();
+
+      expect(cubit.state.locale, const Locale('en'));
+      expect(cubit.state.themeMode, ThemeMode.dark);
+      expect(cubit.state.englishEnabled, isTrue);
+    },
+  );
+
+  test('a config that disables English falls back to Arabic', () async {
+    const store = AppSettingsStore();
+    await store.writeLocale(const Locale('en'));
+    final cubit = AppSettingsCubit(
+      store: store,
+      loadEnglishEnabled: () async => false,
+    );
+    addTearDown(cubit.close);
+
+    await cubit.start();
+
+    expect(cubit.state.locale, const Locale('ar'));
+    expect(cubit.state.englishEnabled, isFalse);
+  });
 }

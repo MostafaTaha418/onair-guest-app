@@ -32,6 +32,15 @@ final class SessionHeartbeat with WidgetsBindingObserver {
     unawaited(checkNow());
   }
 
+  /// The guest signed in again after a revoked session in the same app
+  /// run: forget the ended flag, restore the schedule and check at once.
+  void rearm() {
+    if (!_started) return;
+    _ended = false;
+    _schedule();
+    unawaited(checkNow());
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _resumed = state == AppLifecycleState.resumed;

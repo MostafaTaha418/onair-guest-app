@@ -79,4 +79,54 @@ void main() {
       heartbeat.dispose();
     });
   });
+
+  test('rearm() restarts the heartbeat after a revoked session', () {
+    fakeAsync((async) {
+      var calls = 0;
+      var ended = 0;
+      var revoked = true;
+      final heartbeat = SessionHeartbeat(
+        heartbeat: () async {
+          calls++;
+          if (revoked) {
+            throw const AppFailure(
+              ApiError(
+                code: ErrorCode.sessionRevoked,
+                messageKey: 'errorUnauthenticated',
+              ),
+            );
+          }
+        },
+        isSignedIn: () => true,
+        onSessionEnded: () => ended++,
+      )..start();
+      async.flushMicrotasks();
+      expect(calls, 1);
+      expect(ended, 1);
+
+      // An ended heartbeat stops scheduling entirely.
+      async
+        ..elapse(const Duration(minutes: 2))
+        ..flushMicrotasks();
+      expect(calls, 1);
+
+      // The guest signs in again in the same app run.
+      revoked = false;
+      heartbeat.rearm();
+      async.flushMicrotasks();
+      expect(calls, 2, reason: 'rearm() checks immediately');
+      async
+        ..elapse(const Duration(seconds: 60))
+        ..flushMicrotasks();
+      expect(calls, 3, reason: 'the periodic schedule returns after rearm()');
+
+      // A second revocation ends the session again.
+      revoked = true;
+      async
+        ..elapse(const Duration(seconds: 60))
+        ..flushMicrotasks();
+      expect(ended, 2);
+      heartbeat.dispose();
+    });
+  });
 }

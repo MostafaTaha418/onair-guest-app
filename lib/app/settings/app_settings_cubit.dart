@@ -52,20 +52,22 @@ final class AppSettingsCubit extends Cubit<AppSettings> {
   final Future<void> Function(String locale)? syncProfileLocale;
 
   Future<void> start() async {
+    // The stored choices apply before anything can fail: a config fetch
+    // error must not boot the app back to the defaults (ar/system).
     final stored = await store.read();
-    final englishEnabled =
-        await loadEnglishEnabled?.call() ?? state.englishEnabled;
-    final locale = !englishEnabled && stored.locale.languageCode == 'en'
-        ? const Locale('ar')
-        : stored.locale;
     if (isClosed) return;
-    emit(
-      state.copyWith(
-        locale: locale,
-        themeMode: stored.themeMode,
-        englishEnabled: englishEnabled,
-      ),
-    );
+    emit(state.copyWith(locale: stored.locale, themeMode: stored.themeMode));
+    var englishEnabled = state.englishEnabled;
+    try {
+      englishEnabled = await loadEnglishEnabled?.call() ?? englishEnabled;
+    } on Object {
+      // Offline or broken config: keep the current value.
+    }
+    if (isClosed) return;
+    final locale = !englishEnabled && state.locale.languageCode == 'en'
+        ? const Locale('ar')
+        : state.locale;
+    emit(state.copyWith(locale: locale, englishEnabled: englishEnabled));
     if (state.pendingLocaleSync) await _syncLocale(locale.languageCode);
   }
 
