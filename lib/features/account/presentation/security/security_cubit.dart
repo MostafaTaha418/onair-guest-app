@@ -78,17 +78,30 @@ final class SecurityCubit extends Cubit<SecurityState> {
     try {
       await repository.endSession(id);
       if (!isClosed) {
-        emit(
-          current.copyWith(
-            sessions: current.sessions.where((item) => item.id != id).toList(),
-            ending: const {},
-            clearError: true,
-          ),
-        );
+        // Rebuild on the state on screen now: another end may have
+        // settled while this one was in flight.
+        final fresh = state;
+        if (fresh is SecurityReady) {
+          emit(
+            fresh.copyWith(
+              sessions: fresh.sessions.where((item) => item.id != id).toList(),
+              ending: {...fresh.ending}..remove(id),
+              clearError: true,
+            ),
+          );
+        }
       }
     } on AppFailure catch (failure) {
       if (!isClosed) {
-        emit(current.copyWith(ending: const {}, error: failure.error));
+        final fresh = state;
+        if (fresh is SecurityReady) {
+          emit(
+            fresh.copyWith(
+              ending: {...fresh.ending}..remove(id),
+              error: failure.error,
+            ),
+          );
+        }
       }
     }
   }
@@ -104,17 +117,23 @@ final class SecurityCubit extends Cubit<SecurityState> {
     try {
       await repository.endOtherSessions();
       if (!isClosed) {
-        emit(
-          current.copyWith(
-            sessions: current.sessions.where((item) => item.isCurrent).toList(),
-            endingAll: false,
-            clearError: true,
-          ),
-        );
+        final fresh = state;
+        if (fresh is SecurityReady) {
+          emit(
+            fresh.copyWith(
+              sessions: fresh.sessions.where((item) => item.isCurrent).toList(),
+              endingAll: false,
+              clearError: true,
+            ),
+          );
+        }
       }
     } on AppFailure catch (failure) {
       if (!isClosed) {
-        emit(current.copyWith(endingAll: false, error: failure.error));
+        final fresh = state;
+        if (fresh is SecurityReady) {
+          emit(fresh.copyWith(endingAll: false, error: failure.error));
+        }
       }
     }
   }

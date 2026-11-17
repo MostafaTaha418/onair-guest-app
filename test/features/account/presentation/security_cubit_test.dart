@@ -29,6 +29,9 @@ class _Repository extends Fake implements AccountRepository {
   int endAllCalls = 0;
   Completer<void>? pending;
   AppFailure? failure;
+  // Per-id gates and failures for concurrent-end scenarios.
+  final holds = <String, Completer<void>>{};
+  final failures = <String, AppFailure>{};
 
   @override
   Future<List<ActiveSession>> listSessions() async => List.of(sessions);
@@ -36,8 +39,11 @@ class _Repository extends Fake implements AccountRepository {
   @override
   Future<void> endSession(String id) async {
     endCalls++;
-    await pending?.future;
+    final hold = holds[id];
+    if (hold != null) await hold.future;
     if (failure case final value?) throw value;
+    final idFailure = failures[id];
+    if (idFailure != null) throw idFailure;
     sessions.removeWhere((session) => session.id == id);
   }
 
@@ -95,6 +101,97 @@ void main() {
       repository.pending!.complete();
       await first;
       expect((cubit.state as SecurityReady).sessions.single.isCurrent, isTrue);
+    },
+  );
+
+  test(
+    'two concurrent ends keep their in-flight marks and never resurrect rows',
+    () async {
+      final repository = _Repository();
+      repository.sessions.add(
+        ActiveSession(
+          id: 'b',
+          deviceLabel: 'Second',
+          platform: SessionPlatform.ios,
+          createdAt: DateTime.utc(2026),
+          lastActiveAt: DateTime.utc(2026, 11, 15),
+          isCurrent: false,
+        ),
+      );
+      repository.holds
+        ..['other'] = Completer<void>()
+        ..['b'] = Completer<void>();
+      final cubit = SecurityCubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+
+      final endingA = cubit.endSession('other');
+      final endingB = cubit.endSession('b');
+      expect((cubit.state as SecurityReady).ending, {'other', 'b'});
+
+      repository.holds['other']!.complete();
+      await endingA;
+      // B is still in flight: its mark must survive A's settlement.
+      expect((cubit.state as SecurityReady).ending, {'b'});
+
+      repository.holds['b']!.complete();
+      await endingB;
+      final fresh = cubit.state as SecurityReady;
+      expect(
+        fresh.sessions.map((session) => session.id),
+        ['current'],
+      );
+      expect(fresh.ending, isEmpty);
+    },
+  );
+
+  test(
+    'a failed end keeps its row and the error while another settles',
+    () async {
+      final repository = _Repository();
+      repository.sessions.add(
+        ActiveSession(
+          id: 'b',
+          deviceLabel: 'Second',
+          platform: SessionPlatform.ios,
+          createdAt: DateTime.utc(2026),
+          lastActiveAt: DateTime.utc(2026, 11, 15),
+          isCurrent: false,
+        ),
+      );
+      repository.holds
+        ..['other'] = Completer<void>()
+        ..['b'] = Completer<void>();
+      repository.failures['other'] = const AppFailure(
+        ApiError(code: ErrorCode.network, messageKey: 'errorNoConnection'),
+      );
+      final cubit = SecurityCubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+
+      final endingA = cubit.endSession('other');
+      final endingB = cubit.endSession('b');
+      repository.holds['other']!.complete();
+      await endingA;
+
+      var fresh = cubit.state as SecurityReady;
+      // B is still in flight; A failed and keeps its row and the error.
+      expect(fresh.ending, {'b'});
+      expect(
+        fresh.sessions.map((session) => session.id),
+        containsAll(['other', 'b']),
+      );
+      expect(fresh.error?.code, ErrorCode.network);
+
+      repository.holds['b']!.complete();
+      await endingB;
+      fresh = cubit.state as SecurityReady;
+      expect(
+        fresh.sessions.map((session) => session.id),
+        isNot(contains('b')),
+      );
+      expect(fresh.sessions.map((session) => session.id), contains('other'));
+      expect(fresh.ending, isEmpty);
     },
   );
 }
