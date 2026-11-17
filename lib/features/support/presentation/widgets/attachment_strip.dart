@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_air/core/files/attachment_picker.dart';
 import 'package:on_air/core/files/image_sanitizer.dart';
@@ -41,6 +42,34 @@ final class AttachmentStrip extends StatefulWidget {
 }
 
 final class _AttachmentStripState extends State<AttachmentStrip> {
+  /// The source of truth for the tiles. Upload progress and removals
+  /// land here synchronously — `widget.attachments` only catches up when
+  /// the parent rebuilds, so two stream events in one frame would
+  /// otherwise erase each other.
+  List<AttachmentDraft> _items = const [];
+
+  /// Local ids the user removed; late events for them (a cancelled put,
+  /// a sanitizer that finished late) must not resurrect the tile.
+  final Set<String> _removed = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _items = List.of(widget.attachments);
+  }
+
+  @override
+  void didUpdateWidget(covariant AttachmentStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The parent drives the list too (e.g. the composer clears it after
+    // a send). Only an actually different list resyncs, so our own echo
+    // never fights the local state. Removal tombstones stay: they are
+    // one-off uuids and must outlive the echo of their own removal.
+    if (!listEquals(oldWidget.attachments, widget.attachments)) {
+      _items = List.of(widget.attachments);
+    }
+  }
+
   Future<void> _choose() async {
     if (!widget.enabled) return;
     final l10n = AppLocalizations.of(context);
@@ -77,7 +106,7 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
       ),
     );
     if (source == null || !mounted) return;
-    final remaining = widget.limits.maxFiles - widget.attachments.length;
+    final remaining = widget.limits.maxFiles - _items.length;
     final picked = switch (source) {
       AttachmentPickSource.camera => await widget.picker.pickCamera(),
       AttachmentPickSource.gallery => await widget.picker.pickGallery(
@@ -100,7 +129,7 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
     final check = widget.limits.validate(
       kind: kind,
       sizeBytes: file.sizeBytes,
-      currentCount: widget.attachments.length,
+      currentCount: _items.length,
     );
     if (check.type != AttachmentCheckType.ok) {
       _showRejection(check);
@@ -115,20 +144,25 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
       sizeBytes: file.sizeBytes,
       state: const AttachmentUploadState.preparing(),
     );
-    _replace(draft);
+    _replace(draft, insert: true);
     try {
       final prepared = await widget.sanitizer.prepare(file);
+      if (!mounted) return;
       final afterPrepare = widget.limits.validate(
         kind: kind,
         sizeBytes: prepared.sizeBytes,
-        currentCount: widget.attachments
-            .where((item) => item.localId != localId)
-            .length,
+        currentCount: _items.where((item) => item.localId != localId).length,
       );
       if (afterPrepare.type != AttachmentCheckType.ok) {
         await widget.uploader.abandon(prepared);
+        if (!mounted) return;
         _remove(localId);
         _showRejection(afterPrepare);
+        return;
+      }
+      if (_removed.contains(localId)) {
+        // Removed while sanitizing: the prepared file is dropped.
+        await widget.uploader.abandon(prepared);
         return;
       }
       final token = CancelToken();
@@ -145,6 +179,12 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
         cancelToken: token,
       )) {
         if (!mounted) return;
+        if (progress.stage == UploadStage.cancelled &&
+            _removed.contains(localId)) {
+          // The removal already removed the tile; do not turn it into a
+          // failed one.
+          continue;
+        }
         final state = switch (progress.stage) {
           UploadStage.preparing => const AttachmentUploadState.preparing(),
           UploadStage.uploading => AttachmentUploadState.uploading(
@@ -164,6 +204,7 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
         _replace(draft);
       }
     } on Object {
+      if (!mounted) return;
       _replace(
         draft.copyWith(
           state: const AttachmentUploadState.failed(
@@ -174,25 +215,30 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
     }
   }
 
-  void _replace(AttachmentDraft draft) {
-    final items = [...widget.attachments];
-    final index = items.indexWhere((item) => item.localId == draft.localId);
+  void _replace(AttachmentDraft draft, {bool insert = false}) {
+    final index = _items.indexWhere((item) => item.localId == draft.localId);
+    if (_removed.contains(draft.localId)) return;
     if (index < 0) {
-      items.add(draft);
+      // Only the explicit first insert adds a tile; a late event for a
+      // missing item is ignored.
+      if (!insert) return;
+      _items = [..._items, draft];
     } else {
-      items[index] = draft;
+      _items = [..._items]..[index] = draft;
     }
-    widget.onChanged(items);
+    setState(() {});
+    widget.onChanged(List.of(_items));
   }
 
   void _remove(String localId) {
-    final item = widget.attachments
-        .where((value) => value.localId == localId)
-        .firstOrNull;
+    final item = _items.where((value) => value.localId == localId).firstOrNull;
     item?.cancelToken?.cancel();
-    widget.onChanged(
-      widget.attachments.where((value) => value.localId != localId).toList(),
-    );
+    _removed.add(localId);
+    _items = _items
+        .where((value) => value.localId != localId)
+        .toList(growable: false);
+    setState(() {});
+    widget.onChanged(List.of(_items));
   }
 
   void _retry(AttachmentDraft draft) {
@@ -242,10 +288,10 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
           height: 80,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: widget.attachments.length + 1,
+            itemCount: _items.length + 1,
             separatorBuilder: (_, _) => const SizedBox(width: Dimens.space8),
             itemBuilder: (context, index) {
-              if (index == widget.attachments.length) {
+              if (index == _items.length) {
                 return Semantics(
                   button: true,
                   label: l10n.supportAttach,
@@ -254,7 +300,7 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
                     child: OutlinedButton(
                       onPressed:
                           widget.enabled &&
-                              widget.attachments.length < widget.limits.maxFiles
+                              _items.length < widget.limits.maxFiles
                           ? _choose
                           : null,
                       style: OutlinedButton.styleFrom(
@@ -271,7 +317,7 @@ final class _AttachmentStripState extends State<AttachmentStrip> {
                   ),
                 );
               }
-              final item = widget.attachments[index];
+              final item = _items[index];
               return AttachmentTile(
                 kind: item.kind == AttachmentKind.pdf
                     ? AttachmentTileKind.pdf
