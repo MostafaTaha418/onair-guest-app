@@ -27,32 +27,6 @@ const _bookingScopedKeys = [
 ];
 
 void main() {
-  const uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
-
-  test('G4 support and account notifications open their destinations', () {
-    for (final type in ['support.staff_replied', 'support.case_resolved']) {
-      expect(
-        NotificationRouter.locationFor(type, 'support_case', uuid),
-        '/support/$uuid',
-      );
-      expect(
-        NotificationRouter.locationFor(type, 'support_case', 'bad-id'),
-        AppRoutes.support,
-      );
-    }
-    expect(
-      NotificationRouter.locationFor(
-        'account.password_changed',
-        'account',
-        uuid,
-      ),
-      AppRoutes.accountSecurity,
-    );
-    expect(
-      NotificationRouter.locationFor('account.phone_changed', 'account', uuid),
-      AppRoutes.account,
-    );
-  });
   test('every booking-scoped type opens the booking', () {
     for (final typeKey in _bookingScopedKeys) {
       expect(
@@ -63,25 +37,25 @@ void main() {
     }
   });
 
-  test('support types open their case', () {
+  test('support types open the support entry', () {
     expect(
       NotificationRouter.locationFor('support.staff_replied', '', _uuid),
-      AppRoutes.supportCase(_uuid),
+      AppRoutes.supportNew,
     );
     expect(
       NotificationRouter.locationFor('support.case_resolved', '', _uuid),
-      AppRoutes.supportCase(_uuid),
+      AppRoutes.supportNew,
     );
   });
 
-  test('account types open account or security as appropriate', () {
+  test('account types open the account screen', () {
     expect(
       NotificationRouter.locationFor('account.phone_changed', '', _uuid),
       AppRoutes.account,
     );
     expect(
       NotificationRouter.locationFor('account.password_changed', '', _uuid),
-      AppRoutes.accountSecurity,
+      AppRoutes.account,
     );
   });
 

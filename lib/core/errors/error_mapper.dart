@@ -107,25 +107,6 @@ abstract final class ErrorMapper {
       ErrorCode.otpAttemptsExceeded,
       'otpAttemptsExceeded',
     ),
-    'CASE_CLOSED': (ErrorCode.caseClosed, 'supportCaseClosed'),
-    'ATTACHMENT_REJECTED': (
-      ErrorCode.attachmentRejected,
-      'supportAttachmentRejectedType',
-    ),
-    'SESSION_REVOKED': (ErrorCode.sessionRevoked, 'errorUnauthenticated'),
-    'SESSION_IS_CURRENT': (
-      ErrorCode.sessionIsCurrent,
-      'accountSessionIsCurrent',
-    ),
-    'PASSWORD_INCORRECT': (
-      ErrorCode.passwordIncorrect,
-      'accountPasswordIncorrect',
-    ),
-    'PASSWORD_WEAK': (ErrorCode.passwordWeak, 'authPasswordRule'),
-    'ACCOUNT_HAS_ACTIVE_BOOKINGS': (
-      ErrorCode.accountHasActiveBookings,
-      'accountHasActiveBookings',
-    ),
     'INTERNAL': (ErrorCode.internal, 'errorUnexpected'),
   };
 
@@ -146,16 +127,9 @@ abstract final class ErrorMapper {
         mapping.$1 == ErrorCode.phoneNotVerified) {
       ProfileGate.notify();
     }
-    final messageKey = code == 'ATTACHMENT_REJECTED'
-        ? switch (details?['reason']) {
-            'too_large' => 'supportAttachmentRejectedTooLarge',
-            'too_many' => 'supportAttachmentRejectedTooMany',
-            _ => 'supportAttachmentRejectedType',
-          }
-        : mapping.$2;
     return ApiError(
       code: mapping.$1,
-      messageKey: messageKey,
+      messageKey: mapping.$2,
       requestId: requestId,
       details: details,
       retryAfter: seconds == null ? null : Duration(seconds: seconds),

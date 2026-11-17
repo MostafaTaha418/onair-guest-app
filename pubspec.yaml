@@ -13,9 +13,7 @@ dependencies:
   connectivity_plus: ^7.3.2
   crypto: ^3.0.8
   cupertino_icons: ^2.0.0
-  device_info_plus: ^13.3.0
   dio: ^5.11.1
-  file_picker: ^13.3.3
   # Keep FlutterFire on BOM 4.20.1 while Flutter 3.44 pins
   # google_sign_in_ios below the native Google Sign-In 10.x SDK. Firebase's
   # SPM-only 13.x line otherwise conflicts on GTMSessionFetcher.
@@ -25,7 +23,6 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_image_compress: ^2.5.1
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
@@ -33,7 +30,6 @@ dependencies:
   go_router: ^18.1.1
   google_sign_in: ^7.2.0
   http: ^1.5.0
-  image_picker: ^1.2.4
   intl: ^0.20.2
   json_annotation: ^4.11.0
   lucide_icons_flutter: ^4.0.1

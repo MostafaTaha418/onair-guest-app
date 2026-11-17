@@ -86,7 +86,6 @@ final class OnAirTextField extends StatelessWidget {
             errorBorder: border(colors['inputError']),
             focusedErrorBorder: border(colors['inputErrorFocus']),
             errorText: errorText,
-            errorMaxLines: 3,
             errorStyle: TextStyle(color: colors.errorText),
           ),
         ),

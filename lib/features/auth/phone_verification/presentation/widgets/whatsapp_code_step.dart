@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -24,8 +22,15 @@ import 'package:url_launcher/url_launcher.dart';
 /// `OTP_SEND_BLOCKED` renders the step with its send controls disabled —
 /// the [BlockedNotice] itself lives above, on the screen (T064).
 final class WhatsAppCodeStep extends StatefulWidget {
-  const WhatsAppCodeStep({super.key, DateTime Function()? clock})
-    : _clock = clock ?? DateTime.now;
+  const WhatsAppCodeStep({
+    required this.supportPhone,
+    super.key,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
+
+  /// From `app_config`; the «كلّم الدعم» notices dial it (G4 brings the
+  /// support screens).
+  final String supportPhone;
 
   /// The device clock the countdown ticks with — injectable so goldens pin
   /// one instant instead of racing the real second hand.
@@ -77,6 +82,14 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
       await launchUrl(Uri.parse('whatsapp://'));
     } on Object {
       // Not installed (or blocked): silently do nothing (§4.2).
+    }
+  }
+
+  Future<void> _contactSupport() async {
+    try {
+      await launchUrl(Uri.parse('tel:${widget.supportPhone}'));
+    } on Object {
+      // No dialer: silently do nothing.
     }
   }
 
@@ -136,11 +149,8 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
               NoticeCard(
                 icon: AppIcons.errorOutline,
                 message: noticeMessage,
-                // «كلّم الدعم» lands on the public FAQ, where the call
-                // button lives (contracts/app-routes.md — cases need an
-                // active account, so this screen does not offer /support/new).
                 actionLabel: l10n.whatsappContactSupport,
-                onAction: () => context.push(AppRoutes.supportFaq).ignore(),
+                onAction: _contactSupport,
               ),
               const SizedBox(height: Dimens.space16),
             ],

@@ -30,12 +30,6 @@ lists the codes the Guest App can receive and the ARB key for each.
 | `TERMS_CHANGED` | G0 | `authTermsChanged` | الشروط اتحدّثت. راجعها ووافق عليها للمتابعة. | no |
 | `PROFILE_INCOMPLETE` | G0 (legacy) | `authProfileIncomplete` | كمّل بياناتك للمتابعة. | no |
 | `ACCOUNT_HAS_ACTIVE_BOOKINGS` *(new)* | G4 | `accountHasActiveBookings` | مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال. | no |
-| `CASE_CLOSED` *(new)* | G4 | `supportCaseClosed` | الحالة دي اتقفلت. | no |
-| `ATTACHMENT_REJECTED` *(new; `details.reason`: `too_large` / `type_not_allowed` / `too_many`)* | G4 | `supportAttachmentRejectedTooLarge` / `supportAttachmentRejectedType` / `supportAttachmentRejectedTooMany` | الملف أكبر من المسموح. / النوع ده مش مسموح. صور أو PDF بس. / وصلت للحد المسموح للملفات. | no |
-| `SESSION_REVOKED` *(new)* | G4 | `errorUnauthenticated` | انتهت الجلسة. سجّل الدخول مرة أخرى. | no |
-| `SESSION_IS_CURRENT` *(new)* | G4 | `accountSessionIsCurrent` | ده الجهاز اللي معاك. استخدم «تسجيل الخروج». | no |
-| `PASSWORD_INCORRECT` *(new)* | G4 | `accountPasswordIncorrect` | كلمة المرور الحالية غلط. | no |
-| `PASSWORD_WEAK` *(new)* | G4 | `authPasswordRule` | 8 أحرف على الأقل، بينهم حرف ورقم. | no |
 | `APP_VERSION_UNSUPPORTED` | G0 | `appUpdateRequired` | لازم تحدّث التطبيق للمتابعة. | no |
 | `NOT_FOUND` | G1 | `propertyNotAvailable` (discovery) / `errorNotAvailable` (other screens) | الشقة دي مش متاحة حاليًا. / العنصر ده مش متاح. | no |
 | `PROPERTY_NOT_AVAILABLE` | G1 | `propertyNotAvailable` | الشقة دي مش متاحة حاليًا. | no |
@@ -60,10 +54,6 @@ lists the codes the Guest App can receive and the ARB key for each.
 | `REVIEW_NOT_ALLOWED` *(new)* | G5 | `reviewNotAllowed` | التقييم متاح بعد انتهاء الإقامة، ومرة واحدة بس. | no |
 | `INTERNAL` | G0 | `errorUnexpected` | حصلت مشكلة غير متوقعة. رقم المرجع: {ref} | **yes** |
 | *(network)* | G0 | `errorNoConnection` | مفيش اتصال بالإنترنت. | no |
-
-`ACCOUNT_HAS_ACTIVE_BOOKINGS` in G4 carries `details.blockers`, an array of deletion blockers
-(`booking`, `refund`, or `damage_claim`) with each blocker's `id` and display `code`. The app maps
-those details to localized blocker rows and never relies on the message text.
 
 **Uniform-message rule (FR-028):**
 - A failed email/password sign-in always uses `authInvalidCredentials` ("البريد أو كلمة المرور
