@@ -3,6 +3,7 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/features/account/data/mock_account_server.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 
 void main() {
@@ -280,6 +281,49 @@ void main() {
           ),
         ),
       );
+    });
+  });
+
+  group('notification preferences (T095)', () {
+    setUp(() async {
+      await auth.signInEmail(
+        'legacy@onair.test',
+        MockAuthRepository.legacyPassword,
+      );
+    });
+
+    test('seeds mandatory and optional category channels', () async {
+      final preferences = await server.getPreferences();
+      final booking = preferences.singleWhere((item) => item.key == 'booking');
+      final support = preferences.singleWhere((item) => item.key == 'support');
+      expect(booking.isMandatory, isTrue);
+      expect(booking.enabled(NotificationChannel.push), isTrue);
+      expect(support.isMandatory, isFalse);
+      expect(support.enabled(NotificationChannel.email), isTrue);
+    });
+
+    test('saves optional channels and rejects mandatory ones', () async {
+      await server.setPreference(
+        'support',
+        NotificationChannel.push,
+        false,
+      );
+      expect(server.pushEnabled('support'), isFalse);
+      await expectLater(
+        server.setPreference(
+          'booking',
+          NotificationChannel.push,
+          false,
+        ),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.validationFailed,
+          ),
+        ),
+      );
+      expect(server.pushEnabled('booking'), isTrue);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 
 /// What `common_request_account_deletion` returned (contracts U5).
@@ -43,4 +44,12 @@ abstract interface class AccountRepository {
   Future<void> endOtherSessions();
   Future<void> changePassword({required String current, required String next});
   Future<void> heartbeat();
+  Future<List<NotificationPreference>> getPreferences();
+  Future<void> setPreference(
+    String category,
+    NotificationChannel channel,
+    // The wire contract is `(category, channel, enabled)`; keep this order.
+    // ignore: avoid_positional_boolean_parameters
+    bool enabled,
+  );
 }

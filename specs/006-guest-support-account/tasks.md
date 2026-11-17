@@ -690,15 +690,15 @@ uses.
 
 ### Tests for US7
 
-- [ ] T092 [P] [US7] Write `test/features/account/domain/notification_preference_test.dart`: parse the contracts U9 catalog; an unknown category → `labelKey = notifCategoryUnknown`; `in_app` is never present; a mandatory category has all channels enabled.
-- [ ] T093 [P] [US7] Write `test/features/account/presentation/preferences_cubit_test.dart`:
+- [X] T092 [P] [US7] Write `test/features/account/domain/notification_preference_test.dart`: parse the contracts U9 catalog; an unknown category → `labelKey = notifCategoryUnknown`; `in_app` is never present; a mandatory category has all channels enabled.
+- [X] T093 [P] [US7] Write `test/features/account/presentation/preferences_cubit_test.dart`:
   - load → ready;
   - a toggle is optimistic (`saving: true`) → confirmed;
   - a failure → reverted + an error event with retry;
   - toggling a mandatory category is a no-op and never calls the repository;
   - rapid toggles on the same switch send only the final value after the in-flight call;
   - `deviceNotificationsBlocked` comes from `PushPermissionCoordinator`.
-- [ ] T094 [P] [US7] Write `test/features/account/presentation/preferences_screen_test.dart` (widget):
+- [X] T094 [P] [US7] Write `test/features/account/presentation/preferences_screen_test.dart` (widget):
   - locked rows show the lock icon, a disabled switch and `prefsMandatory`, with Semantics «إلزامي»;
   - the blocked banner's «افتح الإعدادات» calls `AppSettings.openAppSettings(type: AppSettingsType.notification)`;
   - offline disables the switches.
@@ -707,13 +707,13 @@ uses.
 
 ### Implementation for US7
 
-- [ ] T095 [P] [US7] Create `lib/features/account/domain/notification_preference.dart` (data-model §7). Add `getPreferences()`/`setPreference(category, channel, enabled)` to `AccountRepository`:
+- [X] T095 [P] [US7] Create `lib/features/account/domain/notification_preference.dart` (data-model §7). Add `getPreferences()`/`setPreference(category, channel, enabled)` to `AccountRepository`:
   - the Supabase implementation calls `common_get_notification_preferences()` and `common_set_notification_preferences(p_items: [{category, channel, enabled}])`;
   - the mock seeds `booking` (mandatory), `payment` (mandatory), `support`, `reminders`, `review` and `account` (mandatory), and suppresses the mock push for disabled categories.
 
   Add the `notifCategory<Key>` l10n keys for these seeds. Makes T092 pass.
-- [ ] T096 [US7] Create `lib/features/account/presentation/notifications/preferences_cubit.dart` and `preferences_screen.dart`, wire `/account/notifications`, and link the «الإشعارات» row. Makes T093 and T094 pass.
-- [ ] T097 [US7] Extend `integration_test/account_settings_mock_test.dart` (part 3): turn off push for `support` → a mock staff reply → the in-app notification appears and no push banner; the booking row cannot change.
+- [X] T096 [US7] Create `lib/features/account/presentation/notifications/preferences_cubit.dart` and `preferences_screen.dart`, wire `/account/notifications`, and link the «الإشعارات» row. Makes T093 and T094 pass.
+- [X] T097 [US7] Extend `integration_test/account_settings_mock_test.dart` (part 3): turn off push for `support` → a mock staff reply → the in-app notification appears and no push banner; the booking row cannot change.
 
 **Checkpoint**: All seven stories work independently in mock mode.
 

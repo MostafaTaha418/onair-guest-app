@@ -20,6 +20,8 @@ import 'package:on_air/features/account/presentation/account_suspended_screen.da
 import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
 import 'package:on_air/features/account/presentation/delete/delete_account_cubit.dart';
 import 'package:on_air/features/account/presentation/delete/delete_account_screen.dart';
+import 'package:on_air/features/account/presentation/notifications/preferences_cubit.dart';
+import 'package:on_air/features/account/presentation/notifications/preferences_screen.dart';
 import 'package:on_air/features/account/presentation/security/change_password_cubit.dart';
 import 'package:on_air/features/account/presentation/security/change_password_screen.dart';
 import 'package:on_air/features/account/presentation/security/security_cubit.dart';
@@ -65,6 +67,7 @@ import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
 import 'package:on_air/features/notifications/presentation/notifications_screen.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
@@ -470,7 +473,19 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.accountNotifications,
       name: 'account-notifications',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, _) => BlocProvider<PreferencesCubit>(
+        create: (context) {
+          final cubit = PreferencesCubit(
+            context.read<AccountRepository>(),
+            deviceNotificationsBlocked: context
+                .read<PushPermissionCoordinator>()
+                .shouldShowOffNotice,
+          );
+          unawaited(cubit.load());
+          return cubit;
+        },
+        child: const PreferencesScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.accountDelete,

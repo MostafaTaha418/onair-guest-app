@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -13,6 +14,7 @@ import 'package:on_air/core/files/file_url_cache.dart';
 import 'package:on_air/core/files/image_sanitizer.dart';
 import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/features/account/data/mock_account_server.dart';
@@ -88,9 +90,30 @@ Future<MockAuthRepository> bootMockApp(
       );
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
-  final supportServer = support ?? MockSupportServer();
   final supportPicker = attachmentPicker ?? const EmptyAttachmentPicker();
   final accountServer = MockAccountServer(auth: auth);
+  final pushes = MockPushMessageSource();
+  addTearDown(pushes.dispose);
+  final supportServer =
+      support ??
+      MockSupportServer(
+        latency: Duration.zero,
+        onStaffReply: (caseId) {
+          unawaited(
+            bookingBackend.server.notifyGuest(
+              'support.staff_replied',
+              caseId,
+              entityType: 'support_case',
+              category: 'support',
+            ),
+          );
+          if (accountServer.pushEnabled('support')) {
+            pushes.emitForeground(
+              PushMessage(type: 'support.staff_replied', targetId: caseId),
+            );
+          }
+        },
+      );
   final faqCache = FaqCache(
     JsonFileCache(
       directory: directory,
@@ -133,6 +156,7 @@ Future<MockAuthRepository> bootMockApp(
         RepositoryProvider<NotificationSignalSource>.value(
           value: bookingBackend.signals,
         ),
+        RepositoryProvider<PushMessageSource>.value(value: pushes),
         ...bookingBackend.appProviders(),
         // The G4 support stack, mirroring bootstrap's mock mode.
         RepositoryProvider<SupportRepository>.value(value: supportServer),
@@ -152,7 +176,10 @@ Future<MockAuthRepository> bootMockApp(
         RepositoryProvider<AccountRepository>.value(value: accountServer),
         RepositoryProvider<MockAccountServer?>.value(value: accountServer),
       ],
-      child: OnAirApp(connectivityCubit: connectivityCubit),
+      child: OnAirApp(
+        connectivityCubit: connectivityCubit,
+        pushMessages: pushes,
+      ),
     ),
   );
   await tester.pumpAndSettle();

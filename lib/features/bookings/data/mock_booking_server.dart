@@ -589,13 +589,14 @@ final class MockBookingServer
     String typeKey,
     String entityId, {
     String entityType = 'booking',
+    String category = 'booking',
     Map<String, dynamic> params = const {},
     Duration signalDelay = Duration.zero,
   }) async {
     (await notifications).insert(0, {
       'id': _randomId('e'),
       'type_key': typeKey,
-      'category': 'booking',
+      'category': category,
       'priority': 'normal',
       'entity_type': entityType,
       'entity_id': entityId,

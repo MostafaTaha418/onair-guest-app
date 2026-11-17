@@ -4,6 +4,7 @@ import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:uuid/uuid.dart';
@@ -40,6 +41,16 @@ final class MockAccountServer implements AccountRepository {
   int changePasswordCalls = 0;
   bool revokeHeartbeat = false;
   final List<DateTime> _wrongPasswordAttempts = [];
+  final Map<String, ({bool mandatory, bool push, bool email})> _preferences = {
+    'booking': (mandatory: true, push: true, email: true),
+    'payment': (mandatory: true, push: true, email: true),
+    'support': (mandatory: false, push: true, email: true),
+    'reminders': (mandatory: false, push: true, email: true),
+    'review': (mandatory: false, push: true, email: true),
+    'account': (mandatory: true, push: true, email: true),
+  };
+  int getPreferencesCalls = 0;
+  int setPreferenceCalls = 0;
   late final List<ActiveSession> sessions = [
     ActiveSession(
       id: 'session-current',
@@ -233,6 +244,49 @@ final class MockAccountServer implements AccountRepository {
     _requireAccount();
     if (revokeHeartbeat) _fail('SESSION_REVOKED');
   });
+
+  @override
+  Future<List<NotificationPreference>> getPreferences() => _delayed(() {
+    getPreferencesCalls++;
+    _requireAccount();
+    return _preferences.entries
+        .map(
+          (entry) => NotificationPreference(
+            key: entry.key,
+            labelKey: NotificationPreference.categoryLabelKey(entry.key),
+            isMandatory: entry.value.mandatory,
+            channels: {
+              NotificationChannel.push: PreferenceChannel(
+                enabled: entry.value.push,
+              ),
+              NotificationChannel.email: PreferenceChannel(
+                enabled: entry.value.email,
+              ),
+            },
+          ),
+        )
+        .toList(growable: false);
+  });
+
+  @override
+  Future<void> setPreference(
+    String category,
+    NotificationChannel channel,
+    bool enabled,
+  ) => _delayed(() {
+    setPreferenceCalls++;
+    _requireAccount();
+    final current = _preferences[category];
+    if (current == null) _fail('NOT_FOUND');
+    if (current.mandatory) _fail('VALIDATION_FAILED');
+    _preferences[category] = (
+      mandatory: false,
+      push: channel == NotificationChannel.push ? enabled : current.push,
+      email: channel == NotificationChannel.email ? enabled : current.email,
+    );
+  });
+
+  bool pushEnabled(String category) => _preferences[category]?.push ?? true;
 
   void _requireAccount() {
     if (auth.account == null) _fail('UNAUTHENTICATED');

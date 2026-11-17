@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -381,7 +383,6 @@ _Backend _mockBackend() {
   // fixtures (FR-026).
   final server = MockBookingServer(listings: rawListings, signals: signals);
   final stay = MockStayServer(bookings: server);
-  final support = MockSupportServer();
   final secureStore = InMemorySecureStore();
   final listings = MockHomeFeedWithBookings(
     inner: rawListings,
@@ -389,6 +390,24 @@ _Backend _mockBackend() {
   );
   final auth = MockAuthRepository();
   final accountServer = MockAccountServer(auth: auth);
+  final pushes = MockPushMessageSource();
+  final support = MockSupportServer(
+    onStaffReply: (caseId) {
+      unawaited(
+        server.notifyGuest(
+          'support.staff_replied',
+          caseId,
+          entityType: 'support_case',
+          category: 'support',
+        ),
+      );
+      if (accountServer.pushEnabled('support')) {
+        pushes.emitForeground(
+          PushMessage(type: 'support.staff_replied', targetId: caseId),
+        );
+      }
+    },
+  );
   // The same stable mock id feeds the OTP send-limit device key (US5).
   const deviceIdentity = MemoryDeviceIdentity();
   return (
@@ -419,7 +438,7 @@ _Backend _mockBackend() {
       signer: _MockUploadSigner(),
       putClient: _MockRawPutClient(),
     ),
-    pushes: const NoopPushMessageSource(),
+    pushes: pushes,
     permission: FakeNotificationPermission(),
   );
 }

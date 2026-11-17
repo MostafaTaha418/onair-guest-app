@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/api/generated/export.dart' hide ErrorCode;
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/features/account/data/supabase_account_repository.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 
 // The generated ErrorCode clashes with the core one (S005 gotcha).
 import 'package:supabase_flutter/supabase_flutter.dart' hide ErrorCode;
@@ -129,5 +130,33 @@ void main() {
     await repository.changePassword(current: 'Passw0rd!', next: 'Nextpass1');
     expect(node.passwordBody?.currentPassword, 'Passw0rd!');
     expect(node.passwordBody?.newPassword, 'Nextpass1');
+  });
+
+  test('notification preferences use the exact U9 RPC contract', () async {
+    rpc.response = [
+      {
+        'category': 'support',
+        'is_mandatory': false,
+        'channels': [
+          {'channel': 'push', 'enabled': true},
+          {'channel': 'email', 'enabled': false},
+        ],
+      },
+    ];
+    final result = await repository.getPreferences();
+    expect(result.single.enabled(NotificationChannel.email), isFalse);
+    await repository.setPreference(
+      'support',
+      NotificationChannel.push,
+      false,
+    );
+    expect(rpc.calls[0].$1, 'common_get_notification_preferences');
+    expect(rpc.calls[0].$2, isEmpty);
+    expect(rpc.calls[1].$1, 'common_set_notification_preferences');
+    expect(rpc.calls[1].$2, {
+      'p_items': [
+        {'category': 'support', 'channel': 'push', 'enabled': false},
+      ],
+    });
   });
 }

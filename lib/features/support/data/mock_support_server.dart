@@ -11,6 +11,7 @@ final class MockSupportServer implements SupportRepository {
   MockSupportServer({
     this.latency = const Duration(milliseconds: 250),
     DateTime Function()? now,
+    this.onStaffReply,
   }) : _now = now ?? (() => DateTime.now().toUtc()) {
     _seed();
   }
@@ -24,6 +25,7 @@ final class MockSupportServer implements SupportRepository {
 
   final Duration latency;
   final DateTime Function() _now;
+  final void Function(String caseId)? onStaffReply;
   final Map<String, _MockCaseRecord> _cases = {};
   final Map<String, ReplyResult> _replyResults = {};
   final Map<String, CreatedCase> _createResults = {};
@@ -256,6 +258,7 @@ final class MockSupportServer implements SupportRepository {
       ..['last_activity_at'] = now.toIso8601String()
       ..['has_unread_staff_reply'] = true;
     _changes.add(caseId);
+    onStaffReply?.call(caseId);
   }
 
   void setStatus(String caseId, CaseStatus status) {

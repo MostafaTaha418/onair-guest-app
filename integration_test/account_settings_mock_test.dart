@@ -5,9 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/features/account/data/mock_account_server.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/account/presentation/account_screen.dart';
+import 'package:on_air/features/account/presentation/notifications/preferences_screen.dart';
 import 'package:on_air/features/account/presentation/security/security_screen.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
+import 'package:on_air/features/notifications/domain/notifications_repository.dart';
+import 'package:on_air/features/notifications/presentation/in_app_notification_banner.dart';
+import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../test/helpers/mock_app.dart';
@@ -203,4 +208,67 @@ void main() {
     );
     expect(find.byType(SecurityScreen), findsOneWidget);
   });
+
+  testWidgets(
+    'support push can be disabled without suppressing the in-app reply',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await bootMockApp(tester);
+      await signIn(tester);
+      await openAccount(tester);
+      await tester.tap(
+        find.byKey(const ValueKey('account-notifications-row')),
+      );
+      await pumpUntilFound(tester, find.byType(PreferencesScreen));
+
+      final supportSwitch = find.byKey(
+        const ValueKey('preference-switch-support-push'),
+      );
+      await tester.ensureVisible(supportSwitch);
+      await tester.tap(supportSwitch);
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(PreferencesScreen));
+      final account = context.read<MockAccountServer?>()!;
+      expect(account.pushEnabled('support'), isFalse);
+      expect(
+        tester
+            .widget<Switch>(
+              find.byKey(
+                const ValueKey('preference-switch-booking-push'),
+              ),
+            )
+            .onChanged,
+        isNull,
+      );
+
+      context.read<MockSupportServer?>()!.sendStaffReply(
+        MockSupportServer.waitingCaseId,
+      );
+      await tester.pumpAndSettle();
+
+      final notifications = await context
+          .read<NotificationsRepository>()
+          .list();
+      expect(
+        notifications.any(
+          (item) =>
+              item.typeKey == 'support.staff_replied' &&
+              item.category == 'support',
+        ),
+        isTrue,
+      );
+      expect(find.byType(InAppNotificationBanner), findsNothing);
+      expect(account.pushEnabled('booking'), isTrue);
+      expect(
+        (await account.getPreferences())
+            .singleWhere((item) => item.key == 'booking')
+            .enabled(NotificationChannel.push),
+        isTrue,
+      );
+    },
+  );
 }

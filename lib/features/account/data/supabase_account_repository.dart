@@ -10,6 +10,7 @@ import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
+import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -115,6 +116,31 @@ final class SupabaseAccountRepository implements AccountRepository {
   @override
   Future<void> heartbeat() => _guard(
     () async => _rpc('common_heartbeat', {}),
+  );
+
+  @override
+  Future<List<NotificationPreference>> getPreferences() => _guard(() async {
+    final response = await _rpc('common_get_notification_preferences', {});
+    return (response as List<dynamic>)
+        .map(
+          (row) => NotificationPreference.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        )
+        .toList(growable: false);
+  });
+
+  @override
+  Future<void> setPreference(
+    String category,
+    NotificationChannel channel,
+    bool enabled,
+  ) => _guard(
+    () async => _rpc('common_set_notification_preferences', {
+      'p_items': [
+        {'category': category, 'channel': channel.name, 'enabled': enabled},
+      ],
+    }),
   );
 
   Future<T> _guardNode<T>(Future<T> Function() action) async {
