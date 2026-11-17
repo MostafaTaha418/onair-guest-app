@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/features/account/data/mock_account_server.dart';
 import 'package:on_air/features/account/presentation/account_screen.dart';
+import 'package:on_air/features/account/presentation/security/security_screen.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -18,11 +21,15 @@ void main() {
   final ar = lookupAppLocalizations(const Locale('ar'));
   final en = lookupAppLocalizations(const Locale('en'));
 
-  Future<void> signIn(WidgetTester tester) async {
-    final context = tester.element(
-      find.byKey(const ValueKey('home-search-box')),
-    );
-    GoRouter.of(context).go(AppRoutes.login);
+  Future<void> signIn(
+    WidgetTester tester, {
+    String password = MockAuthRepository.legacyPassword,
+    Finder? destination,
+  }) async {
+    final home = find.byKey(const ValueKey('home-search-box'));
+    if (home.evaluate().isNotEmpty) {
+      GoRouter.of(tester.element(home)).go(AppRoutes.login);
+    }
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
@@ -30,12 +37,12 @@ void main() {
     );
     await tester.enterText(
       find.byKey(const ValueKey('password-field')),
-      MockAuthRepository.legacyPassword,
+      password,
     );
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, find.byKey(const ValueKey('home-search-box')));
+    await pumpUntilFound(tester, destination ?? home);
   }
 
   Future<void> openAccount(WidgetTester tester) async {
@@ -118,5 +125,82 @@ void main() {
     await openAccount(tester);
     expect(find.byKey(const ValueKey('visitor-sign-in')), findsOneWidget);
     expect(find.byKey(const ValueKey('account-security-row')), findsNothing);
+  });
+
+  testWidgets('sessions, password change and revoked heartbeat journey', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await bootMockApp(tester);
+    await signIn(tester);
+    final homeContext = tester.element(
+      find.byKey(const ValueKey('home-search-box')),
+    );
+    final account = homeContext.read<MockAccountServer?>()!;
+    GoRouter.of(homeContext).go(AppRoutes.accountSecurity);
+    await pumpUntilFound(tester, find.byType(SecurityScreen));
+
+    await tester.tap(
+      find.byKey(const ValueKey('end-session-session-ios')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('end-session-session-ios')),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('end-other-sessions')));
+    await pumpUntilFound(tester, find.text(ar.accountEndOthersConfirm));
+    await tester.tap(find.text(ar.accountEndOthers).last);
+    await tester.pumpAndSettle();
+    expect(account.sessions.where((session) => !session.isCurrent), isEmpty);
+
+    await tester.tap(find.byKey(const ValueKey('change-password-row')));
+    await pumpUntilFound(
+      tester,
+      find.byKey(const ValueKey('current-password-field')),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('current-password-field')),
+      'Wrongpass1',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('new-password-field')),
+      'Nextpass1',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('confirm-password-field')),
+      'Nextpass1',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('save-password')));
+    await pumpUntilFound(tester, find.text(ar.accountPasswordIncorrect));
+
+    await tester.enterText(
+      find.byKey(const ValueKey('current-password-field')),
+      MockAuthRepository.legacyPassword,
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('save-password')));
+    await pumpUntilFound(tester, find.text(ar.accountPasswordChanged));
+    expect(find.byType(SecurityScreen), findsOneWidget);
+
+    account.revokeHeartbeat = true;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
+    expect(find.text(ar.errorUnauthenticated), findsOneWidget);
+
+    account.revokeHeartbeat = false;
+    await signIn(
+      tester,
+      password: 'Nextpass1',
+      destination: find.byType(SecurityScreen),
+    );
+    expect(find.byType(SecurityScreen), findsOneWidget);
   });
 }

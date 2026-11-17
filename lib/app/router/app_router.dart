@@ -20,6 +20,10 @@ import 'package:on_air/features/account/presentation/account_suspended_screen.da
 import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
 import 'package:on_air/features/account/presentation/delete/delete_account_cubit.dart';
 import 'package:on_air/features/account/presentation/delete/delete_account_screen.dart';
+import 'package:on_air/features/account/presentation/security/change_password_cubit.dart';
+import 'package:on_air/features/account/presentation/security/change_password_screen.dart';
+import 'package:on_air/features/account/presentation/security/security_cubit.dart';
+import 'package:on_air/features/account/presentation/security/security_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -438,12 +442,30 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.accountSecurity,
       name: 'account-security',
-      builder: (_, _) => const NotAvailableScreen(),
+      builder: (context, _) => BlocProvider<SecurityCubit>(
+        create: (context) {
+          final cubit = SecurityCubit(context.read<AccountRepository>());
+          unawaited(cubit.load());
+          return cubit;
+        },
+        child: const SecurityScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.accountPassword,
       name: 'account-password',
-      builder: (_, _) => const NotAvailableScreen(),
+      redirect: (_, _) {
+        final state = authCubit.state;
+        return state is SignedIn && !state.account.hasPassword
+            ? AppRoutes.accountSecurity
+            : null;
+      },
+      builder: (context, _) => BlocProvider<ChangePasswordCubit>(
+        create: (context) => ChangePasswordCubit(
+          context.read<AccountRepository>(),
+        ),
+        child: const ChangePasswordScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.accountNotifications,

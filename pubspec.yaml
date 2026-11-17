@@ -13,6 +13,7 @@ dependencies:
   connectivity_plus: ^7.3.2
   crypto: ^3.0.8
   cupertino_icons: ^2.0.0
+  device_info_plus: ^13.3.0
   dio: ^5.11.1
   file_picker: ^13.3.3
   # Keep FlutterFire on BOM 4.20.1 while Flutter 3.44 pins

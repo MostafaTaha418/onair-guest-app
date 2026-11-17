@@ -19,6 +19,7 @@ import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/payments/in_app_browser.dart';
 import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
+import 'package:on_air/core/session/session_heartbeat.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
@@ -64,6 +65,7 @@ final class OnAirApp extends StatefulWidget {
     this.favoritesRepository,
     this.appSettingsStore,
     this.syncProfileLocale,
+    this.heartbeat,
     super.key,
   });
   final ConnectivityCubit? connectivityCubit;
@@ -88,6 +90,7 @@ final class OnAirApp extends StatefulWidget {
   final FavoritesRepository? favoritesRepository;
   final AppSettingsStore? appSettingsStore;
   final Future<void> Function(String locale)? syncProfileLocale;
+  final Future<void> Function()? heartbeat;
   @override
   State<OnAirApp> createState() => _OnAirAppState();
 }
@@ -121,6 +124,7 @@ final class _OnAirAppState extends State<OnAirApp> {
   final List<StreamSubscription<PushMessage>> _pushSubscriptions = [];
   bool _ownsVersionGate = false;
   IncomingLinks? _incomingLinks;
+  late final SessionHeartbeat _sessionHeartbeat;
 
   @override
   void initState() {
@@ -208,6 +212,13 @@ final class _OnAirAppState extends State<OnAirApp> {
       updateRequired: () => _versionGate.updateRequired,
       openStore: _openStore,
     );
+    _sessionHeartbeat = SessionHeartbeat(
+      heartbeat: widget.heartbeat ?? _createHeartbeat(),
+      isSignedIn: () => _authCubit.state is SignedIn,
+      onSessionEnded: () => _authCubit.sessionEnded(
+        _router.routerDelegate.currentConfiguration.uri.toString(),
+      ),
+    )..start();
     // One live channel per signed-in guest (Guest Plan §12.3): open on the
     // session, close on sign-out and session end.
     _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
@@ -247,6 +258,15 @@ final class _OnAirAppState extends State<OnAirApp> {
       return context.read<PushMessageSource>();
     } on ProviderNotFoundException {
       return const NoopPushMessageSource();
+    }
+  }
+
+  Future<void> Function() _createHeartbeat() {
+    try {
+      return context.read<AccountRepository>().heartbeat;
+    } on ProviderNotFoundException {
+      // Older isolated app harnesses do not install the account repository.
+      return () async {};
     }
   }
 
@@ -327,6 +347,7 @@ final class _OnAirAppState extends State<OnAirApp> {
     // The restored session opens the channel too (no state change may fire
     // for a restored sign-in).
     _onAuthStateChanged(_authCubit.state);
+    unawaited(_sessionHeartbeat.checkNow());
     unawaited(_paymentAttemptCubit.restore());
     final source = widget.uriLinkSource;
     final domain = widget.linkDomain;
@@ -353,6 +374,7 @@ final class _OnAirAppState extends State<OnAirApp> {
 
   @override
   void dispose() {
+    _sessionHeartbeat.dispose();
     _lifecycle.dispose();
     _bannerHideTimer?.cancel();
     _banner.dispose();

@@ -1,3 +1,4 @@
+import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 
@@ -36,4 +37,10 @@ abstract interface class AccountRepository {
   /// T076): a null parameter leaves the field unchanged. The name is
   /// trimmed 2–80 characters server-side; the locale is `ar|en`.
   Future<void> updateProfile({String? fullName, String? locale});
+
+  Future<List<ActiveSession>> listSessions();
+  Future<void> endSession(String id);
+  Future<void> endOtherSessions();
+  Future<void> changePassword({required String current, required String next});
+  Future<void> heartbeat();
 }

@@ -171,4 +171,115 @@ void main() {
       );
     });
   });
+
+  group('sessions and password (T081)', () {
+    setUp(() async {
+      await auth.signInEmail(
+        'legacy@onair.test',
+        MockAuthRepository.legacyPassword,
+      );
+    });
+
+    test('lists three sessions with the current one first', () async {
+      final sessions = await server.listSessions();
+      expect(sessions, hasLength(3));
+      expect(sessions.first.isCurrent, isTrue);
+    });
+
+    test(
+      'cannot end current, can end one, and end-all keeps current',
+      () async {
+        await expectLater(
+          server.endSession('session-current'),
+          throwsA(
+            isA<AppFailure>().having(
+              (failure) => failure.error.code,
+              'code',
+              ErrorCode.sessionIsCurrent,
+            ),
+          ),
+        );
+        await server.endSession('session-ios');
+        expect(await server.listSessions(), hasLength(2));
+        await server.endOtherSessions();
+        final sessions = await server.listSessions();
+        expect(sessions, hasLength(1));
+        expect(sessions.single.isCurrent, isTrue);
+      },
+    );
+
+    test('wrong, rate-limited, weak and successful password changes', () async {
+      await expectLater(
+        server.changePassword(current: 'wrong', next: 'Nextpass1'),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.passwordIncorrect,
+          ),
+        ),
+      );
+      for (var i = 0; i < 4; i++) {
+        try {
+          await server.changePassword(current: 'wrong', next: 'Nextpass1');
+        } on AppFailure {
+          // The sixth attempt below is the rate-limited one.
+        }
+      }
+      await expectLater(
+        server.changePassword(current: 'wrong', next: 'Nextpass1'),
+        throwsA(
+          isA<AppFailure>()
+              .having(
+                (failure) => failure.error.code,
+                'code',
+                ErrorCode.rateLimited,
+              )
+              .having(
+                (failure) => failure.error.details?['retry_at'],
+                'retry_at',
+                isNotNull,
+              ),
+        ),
+      );
+
+      // A fresh server has no failed-attempt window.
+      server = MockAccountServer(auth: auth, latency: Duration.zero);
+      await expectLater(
+        server.changePassword(
+          current: MockAuthRepository.legacyPassword,
+          next: 'weak',
+        ),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.passwordWeak,
+          ),
+        ),
+      );
+      await server.changePassword(
+        current: MockAuthRepository.legacyPassword,
+        next: 'Nextpass1',
+      );
+      expect(await server.listSessions(), hasLength(1));
+      expect(auth.currentPasswordMatches('Nextpass1'), isTrue);
+    });
+
+    test('social accounts cannot change a password', () async {
+      await auth.signOut();
+      auth.scenario = MockSocialScenario.completeUser;
+      await auth.signInWithGoogle();
+      await expectLater(
+        server.changePassword(current: 'x', next: 'Nextpass1'),
+        throwsA(
+          isA<AppFailure>().having(
+            (failure) => failure.error.code,
+            'code',
+            ErrorCode.actionNotAllowed,
+          ),
+        ),
+      );
+    });
+  });
 }

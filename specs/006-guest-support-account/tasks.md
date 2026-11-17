@@ -634,30 +634,30 @@ uses.
 
 ### Tests for US6
 
-- [ ] T080 [P] [US6] Write `test/features/account/domain/active_session_test.dart`: parse the contracts U6 item; `platform` unknown → `unknown`; an empty `device_label` → the `accountUnknownDevice` fallback flag; ordering puts the current one first, then `lastActiveAt` descending.
-- [ ] T081 [P] [US6] Extend `test/features/account/data/mock_account_server_test.dart`:
+- [X] T080 [P] [US6] Write `test/features/account/domain/active_session_test.dart`: parse the contracts U6 item; `platform` unknown → `unknown`; an empty `device_label` → the `accountUnknownDevice` fallback flag; ordering puts the current one first, then `lastActiveAt` descending.
+- [X] T081 [P] [US6] Extend `test/features/account/data/mock_account_server_test.dart`:
   - `listSessions` → 3 sessions with one current;
   - `endSession(current)` → `SESSION_IS_CURRENT`;
   - `endSession(other)` removes it;
   - `endOtherSessions()` leaves only the current one;
   - `changePassword`: a social account → `ACTION_NOT_ALLOWED`; a wrong current → `PASSWORD_INCORRECT`; the 6th wrong attempt within 15 min → `RATE_LIMITED` with `retry_at`; a weak new password → `PASSWORD_WEAK`; success ends the other sessions.
-- [ ] T082 [P] [US6] Write `test/features/account/presentation/security_cubit_test.dart`:
+- [X] T082 [P] [US6] Write `test/features/account/presentation/security_cubit_test.dart`:
   - loading → ready(sessions);
   - ending one marks it `ending`, then removes it after the server confirms (and reverts with an error on failure);
   - end-all-others shows `endingAll` and leaves only the current one;
   - double taps → one call each.
-- [ ] T083 [P] [US6] Write `test/features/account/presentation/change_password_cubit_test.dart`:
+- [X] T083 [P] [US6] Write `test/features/account/presentation/change_password_cubit_test.dart`:
   - the rules are "≥ 8 characters, at least one letter and one digit, new ≠ current", and confirm must match;
   - errors map to fields (`PASSWORD_INCORRECT` → the current field; `RATE_LIMITED` → a countdown notice);
   - success → `done`, and the fields are cleared;
   - `close()` clears the passwords.
-- [ ] T084 [P] [US6] Write `test/core/session/session_heartbeat_test.dart` (`fake_async`, fake lifecycle):
+- [X] T084 [P] [US6] Write `test/core/session/session_heartbeat_test.dart` (`fake_async`, fake lifecycle):
   - it calls `common_heartbeat` on resume and every 60 s while resumed, and stops when paused;
   - `SESSION_REVOKED` or `UNAUTHENTICATED` → exactly one call to the existing safe sign-out with the «انتهت الجلسة» message and the current location as the return path;
   - other errors are ignored;
   - it does not run for visitors.
-- [ ] T085 [P] [US6] Write `test/core/network/user_agent_test.dart`: the builder returns `OnAirGuest/<version> (<android|ios> <os version>; <model>)` from the `package_info_plus` / platform fakes, and it is set on the Dio factory and the Supabase client headers.
-- [ ] T086 [P] [US6] Write `test/features/account/presentation/security_screen_test.dart` and `change_password_screen_test.dart` (widget):
+- [X] T085 [P] [US6] Write `test/core/network/user_agent_test.dart`: the builder returns `OnAirGuest/<version> (<android|ios> <os version>; <model>)` from the `package_info_plus` / platform fakes, and it is set on the Dio factory and the Supabase client headers.
+- [X] T086 [P] [US6] Write `test/features/account/presentation/security_screen_test.dart` and `change_password_screen_test.dart` (widget):
   - the password row is shown only when `hasPassword`;
   - the current device has the «الجهاز ده» chip and no end action;
   - the all-others button is hidden when only one session exists and confirms via a sheet;
@@ -669,11 +669,11 @@ uses.
 
 ### Implementation for US6
 
-- [ ] T087 [P] [US6] Create `lib/features/account/domain/active_session.dart` (data-model §5). Add `listSessions()`, `endSession(id)`, `endOtherSessions()` and `changePassword({current, next})` to `AccountRepository`; implement them in the mock (T081 rules) and the Supabase repository (the RPCs `common_list_my_sessions`, `common_end_session(p_session_id)`, `common_end_other_sessions`; the generated `changePassword` Node call). Makes T080 and T081 pass.
-- [ ] T088 [US6] Create `lib/core/session/session_heartbeat.dart` (a `WidgetsBindingObserver`, 60 s `Timer.periodic` only while resumed and signed in; calls an injected `heartbeat()`; on `SESSION_REVOKED`/`UNAUTHENTICATED` triggers the existing session-expired sign-out in `lib/features/account_gate/presentation/session_listener.dart`). Add `heartbeat()` to the auth/profile data source (`common_heartbeat()`; the mock can be told to revoke). Start it from `lib/bootstrap.dart`. Makes T084 pass.
-- [ ] T089 [P] [US6] Create `lib/core/network/user_agent.dart` and set the header in `lib/core/network/dio_factory.dart` and in the `Supabase.initialize(headers: …)` call in `lib/bootstrap.dart`. Makes T085 pass.
-- [ ] T090 [US6] Create `lib/features/account/presentation/security/security_cubit.dart`, `security_screen.dart`, `change_password_cubit.dart` and `change_password_screen.dart` per contracts/ui-screens.md (reuse the registration strength meter and the `authPasswordRule` line). Wire `/account/security` and `/account/security/password` (with the `hasPassword` redirect), and link the «الأمان والأجهزة» row from the account screen. Makes T082, T083 and T086 pass.
-- [ ] T091 [US6] Extend `integration_test/account_settings_mock_test.dart` (part 2):
+- [X] T087 [P] [US6] Create `lib/features/account/domain/active_session.dart` (data-model §5). Add `listSessions()`, `endSession(id)`, `endOtherSessions()` and `changePassword({current, next})` to `AccountRepository`; implement them in the mock (T081 rules) and the Supabase repository (the RPCs `common_list_my_sessions`, `common_end_session(p_session_id)`, `common_end_other_sessions`; the generated `changePassword` Node call). Makes T080 and T081 pass.
+- [X] T088 [US6] Create `lib/core/session/session_heartbeat.dart` (a `WidgetsBindingObserver`, 60 s `Timer.periodic` only while resumed and signed in; calls an injected `heartbeat()`; on `SESSION_REVOKED`/`UNAUTHENTICATED` triggers the existing session-expired sign-out in `lib/features/account_gate/presentation/session_listener.dart`). Add `heartbeat()` to the auth/profile data source (`common_heartbeat()`; the mock can be told to revoke). Start it from `lib/bootstrap.dart`. Makes T084 pass.
+- [X] T089 [P] [US6] Create `lib/core/network/user_agent.dart` and set the header in `lib/core/network/dio_factory.dart` and in the `Supabase.initialize(headers: …)` call in `lib/bootstrap.dart`. Makes T085 pass.
+- [X] T090 [US6] Create `lib/features/account/presentation/security/security_cubit.dart`, `security_screen.dart`, `change_password_cubit.dart` and `change_password_screen.dart` per contracts/ui-screens.md (reuse the registration strength meter and the `authPasswordRule` line). Wire `/account/security` and `/account/security/password` (with the `hasPassword` redirect), and link the «الأمان والأجهزة» row from the account screen. Makes T082, T083 and T086 pass.
+- [X] T091 [US6] Extend `integration_test/account_settings_mock_test.dart` (part 2):
   - end one session, then all others;
   - change the password with a wrong then the right current one → the success snackbar;
   - a mock revoke on the next heartbeat → «انتهت الجلسة» → sign in again → back on `/account/security`.

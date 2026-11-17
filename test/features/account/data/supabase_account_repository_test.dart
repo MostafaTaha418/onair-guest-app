@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide ErrorCode;
 class _RpcMock {
   final calls = <(String, Map<String, dynamic>)>[];
   Exception? nextError;
+  dynamic response = <String, dynamic>{};
 
   Future<dynamic> call(String fn, Map<String, dynamic> params) async {
     calls.add((fn, params));
@@ -17,12 +18,13 @@ class _RpcMock {
       nextError = null;
       throw error;
     }
-    return <String, dynamic>{};
+    return response;
   }
 }
 
 class _NodeMock extends Fake implements FallbackClient {
   final otpCalls = <String>[];
+  V1AccountPasswordRequestBody? passwordBody;
 
   @override
   Future<OtpSent> sendOtpCode({
@@ -39,6 +41,14 @@ class _NodeMock extends Fake implements FallbackClient {
       serverTime: DateTime.utc(2026, 11, 17, 12),
       nextSendAt: DateTime.utc(2026, 11, 17, 12, 1),
     );
+  }
+
+  @override
+  Future<void> changePassword({
+    required String xRequestId,
+    required V1AccountPasswordRequestBody body,
+  }) async {
+    passwordBody = body;
   }
 }
 
@@ -88,5 +98,36 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('session methods use the U6 RPC names and parameters', () async {
+    rpc.response = [
+      {
+        'id': 'current',
+        'device_label': 'Pixel',
+        'platform': 'android',
+        'created_at': '2026-11-01T00:00:00Z',
+        'last_active_at': '2026-11-17T00:00:00Z',
+        'is_current': true,
+      },
+    ];
+    expect((await repository.listSessions()).single.id, 'current');
+    rpc.response = <String, dynamic>{};
+    await repository.endSession('session-2');
+    await repository.endOtherSessions();
+    await repository.heartbeat();
+    expect(rpc.calls.map((call) => call.$1), [
+      'common_list_my_sessions',
+      'common_end_session',
+      'common_end_other_sessions',
+      'common_heartbeat',
+    ]);
+    expect(rpc.calls[1].$2, {'p_session_id': 'session-2'});
+  });
+
+  test('changePassword calls the generated Node operation', () async {
+    await repository.changePassword(current: 'Passw0rd!', next: 'Nextpass1');
+    expect(node.passwordBody?.currentPassword, 'Passw0rd!');
+    expect(node.passwordBody?.newPassword, 'Nextpass1');
   });
 }

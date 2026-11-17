@@ -23,6 +23,7 @@ import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
+import 'package:on_air/core/network/user_agent.dart';
 import 'package:on_air/core/push/firebase_push_token_source.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/push/push_messages.dart';
@@ -240,6 +241,7 @@ Future<void> bootstrap(String flavor) async {
         appSettingsStore: appSettingsStore,
         syncProfileLocale: (locale) =>
             backend.account.updateProfile(locale: locale),
+        heartbeat: backend.account.heartbeat,
         favoritesRepository: favorites,
         signOutCoordinator: signOutCoordinator,
         sessionEventSource: sessionEventSource,
@@ -302,10 +304,12 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
         ? const AppleDebugProvider()
         : const AppleAppAttestWithDeviceCheckFallbackProvider(),
   );
+  final userAgent = await UserAgentBuilder.fromPlatform().build();
   await Supabase.initialize(
     url: environment.supabaseUrl,
     publishableKey: environment.supabaseAnonKey,
     authOptions: FlutterAuthClientOptions(localStorage: SecureSessionStorage()),
+    headers: {'User-Agent': userAgent},
   );
   final client = Supabase.instance.client;
   Future<dynamic> rpc(String fn, Map<String, dynamic> params) =>
@@ -316,6 +320,7 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     tokens: SupabaseTokenSource(client),
     deviceIdentity: deviceIdentity,
     attestation: const FirebaseAppAttestation(),
+    userAgent: userAgent,
   );
   final socialCredentials = GoogleAppleCredentialSource(
     serverClientId: environment.googleServerClientId,

@@ -246,6 +246,18 @@ final class MockAuthRepository implements AuthRepository {
     _changes.add(user.toAccount());
   }
 
+  bool get currentHasPassword => _current?.hasPassword ?? false;
+
+  bool currentPasswordMatches(String password) =>
+      _current?.password == password;
+
+  void changeCurrentPassword(String password) {
+    final user = _current;
+    if (user == null) throw const AuthRequestRejected('UNAUTHENTICATED');
+    user.password = password;
+    _changes.add(user.toAccount());
+  }
+
   /// S005 mock: «أكّد رقمك» confirms the number and activates the
   /// account (the WhatsApp step's success path, US4).
   void activatePhone({required String userId, required String phoneE164}) {

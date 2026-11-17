@@ -8,6 +8,7 @@ import 'package:on_air/core/api/generated/export.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
+import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -76,6 +77,54 @@ final class SupabaseAccountRepository implements AccountRepository {
       await _rpc('common_update_profile', params);
     },
   );
+
+  @override
+  Future<List<ActiveSession>> listSessions() => _guard(() async {
+    final response = await _rpc('common_list_my_sessions', {});
+    return ActiveSession.sorted(
+      (response as List<dynamic>).map(
+        (row) => ActiveSession.fromJson(Map<String, dynamic>.from(row as Map)),
+      ),
+    );
+  });
+
+  @override
+  Future<void> endSession(String id) => _guard(
+    () async => _rpc('common_end_session', {'p_session_id': id}),
+  );
+
+  @override
+  Future<void> endOtherSessions() => _guard(
+    () async => _rpc('common_end_other_sessions', {}),
+  );
+
+  @override
+  Future<void> changePassword({
+    required String current,
+    required String next,
+  }) => _guardNode(
+    () => _node.changePassword(
+      xRequestId: const Uuid().v4(),
+      body: V1AccountPasswordRequestBody(
+        currentPassword: current,
+        newPassword: next,
+      ),
+    ),
+  );
+
+  @override
+  Future<void> heartbeat() => _guard(
+    () async => _rpc('common_heartbeat', {}),
+  );
+
+  Future<T> _guardNode<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on DioException catch (error) {
+      final inner = error.error;
+      throw AppFailure(inner is ApiError ? inner : ErrorMapper.noResponse());
+    }
+  }
 
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {

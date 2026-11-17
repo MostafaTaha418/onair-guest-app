@@ -2,6 +2,7 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/features/account/domain/account_repository.dart';
+import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/domain/deletion.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/features/auth/phone_verification/domain/phone_verification_repository.dart';
@@ -33,6 +34,38 @@ final class MockAccountServer implements AccountRepository {
   final List<({String? fullName, String? locale})> profileUpdates = [];
   String? profileLocale;
   bool deleted = false;
+  int listSessionsCalls = 0;
+  int endSessionCalls = 0;
+  int endOtherSessionsCalls = 0;
+  int changePasswordCalls = 0;
+  bool revokeHeartbeat = false;
+  final List<DateTime> _wrongPasswordAttempts = [];
+  late final List<ActiveSession> sessions = [
+    ActiveSession(
+      id: 'session-current',
+      deviceLabel: 'Samsung SM-A546 · Android 14',
+      platform: SessionPlatform.android,
+      createdAt: _now().subtract(const Duration(days: 20)),
+      lastActiveAt: _now(),
+      isCurrent: true,
+    ),
+    ActiveSession(
+      id: 'session-ios',
+      deviceLabel: 'iPhone 15 · iOS 18',
+      platform: SessionPlatform.ios,
+      createdAt: _now().subtract(const Duration(days: 12)),
+      lastActiveAt: _now().subtract(const Duration(hours: 2)),
+      isCurrent: false,
+    ),
+    ActiveSession(
+      id: 'session-web',
+      deviceLabel: 'Chrome · Windows',
+      platform: SessionPlatform.web,
+      createdAt: _now().subtract(const Duration(days: 4)),
+      lastActiveAt: _now().subtract(const Duration(days: 1)),
+      isCurrent: false,
+    ),
+  ];
 
   /// Open deletion challenges (tests assert the request opened one).
   int get challengeCount => _challenges.length;
@@ -130,6 +163,80 @@ final class MockAccountServer implements AccountRepository {
           profileLocale = locale;
         }
       });
+
+  @override
+  Future<List<ActiveSession>> listSessions() => _delayed(() {
+    listSessionsCalls++;
+    _requireAccount();
+    return ActiveSession.sorted(sessions);
+  });
+
+  @override
+  Future<void> endSession(String id) => _delayed(() {
+    endSessionCalls++;
+    _requireAccount();
+    final index = sessions.indexWhere((session) => session.id == id);
+    if (index < 0) _fail('NOT_FOUND');
+    if (sessions[index].isCurrent) _fail('SESSION_IS_CURRENT');
+    sessions.removeAt(index);
+  });
+
+  @override
+  Future<void> endOtherSessions() => _delayed(() {
+    endOtherSessionsCalls++;
+    _requireAccount();
+    sessions.removeWhere((session) => !session.isCurrent);
+  });
+
+  @override
+  Future<void> changePassword({
+    required String current,
+    required String next,
+  }) => _delayed(() {
+    changePasswordCalls++;
+    _requireAccount();
+    if (!auth.currentHasPassword) _fail('ACTION_NOT_ALLOWED');
+    final now = _now();
+    _wrongPasswordAttempts.removeWhere(
+      (attempt) => now.difference(attempt) >= const Duration(minutes: 15),
+    );
+    if (!auth.currentPasswordMatches(current)) {
+      _wrongPasswordAttempts.add(now);
+      if (_wrongPasswordAttempts.length >= 6) {
+        throw AppFailure(
+          ErrorMapper.fromCode(
+            'RATE_LIMITED',
+            details: {
+              'retry_at': now
+                  .add(const Duration(minutes: 15))
+                  .toIso8601String(),
+              'retry_after_seconds': 900,
+            },
+          ),
+        );
+      }
+      _fail('PASSWORD_INCORRECT');
+    }
+    if (next.length < 8 ||
+        !RegExp('[A-Za-z]').hasMatch(next) ||
+        !RegExp(r'\d').hasMatch(next) ||
+        next == current) {
+      _fail('PASSWORD_WEAK');
+    }
+    auth.changeCurrentPassword(next);
+    _wrongPasswordAttempts.clear();
+    sessions.removeWhere((session) => !session.isCurrent);
+  });
+
+  @override
+  Future<void> heartbeat() => _delayed(() {
+    _requireAccount();
+    if (revokeHeartbeat) _fail('SESSION_REVOKED');
+  });
+
+  void _requireAccount() {
+    if (auth.account == null) _fail('UNAUTHENTICATED');
+  }
 
   /// The server's masking (contracts U5): `a***@g***.com`.
   static String _maskEmail(String email) {
