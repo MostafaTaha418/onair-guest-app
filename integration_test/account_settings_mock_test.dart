@@ -34,6 +34,7 @@ void main() {
     final home = find.byKey(const ValueKey('home-search-box'));
     if (home.evaluate().isNotEmpty) {
       GoRouter.of(tester.element(home)).go(AppRoutes.login);
+      await tester.pumpAndSettle();
     }
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     await tester.enterText(
@@ -64,10 +65,6 @@ void main() {
   testWidgets('name, language and appearance persist; sign-out is public', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
     final auth = await bootMockApp(tester);
     await signIn(tester);
     await openAccount(tester);
@@ -92,10 +89,9 @@ void main() {
 
     // Locale applies immediately and flips the app to LTR.
     final language = find.byKey(const ValueKey('account-language-row'));
-    await tester.ensureVisible(language);
-    await tester.tap(language);
+    await tapVisible(tester, language);
     await pumpUntilFound(tester, find.text(ar.settingsLanguageEnglish));
-    await tester.tap(find.text(ar.settingsLanguageEnglish));
+    await tapVisible(tester, find.text(ar.settingsLanguageEnglish));
     await pumpUntilFound(tester, find.text(en.account));
     expect(
       Directionality.of(tester.element(find.byType(AccountScreen))),
@@ -104,10 +100,9 @@ void main() {
 
     // Appearance also applies immediately.
     final appearance = find.byKey(const ValueKey('account-appearance-row'));
-    await tester.ensureVisible(appearance);
-    await tester.tap(appearance);
+    await tapVisible(tester, appearance);
     await pumpUntilFound(tester, find.text(en.settingsThemeDark));
-    await tester.tap(find.text(en.settingsThemeDark));
+    await tapVisible(tester, find.text(en.settingsThemeDark));
     await tester.pumpAndSettle();
     expect(
       Theme.of(tester.element(find.byType(AccountScreen))).brightness,
@@ -144,10 +139,6 @@ void main() {
   testWidgets('sessions, password change and revoked heartbeat journey', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
     await bootMockApp(tester);
     await signIn(tester);
     final homeContext = tester.element(
@@ -187,17 +178,22 @@ void main() {
       find.byKey(const ValueKey('confirm-password-field')),
       'Nextpass1',
     );
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('save-password')));
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('save-password')),
+      dismissKeyboard: true,
+    );
     await pumpUntilFound(tester, find.text(ar.accountPasswordIncorrect));
 
     await tester.enterText(
       find.byKey(const ValueKey('current-password-field')),
       MockAuthRepository.legacyPassword,
     );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('save-password')));
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('save-password')),
+      dismissKeyboard: true,
+    );
     await pumpUntilFound(tester, find.text(ar.accountPasswordChanged));
     expect(find.byType(SecurityScreen), findsOneWidget);
 
@@ -228,10 +224,6 @@ void main() {
   testWidgets(
     'support push can be disabled without suppressing the in-app reply',
     (tester) async {
-      tester.view.physicalSize = const Size(800, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
       await bootMockApp(tester);
       await signIn(tester);
       await openAccount(tester);
@@ -255,6 +247,10 @@ void main() {
         await tester.pump(const Duration(milliseconds: 250));
       }
       expect(account.pushEnabled('support'), isFalse);
+      await pumpUntilFound(
+        tester,
+        find.byKey(const ValueKey('preference-switch-booking-push')),
+      );
       expect(
         tester
             .widget<Switch>(

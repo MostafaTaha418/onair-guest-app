@@ -71,12 +71,6 @@ void main() {
   }
 
   testWidgets('the full support loop from a booking', (tester) async {
-    // Device runners report an arbitrary window; pin a tall one so every
-    // step stays hit-testable (device-CI rule).
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
     final picker = FakeAttachmentPicker();
     final photos = await twoPhotos();
     final server = MockSupportServer(latency: Duration.zero);

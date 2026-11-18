@@ -26,6 +26,7 @@ void main() {
       find.byKey(const ValueKey('home-search-box')),
     );
     GoRouter.of(context).go(AppRoutes.login);
+    await tester.pumpAndSettle();
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     await pumpUntilFound(tester, find.byKey(const ValueKey('password-field')));
     await tester.enterText(
@@ -97,12 +98,6 @@ void main() {
   testWidgets('the blocked account sees its blockers, not the code step', (
     tester,
   ) async {
-    // Device runners report an arbitrary window; pin a tall one so every
-    // step stays hit-testable (device-CI rule).
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
     await bootMockApp(tester);
     await signIn(tester, 'blocked@onair.test');
     await openDeleteFlow(
@@ -124,10 +119,6 @@ void main() {
   testWidgets('a normal account deletes and lands on the visitor home', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1000);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
     await bootMockApp(tester);
     await signIn(tester, 'legacy@onair.test');
     await openDeleteFlow(
