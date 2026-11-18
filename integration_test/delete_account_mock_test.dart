@@ -27,6 +27,7 @@ void main() {
     );
     GoRouter.of(context).go(AppRoutes.login);
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
+    await pumpUntilFound(tester, find.byKey(const ValueKey('password-field')));
     await tester.enterText(
       find.byKey(const ValueKey('email-field')),
       email,
@@ -37,12 +38,13 @@ void main() {
       MockAuthRepository.legacyPassword,
     );
     await tester.pump();
-    await tapAndWait(
+    await tapVisible(
       tester,
       find.byKey(const ValueKey('email-submit-button')),
-      find.byKey(const ValueKey('home-search-box')),
       dismissKeyboard: true,
     );
+    await pumpUntilAbsent(tester, find.byKey(const ValueKey('email-field')));
+    await pumpUntilFound(tester, find.byKey(const ValueKey('home-search-box')));
   }
 
   /// Account tab → the temporary danger row → the deletion explain step,
@@ -97,7 +99,7 @@ void main() {
   ) async {
     // Device runners report an arbitrary window; pin a tall one so every
     // step stays hit-testable (device-CI rule).
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
@@ -122,7 +124,7 @@ void main() {
   testWidgets('a normal account deletes and lands on the visitor home', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 

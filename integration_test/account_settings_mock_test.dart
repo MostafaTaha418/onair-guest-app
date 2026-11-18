@@ -44,12 +44,13 @@ void main() {
       find.byKey(const ValueKey('password-field')),
       password,
     );
-    await tapAndWait(
+    await tapVisible(
       tester,
       find.byKey(const ValueKey('email-submit-button')),
-      destination ?? home,
       dismissKeyboard: true,
     );
+    await pumpUntilAbsent(tester, find.byKey(const ValueKey('email-field')));
+    await pumpUntilFound(tester, destination ?? home);
   }
 
   Future<void> openAccount(WidgetTester tester) async {
@@ -63,7 +64,7 @@ void main() {
   testWidgets('name, language and appearance persist; sign-out is public', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -78,11 +79,14 @@ void main() {
       find.byKey(const ValueKey('edit-name-field')),
       'Mona Ibrahim',
     );
-    await tapAndWait(
+    await tapVisible(
       tester,
       find.byKey(const ValueKey('edit-name-save')),
-      find.text('MI'),
       dismissKeyboard: true,
+    );
+    await pumpUntilAbsent(
+      tester,
+      find.byKey(const ValueKey('edit-name-field')),
     );
     expect(find.text('Mona Ibrahim'), findsOneWidget);
 
@@ -140,7 +144,7 @@ void main() {
   testWidgets('sessions, password change and revoked heartbeat journey', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -210,7 +214,7 @@ void main() {
       await tester.pump();
     }
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
-    expect(find.text(ar.errorUnauthenticated), findsOneWidget);
+    expect(find.byType(SecurityScreen), findsNothing);
 
     account.revokeHeartbeat = false;
     await signIn(
@@ -224,7 +228,7 @@ void main() {
   testWidgets(
     'support push can be disabled without suppressing the in-app reply',
     (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 

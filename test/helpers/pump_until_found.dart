@@ -35,6 +35,21 @@ Future<void> pumpUntilFound(
   expect(_hasMatch(finder), isTrue, reason: 'Expected to find $finder');
 }
 
+/// Waits for a route, sheet, or transient control to leave the tree.
+///
+/// This is safer than waiting for a destination that may already be mounted
+/// behind the current route on a real device runner.
+Future<void> pumpUntilAbsent(
+  WidgetTester tester,
+  Finder finder, {
+  int maxAttempts = 80,
+}) async {
+  for (var attempt = 0; attempt < maxAttempts && _hasMatch(finder); attempt++) {
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+  expect(_hasMatch(finder), isFalse, reason: 'Expected not to find $finder');
+}
+
 /// Waits until an asynchronously rendered collection reaches [count].
 Future<void> pumpUntilCount(
   WidgetTester tester,
