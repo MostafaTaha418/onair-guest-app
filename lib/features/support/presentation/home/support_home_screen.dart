@@ -9,6 +9,7 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
 import 'package:on_air/features/support/presentation/support_texts.dart';
@@ -95,9 +96,9 @@ final class _SupportHomeScreenState extends State<SupportHomeScreen> {
             sliver: SliverToBoxAdapter(
               child: Text(
                 l10n.supportMyCases,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.onAirExtraBold,
               ),
             ),
           ),
@@ -139,8 +140,9 @@ final class _SupportHomeScreenState extends State<SupportHomeScreen> {
                         const SizedBox(height: Dimens.space16),
                         Text(
                           l10n.supportFinishedCases,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.onAirExtraBold,
                         ),
                         const SizedBox(height: Dimens.space8),
                       ],
@@ -193,10 +195,10 @@ final class _SupportHero extends StatelessWidget {
           const SizedBox(height: Dimens.space8),
           Text(
             l10n.supportSubtitle,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: colors.onPrimary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleLarge?.onAirExtraBold
+                .copyWith(
+                  color: colors.onPrimary,
+                ),
           ),
           const SizedBox(height: Dimens.space16),
           Wrap(
@@ -246,8 +248,9 @@ final class _CaseCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${item.code} · ${supportTypeLabel(item.type, l10n)}',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.onAirExtraBold,
                       ),
                     ),
                     if (item.hasUnreadStaffReply)

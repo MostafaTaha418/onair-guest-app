@@ -13,6 +13,7 @@ import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/account/presentation/edit_name_sheet.dart';
 import 'package:on_air/features/account/presentation/settings_sheets.dart';
 import 'package:on_air/features/account/presentation/widgets/account_info_row.dart';
@@ -269,10 +270,10 @@ final class _AccountHeader extends StatelessWidget {
           ),
           child: Text(
             account.initials,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleLarge?.onAirExtraBold
+                .copyWith(
+                  color: colors.primary,
+                ),
           ),
         ),
         const SizedBox(width: Dimens.space16),
@@ -282,9 +283,9 @@ final class _AccountHeader extends StatelessWidget {
             children: [
               Text(
                 account.fullName ?? l10n.accountNameLabel,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.onAirExtraBold,
               ),
               if (account.email != null)
                 Text(
@@ -449,9 +450,9 @@ final class _VisitorAccount extends StatelessWidget {
               children: [
                 Text(
                   l10n.accountVisitorTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.onAirExtraBold,
                 ),
                 const SizedBox(height: Dimens.space16),
                 FilledButton(

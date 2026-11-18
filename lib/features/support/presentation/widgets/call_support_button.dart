@@ -7,6 +7,7 @@ import 'package:on_air/core/config/app_config.dart';
 import 'package:on_air/core/config/app_config_repository.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,9 +58,9 @@ Future<void> showSupportNumberSheet(BuildContext context, String phone) {
             Center(
               child: SelectableText(
                 phone,
-                style: Theme.of(sheetContext).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  sheetContext,
+                ).textTheme.headlineSmall?.onAirExtraBold,
               ),
             ),
             const SizedBox(height: Dimens.space16),
@@ -158,8 +159,9 @@ final class _CallSupportButtonState extends State<CallSupportButton> {
                     children: [
                       Text(
                         l10n.supportCall,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.onAirExtraBold,
                       ),
                       if (hours != null)
                         Text(

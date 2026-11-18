@@ -10,6 +10,7 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/support/presentation/faq/faq_cubit.dart';
 import 'package:on_air/features/support/presentation/widgets/call_support_button.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -138,9 +139,9 @@ final class _FaqScreenState extends State<FaqScreen> {
             ),
             title: Text(
               item.question,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.onAirExtraBold,
             ),
             children: [
               Align(
@@ -183,10 +184,10 @@ final class _FaqHero extends StatelessWidget {
         children: [
           Text(
             l10n.supportSubtitle,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: colors.onPrimary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.titleLarge?.onAirExtraBold
+                .copyWith(
+                  color: colors.onPrimary,
+                ),
           ),
           const SizedBox(height: Dimens.space16),
           OnAirTextField(

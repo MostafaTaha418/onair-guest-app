@@ -12,6 +12,7 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/account/domain/active_session.dart';
 import 'package:on_air/features/account/presentation/security/security_cubit.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
@@ -192,7 +193,7 @@ final class _SessionRow extends StatelessWidget {
                     children: [
                       Text(
                         label,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        style: const TextStyle().onAirBold,
                       ),
                       if (session.isCurrent)
                         StatusChip(

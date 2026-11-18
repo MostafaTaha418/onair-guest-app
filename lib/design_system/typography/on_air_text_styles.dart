@@ -64,6 +64,11 @@ final class OnAirTextStyles extends ThemeExtension<OnAirTextStyles> {
       : this;
 }
 
+extension OnAirTextStyleEmphasis on TextStyle {
+  TextStyle get onAirBold => copyWith(fontWeight: FontWeight.w700);
+  TextStyle get onAirExtraBold => copyWith(fontWeight: FontWeight.w800);
+}
+
 TextTheme onAirTextTheme(Color color) => TextTheme(
   displayLarge: TextStyle(
     fontFamily: 'Cairo',

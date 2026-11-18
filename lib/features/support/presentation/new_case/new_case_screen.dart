@@ -16,6 +16,7 @@ import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/design_system/components/on_air_text_field.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/auth/presentation/widgets/rapid_submit_guard.dart';
 import 'package:on_air/features/bookings/domain/booking_status.dart';
 import 'package:on_air/features/bookings/domain/booking_summary.dart';
@@ -170,9 +171,9 @@ final class _NewCaseScreenState extends State<NewCaseScreen> {
         children: [
           Text(
             l10n.supportType,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.onAirExtraBold,
           ),
           const SizedBox(height: Dimens.space8),
           Wrap(
@@ -317,9 +318,9 @@ final class _BookingLinkSheetState extends State<_BookingLinkSheet> {
               ),
               child: Text(
                 l10n.supportLinkBooking,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.onAirExtraBold,
               ),
             ),
             Expanded(
