@@ -99,8 +99,11 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await pumpUntilFound(tester, find.text(l10n.paymentSuccessTitle));
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byKey(const ValueKey('return-view-booking')));
-    await pumpUntilFound(tester, find.text(l10n.bookingContactSupport));
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('return-view-booking')),
+      find.text(l10n.bookingContactSupport),
+    );
 
     // 2. «تواصل مع OnAir» → the form opens with the booking linked and
     //    «حجز» preselected (FR-007).

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -78,12 +79,15 @@ void main() {
     await tapAndWait(
       tester,
       find.text(l10n.deleteCta),
-      find.text(l10n.deleteUnderstand).last,
+      find.byType(OnAirConfirmSheet),
     );
     await tester.pump(const Duration(milliseconds: 500));
     await tapAndWait(
       tester,
-      find.text(l10n.deleteUnderstand).last,
+      find.descendant(
+        of: find.byType(OnAirConfirmSheet),
+        matching: find.text(l10n.deleteUnderstand),
+      ),
       destination,
     );
   }

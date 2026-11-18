@@ -81,10 +81,10 @@ void main() {
     await tapAndWait(
       tester,
       find.byKey(const ValueKey('edit-name-save')),
-      find.text('Mona Ibrahim'),
+      find.text('MI'),
       dismissKeyboard: true,
     );
-    expect(find.text('MI'), findsOneWidget);
+    expect(find.text('Mona Ibrahim'), findsOneWidget);
 
     // Locale applies immediately and flips the app to LTR.
     final language = find.byKey(const ValueKey('account-language-row'));
@@ -198,8 +198,17 @@ void main() {
     expect(find.byType(SecurityScreen), findsOneWidget);
 
     account.revokeHeartbeat = true;
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    for (final state in const [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+      AppLifecycleState.hidden,
+      AppLifecycleState.inactive,
+      AppLifecycleState.resumed,
+    ]) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+      await tester.pump();
+    }
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     expect(find.text(ar.errorUnauthenticated), findsOneWidget);
 
@@ -231,11 +240,16 @@ void main() {
       final supportSwitch = find.byKey(
         const ValueKey('preference-switch-support-push'),
       );
-      await tapVisible(tester, supportSwitch);
-      await tester.pumpAndSettle();
-
       final context = tester.element(find.byType(PreferencesScreen));
       final account = context.read<MockAccountServer?>()!;
+      await tapVisible(tester, supportSwitch);
+      for (
+        var attempt = 0;
+        attempt < 80 && account.pushEnabled('support');
+        attempt++
+      ) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
       expect(account.pushEnabled('support'), isFalse);
       expect(
         tester
