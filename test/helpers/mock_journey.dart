@@ -19,14 +19,9 @@ import 'register_mock_guest.dart';
 /// mode end to end, from search to the booking entry and back.
 Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    // The host window is 800x600; a taller surface keeps the whole date
-    // sheet on screen. Device runs keep their real window.
-    tester.view.physicalSize = const Size(800, 1400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-  }
+  // The host window is 800x600; a taller surface keeps the whole date sheet
+  // on screen. Device runs keep their real, tappable window.
+  pinHostTestView(tester, physicalSize: const Size(800, 1400));
   await bootMockApp(tester);
 
   // 1–2. Open Search, pick 2 guests.

@@ -56,17 +56,12 @@ if ! grep -q "UIKitApplication:$bundle_id" "$services"; then
 fi
 echo "Launch check passed."
 
-if compgen -G "integration_test/*_test.dart" >/dev/null; then
+if [[ -f integration_test/device_suite_test.dart ]]; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
-    # Match Android: a full Flutter engine is expensive on a hosted device,
-    # so run each integration target serially. Run the timeline benchmark
-    # through its host driver with a direct VM service.
-    integration_targets=()
-    for target in integration_test/*_test.dart; do
-      [[ "$target" == integration_test/results_scroll_perf_test.dart ]] || integration_targets+=("$target")
-    done
+    # Register every journey in one target so Xcode builds and installs one
+    # Flutter test application instead of rebuilding it for every Dart file.
     # shellcheck disable=SC2086
-    flutter test --concurrency=1 "${integration_targets[@]}" -d "$udid" $test_args
+    flutter test integration_test/device_suite_test.dart -d "$udid" $test_args
     # shellcheck disable=SC2086
     flutter drive --no-dds \
       --driver=test_driver/perf_driver.dart \

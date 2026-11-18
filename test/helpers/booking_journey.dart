@@ -46,12 +46,7 @@ import 'register_mock_guest.dart';
 /// on a device through `integration_test/booking_journey_mock_test.dart`.
 Future<void> runPaymentJourney(WidgetTester tester) async {
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-  }
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 

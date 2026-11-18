@@ -16,6 +16,26 @@ bool _hasMatch(Finder finder) {
   }
 }
 
+/// Gives host widget tests a deterministic surface without lying to a real
+/// device runner about its tappable viewport.
+///
+/// IntegrationTestWidgetsFlutterBinding uses the simulator's native window.
+/// Overriding that view can place rendered controls outside the OS hit-test
+/// area even though Flutter still finds them in the widget tree.
+void pinHostTestView(
+  WidgetTester tester, {
+  required Size physicalSize,
+  double devicePixelRatio = 1,
+}) {
+  if (TestWidgetsFlutterBinding.instance
+      is! AutomatedTestWidgetsFlutterBinding) {
+    return;
+  }
+  tester.view.physicalSize = physicalSize;
+  tester.view.devicePixelRatio = devicePixelRatio;
+  addTearDown(tester.view.reset);
+}
+
 /// Waits for async mock data or route transitions on slower device runners.
 ///
 /// The default covers the slowest observed iOS runner (~15 s of real time

@@ -27,10 +27,7 @@ void main() {
 
   /// Home → booking auth gate → the login screen's Google row.
   Future<void> openLoginFromApartment(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    pinHostTestView(tester, physicalSize: const Size(800, 1600));
     await openBookingLoginFromHome(tester);
   }
 
@@ -253,10 +250,7 @@ Future<void> reachBlockViaFormAfterSignIn(
   WidgetTester tester,
   MockAuthRepository auth,
 ) async {
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1.0;
-  addTearDown(tester.view.reset);
-
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   await openBookingLoginFromHome(tester);
   auth.scenario = MockSocialScenario.newUser;
   await tapAndWait(

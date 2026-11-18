@@ -24,10 +24,7 @@ void main() {
 
   /// Home → booking auth gate → the login screen.
   Future<void> openLoginFromApartment(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    pinHostTestView(tester, physicalSize: const Size(800, 1600));
     await openBookingLoginFromHome(tester);
   }
 
