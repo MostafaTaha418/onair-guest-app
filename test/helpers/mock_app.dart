@@ -14,6 +14,7 @@ import 'package:on_air/core/files/file_url_cache.dart';
 import 'package:on_air/core/files/image_sanitizer.dart';
 import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
+import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/push/push_messages.dart';
 import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
@@ -27,6 +28,7 @@ import 'package:on_air/features/home/data/home_feed_cache.dart';
 import 'package:on_air/features/listings/data/mock_listings_repository.dart';
 import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
+import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
 import 'package:on_air/features/support/data/faq_cache.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
@@ -93,6 +95,7 @@ Future<MockAuthRepository> bootMockApp(
   final supportPicker = attachmentPicker ?? const EmptyAttachmentPicker();
   final accountServer = MockAccountServer(auth: auth);
   final pushes = MockPushMessageSource();
+  final notificationPermission = FakeNotificationPermission();
   addTearDown(pushes.dispose);
   final supportServer =
       support ??
@@ -157,6 +160,15 @@ Future<MockAuthRepository> bootMockApp(
           value: bookingBackend.signals,
         ),
         RepositoryProvider<PushMessageSource>.value(value: pushes),
+        RepositoryProvider<NotificationPermission>.value(
+          value: notificationPermission,
+        ),
+        RepositoryProvider<PushPermissionCoordinator>.value(
+          value: PushPermissionCoordinator(
+            permission: notificationPermission,
+            devices: null,
+          ),
+        ),
         ...bookingBackend.appProviders(),
         // The G4 support stack, mirroring bootstrap's mock mode.
         RepositoryProvider<SupportRepository>.value(value: supportServer),

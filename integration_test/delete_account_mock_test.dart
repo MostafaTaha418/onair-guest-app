@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/config/mock_backend.dart';
+import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -35,34 +36,55 @@ void main() {
       MockAuthRepository.legacyPassword,
     );
     await tester.pump();
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, find.byKey(const ValueKey('home-search-box')));
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('email-submit-button')),
+      find.byKey(const ValueKey('home-search-box')),
+      dismissKeyboard: true,
+    );
   }
 
   /// Account tab → the temporary danger row → the deletion explain step,
   /// checkbox armed and confirmed.
-  Future<void> openDeleteFlow(WidgetTester tester) async {
+  Future<void> openDeleteFlow(
+    WidgetTester tester, {
+    required Finder destination,
+  }) async {
     final context = tester.element(
       find.byKey(const ValueKey('home-search-box')),
     );
     GoRouter.of(context).go(AppRoutes.account);
-    await pumpUntilFound(
+    await pumpUntilFound(tester, find.byType(AccountScreen));
+    final deleteRow = find.byKey(const ValueKey('account-delete-row'));
+    if (!tester.any(deleteRow)) {
+      await tester.scrollUntilVisible(
+        deleteRow,
+        240,
+        scrollable: find
+            .descendant(
+              of: find.byType(AccountScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+    }
+    await tapAndWait(
       tester,
-      find.byKey(const ValueKey('account-delete-row')),
+      deleteRow,
+      find.text(l10n.deleteWhatGoes),
     );
-    await tester.tap(find.byKey(const ValueKey('account-delete-row')));
-    await pumpUntilFound(tester, find.text(l10n.deleteWhatGoes));
-    await tester.tap(find.byKey(const ValueKey('delete-understand')));
+    await tapVisible(tester, find.byKey(const ValueKey('delete-understand')));
     await tester.pump();
-    await tester.tap(find.text(l10n.deleteCta));
-    await pumpUntilFound(tester, find.text(l10n.deleteUnderstand).last);
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.tap(find.text(l10n.deleteUnderstand).last);
-    await pumpUntilFound(
+    await tapAndWait(
       tester,
-      find.byKey(const ValueKey('delete-otp-field')),
+      find.text(l10n.deleteCta),
+      find.text(l10n.deleteUnderstand).last,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    await tapAndWait(
+      tester,
+      find.text(l10n.deleteUnderstand).last,
+      destination,
     );
   }
 
@@ -77,7 +99,10 @@ void main() {
 
     await bootMockApp(tester);
     await signIn(tester, 'blocked@onair.test');
-    await openDeleteFlow(tester);
+    await openDeleteFlow(
+      tester,
+      destination: find.text(l10n.deleteBlockedTitle),
+    );
 
     // The blocker refusal renders instead of the OTP field.
     await pumpUntilFound(tester, find.text(l10n.deleteBlockedTitle));
@@ -93,9 +118,16 @@ void main() {
   testWidgets('a normal account deletes and lands on the visitor home', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
     await bootMockApp(tester);
     await signIn(tester, 'legacy@onair.test');
-    await openDeleteFlow(tester);
+    await openDeleteFlow(
+      tester,
+      destination: find.byKey(const ValueKey('delete-otp-field')),
+    );
     expect(find.text(l10n.deleteCodeSent('l***@o***.test')), findsOneWidget);
 
     // The 6-digit code completes the field: the confirm fires on its own.

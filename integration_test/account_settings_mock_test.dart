@@ -44,10 +44,12 @@ void main() {
       find.byKey(const ValueKey('password-field')),
       password,
     );
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('email-submit-button')));
-    await pumpUntilFound(tester, destination ?? home);
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('email-submit-button')),
+      destination ?? home,
+      dismissKeyboard: true,
+    );
   }
 
   Future<void> openAccount(WidgetTester tester) async {
@@ -76,9 +78,12 @@ void main() {
       find.byKey(const ValueKey('edit-name-field')),
       'Mona Ibrahim',
     );
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('edit-name-save')));
-    await pumpUntilFound(tester, find.text('Mona Ibrahim'));
+    await tapAndWait(
+      tester,
+      find.byKey(const ValueKey('edit-name-save')),
+      find.text('Mona Ibrahim'),
+      dismissKeyboard: true,
+    );
     expect(find.text('MI'), findsOneWidget);
 
     // Locale applies immediately and flips the app to LTR.
@@ -148,14 +153,12 @@ void main() {
     GoRouter.of(homeContext).go(AppRoutes.accountSecurity);
     await pumpUntilFound(tester, find.byType(SecurityScreen));
 
-    await tester.tap(
-      find.byKey(const ValueKey('end-session-session-ios')),
+    final iosSession = find.byKey(
+      const ValueKey('end-session-session-ios'),
     );
+    await tapVisible(tester, iosSession);
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('end-session-session-ios')),
-      findsNothing,
-    );
+    expect(iosSession, findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('end-other-sessions')));
     await pumpUntilFound(tester, find.text(ar.accountEndOthersConfirm));
@@ -219,16 +222,16 @@ void main() {
       await bootMockApp(tester);
       await signIn(tester);
       await openAccount(tester);
-      await tester.tap(
+      await tapAndWait(
+        tester,
         find.byKey(const ValueKey('account-notifications-row')),
+        find.byType(PreferencesScreen),
       );
-      await pumpUntilFound(tester, find.byType(PreferencesScreen));
 
       final supportSwitch = find.byKey(
         const ValueKey('preference-switch-support-push'),
       );
-      await tester.ensureVisible(supportSwitch);
-      await tester.tap(supportSwitch);
+      await tapVisible(tester, supportSwitch);
       await tester.pumpAndSettle();
 
       final context = tester.element(find.byType(PreferencesScreen));

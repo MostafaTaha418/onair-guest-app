@@ -6,6 +6,7 @@ import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
+import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -128,12 +129,24 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   // The sign-in navigation replaced the stack, so the shell tabs are gone;
   // reach the account screen through the router to sign out.
   GoRouter.of(tester.element(find.text(apartmentTitle))).go('/account');
-  await tester.pumpAndSettle();
+  await pumpUntilFound(tester, find.byType(AccountScreen));
   final signOutRow = find.byKey(const ValueKey('account-sign-out-row'));
-  await tester.ensureVisible(signOutRow);
-  await tester.tap(signOutRow);
+  if (!tester.any(signOutRow)) {
+    await tester.scrollUntilVisible(
+      signOutRow,
+      240,
+      scrollable: find
+          .descendant(
+            of: find.byType(AccountScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+  }
+  await tapVisible(tester, signOutRow);
   await tester.pumpAndSettle();
-  await tester.tap(
+  await tapVisible(
+    tester,
     find.descendant(
       of: find.byType(OnAirConfirmSheet),
       matching: find.text(l10n.accountSignOut),

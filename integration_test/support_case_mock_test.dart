@@ -82,7 +82,6 @@ void main() {
     final server = MockSupportServer(latency: Duration.zero);
     picker.gallery = photos;
     await bootMockApp(tester, support: server, attachmentPicker: picker);
-    await bootMockApp(tester, support: server, attachmentPicker: picker);
 
     // 1. Create and pay for a booking, then land on its details screen.
     await openFirstApartmentAndSignIn(tester, l10n, firstSignIn: true);
@@ -106,8 +105,11 @@ void main() {
     // 2. «تواصل مع OnAir» → the form opens with the booking linked and
     //    «حجز» preselected (FR-007).
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.text(l10n.bookingContactSupport));
-    await pumpUntilFound(tester, find.byType(NewCaseScreen));
+    await tapAndWait(
+      tester,
+      find.text(l10n.bookingContactSupport),
+      find.byType(NewCaseScreen),
+    );
     await pumpUntilFound(
       tester,
       find.text(l10n.supportLinkedBooking('OA-MOCK001')),
@@ -170,8 +172,11 @@ void main() {
     await tester.tap(find.text('اتقفلت'));
     await pumpUntilFound(tester, find.text(l10n.supportCaseClosed));
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.text(l10n.supportOpenNewCase));
-    await pumpUntilFound(tester, find.byType(NewCaseScreen));
+    await tapAndWait(
+      tester,
+      find.text(l10n.supportOpenNewCase),
+      find.byType(NewCaseScreen),
+    );
     await pumpUntilFound(
       tester,
       find.text(l10n.supportLinkedBooking('OA-MOCK001')),
