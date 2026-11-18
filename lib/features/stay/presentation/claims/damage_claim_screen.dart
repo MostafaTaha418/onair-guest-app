@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/error_message.dart';
+import 'package:on_air/core/files/file_url_cache.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/design_system/components/amount_row.dart';
 import 'package:on_air/design_system/components/bottom_action_bar.dart';
@@ -19,7 +22,6 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/stay/domain/damage_claim.dart';
 import 'package:on_air/features/stay/presentation/claims/claim_texts.dart';
 import 'package:on_air/features/stay/presentation/claims/damage_claim_cubit.dart';
-import 'package:on_air/features/stay/presentation/claims/evidence_url_cache.dart';
 import 'package:on_air/features/stay/presentation/claims/evidence_viewer.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -38,7 +40,7 @@ final class DamageClaimScreen extends StatefulWidget {
 }
 
 final class _DamageClaimScreenState extends State<DamageClaimScreen> {
-  late final EvidenceUrlCache _urls = EvidenceUrlCache(
+  late final FileUrlCache _urls = FileUrlCache(
     context.read(),
   );
   final TextEditingController _note = TextEditingController();
@@ -192,7 +194,7 @@ final class _ReadyBody extends StatelessWidget {
   });
 
   final ClaimReady state;
-  final EvidenceUrlCache urls;
+  final FileUrlCache urls;
   final TextEditingController noteController;
 
   @override
@@ -277,9 +279,25 @@ final class _ReadyBody extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(
                         top: Dimens.space8,
                       ),
-                      child: SelectableText(
-                        l10n.claimCaseNumber(claim.supportCaseNumber!),
-                      ),
+                      child: claim.supportCaseId == null
+                          ? SelectableText(
+                              l10n.claimCaseNumber(claim.supportCaseNumber!),
+                            )
+                          : Semantics(
+                              link: true,
+                              child: TextButton(
+                                onPressed: () => context.push(
+                                  AppRoutes.supportCase(
+                                    claim.supportCaseId!,
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.claimCaseNumber(
+                                    claim.supportCaseNumber!,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                 ],
                 if (claim.resolution != null) ...[
@@ -335,7 +353,7 @@ final class _Thumb extends StatefulWidget {
 
   final List<EvidenceRef> evidence;
   final int index;
-  final EvidenceUrlCache urls;
+  final FileUrlCache urls;
 
   @override
   State<_Thumb> createState() => _ThumbState();

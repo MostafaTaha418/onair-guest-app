@@ -23,6 +23,7 @@ import 'package:on_air/features/listings/data/reference_data_cache.dart';
 import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
+import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/controllable_push_message_source.dart';
@@ -31,6 +32,7 @@ import '../helpers/fake_auth_repository.dart';
 import '../helpers/fake_booking_backend.dart';
 import '../helpers/fake_listings_repository.dart';
 import '../helpers/fake_share_service.dart';
+import '../helpers/fake_support_repository.dart';
 
 Future<void> pumpVisitorApp(
   WidgetTester tester, {
@@ -97,6 +99,9 @@ Future<void> _pumpApp(
   addTearDown(auth.dispose);
   final bookingBackend = FakeBookingBackend();
   addTearDown(bookingBackend.dispose);
+  final support = FakeSupportRepository();
+  addTearDown(support.changes.close);
+  addTearDown(support.connected.close);
   final config = FakeAppConfigRepository(
     const AppConfig(
       minSupportedBuildAndroid: 1,
@@ -149,6 +154,7 @@ Future<void> _pumpApp(
             devices: null,
           ),
         ),
+        RepositoryProvider<SupportRepository>.value(value: support),
       ],
       child: OnAirApp(
         connectivityCubit: connectivityCubit,

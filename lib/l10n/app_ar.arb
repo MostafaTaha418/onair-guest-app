@@ -428,8 +428,6 @@
     }
   },
   "galleryEmpty": "مفيش صور للشقة دي.",
-  "supportEntryTitle": "تواصل مع OnAir",
-  "supportEntryComingSoon": "خدمة الدعم من التطبيق هتتفتح قريب.",
   "errorAccountSuspended": "الحساب موقوف. تواصل مع خدمة العملاء.",
   "authPhoneAlreadyUsed": "الرقم ده مستخدم في حساب تاني.",
   "bookingPolicyOutOfBounds": "السعر مش ثابت على التواريخ دي. جرّب تواريخ تانية أو تواصل مع الدعم.",
@@ -1139,5 +1137,196 @@
   "accountPhone": "رقم الهاتف",
   "accountPhoneConfirmed": "متأكد",
   "accountChangePhone": "تغيير",
-  "verifyPhoneOnWhatsApp": "أكّد رقمك على واتساب"
+  "verifyPhoneOnWhatsApp": "أكّد رقمك على واتساب",
+  "supportTitle": "الدعم",
+  "supportSubtitle": "إحنا هنا عشان نساعدك",
+  "supportMyCases": "حالاتي",
+  "supportFinishedCases": "حالات منتهية",
+  "supportNewCase": "حالة جديدة",
+  "supportEmpty": "لسه مفتحتش أي حالة",
+  "supportLastUpdate": "آخر تحديث {time}",
+  "@supportLastUpdate": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "supportStatusOpen": "مفتوحة",
+  "supportStatusInProgress": "قيد المتابعة",
+  "supportStatusWaitingUser": "مستني ردك",
+  "supportStatusResolved": "اتحلّت",
+  "supportStatusClosed": "مقفولة",
+  "supportStatusUnknown": "حالة غير معروفة",
+  "supportTypeBooking": "حجز",
+  "supportTypePayment": "دفع",
+  "supportTypeRefund": "استرداد",
+  "supportTypePropertyIssue": "مشكلة في الشقة",
+  "supportTypeOther": "أخرى",
+  "supportTypeDamageDispute": "اعتراض على مطالبة",
+  "supportTypeComplaint": "شكوى",
+  "supportTypeStayException": "استثناء في الإقامة",
+  "supportTypeUnknown": "أخرى",
+  "supportType": "نوع المشكلة",
+  "supportLinkBooking": "اربط بحجز",
+  "supportLinkedBooking": "الحجز {code}",
+  "@supportLinkedBooking": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "supportLinkedProperty": "الشقة: {title}",
+  "@supportLinkedProperty": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "supportDescription": "اكتب اللي حصل",
+  "supportDescriptionTooShort": "اكتب 10 حروف على الأقل",
+  "supportSend": "إرسال",
+  "supportCreated": "وصلتنا حالتك رقم {code}",
+  "@supportCreated": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "supportDiscardTitle": "تسيب الحالة من غير ما تبعتها؟",
+  "supportDiscard": "سيبها",
+  "supportKeepEditing": "كمّل",
+  "supportReplyHint": "اكتب ردك",
+  "supportOnAir": "OnAir",
+  "supportCaseClosed": "الحالة دي اتقفلت",
+  "supportOpenNewCase": "افتح حالة جديدة",
+  "supportResolvedNotice": "الحالة اتحلّت. لو لسه محتاج مساعدة ردّ هنا وهنفتحها تاني",
+  "supportCaseNotFound": "الحالة دي مش موجودة",
+  "supportBackToSupport": "الرجوع للدعم",
+  "supportAttach": "إضافة",
+  "supportAttachCamera": "الكاميرا",
+  "supportAttachGallery": "الصور",
+  "supportAttachPdf": "ملف PDF",
+  "supportAttachHint": "لحد {count} ملفات، صور أو PDF",
+  "@supportAttachHint": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "supportAttachRemove": "شيل الملف",
+  "supportAttachRetry": "إعادة المحاولة",
+  "supportAttachFailed": "فشل الرفع",
+  "supportAttachmentRejectedTooLarge": "الملف أكبر من {size} ميجا",
+  "@supportAttachmentRejectedTooLarge": {
+    "placeholders": {
+      "size": { "type": "int" }
+    }
+  },
+  "supportAttachmentRejectedType": "النوع ده مش مسموح. صور أو PDF بس",
+  "supportAttachmentRejectedTooMany": "وصلت للحد: {count} ملفات",
+  "@supportAttachmentRejectedTooMany": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "supportFaq": "الأسئلة الشائعة",
+  "supportFaqSearch": "ابحث في الأسئلة",
+  "supportFaqNoResults": "مفيش نتايج",
+  "supportFaqStale": "ممكن تكون المعلومات دي قديمة",
+  "supportCall": "اتصل بخدمة العملاء",
+  "supportCallHours": "مواعيد العمل: {hours}",
+  "@supportCallHours": {
+    "placeholders": {
+      "hours": { "type": "String" }
+    }
+  },
+  "supportCallCopied": "اتنسخ الرقم",
+  "accountEdit": "تعديل",
+  "accountEditName": "تعديل الاسم",
+  "accountNameLabel": "الاسم",
+  "accountNameInvalid": "الاسم لازم يكون من 2 لـ 80 حرف",
+  "accountSave": "حفظ",
+  "accountSectionGeneral": "عام",
+  "accountSectionSecurity": "الأمان",
+  "accountSectionSupport": "الدعم",
+  "accountSectionLegal": "قانوني",
+  "accountNotifications": "الإشعارات",
+  "accountAppearance": "المظهر",
+  "accountLanguage": "اللغة",
+  "settingsThemeSystem": "حسب الجهاز",
+  "settingsThemeLight": "فاتح",
+  "settingsThemeDark": "داكن",
+  "settingsLanguageArabic": "العربية",
+  "settingsLanguageEnglish": "English",
+  "accountSecurityRow": "الأمان والأجهزة",
+  "accountTerms": "الشروط والأحكام",
+  "accountPrivacy": "سياسة الخصوصية",
+  "accountSignOut": "تسجيل الخروج",
+  "accountSignOutConfirm": "تخرج من حسابك؟",
+  "accountDelete": "حذف الحساب",
+  "accountVisitorTitle": "سجّل دخولك عشان تتابع حجوزاتك",
+  "accountChangePassword": "تغيير كلمة المرور",
+  "accountCurrentPassword": "كلمة المرور الحالية",
+  "accountNewPassword": "كلمة المرور الجديدة",
+  "accountConfirmPassword": "تأكيد كلمة المرور",
+  "accountPasswordMismatch": "كلمتين المرور مش زي بعض",
+  "accountPasswordSameAsOld": "اختار كلمة مرور مختلفة عن الحالية",
+  "accountPasswordIncorrect": "كلمة المرور الحالية غلط",
+  "accountPasswordChanged": "تم تغيير كلمة المرور، وخرّجنا باقي الأجهزة",
+  "accountDevices": "الأجهزة المسجّل دخولها",
+  "accountThisDevice": "الجهاز ده",
+  "accountLastActive": "آخر نشاط {time}",
+  "@accountLastActive": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "accountUnknownDevice": "جهاز",
+  "accountEndSession": "خروج",
+  "accountEndOthers": "تسجيل الخروج من كل الأجهزة التانية",
+  "accountEndOthersConfirm": "هتخرج من كل الأجهزة ما عدا الجهاز ده",
+  "accountSessionIsCurrent": "ده الجهاز اللي معاك. استخدم «تسجيل الخروج»",
+  "prefsDeviceBlocked": "إشعارات الجهاز مقفولة للتطبيق",
+  "prefsOpenSettings": "افتح الإعدادات",
+  "prefsPush": "إشعارات الجهاز",
+  "prefsEmail": "البريد",
+  "prefsMandatory": "إشعارات ضرورية للحجز والدفع ومش بتتقفل",
+  "prefsMandatoryLabel": "إلزامي",
+  "prefsSaveFailed": "مقدرناش نحفظ التغيير",
+  "notifCategoryBooking": "الحجوزات",
+  "notifCategoryPayment": "المدفوعات",
+  "notifCategorySupport": "الدعم",
+  "notifCategoryReminders": "التذكيرات",
+  "notifCategoryReview": "التقييمات",
+  "notifCategoryAccount": "أمان الحساب",
+  "notifCategoryUnknown": "أخرى",
+  "deleteTitle": "حذف الحساب",
+  "deleteWhatGoes": "هنمسح بياناتك الشخصية: الاسم والبريد والرقم والمفضلة والتفضيلات",
+  "deleteWhatStays": "حجوزاتك ومدفوعاتك القديمة هتفضل محفوظة من غير بياناتك، زي ما القانون بيطلب",
+  "deleteFinal": "الحذف نهائي ومالوش رجوع",
+  "deleteUnderstand": "فاهم إن الحذف نهائي",
+  "deleteCta": "احذف حسابي",
+  "deleteBlockedTitle": "مينفعش تحذف الحساب دلوقتي",
+  "deleteBlockerBooking": "عندك حجز لسه شغال {code}",
+  "@deleteBlockerBooking": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteBlockerRefund": "عندك استرداد لسه بيتنفذ {code}",
+  "@deleteBlockerRefund": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteBlockerClaim": "عندك مطالبة لسه مفتوحة {code}",
+  "@deleteBlockerClaim": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "deleteCodeSent": "بعتنا كود على {email}",
+  "@deleteCodeSent": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "deleteConfirm": "تأكيد الحذف",
+  "deleteDone": "حسابك اتحذف",
+  "accountHasActiveBookings": "مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال"
 }

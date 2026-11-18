@@ -26,6 +26,21 @@ Widget _chips(ThemeMode mode, TextDirection direction, double scale) => _wrap(
   ),
 );
 
+Widget _caseChips(ThemeMode mode, TextDirection direction, double scale) =>
+    _wrap(
+      mode,
+      direction,
+      scale,
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final status in SupportCaseStatus.values)
+            CaseStatusChip(status: status),
+        ],
+      ),
+    );
+
 String _toneLabel(StatusTone tone) => switch (tone) {
   StatusTone.warning => 'بانتظار إتمام الدفع',
   StatusTone.info => 'جارٍ التحقق من الدفع',
@@ -168,6 +183,24 @@ Widget _wrap(
 );
 
 void main() {
+  unawaited(
+    goldenTest(
+      'support case status chips',
+      fileName: 'support_case_status_chips',
+      constraints: const BoxConstraints(maxWidth: 680, maxHeight: 1600),
+      builder: () => GoldenTestGroup(
+        columns: 2,
+        children: [
+          for (final mode in [ThemeMode.light, ThemeMode.dark])
+            for (final direction in [TextDirection.rtl, TextDirection.ltr])
+              GoldenTestScenario(
+                name: '${mode.name} ${direction.name}',
+                child: _caseChips(mode, direction, 1.3),
+              ),
+        ],
+      ),
+    ),
+  );
   unawaited(
     goldenTest(
       'booking status chips in every tone',
