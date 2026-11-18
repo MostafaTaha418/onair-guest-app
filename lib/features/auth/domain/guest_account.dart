@@ -57,17 +57,4 @@ final class GuestAccount {
   /// `unknown` (forward-compatible) status routes like `active` — the server
   /// still enforces `PROFILE_INCOMPLETE` (review fix 6).
   bool get needsPhoneStep => status == AccountStatus.incomplete;
-
-  /// The avatar letters (data-model §5): the first letters of the first two
-  /// name words, upper-cased for Latin. Empty when there is no name — the
-  /// header falls back to a generic glyph.
-  String get initials {
-    final words = (fullName ?? '')
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((word) => word.isNotEmpty)
-        .toList();
-    if (words.isEmpty) return '';
-    return words.take(2).map((word) => word[0].toUpperCase()).join();
-  }
 }

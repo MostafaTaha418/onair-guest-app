@@ -77,18 +77,6 @@ void main() {
     });
   });
 
-  group('initials', () {
-    test('uses the first letters of the first two words', () {
-      expect(account(fullName: 'مصطفى طه').initials, 'مط');
-      expect(account(fullName: 'mostafa taha').initials, 'MT');
-    });
-
-    test('uses one letter for one word and is empty without a name', () {
-      expect(account(fullName: 'Mostafa').initials, 'M');
-      expect(account().initials, isEmpty);
-    });
-  });
-
   group('enums', () {
     test('AccountStatus.fromJson falls back to unknown', () {
       expect(AccountStatus.fromJson('active'), AccountStatus.active);

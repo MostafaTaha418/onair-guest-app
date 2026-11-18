@@ -15,7 +15,6 @@ export 'models/v1_guest_bookings_booking_id_remaining_payment_request_body.dart'
 export 'models/post_v1_uploads_sign_response.dart';
 export 'models/v1_uploads_sign_request_body.dart';
 export 'models/get_v1_files_attachment_id_url_response.dart';
-export 'models/v1_account_password_request_body.dart';
 export 'models/details.dart';
 export 'models/error.dart';
 export 'models/entity_type.dart';

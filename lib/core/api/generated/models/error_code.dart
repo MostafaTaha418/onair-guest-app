@@ -61,18 +61,6 @@ enum ErrorCode {
   profileIncomplete('PROFILE_INCOMPLETE'),
   @JsonValue('ACCOUNT_HAS_ACTIVE_BOOKINGS')
   accountHasActiveBookings('ACCOUNT_HAS_ACTIVE_BOOKINGS'),
-  @JsonValue('CASE_CLOSED')
-  caseClosed('CASE_CLOSED'),
-  @JsonValue('ATTACHMENT_REJECTED')
-  attachmentRejected('ATTACHMENT_REJECTED'),
-  @JsonValue('SESSION_REVOKED')
-  sessionRevoked('SESSION_REVOKED'),
-  @JsonValue('SESSION_IS_CURRENT')
-  sessionIsCurrent('SESSION_IS_CURRENT'),
-  @JsonValue('PASSWORD_INCORRECT')
-  passwordIncorrect('PASSWORD_INCORRECT'),
-  @JsonValue('PASSWORD_WEAK')
-  passwordWeak('PASSWORD_WEAK'),
   @JsonValue('PROPERTY_NOT_AVAILABLE')
   propertyNotAvailable('PROPERTY_NOT_AVAILABLE'),
   @JsonValue('DATES_UNAVAILABLE')

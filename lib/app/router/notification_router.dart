@@ -60,14 +60,7 @@ abstract final class NotificationRouter {
           ? AppRoutes.bookingDetails(entityId)
           : AppRoutes.bookings;
     }
-    if (typeKey.startsWith('support.')) {
-      return AppRoutes.isUuidV4(entityId)
-          ? AppRoutes.supportCase(entityId)
-          : AppRoutes.support;
-    }
-    if (typeKey == 'account.password_changed') {
-      return AppRoutes.accountSecurity;
-    }
+    if (typeKey.startsWith('support.')) return AppRoutes.supportNew;
     if (typeKey.startsWith('account.')) return AppRoutes.account;
     return AppRoutes.bookings;
   }

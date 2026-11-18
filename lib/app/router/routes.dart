@@ -8,10 +8,6 @@ abstract final class AppRoutes {
   /// «تغيير رقم الهاتف» (S005 US6); the redirect already treats it as an
   /// account screen for incomplete sessions.
   static const accountPhone = '/account/phone';
-  static const accountSecurity = '/account/security';
-  static const accountPassword = '/account/security/password';
-  static const accountNotifications = '/account/notifications';
-  static const accountDelete = '/account/delete';
 
   /// The full-screen notice a `suspended`/`deleted` account sees on
   /// account-gated routes (review fix 6).
@@ -39,8 +35,6 @@ abstract final class AppRoutes {
   static const bookingSummaryPattern = '/book/:propertyId/summary';
   static const notifications = '/notifications';
   static const supportNew = '/support/new';
-  static const support = '/support';
-  static const supportFaq = '/support/faq';
   static const bookingDetailsPattern = '/bookings/:id';
   static const remainingPaymentPattern = '/bookings/:id/remaining-payment';
   static const cashConfirmPattern = '/bookings/:id/cash-confirm';
@@ -98,10 +92,6 @@ abstract final class AppRoutes {
       favorites,
       account,
       accountPhone,
-      accountSecurity,
-      accountPassword,
-      accountNotifications,
-      accountDelete,
       splash,
       login,
       register,
@@ -117,8 +107,6 @@ abstract final class AppRoutes {
       homeToday,
       homeNewest,
       supportNew,
-      support,
-      supportFaq,
       notifications,
       paymentReturnPath,
     };
@@ -141,12 +129,7 @@ abstract final class AppRoutes {
     if (path == bookings ||
         path == favorites ||
         path == account ||
-        path == accountPhone ||
-        path == accountSecurity ||
-        path == accountPassword ||
-        path == accountNotifications ||
-        path == accountDelete ||
-        path == support) {
+        path == accountPhone) {
       return true;
     }
     if (path == supportNew || path == notifications) return true;
@@ -225,7 +208,6 @@ abstract final class AppRoutes {
       ? paymentReturnPath
       : '$paymentReturnPath?booking=$bookingId';
   static String bookingsTab(String tab) => '/bookings?tab=$tab';
-  static String supportCase(String id) => '/support/$id';
 
   static bool _validMatch(RegExp pattern, String path, {int idCount = 1}) {
     final match = pattern.firstMatch(path);

@@ -5,10 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
-import 'package:on_air/app/settings/app_settings_cubit.dart';
 import 'package:on_air/core/config/app_config.dart';
-import 'package:on_air/core/payments/in_app_browser.dart';
-import 'package:on_air/features/account/presentation/account_screen.dart';
+import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -16,13 +14,9 @@ import 'package:on_air/features/auth/phone_verification/domain/phone_verificatio
 import 'package:on_air/features/auth/phone_verification/presentation/confirm_phone_screen.dart';
 import 'package:on_air/features/auth/phone_verification/presentation/phone_verification_cubit.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
-import 'package:on_air/features/support/domain/support_repository.dart';
 
 import '../../helpers/fake_app_config_repository.dart';
 import '../../helpers/fake_auth_repository.dart';
-import '../../helpers/fake_connectivity.dart';
-import '../../helpers/fake_in_app_browser.dart';
-import '../../helpers/fake_support_repository.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/pump_until_found.dart';
 
@@ -105,12 +99,6 @@ void main() {
         currentTermsVersion: 'v1',
       ),
     );
-    final settings = AppSettingsCubit.seeded(const AppSettings());
-    final connectivity = FakeConnectivity().createCubit();
-    final support = FakeSupportRepository();
-    final browser = FakeInAppBrowser();
-    addTearDown(settings.close);
-    addTearDown(connectivity.close);
 
     late final GoRouter router;
     router = GoRouter(
@@ -118,16 +106,7 @@ void main() {
       routes: [
         GoRoute(
           path: AppRoutes.account,
-          builder: (_, _) => MultiRepositoryProvider(
-            providers: [
-              RepositoryProvider<SupportRepository>.value(value: support),
-              RepositoryProvider<InAppBrowser>.value(value: browser),
-            ],
-            child: BlocProvider<AppSettingsCubit>.value(
-              value: settings,
-              child: const AccountScreen(),
-            ),
-          ),
+          builder: (_, _) => const AccountPlaceholderScreen(),
         ),
         GoRoute(
           path: AppRoutes.accountPhone,
@@ -153,7 +132,6 @@ void main() {
       appConfigRepository: config,
       authCubit: cubit,
       routerConfig: router,
-      connectivityCubit: connectivity,
     );
     await tester.pump();
 
@@ -179,7 +157,7 @@ void main() {
       ),
       '123456',
     );
-    // Completing all six digits triggers verification automatically.
+    await tester.tap(find.byKey(const ValueKey('whatsapp-confirm')));
     // The success pops the screen and shows a snackbar (a real timer) —
     // fixed pumps instead of pumpAndSettle (periodic-timer deadlock).
     for (var i = 0; i < 12; i++) {

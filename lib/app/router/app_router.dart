@@ -14,18 +14,8 @@ import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/core/time/stay_range.dart';
-import 'package:on_air/features/account/domain/account_repository.dart';
-import 'package:on_air/features/account/presentation/account_screen.dart';
+import 'package:on_air/features/account/presentation/account_placeholder_screen.dart';
 import 'package:on_air/features/account/presentation/account_suspended_screen.dart';
-import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
-import 'package:on_air/features/account/presentation/delete/delete_account_cubit.dart';
-import 'package:on_air/features/account/presentation/delete/delete_account_screen.dart';
-import 'package:on_air/features/account/presentation/notifications/preferences_cubit.dart';
-import 'package:on_air/features/account/presentation/notifications/preferences_screen.dart';
-import 'package:on_air/features/account/presentation/security/change_password_cubit.dart';
-import 'package:on_air/features/account/presentation/security/change_password_screen.dart';
-import 'package:on_air/features/account/presentation/security/security_cubit.dart';
-import 'package:on_air/features/account/presentation/security/security_screen.dart';
 import 'package:on_air/features/app_update/presentation/not_available_screen.dart';
 import 'package:on_air/features/app_update/presentation/update_required_screen.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
@@ -67,7 +57,6 @@ import 'package:on_air/features/listings/domain/listings_repository.dart';
 import 'package:on_air/features/notifications/domain/notifications_repository.dart';
 import 'package:on_air/features/notifications/presentation/notifications_cubit.dart';
 import 'package:on_air/features/notifications/presentation/notifications_screen.dart';
-import 'package:on_air/features/notifications/presentation/push_permission_coordinator.dart';
 import 'package:on_air/features/notifications/presentation/unread_count_cubit.dart';
 import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
@@ -91,16 +80,7 @@ import 'package:on_air/features/stay/presentation/claims/damage_claim_resolver_s
 import 'package:on_air/features/stay/presentation/claims/damage_claim_screen.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_cubit.dart';
 import 'package:on_air/features/stay/presentation/remaining_payment/remaining_payment_screen.dart';
-import 'package:on_air/features/support/data/faq_cache.dart';
-import 'package:on_air/features/support/domain/support_repository.dart';
-import 'package:on_air/features/support/presentation/case/case_details_cubit.dart';
-import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
-import 'package:on_air/features/support/presentation/faq/faq_cubit.dart';
-import 'package:on_air/features/support/presentation/faq/faq_screen.dart';
-import 'package:on_air/features/support/presentation/home/support_home_cubit.dart';
-import 'package:on_air/features/support/presentation/home/support_home_screen.dart';
-import 'package:on_air/features/support/presentation/new_case/new_case_cubit.dart';
-import 'package:on_air/features/support/presentation/new_case/new_case_screen.dart';
+import 'package:on_air/features/support/presentation/support_entry_placeholder_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 bool _defaultUpdateRequired() => false;
@@ -387,116 +367,15 @@ GoRouter createAppRouter({
       ],
     ),
     GoRoute(
-      path: AppRoutes.support,
-      name: 'support',
-      builder: (context, _) => BlocProvider<SupportHomeCubit>(
-        create: (context) {
-          final cubit = SupportHomeCubit(
-            repository: context.read<SupportRepository>(),
-            signals: context.read<NotificationSignalSource>(),
-            connection: context.read<ConnectivityCubit>(),
-          );
-          unawaited(cubit.load());
-          return cubit;
-        },
-        child: const SupportHomeScreen(),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.supportFaq,
-      name: 'support-faq',
-      builder: (context, _) => BlocProvider<FaqCubit>(
-        create: (context) {
-          final cubit = FaqCubit(
-            repository: context.read<SupportRepository>(),
-            cache: context.read<FaqCache>(),
-          );
-          unawaited(cubit.load());
-          return cubit;
-        },
-        child: const FaqScreen(),
-      ),
-    ),
-    GoRoute(
       path: AppRoutes.supportNew,
       name: 'support-new',
       builder: (_, state) {
-        String? validUuid(String? value) =>
-            value != null && AppRoutes.isUuidV4(value) ? value : null;
-        return BlocProvider<NewCaseCubit>(
-          create: (context) =>
-              NewCaseCubit(
-                repository: context.read<SupportRepository>(),
-                bookings: context.read<BookingsRepository>(),
-                resolvePropertyTitle: (propertyId) async =>
-                    (await context.read<ListingsRepository>().property(
-                      propertyId,
-                    )).title,
-                connection: context.read<ConnectivityCubit>(),
-              )..open(
-                bookingId: validUuid(state.uri.queryParameters['booking']),
-                propertyId: validUuid(state.uri.queryParameters['property']),
-                type: state.uri.queryParameters['type'],
-              ),
-          child: const NewCaseScreen(),
+        final booking = state.uri.queryParameters['booking'];
+        return SupportEntryPlaceholderScreen(
+          propertyId: state.uri.queryParameters['property'],
+          bookingId: AppRoutes.isUuidV4(booking ?? '') ? booking : null,
         );
       },
-    ),
-    GoRoute(
-      path: AppRoutes.accountSecurity,
-      name: 'account-security',
-      builder: (context, _) => BlocProvider<SecurityCubit>(
-        create: (context) {
-          final cubit = SecurityCubit(context.read<AccountRepository>());
-          unawaited(cubit.load());
-          return cubit;
-        },
-        child: const SecurityScreen(),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.accountPassword,
-      name: 'account-password',
-      redirect: (_, _) {
-        final state = authCubit.state;
-        return state is SignedIn && !state.account.hasPassword
-            ? AppRoutes.accountSecurity
-            : null;
-      },
-      builder: (context, _) => BlocProvider<ChangePasswordCubit>(
-        create: (context) => ChangePasswordCubit(
-          context.read<AccountRepository>(),
-        ),
-        child: const ChangePasswordScreen(),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.accountNotifications,
-      name: 'account-notifications',
-      builder: (context, _) => BlocProvider<PreferencesCubit>(
-        create: (context) {
-          final cubit = PreferencesCubit(
-            context.read<AccountRepository>(),
-            deviceNotificationsBlocked: context
-                .read<PushPermissionCoordinator>()
-                .shouldShowOffNotice,
-          );
-          unawaited(cubit.load());
-          return cubit;
-        },
-        child: const PreferencesScreen(),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.accountDelete,
-      name: 'account-delete',
-      builder: (context, _) => BlocProvider<DeleteAccountCubit>(
-        create: (context) => DeleteAccountCubit(
-          repository: context.read<AccountRepository>(),
-          auth: context.read<AuthCubit>(),
-        ),
-        child: const DeleteAccountScreen(),
-      ),
     ),
     GoRoute(
       path: AppRoutes.bookingDetailsPattern,
@@ -653,21 +532,7 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.supportCasePattern,
       name: 'linked-support-case',
-      builder: (context, state) {
-        final caseId = state.pathParameters['caseId'] ?? '';
-        if (!AppRoutes.isUuidV4(caseId)) return const NotAvailableScreen();
-        return BlocProvider<CaseDetailsCubit>(
-          create: (context) {
-            final cubit = CaseDetailsCubit(
-              caseId: caseId,
-              repository: context.read<SupportRepository>(),
-            );
-            unawaited(cubit.load());
-            return cubit;
-          },
-          child: CaseDetailsScreen(caseId: caseId),
-        );
-      },
+      builder: (_, _) => const NotAvailableScreen(),
     ),
     GoRoute(
       path: AppRoutes.paymentReturnPath,
@@ -717,7 +582,7 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.home,
               name: 'home',
-              builder: (context, state) => BlocProvider<HomeCubit>(
+              builder: (context, _) => BlocProvider<HomeCubit>(
                 create: (context) {
                   final cubit = HomeCubit(
                     repo: context.read<ListingsRepository>(),
@@ -729,11 +594,7 @@ GoRouter createAppRouter({
                   unawaited(cubit.start());
                   return cubit;
                 },
-                // After a deletion the navigation lands here with a one-shot
-                // extra; the screen renders «حسابك اتحذف» once (T070).
-                child: HomeScreen(
-                  deletedNotice: state.extra is AccountDeletedNotice,
-                ),
+                child: const HomeScreen(),
               ),
             ),
           ],
@@ -804,7 +665,7 @@ GoRouter createAppRouter({
             GoRoute(
               path: AppRoutes.account,
               name: 'account',
-              builder: (_, _) => const AccountScreen(),
+              builder: (_, _) => const AccountPlaceholderScreen(),
             ),
           ],
         ),

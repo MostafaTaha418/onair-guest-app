@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:dio/dio.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:on_air/app/app.dart';
 import 'package:on_air/app/router/incoming_links.dart';
-import 'package:on_air/app/settings/app_settings_store.dart';
 import 'package:on_air/core/api/generated/export.dart';
 import 'package:on_air/core/auth/secure_session_storage.dart';
 import 'package:on_air/core/cache/json_file_cache.dart';
@@ -18,14 +14,9 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/core/device/app_attestation.dart';
 import 'package:on_air/core/device/device_identity.dart';
 import 'package:on_air/core/env/env_config.dart';
-import 'package:on_air/core/files/attachment_picker.dart';
-import 'package:on_air/core/files/file_url_cache.dart';
-import 'package:on_air/core/files/image_sanitizer.dart';
-import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/network/dio_factory.dart';
 import 'package:on_air/core/network/supabase_token_source.dart';
-import 'package:on_air/core/network/user_agent.dart';
 import 'package:on_air/core/push/firebase_push_token_source.dart';
 import 'package:on_air/core/push/notification_permission.dart';
 import 'package:on_air/core/push/push_messages.dart';
@@ -34,9 +25,6 @@ import 'package:on_air/core/realtime/notification_signal.dart';
 import 'package:on_air/core/share/share_service.dart';
 import 'package:on_air/core/storage/secure_store.dart';
 import 'package:on_air/core/time/cairo_time.dart';
-import 'package:on_air/features/account/data/mock_account_server.dart';
-import 'package:on_air/features/account/data/supabase_account_repository.dart';
-import 'package:on_air/features/account/domain/account_repository.dart';
 import 'package:on_air/features/account_gate/application/device_registration_service.dart';
 import 'package:on_air/features/account_gate/application/personal_data_resetter.dart';
 import 'package:on_air/features/account_gate/application/sign_out_service.dart';
@@ -76,11 +64,6 @@ import 'package:on_air/features/stay/data/action_attempt_store.dart';
 import 'package:on_air/features/stay/data/mock_stay_server.dart';
 import 'package:on_air/features/stay/data/supabase_stay_repository.dart';
 import 'package:on_air/features/stay/domain/stay_repository.dart';
-import 'package:on_air/features/support/data/case_live_channel.dart';
-import 'package:on_air/features/support/data/faq_cache.dart';
-import 'package:on_air/features/support/data/mock_support_server.dart';
-import 'package:on_air/features/support/data/supabase_support_repository.dart';
-import 'package:on_air/features/support/domain/support_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> bootstrap(String flavor) async {
@@ -109,7 +92,6 @@ Future<void> bootstrap(String flavor) async {
       ? SupabaseFavoritesRepository(Supabase.instance.client)
       : MemoryFavoritesRepository();
   final configSource = backend.config;
-  const appSettingsStore = AppSettingsStore();
   final authRepository = backend.auth;
   final pushTokens = backend.pushTokens;
   final devices = backend.devices;
@@ -148,12 +130,7 @@ Future<void> bootstrap(String flavor) async {
   final arrivalInstructions = ArrivalInstructionsStore(backend.secureStore);
   final actionAttempts = ActionAttemptStore(backend.secureStore);
   final bookingsCache = BookingsCache(bookingsFileCache);
-  // Public FAQ content: deliberately not in any sign-out cleaner (T059).
-  final faqCache = FaqCache(
-    await JsonFileCache.appSupport(fileName: 'faq_v1.json', schema: 1),
-  );
   final notificationPermission = backend.permission;
-  final fileUrls = FileUrlCache(backend.stay);
   final pushPermissionCoordinator = PushPermissionCoordinator(
     permission: notificationPermission,
     devices: deviceRegistrationService,
@@ -169,7 +146,6 @@ Future<void> bootstrap(String flavor) async {
           value: backend.phoneVerification,
         ),
         RepositoryProvider<AppConfigSource>.value(value: configSource),
-        RepositoryProvider<AppSettingsStore>.value(value: appSettingsStore),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<PushTokenSource>.value(value: pushTokens),
         RepositoryProvider<DeviceTokenRepository>.value(value: devices),
@@ -209,26 +185,6 @@ Future<void> bootstrap(String flavor) async {
           value: backend.mockServer,
         ),
         RepositoryProvider<StayRepository>.value(value: backend.stay),
-        RepositoryProvider<SupportRepository>.value(value: backend.support),
-        RepositoryProvider<MockSupportServer?>.value(
-          value: backend.mockSupport,
-        ),
-        RepositoryProvider<AttachmentPicker>.value(
-          value: PluginAttachmentPicker(),
-        ),
-        RepositoryProvider<ImageSanitizer>.value(value: ImageSanitizer()),
-        RepositoryProvider<PrivateFileUploader>.value(
-          value: backend.uploader,
-        ),
-        RepositoryProvider<FileUrlCache>.value(value: fileUrls),
-        RepositoryProvider<FaqCache>.value(value: faqCache),
-        RepositoryProvider<AccountRepository>.value(value: backend.account),
-        RepositoryProvider<MockAccountServer?>.value(
-          value: backend.mockAccount,
-        ),
-        RepositoryProvider<SignOutCoordinator>.value(
-          value: signOutCoordinator,
-        ),
         RepositoryProvider<MockStayServer?>.value(value: backend.mockStay),
         RepositoryProvider<ActionAttemptStore>.value(value: actionAttempts),
         RepositoryProvider<NotificationPermission>.value(
@@ -240,10 +196,6 @@ Future<void> bootstrap(String flavor) async {
         ),
       ],
       child: OnAirApp(
-        appSettingsStore: appSettingsStore,
-        syncProfileLocale: (locale) =>
-            backend.account.updateProfile(locale: locale),
-        heartbeat: backend.account.heartbeat,
         favoritesRepository: favorites,
         signOutCoordinator: signOutCoordinator,
         sessionEventSource: sessionEventSource,
@@ -253,9 +205,6 @@ Future<void> bootstrap(String flavor) async {
           arrivalInstructions.clearAll,
           actionAttempts.clearAll,
           backend.signals.stop,
-          // Private signed URLs live in memory only (T099); sign-out
-          // drops them with the rest of the personal data.
-          () async => fileUrls.clear(),
         ]),
         deviceRegistrationService: deviceRegistrationService,
         uriLinkSource: uriLinkSource,
@@ -284,11 +233,6 @@ typedef _Backend = ({
   MockBookingServer? mockServer,
   StayRepository stay,
   MockStayServer? mockStay,
-  SupportRepository support,
-  MockSupportServer? mockSupport,
-  AccountRepository account,
-  MockAccountServer? mockAccount,
-  PrivateFileUploader uploader,
   PushMessageSource pushes,
   NotificationPermission permission,
 });
@@ -309,12 +253,10 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
         ? const AppleDebugProvider()
         : const AppleAppAttestWithDeviceCheckFallbackProvider(),
   );
-  final userAgent = await UserAgentBuilder.fromPlatform().build();
   await Supabase.initialize(
     url: environment.supabaseUrl,
     publishableKey: environment.supabaseAnonKey,
     authOptions: FlutterAuthClientOptions(localStorage: SecureSessionStorage()),
-    headers: {'User-Agent': userAgent},
   );
   final client = Supabase.instance.client;
   Future<dynamic> rpc(String fn, Map<String, dynamic> params) =>
@@ -325,7 +267,6 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     tokens: SupabaseTokenSource(client),
     deviceIdentity: deviceIdentity,
     attestation: const FirebaseAppAttestation(),
-    userAgent: userAgent,
   );
   final socialCredentials = GoogleAppleCredentialSource(
     serverClientId: environment.googleServerClientId,
@@ -361,17 +302,6 @@ Future<_Backend> _remoteBackend(EnvConfig environment) async {
     mockServer: null,
     stay: SupabaseStayRepository(rpc: rpc, node: FallbackClient(dio)),
     mockStay: null,
-    support: SupabaseSupportRepository(
-      rpc: rpc,
-      live: SupabaseCaseLiveChannel(client),
-    ),
-    mockSupport: null,
-    account: SupabaseAccountRepository(rpc: rpc, node: FallbackClient(dio)),
-    mockAccount: null,
-    uploader: PrivateFileUploader(
-      signer: GeneratedUploadSigner(FallbackClient(dio)),
-      putClient: DioRawPutClient(),
-    ),
     pushes: FirebasePushMessageSource(),
     permission: FirebaseNotificationPermission(),
   );
@@ -392,25 +322,6 @@ _Backend _mockBackend() {
     server: server,
   );
   final auth = MockAuthRepository();
-  final accountServer = MockAccountServer(auth: auth);
-  final pushes = MockPushMessageSource();
-  final support = MockSupportServer(
-    onStaffReply: (caseId) {
-      unawaited(
-        server.notifyGuest(
-          'support.staff_replied',
-          caseId,
-          entityType: 'support_case',
-          category: 'support',
-        ),
-      );
-      if (accountServer.pushEnabled('support')) {
-        pushes.emitForeground(
-          PushMessage(type: 'support.staff_replied', targetId: caseId),
-        );
-      }
-    },
-  );
   // The same stable mock id feeds the OTP send-limit device key (US5).
   const deviceIdentity = MemoryDeviceIdentity();
   return (
@@ -433,43 +344,7 @@ _Backend _mockBackend() {
     mockServer: server,
     stay: stay,
     mockStay: stay,
-    support: support,
-    mockSupport: support,
-    account: accountServer,
-    mockAccount: accountServer,
-    uploader: const PrivateFileUploader(
-      signer: _MockUploadSigner(),
-      putClient: _MockRawPutClient(),
-    ),
-    pushes: pushes,
+    pushes: const NoopPushMessageSource(),
     permission: FakeNotificationPermission(),
   );
-}
-
-final class _MockUploadSigner implements UploadSigner {
-  const _MockUploadSigner();
-
-  @override
-  Future<UploadSignResponse> sign(UploadSignRequest request) async =>
-      UploadSignResponse(
-        attachmentId: 'mock-${DateTime.now().microsecondsSinceEpoch}',
-        uploadUrl: Uri.parse('https://mock.invalid/upload'),
-      );
-}
-
-final class _MockRawPutClient implements RawPutClient {
-  const _MockRawPutClient();
-
-  @override
-  Future<void> put({
-    required Uri url,
-    required String filePath,
-    required String mime,
-    required int sizeBytes,
-    required CancelToken cancelToken,
-    required void Function(int sent, int total) onProgress,
-  }) async {
-    if (cancelToken.isCancelled) return;
-    onProgress(sizeBytes, sizeBytes);
-  }
 }

@@ -4,7 +4,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:on_air/core/errors/api_error.dart';
 import 'package:on_air/core/errors/error_mapper.dart';
 import 'package:on_air/core/money/money.dart';
-import 'package:on_air/core/text/arabic_normalizer.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
 import 'package:on_air/features/listings/domain/approved_review.dart';
@@ -394,4 +393,30 @@ final class MockListingsRepository implements ListingsRepository {
 
   Map<String, dynamic> _decodeMap(Map<dynamic, dynamic> raw) =>
       Map<String, dynamic>.from(raw);
+}
+
+/// Arabic normalisation shared by search and fixtures:
+/// أإآ→ا، ة→ه، ى→ي; tatweel and diacritics removed (research R7).
+String normalizeArabic(String input) {
+  const tatweel = '\u0640';
+  const diacritics = [
+    '\u064B',
+    '\u064C',
+    '\u064D',
+    '\u064E',
+    '\u064F',
+    '\u0650',
+    '\u0651',
+    '\u0652',
+  ];
+  var output = input.replaceAll(tatweel, '');
+  for (final diacritic in diacritics) {
+    output = output.replaceAll(diacritic, '');
+  }
+  return output
+      .replaceAll('أ', 'ا')
+      .replaceAll('إ', 'ا')
+      .replaceAll('آ', 'ا')
+      .replaceAll('ة', 'ه')
+      .replaceAll('ى', 'ي');
 }

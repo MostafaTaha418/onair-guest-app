@@ -9,7 +9,6 @@ import '../models/get_v1_files_attachment_id_url_response.dart';
 import '../models/otp_sent.dart';
 import '../models/payment_session.dart';
 import '../models/post_v1_uploads_sign_response.dart';
-import '../models/v1_account_password_request_body.dart';
 import '../models/v1_guest_bookings_booking_id_remaining_payment_request_body.dart';
 import '../models/v1_guest_bookings_start_payment_request_body.dart';
 import '../models/v1_otp_send_request_body.dart';
@@ -78,11 +77,5 @@ abstract class FallbackClient {
   Future<GetV1FilesAttachmentIdUrlResponse> getFileUrl({
     @Header('x-request-id') required String xRequestId,
     @Path('attachmentId') required String attachmentId,
-  });
-
-  @POST('/v1/account/password')
-  Future<void> changePassword({
-    @Header('x-request-id') required String xRequestId,
-    @Body() required V1AccountPasswordRequestBody body,
   });
 }

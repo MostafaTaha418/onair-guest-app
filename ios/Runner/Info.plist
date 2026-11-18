@@ -41,10 +41,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>OnAir بيستخدم الكاميرا عشان تصوّر مرفقات لحالة الدعم</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>OnAir بيستخدم الصور عشان ترفق صور لحالة الدعم</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -134,7 +134,6 @@ final class DamageClaim {
     required this.response,
     required this.supportCaseNumber,
     required this.resolution,
-    this.supportCaseId,
   });
 
   factory DamageClaim.fromJson(Map<String, dynamic> json) => DamageClaim(
@@ -154,7 +153,6 @@ final class DamageClaim {
             Map<String, dynamic>.from(json['guest_response'] as Map),
           ),
     supportCaseNumber: json['support_case_number'] as String?,
-    supportCaseId: json['support_case_id'] as String?,
     resolution: json['resolution'] == null
         ? null
         : ClaimResolution.fromJson(
@@ -171,7 +169,6 @@ final class DamageClaim {
   final List<EvidenceRef> evidence;
   final ClaimResponse? response;
   final String? supportCaseNumber;
-  final String? supportCaseId;
   final ClaimResolution? resolution;
 
   @override
@@ -186,7 +183,6 @@ final class DamageClaim {
       listEquals(other.evidence, evidence) &&
       other.response == response &&
       other.supportCaseNumber == supportCaseNumber &&
-      other.supportCaseId == supportCaseId &&
       other.resolution == resolution;
 
   @override
@@ -200,7 +196,6 @@ final class DamageClaim {
     Object.hashAll(evidence),
     response,
     supportCaseNumber,
-    supportCaseId,
     resolution,
   ]);
 }

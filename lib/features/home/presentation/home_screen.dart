@@ -15,7 +15,6 @@ import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
-import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/presentation/auth_cubit.dart';
 import 'package:on_air/features/bookings/presentation/widgets/unfinished_payment_banner.dart';
@@ -37,34 +36,24 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 /// suggested, and newest — each section independent (FR-004), rendered from
 /// the cache first and refreshed (research R6).
 final class HomeScreen extends StatelessWidget {
-  const HomeScreen({this.deletedNotice = false, super.key});
-
-  /// Set when the navigation carries the one-shot deletion extra (T070):
-  /// «حسابك اتحذف» renders once and the flag never survives another
-  /// navigation.
-  final bool deletedNotice;
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: context.colors.gradient('authBackground'),
-            ),
-            child: RefreshIndicator(
-              onRefresh: () => context.read<HomeCubit>().refresh(),
-              child: BlocBuilder<HomeCubit, HomeState>(
-                builder: (context, state) => CustomScrollView(
-                  key: const ValueKey('home-scroll'),
-                  slivers: _slivers(context, state),
-                ),
-              ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: context.colors.gradient('authBackground'),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<HomeCubit>().refresh(),
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) => CustomScrollView(
+              key: const ValueKey('home-scroll'),
+              slivers: _slivers(context, state),
             ),
           ),
-          if (deletedNotice) const _AccountDeletedToast(),
-        ],
+        ),
       ),
     );
   }
@@ -491,31 +480,4 @@ final class HomeScreen extends StatelessWidget {
     FeedSectionFailed() => 'INTERNAL',
     _ => null,
   };
-}
-
-/// The one-shot «حسابك اتحذف» toast: mounted only when the navigation
-/// carried the [AccountDeletedNotice]-shaped extra (T070).
-final class _AccountDeletedToast extends StatefulWidget {
-  const _AccountDeletedToast();
-
-  @override
-  State<_AccountDeletedToast> createState() => _AccountDeletedToastState();
-}
-
-final class _AccountDeletedToastState extends State<_AccountDeletedToast> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).deleteDone)),
-        );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }
