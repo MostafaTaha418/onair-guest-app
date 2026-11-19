@@ -225,17 +225,20 @@ void main() {
     expect(find.byType(SecurityScreen), findsOneWidget);
 
     account.revokeHeartbeat = true;
-    for (final state in const [
+    // A windowless device runner (the CI emulator/simulator) disables frame
+    // production while the app is hidden or paused, so `pump()` between these
+    // transitions waits on a frame that never arrives and the journey
+    // deadlocks (a real phone keeps drawing, which is why it only hangs in CI).
+    // Drive every transition, then pump once the app is resumed again.
+    const [
       AppLifecycleState.inactive,
       AppLifecycleState.hidden,
       AppLifecycleState.paused,
       AppLifecycleState.hidden,
       AppLifecycleState.inactive,
       AppLifecycleState.resumed,
-    ]) {
-      tester.binding.handleAppLifecycleStateChanged(state);
-      await tester.pump();
-    }
+    ].forEach(tester.binding.handleAppLifecycleStateChanged);
+    await tester.pump();
     await pumpUntilFound(tester, find.byKey(const ValueKey('email-field')));
     expect(find.byType(SecurityScreen), findsNothing);
 
