@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/design_system/components/settings_row.dart';
 
 const _mockBookingPropertyId = '00000000-0000-4000-8000-00000000001f';
 
@@ -55,6 +56,12 @@ bool _invokeDeviceControl(Finder finder) {
           OutlinedButton(:final onPressed?) ||
           IconButton(:final onPressed?):
         onPressed();
+        return true;
+      // A SettingsRow hides its onTap inside a child InkWell, so match the row
+      // itself: on windowless device runners an off-screen row's synthetic tap
+      // misses, but invoking its enabled callback is reliable.
+      case SettingsRow(onTap: final onTap?, enabled: true, locked: false):
+        onTap();
         return true;
       case ListTile(:final onTap?) ||
           InkWell(:final onTap?) ||
