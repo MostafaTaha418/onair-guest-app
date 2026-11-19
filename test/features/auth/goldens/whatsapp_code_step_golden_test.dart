@@ -130,7 +130,6 @@ Widget _step({
   )..emit(codeState.state(now));
   // One shared frozen clock: every scenario renders the same remaining.
   final codeStep = WhatsAppCodeStep(
-    supportPhone: '+201000000000',
     clock: () => frozenNow,
   );
   return RepositoryProvider<AppConfigSource>(

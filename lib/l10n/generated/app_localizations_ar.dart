@@ -735,12 +735,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryEmpty => 'مفيش صور للشقة دي.';
 
   @override
-  String get supportEntryTitle => 'تواصل مع OnAir';
-
-  @override
-  String get supportEntryComingSoon => 'خدمة الدعم من التطبيق هتتفتح قريب.';
-
-  @override
   String get errorAccountSuspended => 'الحساب موقوف. تواصل مع خدمة العملاء.';
 
   @override
@@ -2070,4 +2064,415 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyPhoneOnWhatsApp => 'أكّد رقمك على واتساب';
+
+  @override
+  String get supportTitle => 'الدعم';
+
+  @override
+  String get supportSubtitle => 'إحنا هنا عشان نساعدك';
+
+  @override
+  String get supportMyCases => 'حالاتي';
+
+  @override
+  String get supportFinishedCases => 'حالات منتهية';
+
+  @override
+  String get supportNewCase => 'حالة جديدة';
+
+  @override
+  String get supportEmpty => 'لسه مفتحتش أي حالة';
+
+  @override
+  String supportLastUpdate(String time) {
+    return 'آخر تحديث $time';
+  }
+
+  @override
+  String get supportStatusOpen => 'مفتوحة';
+
+  @override
+  String get supportStatusInProgress => 'قيد المتابعة';
+
+  @override
+  String get supportStatusWaitingUser => 'مستني ردك';
+
+  @override
+  String get supportStatusResolved => 'اتحلّت';
+
+  @override
+  String get supportStatusClosed => 'مقفولة';
+
+  @override
+  String get supportStatusUnknown => 'حالة غير معروفة';
+
+  @override
+  String get supportTypeBooking => 'حجز';
+
+  @override
+  String get supportTypePayment => 'دفع';
+
+  @override
+  String get supportTypeRefund => 'استرداد';
+
+  @override
+  String get supportTypePropertyIssue => 'مشكلة في الشقة';
+
+  @override
+  String get supportTypeOther => 'أخرى';
+
+  @override
+  String get supportTypeDamageDispute => 'اعتراض على مطالبة';
+
+  @override
+  String get supportTypeComplaint => 'شكوى';
+
+  @override
+  String get supportTypeStayException => 'استثناء في الإقامة';
+
+  @override
+  String get supportTypeUnknown => 'أخرى';
+
+  @override
+  String get supportType => 'نوع المشكلة';
+
+  @override
+  String get supportLinkBooking => 'اربط بحجز';
+
+  @override
+  String supportLinkedBooking(String code) {
+    return 'الحجز $code';
+  }
+
+  @override
+  String supportLinkedProperty(String title) {
+    return 'الشقة: $title';
+  }
+
+  @override
+  String get supportDescription => 'اكتب اللي حصل';
+
+  @override
+  String get supportDescriptionTooShort => 'اكتب 10 حروف على الأقل';
+
+  @override
+  String get supportSend => 'إرسال';
+
+  @override
+  String supportCreated(String code) {
+    return 'وصلتنا حالتك رقم $code';
+  }
+
+  @override
+  String get supportDiscardTitle => 'تسيب الحالة من غير ما تبعتها؟';
+
+  @override
+  String get supportDiscard => 'سيبها';
+
+  @override
+  String get supportKeepEditing => 'كمّل';
+
+  @override
+  String get supportReplyHint => 'اكتب ردك';
+
+  @override
+  String get supportOnAir => 'OnAir';
+
+  @override
+  String get supportCaseClosed => 'الحالة دي اتقفلت';
+
+  @override
+  String get supportOpenNewCase => 'افتح حالة جديدة';
+
+  @override
+  String get supportResolvedNotice =>
+      'الحالة اتحلّت. لو لسه محتاج مساعدة ردّ هنا وهنفتحها تاني';
+
+  @override
+  String get supportCaseNotFound => 'الحالة دي مش موجودة';
+
+  @override
+  String get supportBackToSupport => 'الرجوع للدعم';
+
+  @override
+  String get supportAttach => 'إضافة';
+
+  @override
+  String get supportAttachCamera => 'الكاميرا';
+
+  @override
+  String get supportAttachGallery => 'الصور';
+
+  @override
+  String get supportAttachPdf => 'ملف PDF';
+
+  @override
+  String supportAttachHint(int count) {
+    return 'لحد $count ملفات، صور أو PDF';
+  }
+
+  @override
+  String get supportAttachRemove => 'شيل الملف';
+
+  @override
+  String get supportAttachRetry => 'إعادة المحاولة';
+
+  @override
+  String get supportAttachFailed => 'فشل الرفع';
+
+  @override
+  String supportAttachmentRejectedTooLarge(int size) {
+    return 'الملف أكبر من $size ميجا';
+  }
+
+  @override
+  String get supportAttachmentRejectedType =>
+      'النوع ده مش مسموح. صور أو PDF بس';
+
+  @override
+  String supportAttachmentRejectedTooMany(int count) {
+    return 'وصلت للحد: $count ملفات';
+  }
+
+  @override
+  String get supportFaq => 'الأسئلة الشائعة';
+
+  @override
+  String get supportFaqSearch => 'ابحث في الأسئلة';
+
+  @override
+  String get supportFaqNoResults => 'مفيش نتايج';
+
+  @override
+  String get supportFaqStale => 'ممكن تكون المعلومات دي قديمة';
+
+  @override
+  String get supportCall => 'اتصل بخدمة العملاء';
+
+  @override
+  String supportCallHours(String hours) {
+    return 'مواعيد العمل: $hours';
+  }
+
+  @override
+  String get supportCallCopied => 'اتنسخ الرقم';
+
+  @override
+  String get accountEdit => 'تعديل';
+
+  @override
+  String get accountEditName => 'تعديل الاسم';
+
+  @override
+  String get accountNameLabel => 'الاسم';
+
+  @override
+  String get accountNameInvalid => 'الاسم لازم يكون من 2 لـ 80 حرف';
+
+  @override
+  String get accountSave => 'حفظ';
+
+  @override
+  String get accountSectionGeneral => 'عام';
+
+  @override
+  String get accountSectionSecurity => 'الأمان';
+
+  @override
+  String get accountSectionSupport => 'الدعم';
+
+  @override
+  String get accountSectionLegal => 'قانوني';
+
+  @override
+  String get accountNotifications => 'الإشعارات';
+
+  @override
+  String get accountAppearance => 'المظهر';
+
+  @override
+  String get accountLanguage => 'اللغة';
+
+  @override
+  String get settingsThemeSystem => 'حسب الجهاز';
+
+  @override
+  String get settingsThemeLight => 'فاتح';
+
+  @override
+  String get settingsThemeDark => 'داكن';
+
+  @override
+  String get settingsLanguageArabic => 'العربية';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get accountSecurityRow => 'الأمان والأجهزة';
+
+  @override
+  String get accountTerms => 'الشروط والأحكام';
+
+  @override
+  String get accountPrivacy => 'سياسة الخصوصية';
+
+  @override
+  String get accountSignOut => 'تسجيل الخروج';
+
+  @override
+  String get accountSignOutConfirm => 'تخرج من حسابك؟';
+
+  @override
+  String get accountDelete => 'حذف الحساب';
+
+  @override
+  String get accountVisitorTitle => 'سجّل دخولك عشان تتابع حجوزاتك';
+
+  @override
+  String get accountChangePassword => 'تغيير كلمة المرور';
+
+  @override
+  String get accountCurrentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get accountNewPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get accountConfirmPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get accountPasswordMismatch => 'كلمتين المرور مش زي بعض';
+
+  @override
+  String get accountPasswordSameAsOld => 'اختار كلمة مرور مختلفة عن الحالية';
+
+  @override
+  String get accountPasswordIncorrect => 'كلمة المرور الحالية غلط';
+
+  @override
+  String get accountPasswordChanged =>
+      'تم تغيير كلمة المرور، وخرّجنا باقي الأجهزة';
+
+  @override
+  String get accountDevices => 'الأجهزة المسجّل دخولها';
+
+  @override
+  String get accountThisDevice => 'الجهاز ده';
+
+  @override
+  String accountLastActive(String time) {
+    return 'آخر نشاط $time';
+  }
+
+  @override
+  String get accountUnknownDevice => 'جهاز';
+
+  @override
+  String get accountEndSession => 'خروج';
+
+  @override
+  String get accountEndOthers => 'تسجيل الخروج من كل الأجهزة التانية';
+
+  @override
+  String get accountEndOthersConfirm => 'هتخرج من كل الأجهزة ما عدا الجهاز ده';
+
+  @override
+  String get accountSessionIsCurrent =>
+      'ده الجهاز اللي معاك. استخدم «تسجيل الخروج»';
+
+  @override
+  String get prefsDeviceBlocked => 'إشعارات الجهاز مقفولة للتطبيق';
+
+  @override
+  String get prefsOpenSettings => 'افتح الإعدادات';
+
+  @override
+  String get prefsPush => 'إشعارات الجهاز';
+
+  @override
+  String get prefsEmail => 'البريد';
+
+  @override
+  String get prefsMandatory => 'إشعارات ضرورية للحجز والدفع ومش بتتقفل';
+
+  @override
+  String get prefsMandatoryLabel => 'إلزامي';
+
+  @override
+  String get prefsSaveFailed => 'مقدرناش نحفظ التغيير';
+
+  @override
+  String get notifCategoryBooking => 'الحجوزات';
+
+  @override
+  String get notifCategoryPayment => 'المدفوعات';
+
+  @override
+  String get notifCategorySupport => 'الدعم';
+
+  @override
+  String get notifCategoryReminders => 'التذكيرات';
+
+  @override
+  String get notifCategoryReview => 'التقييمات';
+
+  @override
+  String get notifCategoryAccount => 'أمان الحساب';
+
+  @override
+  String get notifCategoryUnknown => 'أخرى';
+
+  @override
+  String get deleteTitle => 'حذف الحساب';
+
+  @override
+  String get deleteWhatGoes =>
+      'هنمسح بياناتك الشخصية: الاسم والبريد والرقم والمفضلة والتفضيلات';
+
+  @override
+  String get deleteWhatStays =>
+      'حجوزاتك ومدفوعاتك القديمة هتفضل محفوظة من غير بياناتك، زي ما القانون بيطلب';
+
+  @override
+  String get deleteFinal => 'الحذف نهائي ومالوش رجوع';
+
+  @override
+  String get deleteUnderstand => 'فاهم إن الحذف نهائي';
+
+  @override
+  String get deleteCta => 'احذف حسابي';
+
+  @override
+  String get deleteBlockedTitle => 'مينفعش تحذف الحساب دلوقتي';
+
+  @override
+  String deleteBlockerBooking(String code) {
+    return 'عندك حجز لسه شغال $code';
+  }
+
+  @override
+  String deleteBlockerRefund(String code) {
+    return 'عندك استرداد لسه بيتنفذ $code';
+  }
+
+  @override
+  String deleteBlockerClaim(String code) {
+    return 'عندك مطالبة لسه مفتوحة $code';
+  }
+
+  @override
+  String deleteCodeSent(String email) {
+    return 'بعتنا كود على $email';
+  }
+
+  @override
+  String get deleteConfirm => 'تأكيد الحذف';
+
+  @override
+  String get deleteDone => 'حسابك اتحذف';
+
+  @override
+  String get accountHasActiveBookings =>
+      'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال';
 }

@@ -60,18 +60,12 @@ echo "Launch check passed."
 
 if [[ "$api_level" -lt 34 ]]; then
   echo "API $api_level build, install, launch, and crash checks passed; integration suite runs on API 34 and iOS."
-elif compgen -G "integration_test/*_test.dart" >/dev/null; then
+elif [[ -f integration_test/device_suite_test.dart ]]; then
   if [[ -n "${STAGING_ENV_JSON:-}" ]]; then
-    # Device integration tests use a full Flutter engine per test target. Keep
-    # them serial on the hosted emulator so the runner does not exhaust the
-    # emulator's memory while multiple journeys start at once. The timeline
-    # benchmark has its own host driver and needs a direct VM service.
-    integration_targets=()
-    for target in integration_test/*_test.dart; do
-      [[ "$target" == integration_test/results_scroll_perf_test.dart ]] || integration_targets+=("$target")
-    done
+    # Register every journey in one target so Gradle builds and installs one
+    # Flutter test application instead of rebuilding it for every Dart file.
     # shellcheck disable=SC2086
-    flutter test --concurrency=1 "${integration_targets[@]}" $test_args
+    flutter test integration_test/device_suite_test.dart $test_args
     # shellcheck disable=SC2086
     flutter drive --no-dds \
       --driver=test_driver/perf_driver.dart \

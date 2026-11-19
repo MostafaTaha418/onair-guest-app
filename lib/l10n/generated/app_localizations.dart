@@ -1298,18 +1298,6 @@ abstract class AppLocalizations {
   /// **'مفيش صور للشقة دي.'**
   String get galleryEmpty;
 
-  /// No description provided for @supportEntryTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'تواصل مع OnAir'**
-  String get supportEntryTitle;
-
-  /// No description provided for @supportEntryComingSoon.
-  ///
-  /// In ar, this message translates to:
-  /// **'خدمة الدعم من التطبيق هتتفتح قريب.'**
-  String get supportEntryComingSoon;
-
   /// No description provided for @errorAccountSuspended.
   ///
   /// In ar, this message translates to:
@@ -3721,6 +3709,762 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أكّد رقمك على واتساب'**
   String get verifyPhoneOnWhatsApp;
+
+  /// No description provided for @supportTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get supportTitle;
+
+  /// No description provided for @supportSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إحنا هنا عشان نساعدك'**
+  String get supportSubtitle;
+
+  /// No description provided for @supportMyCases.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالاتي'**
+  String get supportMyCases;
+
+  /// No description provided for @supportFinishedCases.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالات منتهية'**
+  String get supportFinishedCases;
+
+  /// No description provided for @supportNewCase.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة جديدة'**
+  String get supportNewCase;
+
+  /// No description provided for @supportEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفتحتش أي حالة'**
+  String get supportEmpty;
+
+  /// No description provided for @supportLastUpdate.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر تحديث {time}'**
+  String supportLastUpdate(String time);
+
+  /// No description provided for @supportStatusOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفتوحة'**
+  String get supportStatusOpen;
+
+  /// No description provided for @supportStatusInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المتابعة'**
+  String get supportStatusInProgress;
+
+  /// No description provided for @supportStatusWaitingUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستني ردك'**
+  String get supportStatusWaitingUser;
+
+  /// No description provided for @supportStatusResolved.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتحلّت'**
+  String get supportStatusResolved;
+
+  /// No description provided for @supportStatusClosed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقفولة'**
+  String get supportStatusClosed;
+
+  /// No description provided for @supportStatusUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة غير معروفة'**
+  String get supportStatusUnknown;
+
+  /// No description provided for @supportTypeBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز'**
+  String get supportTypeBooking;
+
+  /// No description provided for @supportTypePayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'دفع'**
+  String get supportTypePayment;
+
+  /// No description provided for @supportTypeRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'استرداد'**
+  String get supportTypeRefund;
+
+  /// No description provided for @supportTypePropertyIssue.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة في الشقة'**
+  String get supportTypePropertyIssue;
+
+  /// No description provided for @supportTypeOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get supportTypeOther;
+
+  /// No description provided for @supportTypeDamageDispute.
+  ///
+  /// In ar, this message translates to:
+  /// **'اعتراض على مطالبة'**
+  String get supportTypeDamageDispute;
+
+  /// No description provided for @supportTypeComplaint.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكوى'**
+  String get supportTypeComplaint;
+
+  /// No description provided for @supportTypeStayException.
+  ///
+  /// In ar, this message translates to:
+  /// **'استثناء في الإقامة'**
+  String get supportTypeStayException;
+
+  /// No description provided for @supportTypeUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get supportTypeUnknown;
+
+  /// No description provided for @supportType.
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع المشكلة'**
+  String get supportType;
+
+  /// No description provided for @supportLinkBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'اربط بحجز'**
+  String get supportLinkBooking;
+
+  /// No description provided for @supportLinkedBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز {code}'**
+  String supportLinkedBooking(String code);
+
+  /// No description provided for @supportLinkedProperty.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشقة: {title}'**
+  String supportLinkedProperty(String title);
+
+  /// No description provided for @supportDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب اللي حصل'**
+  String get supportDescription;
+
+  /// No description provided for @supportDescriptionTooShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب 10 حروف على الأقل'**
+  String get supportDescriptionTooShort;
+
+  /// No description provided for @supportSend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get supportSend;
+
+  /// No description provided for @supportCreated.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلتنا حالتك رقم {code}'**
+  String supportCreated(String code);
+
+  /// No description provided for @supportDiscardTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسيب الحالة من غير ما تبعتها؟'**
+  String get supportDiscardTitle;
+
+  /// No description provided for @supportDiscard.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيبها'**
+  String get supportDiscard;
+
+  /// No description provided for @supportKeepEditing.
+  ///
+  /// In ar, this message translates to:
+  /// **'كمّل'**
+  String get supportKeepEditing;
+
+  /// No description provided for @supportReplyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب ردك'**
+  String get supportReplyHint;
+
+  /// No description provided for @supportOnAir.
+  ///
+  /// In ar, this message translates to:
+  /// **'OnAir'**
+  String get supportOnAir;
+
+  /// No description provided for @supportCaseClosed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة دي اتقفلت'**
+  String get supportCaseClosed;
+
+  /// No description provided for @supportOpenNewCase.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح حالة جديدة'**
+  String get supportOpenNewCase;
+
+  /// No description provided for @supportResolvedNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة اتحلّت. لو لسه محتاج مساعدة ردّ هنا وهنفتحها تاني'**
+  String get supportResolvedNotice;
+
+  /// No description provided for @supportCaseNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة دي مش موجودة'**
+  String get supportCaseNotFound;
+
+  /// No description provided for @supportBackToSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرجوع للدعم'**
+  String get supportBackToSupport;
+
+  /// No description provided for @supportAttach.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة'**
+  String get supportAttach;
+
+  /// No description provided for @supportAttachCamera.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكاميرا'**
+  String get supportAttachCamera;
+
+  /// No description provided for @supportAttachGallery.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصور'**
+  String get supportAttachGallery;
+
+  /// No description provided for @supportAttachPdf.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملف PDF'**
+  String get supportAttachPdf;
+
+  /// No description provided for @supportAttachHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'لحد {count} ملفات، صور أو PDF'**
+  String supportAttachHint(int count);
+
+  /// No description provided for @supportAttachRemove.
+  ///
+  /// In ar, this message translates to:
+  /// **'شيل الملف'**
+  String get supportAttachRemove;
+
+  /// No description provided for @supportAttachRetry.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get supportAttachRetry;
+
+  /// No description provided for @supportAttachFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل الرفع'**
+  String get supportAttachFailed;
+
+  /// No description provided for @supportAttachmentRejectedTooLarge.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملف أكبر من {size} ميجا'**
+  String supportAttachmentRejectedTooLarge(int size);
+
+  /// No description provided for @supportAttachmentRejectedType.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع ده مش مسموح. صور أو PDF بس'**
+  String get supportAttachmentRejectedType;
+
+  /// No description provided for @supportAttachmentRejectedTooMany.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت للحد: {count} ملفات'**
+  String supportAttachmentRejectedTooMany(int count);
+
+  /// No description provided for @supportFaq.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأسئلة الشائعة'**
+  String get supportFaq;
+
+  /// No description provided for @supportFaqSearch.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث في الأسئلة'**
+  String get supportFaqSearch;
+
+  /// No description provided for @supportFaqNoResults.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش نتايج'**
+  String get supportFaqNoResults;
+
+  /// No description provided for @supportFaqStale.
+  ///
+  /// In ar, this message translates to:
+  /// **'ممكن تكون المعلومات دي قديمة'**
+  String get supportFaqStale;
+
+  /// No description provided for @supportCall.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصل بخدمة العملاء'**
+  String get supportCall;
+
+  /// No description provided for @supportCallHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'مواعيد العمل: {hours}'**
+  String supportCallHours(String hours);
+
+  /// No description provided for @supportCallCopied.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتنسخ الرقم'**
+  String get supportCallCopied;
+
+  /// No description provided for @accountEdit.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get accountEdit;
+
+  /// No description provided for @accountEditName.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الاسم'**
+  String get accountEditName;
+
+  /// No description provided for @accountNameLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get accountNameLabel;
+
+  /// No description provided for @accountNameInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم لازم يكون من 2 لـ 80 حرف'**
+  String get accountNameInvalid;
+
+  /// No description provided for @accountSave.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ'**
+  String get accountSave;
+
+  /// No description provided for @accountSectionGeneral.
+  ///
+  /// In ar, this message translates to:
+  /// **'عام'**
+  String get accountSectionGeneral;
+
+  /// No description provided for @accountSectionSecurity.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأمان'**
+  String get accountSectionSecurity;
+
+  /// No description provided for @accountSectionSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get accountSectionSupport;
+
+  /// No description provided for @accountSectionLegal.
+  ///
+  /// In ar, this message translates to:
+  /// **'قانوني'**
+  String get accountSectionLegal;
+
+  /// No description provided for @accountNotifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات'**
+  String get accountNotifications;
+
+  /// No description provided for @accountAppearance.
+  ///
+  /// In ar, this message translates to:
+  /// **'المظهر'**
+  String get accountAppearance;
+
+  /// No description provided for @accountLanguage.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللغة'**
+  String get accountLanguage;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسب الجهاز'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاتح'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In ar, this message translates to:
+  /// **'داكن'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsLanguageArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'العربية'**
+  String get settingsLanguageArabic;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In ar, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @accountSecurityRow.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأمان والأجهزة'**
+  String get accountSecurityRow;
+
+  /// No description provided for @accountTerms.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط والأحكام'**
+  String get accountTerms;
+
+  /// No description provided for @accountPrivacy.
+  ///
+  /// In ar, this message translates to:
+  /// **'سياسة الخصوصية'**
+  String get accountPrivacy;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج'**
+  String get accountSignOut;
+
+  /// No description provided for @accountSignOutConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخرج من حسابك؟'**
+  String get accountSignOutConfirm;
+
+  /// No description provided for @accountDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الحساب'**
+  String get accountDelete;
+
+  /// No description provided for @accountVisitorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل دخولك عشان تتابع حجوزاتك'**
+  String get accountVisitorTitle;
+
+  /// No description provided for @accountChangePassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير كلمة المرور'**
+  String get accountChangePassword;
+
+  /// No description provided for @accountCurrentPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور الحالية'**
+  String get accountCurrentPassword;
+
+  /// No description provided for @accountNewPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور الجديدة'**
+  String get accountNewPassword;
+
+  /// No description provided for @accountConfirmPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد كلمة المرور'**
+  String get accountConfirmPassword;
+
+  /// No description provided for @accountPasswordMismatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمتين المرور مش زي بعض'**
+  String get accountPasswordMismatch;
+
+  /// No description provided for @accountPasswordSameAsOld.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار كلمة مرور مختلفة عن الحالية'**
+  String get accountPasswordSameAsOld;
+
+  /// No description provided for @accountPasswordIncorrect.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور الحالية غلط'**
+  String get accountPasswordIncorrect;
+
+  /// No description provided for @accountPasswordChanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تغيير كلمة المرور، وخرّجنا باقي الأجهزة'**
+  String get accountPasswordChanged;
+
+  /// No description provided for @accountDevices.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجهزة المسجّل دخولها'**
+  String get accountDevices;
+
+  /// No description provided for @accountThisDevice.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجهاز ده'**
+  String get accountThisDevice;
+
+  /// No description provided for @accountLastActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر نشاط {time}'**
+  String accountLastActive(String time);
+
+  /// No description provided for @accountUnknownDevice.
+  ///
+  /// In ar, this message translates to:
+  /// **'جهاز'**
+  String get accountUnknownDevice;
+
+  /// No description provided for @accountEndSession.
+  ///
+  /// In ar, this message translates to:
+  /// **'خروج'**
+  String get accountEndSession;
+
+  /// No description provided for @accountEndOthers.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج من كل الأجهزة التانية'**
+  String get accountEndOthers;
+
+  /// No description provided for @accountEndOthersConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتخرج من كل الأجهزة ما عدا الجهاز ده'**
+  String get accountEndOthersConfirm;
+
+  /// No description provided for @accountSessionIsCurrent.
+  ///
+  /// In ar, this message translates to:
+  /// **'ده الجهاز اللي معاك. استخدم «تسجيل الخروج»'**
+  String get accountSessionIsCurrent;
+
+  /// No description provided for @prefsDeviceBlocked.
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات الجهاز مقفولة للتطبيق'**
+  String get prefsDeviceBlocked;
+
+  /// No description provided for @prefsOpenSettings.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الإعدادات'**
+  String get prefsOpenSettings;
+
+  /// No description provided for @prefsPush.
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات الجهاز'**
+  String get prefsPush;
+
+  /// No description provided for @prefsEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد'**
+  String get prefsEmail;
+
+  /// No description provided for @prefsMandatory.
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات ضرورية للحجز والدفع ومش بتتقفل'**
+  String get prefsMandatory;
+
+  /// No description provided for @prefsMandatoryLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلزامي'**
+  String get prefsMandatoryLabel;
+
+  /// No description provided for @prefsSaveFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نحفظ التغيير'**
+  String get prefsSaveFailed;
+
+  /// No description provided for @notifCategoryBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجوزات'**
+  String get notifCategoryBooking;
+
+  /// No description provided for @notifCategoryPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدفوعات'**
+  String get notifCategoryPayment;
+
+  /// No description provided for @notifCategorySupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get notifCategorySupport;
+
+  /// No description provided for @notifCategoryReminders.
+  ///
+  /// In ar, this message translates to:
+  /// **'التذكيرات'**
+  String get notifCategoryReminders;
+
+  /// No description provided for @notifCategoryReview.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييمات'**
+  String get notifCategoryReview;
+
+  /// No description provided for @notifCategoryAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'أمان الحساب'**
+  String get notifCategoryAccount;
+
+  /// No description provided for @notifCategoryUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get notifCategoryUnknown;
+
+  /// No description provided for @deleteTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الحساب'**
+  String get deleteTitle;
+
+  /// No description provided for @deleteWhatGoes.
+  ///
+  /// In ar, this message translates to:
+  /// **'هنمسح بياناتك الشخصية: الاسم والبريد والرقم والمفضلة والتفضيلات'**
+  String get deleteWhatGoes;
+
+  /// No description provided for @deleteWhatStays.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجوزاتك ومدفوعاتك القديمة هتفضل محفوظة من غير بياناتك، زي ما القانون بيطلب'**
+  String get deleteWhatStays;
+
+  /// No description provided for @deleteFinal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحذف نهائي ومالوش رجوع'**
+  String get deleteFinal;
+
+  /// No description provided for @deleteUnderstand.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاهم إن الحذف نهائي'**
+  String get deleteUnderstand;
+
+  /// No description provided for @deleteCta.
+  ///
+  /// In ar, this message translates to:
+  /// **'احذف حسابي'**
+  String get deleteCta;
+
+  /// No description provided for @deleteBlockedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مينفعش تحذف الحساب دلوقتي'**
+  String get deleteBlockedTitle;
+
+  /// No description provided for @deleteBlockerBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك حجز لسه شغال {code}'**
+  String deleteBlockerBooking(String code);
+
+  /// No description provided for @deleteBlockerRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك استرداد لسه بيتنفذ {code}'**
+  String deleteBlockerRefund(String code);
+
+  /// No description provided for @deleteBlockerClaim.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندك مطالبة لسه مفتوحة {code}'**
+  String deleteBlockerClaim(String code);
+
+  /// No description provided for @deleteCodeSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعتنا كود على {email}'**
+  String deleteCodeSent(String email);
+
+  /// No description provided for @deleteConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الحذف'**
+  String get deleteConfirm;
+
+  /// No description provided for @deleteDone.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك اتحذف'**
+  String get deleteDone;
+
+  /// No description provided for @accountHasActiveBookings.
+  ///
+  /// In ar, this message translates to:
+  /// **'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال'**
+  String get accountHasActiveBookings;
 }
 
 class _AppLocalizationsDelegate

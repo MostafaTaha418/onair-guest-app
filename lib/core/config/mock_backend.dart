@@ -26,11 +26,22 @@ abstract final class MockBackend {
   /// drive the ladder; production code never touches [MockBackend].
   static DateTime Function() clock = DateTime.now;
 
-  static const appConfig = AppConfig(
+  static final appConfig = AppConfig(
     minSupportedBuildAndroid: 1,
     minSupportedBuildIos: 1,
     supportPhone: '+201000000000',
     currentTermsVersion: termsVersion,
+    supportContact: const SupportContact(
+      phone: '+201000000000',
+      hoursAr: 'يوميًا 9ص–9م',
+      hoursEn: 'Daily 9am–9pm',
+    ),
+    legal: LegalLinks(
+      termsUrlAr: Uri.parse('https://example.invalid/terms'),
+      termsUrlEn: Uri.parse('https://example.invalid/terms'),
+      privacyUrlAr: Uri.parse('https://example.invalid/privacy'),
+      privacyUrlEn: Uri.parse('https://example.invalid/privacy'),
+    ),
   );
 }
 

@@ -22,11 +22,7 @@ import 'pump_until_found.dart';
 Future<void> runRemainingPaymentJourney(WidgetTester tester) async {
   const bookingId = 'b0000000-0000-4000-8000-000000000020';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // Same tall-viewport requirement as the cancellation journey: device
-  // screens (iOS 852 logical px) can cut the payment CTA below the fold.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -95,11 +91,7 @@ Future<void> runCashJourney(WidgetTester tester) async {
   const booking20 = 'b0000000-0000-4000-8000-000000000020';
   const booking28 = 'b0000000-0000-4000-8000-000000000028';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // Same tall-viewport requirement as the cancellation journey: on iOS the
-  // pay CTA sits below the fold and lazy slivers never build it.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -213,10 +205,7 @@ Future<void> runCashJourney(WidgetTester tester) async {
 Future<void> runStayAckJourney(WidgetTester tester) async {
   const booking21 = 'b0000000-0000-4000-8000-000000000021';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // Same tall-viewport requirement as the cancellation journey.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -288,13 +277,7 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
   const booking24 = 'b0000000-0000-4000-8000-000000000024';
   const booking21 = 'b0000000-0000-4000-8000-000000000021';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // The journey asserts on widgets across the whole details page (banner,
-  // chips, action row), so force the tall viewport on device runs too: on
-  // the API 34 Pixel 6 emulator the page is a few pixels taller than the
-  // screen and lazy slivers below the fold are never built.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -444,11 +427,7 @@ Future<void> runCancellationJourney(WidgetTester tester) async {
 Future<void> runClaimJourney(WidgetTester tester) async {
   const booking25 = 'b0000000-0000-4000-8000-000000000025';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // Same tall-viewport requirement as the cancellation journey: the claim
-  // cards sit below the fold on the API 34 Pixel 6 emulator.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 
@@ -484,7 +463,7 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
 
   // The open claim: protection notice, evidence placeholders, and a bar.
-  await tester.tap(find.textContaining('500.00'));
+  await tapVisible(tester, find.textContaining('500.00'));
   await pumpUntilFound(tester, find.text(l10n.claimProtection));
   expect(find.text(l10n.claimStatusOpen), findsOneWidget);
   // The mock image URLs always fail, so the placeholders show.
@@ -519,7 +498,9 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   );
   await pumpUntilFound(tester, find.text('OA-G3025'));
   await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
-  await tester.tap(find.textContaining('300.00'));
+  // The resolved claim tile sits below the fold on taller device viewports;
+  // tapVisible scrolls/invokes it rather than missing an off-screen hit test.
+  await tapVisible(tester, find.textContaining('300.00'));
   await pumpUntilFound(tester, find.text(l10n.claimOutcomeNoCharge));
   expect(find.byKey(const ValueKey('claim-agree')), findsNothing);
   expect(find.byKey(const ValueKey('claim-dispute')), findsNothing);
@@ -531,11 +512,7 @@ Future<void> runClaimJourney(WidgetTester tester) async {
 Future<void> runOfferJourney(WidgetTester tester) async {
   const booking26 = 'b0000000-0000-4000-8000-000000000026';
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  // Same tall-viewport requirement as the cancellation journey: the new
-  // notification row can land below the fold on device screens.
-  tester.view.physicalSize = const Size(800, 1600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
+  pinHostTestView(tester, physicalSize: const Size(800, 1600));
   CairoTime.initialize();
   SharedPreferences.setMockInitialValues({});
 

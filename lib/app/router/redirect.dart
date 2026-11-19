@@ -66,7 +66,12 @@ String? resolveRedirect(RedirectContext context) {
   if (state is RecoveryVerified) {
     return path == AppRoutes.newPassword ? null : AppRoutes.newPassword;
   }
-  if (state is SignedOut && AppRoutes.requiresAccount(context.location)) {
+  if (state is SignedOut &&
+      path != AppRoutes.account &&
+      AppRoutes.requiresAccount(context.location)) {
+    // FR-028: a signed-out visitor keeps the account tab and sees its visitor
+    // variant (sign-in / create account, language, appearance, FAQ, legal).
+    // Every other account-gated surface still sends them to sign-in.
     return _loginFor(context.location);
   }
   if (state is SignedOut &&

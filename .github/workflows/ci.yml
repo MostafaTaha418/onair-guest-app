@@ -133,9 +133,8 @@ jobs:
     # running 20 s later or crashed. 24 = minimum supported, 34 = recent.
     needs: format-and-analyze
     runs-on: ubuntu-latest
-    # A slow runner can stretch one emulator cycle far beyond the usual
-    # ~25 min suite (adb stalls were observed for 30+ min at a time).
-    timeout-minutes: 150
+    # The integration journeys share one compiled device-suite target.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -190,9 +189,8 @@ jobs:
     # 2026-11-04 Actions incident. macOS 26 is the current ARM64 image and
     # carries the same pinned Xcode 26.2 toolchain used below.
     runs-on: macos-26
-    # Building each simulator integration test separately can exceed one hour
-    # on a slow macOS runner, even when tests are making progress.
-    timeout-minutes: 150
+    # The integration journeys share one compiled device-suite target.
+    timeout-minutes: 90
     env:
       # Pin Xcode 26.2 so the Firebase Swift package and simulator runtime stay
       # reproducible as the macOS 26 image advances.

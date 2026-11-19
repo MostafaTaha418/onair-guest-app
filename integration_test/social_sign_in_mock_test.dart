@@ -21,12 +21,7 @@ void main() {
 
   /// Home → first apartment → «احجز الآن» → the login screen's Google row.
   Future<void> openLoginFromApartment(WidgetTester tester) async {
-    // Device runners report an arbitrary window; pin a tall one so every
-    // step stays hit-testable (device-CI rule).
-    tester.view.physicalSize = const Size(800, 1600);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    pinHostTestView(tester, physicalSize: const Size(800, 1600));
     await openBookingLoginFromHome(tester);
   }
 

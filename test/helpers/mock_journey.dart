@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/core/time/date_only.dart';
+import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/design_system/components/property_card.dart';
 import 'package:on_air/design_system/components/range_calendar.dart';
+import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/booking/presentation/dates_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -17,14 +19,9 @@ import 'register_mock_guest.dart';
 /// mode end to end, from search to the booking entry and back.
 Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   final l10n = lookupAppLocalizations(const Locale('ar'));
-  if (TestWidgetsFlutterBinding.instance
-      is AutomatedTestWidgetsFlutterBinding) {
-    // The host window is 800x600; a taller surface keeps the whole date
-    // sheet on screen. Device runs keep their real window.
-    tester.view.physicalSize = const Size(800, 1400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-  }
+  // The host window is 800x600; a taller surface keeps the whole date sheet
+  // on screen. Device runs keep their real, tappable window.
+  pinHostTestView(tester, physicalSize: const Size(800, 1400));
   await bootMockApp(tester);
 
   // 1–2. Open Search, pick 2 guests.
@@ -127,8 +124,29 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
   // The sign-in navigation replaced the stack, so the shell tabs are gone;
   // reach the account screen through the router to sign out.
   GoRouter.of(tester.element(find.text(apartmentTitle))).go('/account');
+  await pumpUntilFound(tester, find.byType(AccountScreen));
+  final signOutRow = find.byKey(const ValueKey('account-sign-out-row'));
+  if (!tester.any(signOutRow)) {
+    await tester.scrollUntilVisible(
+      signOutRow,
+      240,
+      scrollable: find
+          .descendant(
+            of: find.byType(AccountScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+  }
+  await tapVisible(tester, signOutRow);
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('sign-out-button')));
+  await tapVisible(
+    tester,
+    find.descendant(
+      of: find.byType(OnAirConfirmSheet),
+      matching: find.text(l10n.accountSignOut),
+    ),
+  );
   await tester.pumpAndSettle();
   // A members-only route ends the session straight into sign-in;
   // cancelling lands on home (resolveAuthCancelDestination).

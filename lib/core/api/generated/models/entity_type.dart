@@ -12,6 +12,8 @@ enum EntityType {
   caseMessage('case_message'),
   @JsonValue('damage_claim')
   damageClaim('damage_claim'),
+  @JsonValue('support_draft')
+  supportDraft('support_draft'),
 
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
   $unknown(null);

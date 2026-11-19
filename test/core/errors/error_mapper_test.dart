@@ -42,6 +42,45 @@ void main() {
     );
   });
 
+  test('maps G4 errors and keeps attachment rejection details', () {
+    final expected = <String, (ErrorCode, String)>{
+      'CASE_CLOSED': (ErrorCode.caseClosed, 'supportCaseClosed'),
+      'SESSION_REVOKED': (ErrorCode.sessionRevoked, 'errorUnauthenticated'),
+      'SESSION_IS_CURRENT': (
+        ErrorCode.sessionIsCurrent,
+        'accountSessionIsCurrent',
+      ),
+      'PASSWORD_INCORRECT': (
+        ErrorCode.passwordIncorrect,
+        'accountPasswordIncorrect',
+      ),
+      'PASSWORD_WEAK': (ErrorCode.passwordWeak, 'authPasswordRule'),
+    };
+    for (final MapEntry(key: code, value: mapping) in expected.entries) {
+      final error = ErrorMapper.fromCode(code);
+      expect(error.code, mapping.$1, reason: code);
+      expect(error.messageKey, mapping.$2, reason: code);
+    }
+
+    for (final reason in ['too_large', 'type_not_allowed', 'too_many']) {
+      final error = ErrorMapper.fromCode(
+        'ATTACHMENT_REJECTED',
+        details: {'reason': reason, 'max': 5},
+      );
+      expect(error.code, ErrorCode.attachmentRejected);
+      expect(error.details?['reason'], reason);
+      expect(error.details?['max'], 5);
+      expect(
+        error.messageKey,
+        switch (reason) {
+          'too_large' => 'supportAttachmentRejectedTooLarge',
+          'type_not_allowed' => 'supportAttachmentRejectedType',
+          _ => 'supportAttachmentRejectedTooMany',
+        },
+      );
+    }
+  });
+
   group('S005 codes', () {
     test('each new code maps to its ErrorCode and message key', () {
       final expected = <String, (ErrorCode, String)>{

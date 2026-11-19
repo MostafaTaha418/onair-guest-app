@@ -19,7 +19,9 @@ final class AppConfigRepository implements AppConfigSource {
         .from('app_config')
         .select(
           'min_build_guest_android,min_build_guest_ios,'
-          'support_phone,guest_terms_version',
+          'support_phone,support_hours_ar,support_hours_en,'
+          'guest_terms_version,guest_terms_url_ar,guest_terms_url_en,'
+          'privacy_url_ar,privacy_url_en,upload_limits,english_enabled',
         )
         .limit(1)
         .single();

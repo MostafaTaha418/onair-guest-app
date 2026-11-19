@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/l10n/generated/app_localizations.dart';
 
 /// The tone of a status chip or banner; each maps to one background/text
 /// token pair from Guest Plan §4.6 (light and dark come from the theme).
@@ -18,6 +19,59 @@ enum StatusTone {
 /// How a [StatusChip] is drawn: the original filled pill, or the compact
 /// list chip with a leading tone dot (My Bookings redesign, 2026-11).
 enum StatusChipStyle { pill, dot }
+
+enum SupportCaseStatus {
+  open,
+  inProgress,
+  waitingUser,
+  resolved,
+  closed,
+  unknown,
+}
+
+final class CaseStatusChip extends StatelessWidget {
+  const CaseStatusChip({required this.status, super.key});
+
+  final SupportCaseStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final (label, tone, icon) = switch (status) {
+      SupportCaseStatus.open => (
+        l10n.supportStatusOpen,
+        StatusTone.pending,
+        Icons.mark_chat_unread_outlined,
+      ),
+      SupportCaseStatus.inProgress => (
+        l10n.supportStatusInProgress,
+        StatusTone.badge,
+        Icons.sync,
+      ),
+      SupportCaseStatus.waitingUser => (
+        l10n.supportStatusWaitingUser,
+        StatusTone.warning,
+        Icons.reply_outlined,
+      ),
+      SupportCaseStatus.resolved => (
+        l10n.supportStatusResolved,
+        StatusTone.success,
+        Icons.check_circle_outline,
+      ),
+      SupportCaseStatus.closed => (
+        l10n.supportStatusClosed,
+        StatusTone.cancelled,
+        Icons.lock_outline,
+      ),
+      SupportCaseStatus.unknown => (
+        l10n.supportStatusUnknown,
+        StatusTone.cancelled,
+        Icons.help_outline,
+      ),
+    };
+    return StatusChip(label: label, tone: tone, icon: icon);
+  }
+}
 
 /// A pill-shaped status chip (Guest Plan §4.6). The color is never the only
 /// signal: the label carries the meaning and an optional icon supports it.
@@ -53,7 +107,12 @@ final class StatusChip extends StatelessWidget {
         colors['successContainer'],
         colors['onSuccessContainer'],
       ),
-      StatusTone.badge => (colors['badgeNavActive'], colors.primary),
+      StatusTone.badge => (
+        colors['badgeNavActive'],
+        Theme.of(context).brightness == Brightness.dark
+            ? colors['textAccent']
+            : colors.primary,
+      ),
       StatusTone.completed => (
         colors['completedBackground'],
         colors['completedText'],
@@ -80,7 +139,10 @@ final class StatusChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) Icon(icon),
+              if (icon != null) ...[
+                Icon(icon),
+                const SizedBox(width: Dimens.space4),
+              ],
               Flexible(
                 child: Text(
                   label,
