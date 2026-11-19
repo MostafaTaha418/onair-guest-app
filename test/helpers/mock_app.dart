@@ -177,7 +177,12 @@ Future<MockAuthRepository> bootMockApp(
         RepositoryProvider<ImageSanitizer>.value(value: ImageSanitizer()),
         RepositoryProvider<PrivateFileUploader>.value(
           value: PrivateFileUploader(
-            signer: UniqueUploadSigner(),
+            // Register each signed upload with the support server so a later
+            // createCase accepts the draft's attachments (mirrors the real
+            // sign endpoint's server-side bookkeeping).
+            signer: UniqueUploadSigner(
+              onSigned: supportServer.registerDraftAttachment,
+            ),
             putClient: const FakeRawPutClient(),
           ),
         ),

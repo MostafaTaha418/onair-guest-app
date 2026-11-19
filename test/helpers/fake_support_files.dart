@@ -24,14 +24,26 @@ final class FakeUploadSigner implements UploadSigner {
 }
 
 /// Gives every upload its own attachment id, like the real Node signer.
+///
+/// The real sign endpoint records the attachment against its draft server-side
+/// so the later create-case call can verify it. [onSigned] lets a mock server
+/// mirror that (draft id, attachment id) bookkeeping; without it createCase
+/// rejects the attachments with NOT_FOUND.
 final class UniqueUploadSigner implements UploadSigner {
+  UniqueUploadSigner({this.onSigned});
+
+  final void Function(String draftId, String attachmentId)? onSigned;
+
   int _counter = 0;
   @override
-  Future<UploadSignResponse> sign(UploadSignRequest request) async =>
-      UploadSignResponse(
-        attachmentId: 'attachment-${++_counter}',
-        uploadUrl: Uri.parse('https://example.invalid/upload'),
-      );
+  Future<UploadSignResponse> sign(UploadSignRequest request) async {
+    final attachmentId = 'attachment-${++_counter}';
+    onSigned?.call(request.entityId, attachmentId);
+    return UploadSignResponse(
+      attachmentId: attachmentId,
+      uploadUrl: Uri.parse('https://example.invalid/upload'),
+    );
+  }
 }
 
 final class FakeRawPutClient implements RawPutClient {
