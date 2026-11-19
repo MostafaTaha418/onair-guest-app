@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/core/files/attachment_picker.dart';
@@ -9,6 +10,7 @@ import 'package:on_air/design_system/components/attachment_tile.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
+import 'package:on_air/features/support/presentation/new_case/new_case_cubit.dart';
 import 'package:on_air/features/support/presentation/new_case/new_case_screen.dart';
 import 'package:on_air/features/support/presentation/widgets/reply_composer.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
@@ -151,6 +153,20 @@ void main() {
     onSend();
     onSend();
     await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    final dbgState = tester
+        .element(find.byType(NewCaseScreen))
+        .read<NewCaseCubit>()
+        .state;
+    final dbgSnacks = tester
+        .widgetList<SnackBar>(find.byType(SnackBar))
+        .map((s) => s.content is Text ? (s.content as Text).data : '?')
+        .toList();
+    debugPrint(
+      'SUPPORTDBG4 booking=${dbgState is NewCaseReady ? dbgState.bookingId : dbgState.runtimeType} '
+      'accepted=${server.acceptedBookingId} createCalls=${server.createCalls} '
+      'snacks=$dbgSnacks',
+    );
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
     expect(server.createCalls, 1);
