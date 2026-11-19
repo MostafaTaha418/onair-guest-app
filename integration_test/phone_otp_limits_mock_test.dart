@@ -73,7 +73,7 @@ void main() {
     advanceServer(wait);
     // The window is over: «ابعت كود جديد» comes back enabled.
     await pumpUntilFound(tester, find.text(l10n.whatsappResend));
-    await tester.tap(find.byKey(const ValueKey('whatsapp-resend')));
+    await tapVisible(tester, find.byKey(const ValueKey('whatsapp-resend')));
   }
 
   /// Sends 10 codes across the ladder and trips the 11th request — the
@@ -104,7 +104,7 @@ void main() {
     // Send #10 is in; its 24 h window is next — the 11th request blocks.
     advanceServer(const Duration(hours: 24));
     await pumpUntilFound(tester, find.text(l10n.whatsappResend));
-    await tester.tap(find.byKey(const ValueKey('whatsapp-resend')));
+    await tapVisible(tester, find.byKey(const ValueKey('whatsapp-resend')));
     await pumpUntilFound(
       tester,
       find.byKey(const ValueKey('pv-blocked-notice')),
@@ -207,7 +207,10 @@ void main() {
 
       // (d) Signed out, a brand-new account on the same device: still
       // blocked.
-      await tester.tap(find.byKey(const ValueKey('pv-blocked-sign-out')));
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('pv-blocked-sign-out')),
+      );
       await pumpUntilFound(
         tester,
         find.byKey(const ValueKey('home-search-box')),
