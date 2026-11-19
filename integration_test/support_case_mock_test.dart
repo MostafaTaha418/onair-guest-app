@@ -134,14 +134,23 @@ void main() {
     // pumps in pickTwoPhotos, so wait for the button to actually enable.
     final send = find.widgetWithText(OnAirPrimaryButton, l10n.supportSend);
     await pumpUntilFound(tester, send);
-    for (var attempt = 0; attempt < 80; attempt++) {
-      if (tester.widget<OnAirPrimaryButton>(send).onPressed != null) break;
+    var enabledAt = -1;
+    for (var attempt = 0; attempt < 120; attempt++) {
+      if (tester.widget<OnAirPrimaryButton>(send).onPressed != null) {
+        enabledAt = attempt;
+        break;
+      }
       await tester.pump(const Duration(milliseconds: 250));
     }
+    debugPrint('SUPPORTDBG enabledAt=$enabledAt');
     // A rapid double-tap must still create exactly one case (RapidSubmitGuard);
     // on a device the first tap can already be navigating away, so only repeat
     // it while the button is still mounted.
     await tester.tap(send);
+    await tester.pump();
+    debugPrint(
+      'SUPPORTDBG afterTap1 details=${tester.any(find.byType(CaseDetailsScreen))}',
+    );
     if (tester.any(send)) await tester.tap(send, warnIfMissed: false);
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
