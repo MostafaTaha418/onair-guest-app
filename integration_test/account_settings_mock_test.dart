@@ -125,10 +125,27 @@ void main() {
     );
 
     // Sign-out is confirmed once; /account then renders the visitor variant.
+    // The sign-out row sits at the bottom of the lazily-built account list, so
+    // on taller device viewports it is not mounted until scrolled into view;
+    // bring it into the tree first (mirrors the delete-account journey).
     final signOut = find.byKey(const ValueKey('account-sign-out-row'));
-    await tester.ensureVisible(signOut);
-    await tester.tap(signOut);
-    await pumpUntilFound(tester, find.text(en.accountSignOutConfirm));
+    if (!tester.any(signOut)) {
+      await tester.scrollUntilVisible(
+        signOut,
+        240,
+        scrollable: find
+            .descendant(
+              of: find.byType(AccountScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+    }
+    await tapAndWait(
+      tester,
+      signOut,
+      find.text(en.accountSignOutConfirm),
+    );
     await tester.tap(find.text(en.accountSignOut).last);
     await pumpUntilFound(tester, find.byKey(const ValueKey('home-search-box')));
     await openAccount(tester);
