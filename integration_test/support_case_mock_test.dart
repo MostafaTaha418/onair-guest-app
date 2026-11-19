@@ -134,24 +134,20 @@ void main() {
     // pumps in pickTwoPhotos, so wait for the button to actually enable.
     final send = find.widgetWithText(OnAirPrimaryButton, l10n.supportSend);
     await pumpUntilFound(tester, send);
-    var enabledAt = -1;
+    // «إرسال» enables once the fake upload pipeline marks both attachments
+    // ready; wait for that rather than a fixed delay.
     for (var attempt = 0; attempt < 120; attempt++) {
-      if (tester.widget<OnAirPrimaryButton>(send).onPressed != null) {
-        enabledAt = attempt;
-        break;
-      }
+      if (tester.widget<OnAirPrimaryButton>(send).onPressed != null) break;
       await tester.pump(const Duration(milliseconds: 250));
     }
-    debugPrint('SUPPORTDBG enabledAt=$enabledAt');
-    // A rapid double-tap must still create exactly one case (RapidSubmitGuard);
-    // on a device the first tap can already be navigating away, so only repeat
-    // it while the button is still mounted.
-    await tester.tap(send);
+    // A real device rejects the synthetic hit test on this bottom-bar button
+    // (it lands but never fires), so invoke the callback directly the way
+    // tapVisible does for device control. Calling it twice within the guard
+    // window proves the RapidSubmitGuard still creates exactly one case (FR-009).
+    final onSend = tester.widget<OnAirPrimaryButton>(send).onPressed!;
+    onSend();
+    onSend();
     await tester.pump();
-    debugPrint(
-      'SUPPORTDBG afterTap1 details=${tester.any(find.byType(CaseDetailsScreen))}',
-    );
-    if (tester.any(send)) await tester.tap(send, warnIfMissed: false);
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
     expect(server.createCalls, 1);
@@ -167,7 +163,7 @@ void main() {
     await tester.longPress(find.text('SC-1043'));
     await pumpUntilFound(tester, find.text('اتحلّت'));
     await tester.pump(const Duration(milliseconds: 500));
-    await tester.tap(find.text('اتحلّت'));
+    await tapVisible(tester, find.text('اتحلّت'));
     await pumpUntilFound(tester, find.text(l10n.supportResolvedNotice));
 
     // 7. Replying reopens the case («مفتوحة»).
@@ -181,14 +177,14 @@ void main() {
     await tester.pump();
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.send_rounded));
+    await tapVisible(tester, find.byIcon(Icons.send_rounded));
     await pumpUntilFound(tester, find.text(l10n.supportStatusOpen));
 
     // 8. Closing it offers «افتح حالة جديدة», pre-linking the booking.
     await tester.longPress(find.text('SC-1043'));
     await pumpUntilFound(tester, find.text('اتقفلت'));
     await tester.pump(const Duration(milliseconds: 500));
-    await tester.tap(find.text('اتقفلت'));
+    await tapVisible(tester, find.text('اتقفلت'));
     await pumpUntilFound(tester, find.text(l10n.supportCaseClosed));
     await tester.pump(const Duration(seconds: 1));
     await tapAndWait(
