@@ -23,6 +23,11 @@ final class MockSupportServer implements SupportRepository {
   static const foreignCaseId = 'c0000000-0000-4000-8000-000000000099';
   static const linkedBookingId = 'b0000000-0000-4000-8000-000000000021';
 
+  /// The booking a support case may link to (data-model §3). Defaults to the
+  /// seeded booking; a journey that opens support from a freshly created
+  /// booking points this at that booking's id so createCase accepts it.
+  String acceptedBookingId = linkedBookingId;
+
   final Duration latency;
   final DateTime Function() _now;
   final void Function(String caseId)? onStaffReply;
@@ -282,7 +287,7 @@ final class MockSupportServer implements SupportRepository {
     }
     final body = draft.body.trim();
     if (body.length < 10 || body.length > 4000) _fail('VALIDATION_FAILED');
-    if (draft.bookingId != null && draft.bookingId != linkedBookingId) {
+    if (draft.bookingId != null && draft.bookingId != acceptedBookingId) {
       _fail('NOT_FOUND');
     }
     final bound = _draftAttachments[draft.draftId] ?? const <String, String>{};

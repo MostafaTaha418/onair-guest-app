@@ -74,7 +74,10 @@ void main() {
   testWidgets('the full support loop from a booking', (tester) async {
     final picker = FakeAttachmentPicker();
     final photos = await twoPhotos();
-    final server = MockSupportServer(latency: Duration.zero);
+    // The journey opens support from the freshly booked OA-MOCK001 (id …001),
+    // not the seeded …021 booking, so accept it when the case is created.
+    final server = MockSupportServer(latency: Duration.zero)
+      ..acceptedBookingId = 'b0000000-0000-4000-8000-000000000001';
     picker.gallery = photos;
     await bootMockApp(tester, support: server, attachmentPicker: picker);
 
@@ -148,16 +151,6 @@ void main() {
     onSend();
     onSend();
     await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-    final dbgSnacks = tester
-        .widgetList<SnackBar>(find.byType(SnackBar))
-        .map((s) => s.content is Text ? (s.content as Text).data : '?')
-        .toList();
-    debugPrint(
-      'SUPPORTDBG3 onForm=${tester.any(find.byType(NewCaseScreen))} '
-      'details=${tester.any(find.byType(CaseDetailsScreen))} '
-      'createCalls=${server.createCalls} snacks=$dbgSnacks',
-    );
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
     expect(server.createCalls, 1);
