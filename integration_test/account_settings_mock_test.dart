@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/features/account/data/mock_account_server.dart';
 import 'package:on_air/features/account/domain/notification_preference.dart';
 import 'package:on_air/features/account/presentation/account_screen.dart';
@@ -146,8 +147,17 @@ void main() {
       signOut,
       find.text(en.accountSignOutConfirm),
     );
-    await tester.tap(find.text(en.accountSignOut).last);
-    await pumpUntilFound(tester, find.byKey(const ValueKey('home-search-box')));
+    // The confirm sheet repeats the «Sign out» label, so scope the confirm
+    // button to the sheet instead of a bare `.last`, which can resolve to the
+    // off-screen list row after scrolling. Waits for the public home.
+    await tapAndWait(
+      tester,
+      find.descendant(
+        of: find.byType(OnAirConfirmSheet),
+        matching: find.text(en.accountSignOut),
+      ),
+      find.byKey(const ValueKey('home-search-box')),
+    );
     await openAccount(tester);
     expect(find.byKey(const ValueKey('visitor-sign-in')), findsOneWidget);
     expect(find.byKey(const ValueKey('account-security-row')), findsNothing);
