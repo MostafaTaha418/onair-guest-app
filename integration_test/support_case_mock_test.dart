@@ -148,6 +148,16 @@ void main() {
     onSend();
     onSend();
     await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    final dbgSnacks = tester
+        .widgetList<SnackBar>(find.byType(SnackBar))
+        .map((s) => s.content is Text ? (s.content as Text).data : '?')
+        .toList();
+    debugPrint(
+      'SUPPORTDBG3 onForm=${tester.any(find.byType(NewCaseScreen))} '
+      'details=${tester.any(find.byType(CaseDetailsScreen))} '
+      'createCalls=${server.createCalls} snacks=$dbgSnacks',
+    );
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
     expect(server.createCalls, 1);
