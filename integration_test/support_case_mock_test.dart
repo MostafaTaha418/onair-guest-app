@@ -9,6 +9,7 @@ import 'package:on_air/core/files/attachment_picker.dart';
 import 'package:on_air/design_system/components/attachment_tile.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
+import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
 import 'package:on_air/features/support/presentation/new_case/new_case_cubit.dart';
 import 'package:on_air/features/support/presentation/new_case/new_case_screen.dart';
@@ -169,11 +170,10 @@ void main() {
       maxAttempts: 200,
     );
 
-    // 6. The tools mark the case resolved; the notice appears.
-    await tester.longPress(find.text('SC-1043'));
-    await pumpUntilFound(tester, find.text('اتحلّت'));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tapVisible(tester, find.text('اتحلّت'));
+    // 6. The tools mark the case resolved; the notice appears. The long-press
+    // debug sheet is unreliable on windowless device runners, so drive the
+    // same server status change directly — the screen reacts to it live.
+    server.setStatus(server.openedCaseId!, CaseStatus.resolved);
     await pumpUntilFound(tester, find.text(l10n.supportResolvedNotice));
 
     // 7. Replying reopens the case («مفتوحة»).
@@ -191,10 +191,7 @@ void main() {
     await pumpUntilFound(tester, find.text(l10n.supportStatusOpen));
 
     // 8. Closing it offers «افتح حالة جديدة», pre-linking the booking.
-    await tester.longPress(find.text('SC-1043'));
-    await pumpUntilFound(tester, find.text('اتقفلت'));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tapVisible(tester, find.text('اتقفلت'));
+    server.setStatus(server.openedCaseId!, CaseStatus.closed);
     await pumpUntilFound(tester, find.text(l10n.supportCaseClosed));
     await tester.pump(const Duration(seconds: 1));
     await tapAndWait(
