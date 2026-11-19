@@ -86,7 +86,9 @@ void main() {
       tester,
       find.byKey(const ValueKey('edit-name-field')),
     );
-    expect(find.text('Mona Ibrahim'), findsOneWidget);
+    // The saved name lands after the repository write and AuthCubit refresh,
+    // which can trail the sheet close on a device runner; wait for it.
+    await pumpUntilFound(tester, find.text('Mona Ibrahim'));
 
     // Locale applies immediately and flips the app to LTR.
     final language = find.byKey(const ValueKey('account-language-row'));
