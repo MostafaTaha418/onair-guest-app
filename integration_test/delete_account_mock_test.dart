@@ -7,6 +7,7 @@ import 'package:on_air/core/config/mock_backend.dart';
 import 'package:on_air/design_system/components/on_air_confirm_sheet.dart';
 import 'package:on_air/features/account/presentation/account_screen.dart';
 import 'package:on_air/features/auth/data/mock_auth_repository.dart';
+import 'package:on_air/features/support/presentation/home/support_home_screen.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
 import '../test/helpers/mock_app.dart';
@@ -112,10 +113,12 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('delete-otp-field')), findsNothing);
+    // «تواصل مع الدعم» pushes the support home (FR: a blocked guest can still
+    // reach support), so wait for that screen rather than the public home.
     await tapAndWait(
       tester,
       find.text(l10n.whatsappContactSupport),
-      find.byKey(const ValueKey('home-scroll')),
+      find.byType(SupportHomeScreen),
     );
   });
 

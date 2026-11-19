@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:on_air/core/files/attachment_picker.dart';
 import 'package:on_air/design_system/components/attachment_tile.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/features/support/presentation/case/case_details_screen.dart';
 import 'package:on_air/features/support/presentation/new_case/new_case_screen.dart';
@@ -128,8 +129,20 @@ void main() {
     await tester.pump();
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump();
-    await tester.tap(find.text(l10n.supportSend));
-    await tester.tap(find.text(l10n.supportSend));
+    // «إرسال» only enables once the fake sign + PUT pipeline marks both
+    // attachments ready. A slower device runner needs more than the fixed
+    // pumps in pickTwoPhotos, so wait for the button to actually enable.
+    final send = find.widgetWithText(OnAirPrimaryButton, l10n.supportSend);
+    await pumpUntilFound(tester, send);
+    for (var attempt = 0; attempt < 80; attempt++) {
+      if (tester.widget<OnAirPrimaryButton>(send).onPressed != null) break;
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+    // A rapid double-tap must still create exactly one case (RapidSubmitGuard);
+    // on a device the first tap can already be navigating away, so only repeat
+    // it while the button is still mounted.
+    await tester.tap(send);
+    if (tester.any(send)) await tester.tap(send, warnIfMissed: false);
     await pumpUntilFound(tester, find.byType(CaseDetailsScreen));
     await pumpUntilFound(tester, find.text('SC-1043'));
     expect(server.createCalls, 1);

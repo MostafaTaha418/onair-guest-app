@@ -498,7 +498,9 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   );
   await pumpUntilFound(tester, find.text('OA-G3025'));
   await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
-  await tester.tap(find.textContaining('300.00'));
+  // The resolved claim tile sits below the fold on taller device viewports;
+  // tapVisible scrolls/invokes it rather than missing an off-screen hit test.
+  await tapVisible(tester, find.textContaining('300.00'));
   await pumpUntilFound(tester, find.text(l10n.claimOutcomeNoCharge));
   expect(find.byKey(const ValueKey('claim-agree')), findsNothing);
   expect(find.byKey(const ValueKey('claim-dispute')), findsNothing);
