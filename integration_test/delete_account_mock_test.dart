@@ -112,8 +112,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('delete-otp-field')), findsNothing);
-    await tester.tap(find.text(l10n.whatsappContactSupport));
-    await pumpUntilFound(tester, find.byKey(const ValueKey('home-scroll')));
+    await tapAndWait(
+      tester,
+      find.text(l10n.whatsappContactSupport),
+      find.byKey(const ValueKey('home-scroll')),
+    );
   });
 
   testWidgets('a normal account deletes and lands on the visitor home', (

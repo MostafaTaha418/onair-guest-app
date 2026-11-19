@@ -463,7 +463,7 @@ Future<void> runClaimJourney(WidgetTester tester) async {
   await pumpUntilFound(tester, find.text(l10n.claimsSectionTitle));
 
   // The open claim: protection notice, evidence placeholders, and a bar.
-  await tester.tap(find.textContaining('500.00'));
+  await tapVisible(tester, find.textContaining('500.00'));
   await pumpUntilFound(tester, find.text(l10n.claimProtection));
   expect(find.text(l10n.claimStatusOpen), findsOneWidget);
   // The mock image URLs always fail, so the placeholders show.

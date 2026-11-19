@@ -89,7 +89,10 @@ Future<void> runPaymentJourney(WidgetTester tester) async {
 
   // 3. A second journey: pay with «Fail», then «Try again» returns to the
   // dates step carrying the same stay.
-  await tester.tap(find.byKey(const ValueKey('return-view-booking')));
+  await tapVisible(
+    tester,
+    find.byKey(const ValueKey('return-view-booking')),
+  );
   await tester.pump(const Duration(seconds: 1));
   await tester.pump(const Duration(seconds: 1));
   GoRouter.of(tester.element(find.byType(Scaffold).first)).go(AppRoutes.home);

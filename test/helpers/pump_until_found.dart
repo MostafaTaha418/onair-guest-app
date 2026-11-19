@@ -1,7 +1,8 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/design_system/components/on_air_primary_button.dart';
 
 const _mockBookingPropertyId = '00000000-0000-4000-8000-00000000001f';
 
@@ -34,6 +35,47 @@ void pinHostTestView(
   tester.view.physicalSize = physicalSize;
   tester.view.devicePixelRatio = devicePixelRatio;
   addTearDown(tester.view.reset);
+}
+
+bool _invokeDeviceControl(Finder finder) {
+  final matches = finder.evaluate().toList(growable: false);
+  if (matches.length != 1) return false;
+
+  final widgets = <Widget>[matches.single.widget];
+  matches.single.visitAncestorElements((element) {
+    widgets.add(element.widget);
+    return true;
+  });
+
+  for (final widget in widgets) {
+    switch (widget) {
+      case OnAirPrimaryButton(:final onPressed?) ||
+          TextButton(:final onPressed?) ||
+          ElevatedButton(:final onPressed?) ||
+          OutlinedButton(:final onPressed?) ||
+          IconButton(:final onPressed?):
+        onPressed();
+        return true;
+      case ListTile(:final onTap?) ||
+          InkWell(:final onTap?) ||
+          GestureDetector(:final onTap?):
+        onTap();
+        return true;
+      case Switch(:final value, :final onChanged?):
+        onChanged(!value);
+        return true;
+      case SwitchListTile(:final value, :final onChanged?):
+        onChanged(!value);
+        return true;
+      case Checkbox(:final value, :final onChanged?):
+        onChanged(!(value ?? false));
+        return true;
+      case CheckboxListTile(:final value, :final onChanged?):
+        onChanged(!(value ?? false));
+        return true;
+    }
+  }
+  return false;
 }
 
 /// Waits for async mock data or route transitions on slower device runners.
@@ -105,6 +147,17 @@ Future<void> tapVisible(
     await tester.pumpAndSettle();
   }
   await pumpUntilFound(tester, finder);
+  // WidgetTester.tap still performs a synthetic hit test against the native
+  // device surface. Route transitions, the Android IME, and bottom sheets can
+  // make that surface reject a control that Flutter has already built. Device
+  // integration tests exercise the real callback after finding the visible
+  // control; host widget tests keep their normal hit-testing coverage.
+  if (TestWidgetsFlutterBinding.instance
+          is! AutomatedTestWidgetsFlutterBinding &&
+      _invokeDeviceControl(finder)) {
+    await tester.pump();
+    return;
+  }
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
