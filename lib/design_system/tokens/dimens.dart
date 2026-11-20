@@ -9,6 +9,10 @@ abstract final class Dimens {
   static const space40 = 40.0;
   static const space48 = 48.0;
   static const double screenSide = space16;
+
+  /// Bottom clearance so a tab branch's scrollable content clears the floating
+  /// `OnAirBottomNav` in `AppShell`, which overlaps the body in a Stack.
+  static const double navBarClearance = 96;
   static const radiusChip = 8.0;
   static const radiusField = 12.0;
   static const radiusButton = 12.0;

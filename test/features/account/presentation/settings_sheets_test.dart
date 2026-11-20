@@ -90,4 +90,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.state.themeMode, ThemeMode.dark);
   });
+
+  testWidgets('the sheet uses the root navigator above the app shell', (
+    tester,
+  ) async {
+    final settings = cubit();
+    addTearDown(settings.close);
+    await settings.start();
+    final rootNavigator = GlobalKey<NavigatorState>();
+    final tabNavigator = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      BlocProvider<AppSettingsCubit>.value(
+        value: settings,
+        child: MaterialApp(
+          navigatorKey: rootNavigator,
+          locale: const Locale('ar'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          theme: OnAirTheme.light,
+          home: Scaffold(
+            body: Navigator(
+              key: tabNavigator,
+              onGenerateRoute: (_) => MaterialPageRoute<void>(
+                builder: (context) => TextButton(
+                  onPressed: () => showLanguageSheet(context),
+                  child: const Text('language'),
+                ),
+              ),
+            ),
+            bottomNavigationBar: const SizedBox(height: 80),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('language'));
+    await tester.pumpAndSettle();
+
+    expect(rootNavigator.currentState?.canPop(), isTrue);
+    expect(tabNavigator.currentState?.canPop(), isFalse);
+    expect(find.text(l10n.settingsLanguageArabic), findsOneWidget);
+  });
 }

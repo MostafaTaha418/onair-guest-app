@@ -4340,6 +4340,12 @@ abstract class AppLocalizations {
   /// **'مقدرناش نحفظ التغيير'**
   String get prefsSaveFailed;
 
+  /// No description provided for @prefsUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعدادات الإشعارات مش متاحة دلوقتي. جرّب تاني بعد شوية'**
+  String get prefsUnavailable;
+
   /// No description provided for @notifCategoryBooking.
   ///
   /// In ar, this message translates to:
@@ -4369,6 +4375,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'التقييمات'**
   String get notifCategoryReview;
+
+  /// No description provided for @notifCategoryRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبالغ المستردة'**
+  String get notifCategoryRefund;
 
   /// No description provided for @notifCategoryAccount.
   ///

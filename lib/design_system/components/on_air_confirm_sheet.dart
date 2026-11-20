@@ -34,6 +34,7 @@ final class OnAirConfirmSheet extends StatelessWidget {
     required WidgetBuilder builder,
   }) => showModalBottomSheet<T>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: false,

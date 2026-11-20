@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/supabase_auth_repository.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,6 +27,18 @@ void _stubUser(_User user) {
   when(() => user.email).thenReturn('guest@example.com');
   when(() => user.phoneConfirmedAt).thenReturn(null);
   when(() => user.emailConfirmedAt).thenReturn('2026-10-27T10:00:00Z');
+  when(() => user.identities).thenReturn(const [
+    UserIdentity(
+      id: 'identity',
+      userId: 'email-guest',
+      identityData: null,
+      identityId: 'guest@example.com',
+      provider: 'email',
+      createdAt: '2026-10-27T10:00:00Z',
+      lastSignInAt: '2026-10-27T10:00:00Z',
+    ),
+  ]);
+  when(() => user.appMetadata).thenReturn(const {});
 }
 
 void main() {
@@ -41,6 +54,8 @@ void main() {
     final mapped = PhoneAuthUser.fromSupabase(user);
     expect(mapped.phone, isNull);
     expect(mapped.email, 'guest@example.com');
+    expect(mapped.authProviders, {AuthProvider.email});
+    expect(mapped.hasPassword, isTrue);
   });
 
   test(
@@ -157,6 +172,39 @@ void main() {
       );
       repository = SupabaseAuthRepository(auth, profiles, clock: () => now);
     });
+
+    test(
+      'uses auth-session providers when legacy context omits them',
+      () async {
+        when(() => auth.currentUser).thenReturn(
+          const PhoneAuthUser(
+            id: 'social-guest',
+            phone: '+201012345678',
+            phoneVerified: true,
+            email: 'social@example.com',
+            emailVerified: true,
+            authProviders: {AuthProvider.google},
+            hasPassword: false,
+          ),
+        );
+        when(() => auth.userChanges).thenAnswer((_) => const Stream.empty());
+
+        // Recreate with a legacy context that has profile data but no auth
+        // provider/password fields.
+        final profiles = _Profiles();
+        when(() => profiles.loadOwnProfile('social-guest')).thenAnswer(
+          (_) async => const ProfileRecord(
+            status: AccountStatus.active,
+            fullName: 'Social Guest',
+          ),
+        );
+        final legacyRepository = SupabaseAuthRepository(auth, profiles);
+
+        final account = await legacyRepository.restoreSession();
+        expect(account?.authProviders, {AuthProvider.google});
+        expect(account?.hasPassword, isFalse);
+      },
+    );
 
     test('wrong credentials map to the uniform domain error', () async {
       when(

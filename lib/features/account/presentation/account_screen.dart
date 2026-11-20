@@ -69,7 +69,12 @@ final class _SignedInAccount extends StatelessWidget {
         )
         .toList();
     return ListView(
-      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.navBarClearance,
+      ),
       children: [
         _AccountHeader(account: account),
         const SizedBox(height: Dimens.space16),
@@ -439,7 +444,12 @@ final class _VisitorAccount extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ListView(
-      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.navBarClearance,
+      ),
       children: [
         Card(
           margin: EdgeInsets.zero,

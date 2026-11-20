@@ -2425,6 +2425,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prefsSaveFailed => 'Couldn\'t save the change';
 
   @override
+  String get prefsUnavailable =>
+      'Notification settings aren\'t available right now. Try again shortly';
+
+  @override
   String get notifCategoryBooking => 'Bookings';
 
   @override
@@ -2438,6 +2442,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCategoryReview => 'Reviews';
+
+  @override
+  String get notifCategoryRefund => 'Refunds';
 
   @override
   String get notifCategoryAccount => 'Account security';

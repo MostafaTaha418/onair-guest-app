@@ -30,6 +30,7 @@ final class OnAirEditNameSheet extends StatefulWidget {
     required String currentName,
   }) => showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,

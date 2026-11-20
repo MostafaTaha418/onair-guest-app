@@ -13,6 +13,7 @@ final class ProfileRecord {
     this.status = AccountStatus.unknown,
     this.authProviders = const {},
     this.hasPassword = true,
+    this.hasPasswordKnown = false,
     this.fullName,
     this.phone,
     this.phoneVerified = false,
@@ -26,7 +27,16 @@ final class ProfileRecord {
   /// unrecognized status stays `unknown` (forward-compatible).
   factory ProfileRecord.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const ProfileRecord();
-    final rawStatus = json['profile_status'] as String?;
+    // Staging originally returned the database profile nested under
+    // `profile`; the additive social-auth contract returns the same fields
+    // flat. Accept both during the rollout so an older backend does not turn
+    // the account card into empty rows.
+    final nestedProfile = switch (json['profile']) {
+      final Map<dynamic, dynamic> value => Map<String, dynamic>.from(value),
+      _ => const <String, dynamic>{},
+    };
+    final rawStatus =
+        json['profile_status'] as String? ?? nestedProfile['status'] as String?;
     final status = AccountStatus.fromJson(rawStatus);
     if (status == AccountStatus.unknown && rawStatus != null) {
       _log.warning('profiles.status is not recognized by this build');
@@ -40,21 +50,43 @@ final class ProfileRecord {
               .whereType<AuthProvider>()
               .toSet(),
       hasPassword: json['has_password'] as bool? ?? true,
-      fullName: json['full_name'] as String?,
-      phone: json['phone_e164'] as String?,
-      phoneVerified: json['phone_verified'] as bool? ?? false,
-      email: json['email'] as String?,
-      emailVerified: json['email_verified'] as bool? ?? false,
-      acceptedTermsVersion: json['accepted_terms_version'] as String?,
-      acceptedTermsAt: json['accepted_terms_at'] == null
+      hasPasswordKnown: json.containsKey('has_password'),
+      fullName:
+          json['full_name'] as String? ?? nestedProfile['full_name'] as String?,
+      phone:
+          json['phone_e164'] as String? ??
+          json['phone'] as String? ??
+          nestedProfile['phone_e164'] as String?,
+      phoneVerified:
+          json['phone_verified'] as bool? ??
+          json['phone_confirmed'] as bool? ??
+          nestedProfile['phone_verified_at'] != null,
+      email: json['email'] as String? ?? nestedProfile['email'] as String?,
+      emailVerified:
+          json['email_verified'] as bool? ??
+          json['email_confirmed'] as bool? ??
+          false,
+      acceptedTermsVersion:
+          json['accepted_terms_version'] as String? ??
+          nestedProfile['accepted_terms_version'] as String?,
+      acceptedTermsAt:
+          (json['accepted_terms_at'] ?? nestedProfile['accepted_terms_at']) ==
+              null
           ? null
-          : DateTime.parse(json['accepted_terms_at'] as String).toUtc(),
+          : DateTime.parse(
+              (json['accepted_terms_at'] ?? nestedProfile['accepted_terms_at'])
+                  as String,
+            ).toUtc(),
     );
   }
 
   final AccountStatus status;
   final Set<AuthProvider> authProviders;
   final bool hasPassword;
+
+  /// Whether the server explicitly supplied [hasPassword]. Older staging
+  /// contexts did not, so the auth session supplies the compatibility value.
+  final bool hasPasswordKnown;
   final String? fullName;
   final String? phone;
   final bool phoneVerified;

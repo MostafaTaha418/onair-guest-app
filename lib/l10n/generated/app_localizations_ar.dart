@@ -2403,6 +2403,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prefsSaveFailed => 'مقدرناش نحفظ التغيير';
 
   @override
+  String get prefsUnavailable =>
+      'إعدادات الإشعارات مش متاحة دلوقتي. جرّب تاني بعد شوية';
+
+  @override
   String get notifCategoryBooking => 'الحجوزات';
 
   @override
@@ -2416,6 +2420,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notifCategoryReview => 'التقييمات';
+
+  @override
+  String get notifCategoryRefund => 'المبالغ المستردة';
 
   @override
   String get notifCategoryAccount => 'أمان الحساب';

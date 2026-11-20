@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:on_air/features/auth/data/profile_repository.dart';
 import 'package:on_air/features/auth/data/social_credential_source.dart';
+import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_repository.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/guest_account.dart';
@@ -15,25 +16,55 @@ final class PhoneAuthUser {
     this.email,
     this.phoneVerified = false,
     this.emailVerified = false,
+    this.authProviders = const {},
+    this.hasPassword = true,
   });
 
-  factory PhoneAuthUser.fromSupabase(User user) => PhoneAuthUser(
-    id: user.id,
-    phone: _nonBlank(user.phone),
-    email: _nonBlank(user.email),
-    phoneVerified: user.phoneConfirmedAt != null,
-    emailVerified: user.emailConfirmedAt != null,
-  );
+  factory PhoneAuthUser.fromSupabase(User user) {
+    final authProviders = _authProviders(user);
+    return PhoneAuthUser(
+      id: user.id,
+      phone: _nonBlank(user.phone),
+      email: _nonBlank(user.email),
+      phoneVerified: user.phoneConfirmedAt != null,
+      emailVerified: user.emailConfirmedAt != null,
+      authProviders: authProviders,
+      hasPassword: authProviders.contains(AuthProvider.email),
+    );
+  }
 
   final String id;
   final String? phone;
   final String? email;
   final bool phoneVerified;
   final bool emailVerified;
+  final Set<AuthProvider> authProviders;
+  final bool hasPassword;
 }
 
 String? _nonBlank(String? value) =>
     value == null || value.trim().isEmpty ? null : value;
+
+Set<AuthProvider> _authProviders(User user) {
+  final raw = <String>{
+    ...?user.identities?.map((identity) => identity.provider),
+    ...?switch (user.appMetadata['providers']) {
+      final List<dynamic> providers => providers.whereType<String>(),
+      _ => null,
+    },
+    if (user.appMetadata['provider'] case final String provider) provider,
+  };
+  final providers = raw
+      .map(AuthProvider.fromJson)
+      .whereType<AuthProvider>()
+      .toSet();
+  // Very old sessions may omit identities/app metadata. An authenticated
+  // email-only user still needs a truthful, non-empty sign-in method.
+  if (providers.isEmpty && _nonBlank(user.email) != null) {
+    providers.add(AuthProvider.email);
+  }
+  return providers;
+}
 
 abstract interface class PhoneAuthClient {
   PhoneAuthUser? get currentUser;
@@ -294,8 +325,12 @@ final class SupabaseAuthRepository implements AuthRepository {
       email: profile.email ?? user.email,
       emailVerified: profile.emailVerified || user.emailVerified,
       fullName: profile.fullName,
-      authProviders: profile.authProviders,
-      hasPassword: profile.hasPassword,
+      authProviders: profile.authProviders.isEmpty
+          ? user.authProviders
+          : profile.authProviders,
+      hasPassword: profile.hasPasswordKnown
+          ? profile.hasPassword
+          : user.hasPassword,
       acceptedTermsVersion: profile.acceptedTermsVersion,
       acceptedTermsAt: profile.acceptedTermsAt,
     );
