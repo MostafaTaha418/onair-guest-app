@@ -439,46 +439,54 @@ final class _OnAirAppState extends State<OnAirApp> {
             deviceRegistrationService: widget.deviceRegistrationService,
             child: MediaQuery.withClampedTextScaling(
               maxScaleFactor: 1.3,
-              child: Stack(
-                children: [
-                  ?child,
-                  BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                    builder: (context, state) => state.isOnline
-                        ? const SizedBox.shrink()
-                        : const Positioned(
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            child: OfflineBanner(),
-                          ),
-                  ),
-                  ValueListenableBuilder<PushMessage?>(
-                    valueListenable: _banner,
-                    builder: (context, message, _) => message == null
-                        ? const SizedBox.shrink()
-                        : Positioned(
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            child: InAppNotificationBanner(
-                              message: message,
-                              onOpen: (opened) {
-                                _banner.value = null;
-                                unawaited(
-                                  _router.push(
-                                    NotificationRouter.locationFor(
-                                      opened.type,
-                                      '',
-                                      opened.targetId,
-                                    ),
-                                  ),
-                                );
-                              },
-                              onDismiss: () => _banner.value = null,
+              child: ColoredBox(
+                // Fills the area behind the system navigation bar so content
+                // kept above it (via the SafeArea below) sits on the app
+                // background rather than a bare black strip.
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Stack(
+                  children: [
+                    // App-wide bottom SafeArea: every screen's content starts
+                    // above the system 3-button / gesture navigation bar.
+                    if (child != null) SafeArea(top: false, child: child),
+                    BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                      builder: (context, state) => state.isOnline
+                          ? const SizedBox.shrink()
+                          : const Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              child: OfflineBanner(),
                             ),
-                          ),
-                  ),
-                ],
+                    ),
+                    ValueListenableBuilder<PushMessage?>(
+                      valueListenable: _banner,
+                      builder: (context, message, _) => message == null
+                          ? const SizedBox.shrink()
+                          : Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              child: InAppNotificationBanner(
+                                message: message,
+                                onOpen: (opened) {
+                                  _banner.value = null;
+                                  unawaited(
+                                    _router.push(
+                                      NotificationRouter.locationFor(
+                                        opened.type,
+                                        '',
+                                        opened.targetId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                onDismiss: () => _banner.value = null,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
