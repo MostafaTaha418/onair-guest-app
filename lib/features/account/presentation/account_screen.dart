@@ -35,17 +35,21 @@ final class AccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    // No app bar: the screen opens straight on the profile photo and name.
+    // SafeArea keeps that content below the status bar; the bottom is handled
+    // app-wide and by the list's navBarClearance padding.
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.account)),
-      body: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          if (state is SignedIn) {
-            return _SignedInAccount(account: state.account);
-          }
-          if (state is SigningOut) return const LoadingView();
-          return const _VisitorAccount();
-        },
+      body: SafeArea(
+        bottom: false,
+        child: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, state) {
+            if (state is SignedIn) {
+              return _SignedInAccount(account: state.account);
+            }
+            if (state is SigningOut) return const LoadingView();
+            return const _VisitorAccount();
+          },
+        ),
       ),
     );
   }
