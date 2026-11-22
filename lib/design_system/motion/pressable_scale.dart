@@ -30,7 +30,10 @@ final class _PressableScaleState extends State<PressableScale>
   );
 
   void _press() {
-    if (AppMotion.reduced(context)) return;
+    // A trailing pointer event can reach this listener after the card has
+    // scrolled off and the state (and its controller) was disposed — e.g.
+    // during a fast fling — so never touch the controller once unmounted.
+    if (!mounted || AppMotion.reduced(context)) return;
     unawaited(
       _controller.animateTo(
         0,
@@ -41,6 +44,7 @@ final class _PressableScaleState extends State<PressableScale>
   }
 
   void _release() {
+    if (!mounted) return;
     unawaited(
       _controller.animateTo(
         1,
