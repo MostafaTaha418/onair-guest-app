@@ -17,6 +17,7 @@ final class PropertyGalleryHeader extends StatefulWidget {
     required this.propertyId,
     required this.images,
     this.heroVariants,
+    this.heroTag,
     this.actions = const [],
     super.key,
   });
@@ -28,6 +29,10 @@ final class PropertyGalleryHeader extends StatefulWidget {
   /// header falls back to the first image's own variants.
   final List<ImageVariant>? heroVariants;
 
+  /// The tapped card's Hero tag, carried on the first photo so it morphs from
+  /// the results list (research R9, SC-006). Null on a deep link.
+  final String? heroTag;
+
   /// Slot for the app-bar actions; US5 adds Share here.
   final List<Widget> actions;
 
@@ -36,8 +41,15 @@ final class PropertyGalleryHeader extends StatefulWidget {
 }
 
 final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
+  final PageController _pageController = PageController();
   int _current = 0;
   bool _openingGallery = false;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   Future<void> _openGallery(int index) async {
     if (_openingGallery) return;
@@ -68,6 +80,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
             child: total == 0
                 ? ColoredBox(color: colors['detailCard'])
                 : PageView.builder(
+                    controller: _pageController,
                     itemCount: total,
                     onPageChanged: (index) => setState(() => _current = index),
                     itemBuilder: (context, index) {
@@ -81,9 +94,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                         onTap: () => _openGallery(index),
                         child: OnAirNetworkImage(
                           variants: variants,
-                          heroTag: index == 0
-                              ? 'listing-${widget.propertyId}'
-                              : null,
+                          heroTag: index == 0 ? widget.heroTag : null,
                         ),
                       );
                     },
@@ -131,52 +142,91 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
               bottom: Dimens.space16,
               start: Dimens.space16,
               end: Dimens.space16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var index = 0; index < total && index < 8; index++)
-                    Container(
-                      width: index == _current ? 24 : 7,
-                      height: 7,
-                      margin: const EdgeInsetsDirectional.symmetric(
-                        horizontal: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: index == _current
-                            ? colors['vipGold']
-                            : colors.surface.withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+              child: Center(
+                child: Semantics(
+                  label: l10n.galleryPhotoPosition(_current + 1, total),
+                  excludeSemantics: true,
+                  // A soft scrim so the dots stay legible over bright photos.
+                  child: Container(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: Dimens.space12,
+                      vertical: Dimens.space8,
                     ),
-                ],
-              ),
-            ),
-          if (total > 0)
-            PositionedDirectional(
-              bottom: Dimens.space12,
-              end: Dimens.space12,
-              child: Semantics(
-                label: l10n.galleryPhotoPosition(_current + 1, total),
-                excludeSemantics: true,
-                child: Container(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: Dimens.space8,
-                    vertical: Dimens.space4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.surface.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(Dimens.radiusChip),
-                  ),
-                  child: Text(
-                    l10n.galleryPhotoPosition(_current + 1, total),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.textPrimary,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.28),
+                      borderRadius: BorderRadius.circular(Dimens.radiusChip),
+                    ),
+                    child: _GalleryDots(
+                      controller: _pageController,
+                      count: total,
+                      activeColor: colors['vipGold'],
+                      inactiveColor: colors.surface.withValues(alpha: 0.65),
                     ),
                   ),
                 ),
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The photo-pager indicator: a row of dots where the active one stretches
+/// into a pill. It follows the [PageController] offset frame by frame, so the
+/// active dot slides and the colour cross-fades smoothly mid-swipe instead of
+/// snapping on page change. A [FittedBox] keeps many dots inside the photo.
+final class _GalleryDots extends StatelessWidget {
+  const _GalleryDots({
+    required this.controller,
+    required this.count,
+    required this.activeColor,
+    required this.inactiveColor,
+  });
+
+  final PageController controller;
+  final int count;
+  final Color activeColor;
+  final Color inactiveColor;
+
+  static const double _dotHeight = 7;
+  static const double _minWidth = 7;
+  static const double _maxWidth = 22;
+  static const double _gap = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) {
+          final page =
+              controller.hasClients && controller.position.haveDimensions
+              ? (controller.page ?? controller.initialPage.toDouble())
+              : controller.initialPage.toDouble();
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < count; i++) _dot(i, page),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _dot(int index, double page) {
+    // 1 when this dot is the active page, falling to 0 one page away, so the
+    // two dots either side of a drag share the stretch and colour.
+    final t = (1 - (page - index).abs()).clamp(0.0, 1.0);
+    return Container(
+      width: _minWidth + (_maxWidth - _minWidth) * t,
+      height: _dotHeight,
+      margin: const EdgeInsetsDirectional.symmetric(horizontal: _gap / 2),
+      decoration: BoxDecoration(
+        color: Color.lerp(inactiveColor, activeColor, t),
+        borderRadius: BorderRadius.circular(_dotHeight),
       ),
     );
   }

@@ -229,10 +229,15 @@ final class _HomeCollectionScreenState extends State<HomeCollectionScreen> {
                         card.ratingAvg!.toStringAsFixed(1),
                         card.reviewCount,
                       ),
+                heroTag: 'listing-coll-${widget.collection.name}-${card.id}',
                 onTap: () => openPropertyDetails(
                   context,
                   AppRoutes.property(card.id),
-                  extra: card.cover?.variants,
+                  extra: PropertyHeroArg(
+                    variants: card.cover?.variants,
+                    heroTag:
+                        'listing-coll-${widget.collection.name}-${card.id}',
+                  ),
                 ),
               ),
             ),
