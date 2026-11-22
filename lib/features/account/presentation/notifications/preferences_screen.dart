@@ -38,6 +38,12 @@ final class PreferencesScreen extends StatelessWidget {
 
   Widget _ready(BuildContext context, PreferencesReady state) {
     final l10n = AppLocalizations.of(context);
+    if (state.preferences.isEmpty) {
+      return ErrorView(
+        message: l10n.prefsUnavailable,
+        onRetry: context.read<PreferencesCubit>().load,
+      );
+    }
     final online = context.watch<ConnectivityCubit>().state.isOnline;
     return Center(
       child: ConstrainedBox(
@@ -173,6 +179,7 @@ final class _PreferenceGroup extends StatelessWidget {
     'notifCategorySupport' => l10n.notifCategorySupport,
     'notifCategoryReminders' => l10n.notifCategoryReminders,
     'notifCategoryReview' => l10n.notifCategoryReview,
+    'notifCategoryRefund' => l10n.notifCategoryRefund,
     'notifCategoryAccount' => l10n.notifCategoryAccount,
     _ => l10n.notifCategoryUnknown,
   };

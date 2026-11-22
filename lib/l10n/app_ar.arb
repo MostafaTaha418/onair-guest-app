@@ -1140,6 +1140,15 @@
   "verifyPhoneOnWhatsApp": "أكّد رقمك على واتساب",
   "supportTitle": "الدعم",
   "supportSubtitle": "إحنا هنا عشان نساعدك",
+  "supportHeroBody": "افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.",
+  "@supportHeroBody": {
+    "description": "Support screen hero supporting line under the headline"
+  },
+  "supportCaseNumber": "رقم الحالة {code}",
+  "@supportCaseNumber": {
+    "description": "Case number line on the case details summary card",
+    "placeholders": { "code": {} }
+  },
   "supportMyCases": "حالاتي",
   "supportFinishedCases": "حالات منتهية",
   "supportNewCase": "حالة جديدة",
@@ -1288,11 +1297,13 @@
   "prefsMandatory": "إشعارات ضرورية للحجز والدفع ومش بتتقفل",
   "prefsMandatoryLabel": "إلزامي",
   "prefsSaveFailed": "مقدرناش نحفظ التغيير",
+  "prefsUnavailable": "إعدادات الإشعارات مش متاحة دلوقتي. جرّب تاني بعد شوية",
   "notifCategoryBooking": "الحجوزات",
   "notifCategoryPayment": "المدفوعات",
   "notifCategorySupport": "الدعم",
   "notifCategoryReminders": "التذكيرات",
   "notifCategoryReview": "التقييمات",
+  "notifCategoryRefund": "المبالغ المستردة",
   "notifCategoryAccount": "أمان الحساب",
   "notifCategoryUnknown": "أخرى",
   "deleteTitle": "حذف الحساب",
@@ -1328,5 +1339,6 @@
   },
   "deleteConfirm": "تأكيد الحذف",
   "deleteDone": "حسابك اتحذف",
-  "accountHasActiveBookings": "مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال"
+  "accountHasActiveBookings": "مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال",
+  "exitConfirmHint": "اضغط مرة أخرى للخروج"
 }

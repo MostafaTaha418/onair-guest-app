@@ -321,7 +321,10 @@ final class _ResultsScreenState extends State<ResultsScreen> {
                                 if (guests != null) 'guests': '$guests',
                               },
                             ).toString(),
-                            extra: card.cover?.variants,
+                            extra: PropertyHeroArg(
+                              variants: card.cover?.variants,
+                              heroTag: 'listing-${card.id}',
+                            ),
                           );
                         },
                       ),

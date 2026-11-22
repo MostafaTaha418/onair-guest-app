@@ -37,6 +37,32 @@ void main() {
     expect(record.authProviders, {AuthProvider.google});
   });
 
+  test('parses the legacy nested staging context', () {
+    final record = ProfileRecord.fromJson(const {
+      'profile': {
+        'status': 'active',
+        'full_name': 'Legacy Guest',
+        'phone_e164': '+201012345678',
+        'phone_verified_at': '2026-11-01T10:00:00Z',
+        'accepted_terms_version': 'v1',
+        'accepted_terms_at': '2026-11-01T09:00:00Z',
+      },
+      'email': 'legacy@example.com',
+      'email_confirmed': true,
+      'phone': '+201012345678',
+      'phone_confirmed': true,
+    });
+
+    expect(record.status, AccountStatus.active);
+    expect(record.fullName, 'Legacy Guest');
+    expect(record.phone, '+201012345678');
+    expect(record.phoneVerified, isTrue);
+    expect(record.email, 'legacy@example.com');
+    expect(record.emailVerified, isTrue);
+    expect(record.acceptedTermsVersion, 'v1');
+    expect(record.hasPasswordKnown, isFalse);
+  });
+
   test('missing optional fields fall back to an unknown account', () {
     final record = ProfileRecord.fromJson(null);
 
@@ -45,6 +71,7 @@ void main() {
     expect(record.status, AccountStatus.unknown);
     expect(record.authProviders, isEmpty);
     expect(record.hasPassword, isTrue);
+    expect(record.hasPasswordKnown, isFalse);
     expect(record.email, isNull);
     expect(record.emailVerified, isFalse);
     expect(record.fullName, isNull);

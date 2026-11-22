@@ -16,7 +16,6 @@ import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/account/presentation/edit_name_sheet.dart';
 import 'package:on_air/features/account/presentation/settings_sheets.dart';
-import 'package:on_air/features/account/presentation/widgets/account_info_row.dart';
 import 'package:on_air/features/auth/domain/account_enums.dart';
 import 'package:on_air/features/auth/domain/auth_state.dart';
 import 'package:on_air/features/auth/domain/egypt_phone.dart';
@@ -35,17 +34,21 @@ final class AccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    // No app bar: the screen opens straight on the profile photo and name.
+    // SafeArea keeps that content below the status bar; the bottom is handled
+    // app-wide and by the list's navBarClearance padding.
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.account)),
-      body: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          if (state is SignedIn) {
-            return _SignedInAccount(account: state.account);
-          }
-          if (state is SigningOut) return const LoadingView();
-          return const _VisitorAccount();
-        },
+      body: SafeArea(
+        bottom: false,
+        child: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, state) {
+            if (state is SignedIn) {
+              return _SignedInAccount(account: state.account);
+            }
+            if (state is SigningOut) return const LoadingView();
+            return const _VisitorAccount();
+          },
+        ),
       ),
     );
   }
@@ -69,11 +72,16 @@ final class _SignedInAccount extends StatelessWidget {
         )
         .toList();
     return ListView(
-      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.navBarClearance,
+      ),
       children: [
-        _AccountHeader(account: account),
+        _AccountHeader(account: account, providers: providers),
         const SizedBox(height: Dimens.space16),
-        _profileCard(context, l10n, providers),
+        _profileInfo(context, l10n),
         const SizedBox(height: Dimens.space16),
         SettingsGroup(
           label: l10n.accountSectionGeneral,
@@ -162,55 +170,74 @@ final class _SignedInAccount extends StatelessWidget {
     );
   }
 
-  Widget _profileCard(
-    BuildContext context,
-    AppLocalizations l10n,
-    List<String> providers,
-  ) {
+  /// The phone info, as a single compact tile: the «رقم الهاتف» label, then the
+  /// number with its verified chip beside it, and the change action on the
+  /// opposite logical edge — two short lines, no tall empty space.
+  Widget _profileInfo(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.all(Dimens.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AccountInfoRow(
-              key: const ValueKey('account-method-row'),
-              icon: AppIcons.keyOutline,
-              label: l10n.accountSignInMethod,
-              value: providers.join(l10n.listSeparator),
-            ),
-            if (account.phone != null) ...[
-              const SizedBox(height: Dimens.space12),
-              AccountInfoRow(
-                key: const ValueKey('account-phone-row'),
-                icon: AppIcons.phoneOutlined,
-                label: l10n.accountPhone,
-                value: maskPhone(account.phone!),
-                trailing: Row(
+    final phone = account.phone;
+    if (phone == null) return const SizedBox.shrink();
+    return Container(
+      key: const ValueKey('account-phone-row'),
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: Dimens.space16,
+        vertical: Dimens.space12,
+      ),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(Dimens.radiusCard),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(
+                      AppIcons.phoneOutlined,
+                      size: 18,
+                      color: colors['textMuted'],
+                    ),
+                    const SizedBox(width: Dimens.space8),
+                    Text(
+                      l10n.accountPhone,
+                      style: context.textStyles.placeholder.copyWith(
+                        color: colors['textMuted'],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Dimens.space4),
+                Wrap(
+                  spacing: Dimens.space8,
+                  runSpacing: Dimens.space4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(maskPhone(phone), style: context.textStyles.input),
                     if (account.phoneVerified)
                       StatusChip(
                         key: const ValueKey('account-phone-chip'),
                         label: l10n.accountPhoneConfirmed,
                         tone: StatusTone.success,
                       ),
-                    TextButton(
-                      key: const ValueKey('account-change-phone'),
-                      onPressed: () => context.push(AppRoutes.accountPhone),
-                      style: TextButton.styleFrom(
-                        foregroundColor: colors['textAccent'],
-                      ),
-                      child: Text(l10n.accountChangePhone),
-                    ),
                   ],
                 ),
-              ),
-            ],
-          ],
-        ),
+              ],
+            ),
+          ),
+          const SizedBox(width: Dimens.space8),
+          TextButton(
+            key: const ValueKey('account-change-phone'),
+            onPressed: () => context.push(AppRoutes.accountPhone),
+            style: TextButton.styleFrom(foregroundColor: colors['textAccent']),
+            child: Text(l10n.accountChangePhone),
+          ),
+        ],
       ),
     );
   }
@@ -247,9 +274,10 @@ final class _SignedInAccount extends StatelessWidget {
 }
 
 final class _AccountHeader extends StatelessWidget {
-  const _AccountHeader({required this.account});
+  const _AccountHeader({required this.account, required this.providers});
 
   final GuestAccount account;
+  final List<String> providers;
 
   @override
   Widget build(BuildContext context) {
@@ -258,14 +286,19 @@ final class _AccountHeader extends StatelessWidget {
     final online = context.select<ConnectivityCubit, bool>(
       (cubit) => cubit.state.isOnline,
     );
-    return Row(
+    final methodValue = providers.join(l10n.listSeparator);
+    // Reorganized as a centered hero: the larger avatar, the name and email
+    // stacked under it, then the edit action as a pill — the same elements as
+    // the former side row, just re-laid.
+    return Column(
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: 88,
+          height: 88,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
+            color: colors.surface,
             border: Border.all(color: colors.primary, width: 2),
           ),
           child: Text(
@@ -276,28 +309,60 @@ final class _AccountHeader extends StatelessWidget {
                 ),
           ),
         ),
-        const SizedBox(width: Dimens.space16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                account.fullName ?? l10n.accountNameLabel,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.onAirExtraBold,
-              ),
-              if (account.email != null)
-                Text(
-                  account.email!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
+        const SizedBox(height: Dimens.space12),
+        Text(
+          account.fullName ?? l10n.accountNameLabel,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.onAirExtraBold,
+        ),
+        if (account.email != null) ...[
+          const SizedBox(height: Dimens.space4),
+          Text(
+            account.email!,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
+        const SizedBox(height: Dimens.space8),
+        // Sign-in method as a small, low-emphasis pill: a guest who cares can
+        // read it, but it no longer takes a whole card.
+        Semantics(
+          label: '${l10n.accountSignInMethod}: $methodValue',
+          child: Container(
+            key: const ValueKey('account-method-row'),
+            padding: const EdgeInsetsDirectional.fromSTEB(10, 5, 12, 5),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: colors.border),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  AppIcons.keyOutline,
+                  size: 14,
+                  color: colors['textMuted'],
+                ),
+                const SizedBox(width: Dimens.space4),
+                Flexible(
+                  child: Text(
+                    methodValue,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.textStyles.placeholder.copyWith(
+                      color: colors['textMuted'],
+                    ),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
-        TextButton(
+        const SizedBox(height: Dimens.space12),
+        TextButton.icon(
           key: const ValueKey('account-edit-name'),
           onPressed: online
               ? () => showEditNameSheet(
@@ -305,7 +370,17 @@ final class _AccountHeader extends StatelessWidget {
                   currentName: account.fullName ?? '',
                 )
               : null,
-          child: Text(l10n.accountEdit),
+          icon: const Icon(Icons.edit_outlined, size: 16),
+          label: Text(l10n.accountEdit),
+          style: TextButton.styleFrom(
+            foregroundColor: colors['textAccent'],
+            shape: const StadiumBorder(),
+            side: BorderSide(color: colors.border),
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: Dimens.space20,
+              vertical: Dimens.space8,
+            ),
+          ),
         ),
       ],
     );
@@ -439,7 +514,12 @@ final class _VisitorAccount extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ListView(
-      padding: const EdgeInsetsDirectional.all(Dimens.screenSide),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.screenSide,
+        Dimens.navBarClearance,
+      ),
       children: [
         Card(
           margin: EdgeInsets.zero,

@@ -27,6 +27,10 @@ final class FakeBookingBackend {
     bool includeG3Fixtures = false,
     this.actionRegistry,
   }) {
+    // One pinned clock for the whole mock backend: the booking server, the
+    // stay server and the listings availability all read the same «today»,
+    // so fixed fixture dates never drift past the real clock.
+    DateTime clock() => DateTime.utc(2026, 11, 1, 10);
     listings = MockListingsRepository(
       // Sync IO wrapped in an async signature: real async file reads never
       // complete under the fake async zone of a widget test.
@@ -34,6 +38,7 @@ final class FakeBookingBackend {
           ? Future.value(File(path).readAsStringSync())
           : rootBundle.loadString(path),
       latency: Duration.zero,
+      now: clock,
     );
     signals = ControllableNotificationSignalSource();
     server = MockBookingServer(
@@ -43,7 +48,7 @@ final class FakeBookingBackend {
           ? Future.value(File(path).readAsStringSync())
           : rootBundle.loadString(path),
       latency: Duration.zero,
-      now: () => DateTime.utc(2026, 11, 1, 10),
+      now: clock,
       startVerified: startVerified,
       includeG3Fixtures: includeG3Fixtures,
     );
@@ -53,7 +58,7 @@ final class FakeBookingBackend {
           ? Future.value(File(path).readAsStringSync())
           : rootBundle.loadString(path),
       latency: Duration.zero,
-      now: () => DateTime.utc(2026, 11, 1, 10),
+      now: clock,
     );
     secureStore = InMemorySecureStore();
     actionAttempts = ActionAttemptStore(secureStore);

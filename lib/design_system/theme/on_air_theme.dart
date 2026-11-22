@@ -37,6 +37,12 @@ abstract final class OnAirTheme {
       brightness: brightness,
       scaffoldBackgroundColor: colors.background,
       colorScheme: scheme,
+      // Keep the app bar's color fixed: no Material 3 scroll-under tint or
+      // elevation change when content scrolls beneath it (app-wide).
+      appBarTheme: const AppBarTheme(
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+      ),
       textTheme: onAirTextTheme(colors.textPrimary),
       actionIconTheme: ActionIconThemeData(
         backButtonIconBuilder: (context) => Icon(

@@ -77,8 +77,10 @@ final class NotificationPreference {
     'booking' => 'notifCategoryBooking',
     'payment' => 'notifCategoryPayment',
     'support' => 'notifCategorySupport',
-    'reminders' => 'notifCategoryReminders',
+    // Stay notifications are the check-in / check-out reminders.
+    'stay' || 'reminders' => 'notifCategoryReminders',
     'review' => 'notifCategoryReview',
+    'refund' => 'notifCategoryRefund',
     'account' => 'notifCategoryAccount',
     _ => 'notifCategoryUnknown',
   };

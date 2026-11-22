@@ -42,6 +42,7 @@ void main() {
     WidgetTester tester, {
     bool blocked = false,
     bool online = true,
+    List<NotificationPreference> preferences = _preferences,
   }) async {
     final permission = FakeNotificationPermission(
       current: blocked ? PushPermission.denied : PushPermission.granted,
@@ -53,7 +54,7 @@ void main() {
     final cubit = PreferencesCubit.seeded(
       _Repository(),
       PreferencesReady(
-        preferences: _preferences,
+        preferences: preferences,
         deviceNotificationsBlocked: blocked,
       ),
     );
@@ -122,4 +123,17 @@ void main() {
     );
     expect(push.onChanged, isNull);
   });
+
+  testWidgets(
+    'empty server catalog shows a recoverable error, not a blank page',
+    (
+      tester,
+    ) async {
+      await pump(tester, preferences: const []);
+      final l10n = lookupAppLocalizations(const Locale('ar'));
+
+      expect(find.text(l10n.prefsUnavailable), findsOneWidget);
+      expect(find.text(l10n.retry), findsOneWidget);
+    },
+  );
 }

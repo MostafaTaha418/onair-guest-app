@@ -49,6 +49,7 @@ final class PropertyScreen extends StatefulWidget {
   const PropertyScreen({
     required this.propertyId,
     this.heroVariants,
+    this.heroTag,
     this.today,
     super.key,
   });
@@ -58,6 +59,10 @@ final class PropertyScreen extends StatefulWidget {
   /// The card cover's variants from `GoRouterState.extra` (research R9); the
   /// loading state shows this photo while the details load (SC-006).
   final List<ImageVariant>? heroVariants;
+
+  /// The tapped card's Hero tag, so the top photo flies from the card into
+  /// this screen. Null on a deep link (no card to fly from).
+  final String? heroTag;
 
   /// Injectable Cairo date for goldens/tests; null uses the real clock.
   /// Pinning it keeps the availability calendar deterministic in reference
@@ -209,6 +214,7 @@ final class _PropertyScreenState extends State<PropertyScreen> {
           PropertyLoading() => _LoadingBody(
             propertyId: widget.propertyId,
             heroVariants: widget.heroVariants,
+            heroTag: widget.heroTag,
           ),
           PropertyFailed(:final error) => Scaffold(
             appBar: AppBar(leading: _backButton(context)),
@@ -226,6 +232,7 @@ final class _PropertyScreenState extends State<PropertyScreen> {
             _ReadyBody(
               propertyId: widget.propertyId,
               heroVariants: widget.heroVariants,
+              heroTag: widget.heroTag,
               details: details,
               stay: stay,
               guests: guests,
@@ -251,10 +258,15 @@ Widget _backButton(BuildContext context) => IconButton(
 );
 
 final class _LoadingBody extends StatelessWidget {
-  const _LoadingBody({required this.propertyId, this.heroVariants});
+  const _LoadingBody({
+    required this.propertyId,
+    this.heroVariants,
+    this.heroTag,
+  });
 
   final String propertyId;
   final List<ImageVariant>? heroVariants;
+  final String? heroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -271,7 +283,7 @@ final class _LoadingBody extends StatelessWidget {
                 if (hero != null && hero.isNotEmpty)
                   OnAirNetworkImage(
                     variants: hero,
-                    heroTag: 'listing-$propertyId',
+                    heroTag: heroTag,
                   )
                 else
                   const SkeletonBox(height: 400, radius: 0),
@@ -369,6 +381,7 @@ final class _ReadyBody extends StatelessWidget {
   const _ReadyBody({
     required this.propertyId,
     required this.heroVariants,
+    required this.heroTag,
     required this.details,
     required this.stay,
     required this.guests,
@@ -380,6 +393,7 @@ final class _ReadyBody extends StatelessWidget {
 
   final String propertyId;
   final List<ImageVariant>? heroVariants;
+  final String? heroTag;
   final PropertyDetails details;
   final StayRange? stay;
   final int? guests;
@@ -400,6 +414,7 @@ final class _ReadyBody extends StatelessWidget {
               propertyId: propertyId,
               images: details.images,
               heroVariants: heroVariants,
+              heroTag: heroTag,
               actions: [
                 BlocBuilder<ConnectivityCubit, ConnectivityState>(
                   builder: (context, connectivity) => Semantics(

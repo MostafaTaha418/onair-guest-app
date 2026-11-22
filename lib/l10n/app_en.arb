@@ -892,6 +892,8 @@
   "verifyPhoneOnWhatsApp": "Confirm your number on WhatsApp",
   "supportTitle": "Support",
   "supportSubtitle": "We're here to help",
+  "supportHeroBody": "Open a new case or follow your existing ones — the OnAir team will reply shortly.",
+  "supportCaseNumber": "Case {code}",
   "supportMyCases": "My cases",
   "supportFinishedCases": "Finished cases",
   "supportNewCase": "New case",
@@ -1040,11 +1042,13 @@
   "prefsMandatory": "Essential booking and payment notifications can't be turned off",
   "prefsMandatoryLabel": "Required",
   "prefsSaveFailed": "Couldn't save the change",
+  "prefsUnavailable": "Notification settings aren't available right now. Try again shortly",
   "notifCategoryBooking": "Bookings",
   "notifCategoryPayment": "Payments",
   "notifCategorySupport": "Support",
   "notifCategoryReminders": "Reminders",
   "notifCategoryReview": "Reviews",
+  "notifCategoryRefund": "Refunds",
   "notifCategoryAccount": "Account security",
   "notifCategoryUnknown": "Other",
   "deleteTitle": "Delete account",
@@ -1080,5 +1084,6 @@
   },
   "deleteConfirm": "Confirm deletion",
   "deleteDone": "Your account was deleted",
-  "accountHasActiveBookings": "You can't delete your account while a booking or refund is still active"
+  "accountHasActiveBookings": "You can't delete your account while a booking or refund is still active",
+  "exitConfirmHint": "Press back again to exit"
 }

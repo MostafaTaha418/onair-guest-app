@@ -3722,6 +3722,18 @@ abstract class AppLocalizations {
   /// **'إحنا هنا عشان نساعدك'**
   String get supportSubtitle;
 
+  /// Support screen hero supporting line under the headline
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.'**
+  String get supportHeroBody;
+
+  /// Case number line on the case details summary card
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحالة {code}'**
+  String supportCaseNumber(Object code);
+
   /// No description provided for @supportMyCases.
   ///
   /// In ar, this message translates to:
@@ -4340,6 +4352,12 @@ abstract class AppLocalizations {
   /// **'مقدرناش نحفظ التغيير'**
   String get prefsSaveFailed;
 
+  /// No description provided for @prefsUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعدادات الإشعارات مش متاحة دلوقتي. جرّب تاني بعد شوية'**
+  String get prefsUnavailable;
+
   /// No description provided for @notifCategoryBooking.
   ///
   /// In ar, this message translates to:
@@ -4369,6 +4387,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'التقييمات'**
   String get notifCategoryReview;
+
+  /// No description provided for @notifCategoryRefund.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبالغ المستردة'**
+  String get notifCategoryRefund;
 
   /// No description provided for @notifCategoryAccount.
   ///
@@ -4465,6 +4489,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال'**
   String get accountHasActiveBookings;
+
+  /// No description provided for @exitConfirmHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط مرة أخرى للخروج'**
+  String get exitConfirmHint;
 }
 
 class _AppLocalizationsDelegate

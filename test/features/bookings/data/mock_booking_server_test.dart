@@ -23,6 +23,7 @@ MockBookingServer _server({
   listings: MockListingsRepository(
     loader: (path) => File(path).readAsString(),
     latency: Duration.zero,
+    now: () => _clockStart,
   ),
   signals: signals,
   loader: (path) => File(path).readAsString(),

@@ -174,12 +174,8 @@ final class _HomeCollectionScreenState extends State<HomeCollectionScreen> {
               title: tile.name,
               countLabel: l10n.areaListingCount(tile.listingCount),
               imageVariants: tile.image?.variants ?? const [],
-              onTap: () => context.go(
-                Uri(
-                  path: AppRoutes.searchResults,
-                  queryParameters: {'loc': tile.locationId},
-                ).toString(),
-              ),
+              onTap: () =>
+                  context.push(AppRoutes.areaResultsFor(tile.locationId)),
             );
           },
         );
@@ -233,10 +229,15 @@ final class _HomeCollectionScreenState extends State<HomeCollectionScreen> {
                         card.ratingAvg!.toStringAsFixed(1),
                         card.reviewCount,
                       ),
+                heroTag: 'listing-coll-${widget.collection.name}-${card.id}',
                 onTap: () => openPropertyDetails(
                   context,
                   AppRoutes.property(card.id),
-                  extra: card.cover?.variants,
+                  extra: PropertyHeroArg(
+                    variants: card.cover?.variants,
+                    heroTag:
+                        'listing-coll-${widget.collection.name}-${card.id}',
+                  ),
                 ),
               ),
             ),

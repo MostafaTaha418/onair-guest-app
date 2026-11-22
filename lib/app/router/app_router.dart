@@ -72,6 +72,7 @@ import 'package:on_air/features/notifications/presentation/unread_count_cubit.da
 import 'package:on_air/features/property/domain/resume_intent.dart';
 import 'package:on_air/features/property/presentation/gallery_screen.dart';
 import 'package:on_air/features/property/presentation/property_cubit.dart';
+import 'package:on_air/features/property/presentation/property_navigation.dart';
 import 'package:on_air/features/property/presentation/property_screen.dart';
 import 'package:on_air/features/property/presentation/reviews_screen.dart';
 import 'package:on_air/features/search/domain/last_search_store.dart';
@@ -292,11 +293,18 @@ GoRouter createAppRouter({
           },
           child: PropertyScreen(
             propertyId: id,
-            // `extra` comes from the results card's push; never assume the
-            // caller's type (a deep link has no extra at all).
-            heroVariants: state.extra is List<ImageVariant>
-                ? state.extra! as List<ImageVariant>
-                : null,
+            // `extra` comes from a listing card's push; never assume the
+            // caller's type (a deep link has no extra at all). A bare list is
+            // still accepted for older callers.
+            heroVariants: switch (state.extra) {
+              PropertyHeroArg(:final variants) => variants,
+              final List<ImageVariant> variants => variants,
+              _ => null,
+            },
+            heroTag: switch (state.extra) {
+              PropertyHeroArg(:final heroTag) => heroTag,
+              _ => null,
+            },
           ),
         );
       },
@@ -695,6 +703,22 @@ GoRouter createAppRouter({
           query: state.uri.queryParameters,
           filterMode: true,
         ),
+      ),
+    ),
+    // One area's listings, opened from Home. A top-level route (above the
+    // shell) with its own SearchCubit, so Back returns to Home instead of
+    // landing on the Search tab (contracts/app-routes-g2.md §2).
+    GoRoute(
+      path: AppRoutes.areaResults,
+      name: 'area-results',
+      builder: (context, state) => BlocProvider<SearchCubit>(
+        create: (context) => SearchCubit(
+          repo: context.read<ListingsRepository>(),
+          lastSearch: context.read<LastSearchStore>(),
+          connectivity: context.read<ConnectivityCubit>(),
+          rememberLastSearch: false,
+        ),
+        child: _ResultsQueryOpener(query: state.uri.queryParameters),
       ),
     ),
     for (final collection in HomeCollection.values)

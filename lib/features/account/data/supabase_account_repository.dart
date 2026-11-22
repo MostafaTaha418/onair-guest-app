@@ -120,7 +120,12 @@ final class SupabaseAccountRepository implements AccountRepository {
 
   @override
   Future<List<NotificationPreference>> getPreferences() => _guard(() async {
-    final response = await _rpc('common_get_notification_preferences', {});
+    // U5 §Notifications: the guest app reads the grouped catalogue overload
+    // (`p_audience`), which returns the mandatory flag and channels a brand
+    // new account needs, instead of the legacy per-user overrides rows.
+    final response = await _rpc('common_get_notification_preferences', {
+      'p_audience': 'guest',
+    });
     return (response as List<dynamic>)
         .map(
           (row) => NotificationPreference.fromJson(

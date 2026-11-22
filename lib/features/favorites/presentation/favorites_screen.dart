@@ -81,10 +81,14 @@ final class FavoritesScreen extends StatelessWidget {
                     isFavorite: true,
                     favoriteBusy: state.isBusy(card.id) || state.loading,
                     onFavoriteTap: () => toggleFavorite(context, card),
+                    heroTag: 'listing-fav-${card.id}',
                     onTap: () => openPropertyDetails(
                       context,
                       AppRoutes.property(card.id),
-                      extra: card.cover?.variants,
+                      extra: PropertyHeroArg(
+                        variants: card.cover?.variants,
+                        heroTag: 'listing-fav-${card.id}',
+                      ),
                     ),
                   ),
                 );

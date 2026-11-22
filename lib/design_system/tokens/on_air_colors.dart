@@ -42,6 +42,9 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
     'vipGoldDark': Color(0xFFB8860B),
     'vipGoldLight': Color(0xFFF5E6B8),
     'vipText': Color(0xFF3D2E00),
+    // A neutral scrim for overlays on top of photos (same in both themes,
+    // since the photo underneath is theme-independent); apply alpha at use.
+    'scrim': Color(0xFF000000),
     'star': Color(0xFFFFB300),
     'favorite': Color(0xFFE53935),
     'offerAccent': Color(0xFFF57C00),
@@ -161,6 +164,9 @@ final class OnAirColors extends ThemeExtension<OnAirColors> {
     'vipGoldDark': Color(0xFFB8860B),
     'vipGoldLight': Color(0xFFF5E6B8),
     'vipText': Color(0xFF3D2E00),
+    // A neutral scrim for overlays on top of photos (same in both themes,
+    // since the photo underneath is theme-independent); apply alpha at use.
+    'scrim': Color(0xFF000000),
     'star': Color(0xFFFFB300),
     'favorite': Color(0xFFE53935),
     'offerAccent': Color(0xFFFFCC80),

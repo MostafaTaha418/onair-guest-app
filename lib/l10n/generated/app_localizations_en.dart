@@ -2091,6 +2091,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportSubtitle => 'We\'re here to help';
 
   @override
+  String get supportHeroBody =>
+      'Open a new case or follow your existing ones — the OnAir team will reply shortly.';
+
+  @override
+  String supportCaseNumber(Object code) {
+    return 'Case $code';
+  }
+
+  @override
   String get supportMyCases => 'My cases';
 
   @override
@@ -2425,6 +2434,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prefsSaveFailed => 'Couldn\'t save the change';
 
   @override
+  String get prefsUnavailable =>
+      'Notification settings aren\'t available right now. Try again shortly';
+
+  @override
   String get notifCategoryBooking => 'Bookings';
 
   @override
@@ -2438,6 +2451,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifCategoryReview => 'Reviews';
+
+  @override
+  String get notifCategoryRefund => 'Refunds';
 
   @override
   String get notifCategoryAccount => 'Account security';
@@ -2497,4 +2513,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountHasActiveBookings =>
       'You can\'t delete your account while a booking or refund is still active';
+
+  @override
+  String get exitConfirmHint => 'Press back again to exit';
 }

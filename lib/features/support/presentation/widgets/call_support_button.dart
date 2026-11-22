@@ -47,6 +47,7 @@ Future<void> showSupportNumberSheet(BuildContext context, String phone) {
   final l10n = AppLocalizations.of(context);
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     showDragHandle: true,
     builder: (sheetContext) => SafeArea(
       child: Padding(

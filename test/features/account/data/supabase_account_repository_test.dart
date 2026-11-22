@@ -151,7 +151,7 @@ void main() {
       false,
     );
     expect(rpc.calls[0].$1, 'common_get_notification_preferences');
-    expect(rpc.calls[0].$2, isEmpty);
+    expect(rpc.calls[0].$2, {'p_audience': 'guest'});
     expect(rpc.calls[1].$1, 'common_set_notification_preferences');
     expect(rpc.calls[1].$2, {
       'p_items': [

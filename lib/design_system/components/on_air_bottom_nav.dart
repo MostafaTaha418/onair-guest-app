@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
+import 'package:on_air/design_system/motion/app_motion.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 
@@ -53,74 +54,106 @@ final class OnAirBottomNav extends StatelessWidget {
           color: colors.surface,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
-          child: Row(
-            children: List.generate(_names.length, (index) {
-              final selected = currentIndex == index;
-              return Expanded(
-                child: Semantics(
-                  key: ValueKey('nav-${_names[index]}'),
-                  label: labels[index],
-                  button: true,
-                  selected: selected,
-                  child: InkWell(
-                    onTap: () => onTap(index),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: 56,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(Dimens.space4),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: selected ? colors['badgeNavActive'] : null,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: Dimens.space4,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Badge(
-                                  isLabelVisible: index == 2 && unreadCount > 0,
-                                  label: Text(
-                                    unreadCount > 99 ? '99+' : '$unreadCount',
-                                  ),
-                                  child: Icon(
-                                    selected
-                                        ? _activeIcons[index]
-                                        : _icons[index],
-                                    size: 20,
-                                    color: selected
-                                        ? colors.primary
-                                        : colors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  labels[index],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.textStyles.navLabel.copyWith(
-                                    fontWeight: selected
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: selected
-                                        ? colors.primary
-                                        : colors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final cellWidth = constraints.maxWidth / _names.length;
+              return Stack(
+                children: [
+                  // One pill that slides to the selected tab instead of each
+                  // tab snapping its own background on and off.
+                  AnimatedPositionedDirectional(
+                    duration: AppMotion.resolve(context, AppMotion.medium),
+                    curve: AppMotion.curve,
+                    start: cellWidth * currentIndex + Dimens.space4,
+                    top: Dimens.space4,
+                    bottom: Dimens.space4,
+                    width: cellWidth - Dimens.space8,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors['badgeNavActive'],
+                        borderRadius: BorderRadius.circular(999),
                       ),
                     ),
                   ),
-                ),
+                  Row(
+                    children: List.generate(_names.length, (index) {
+                      final selected = currentIndex == index;
+                      final foreground = selected
+                          ? colors.primary
+                          : colors.textSecondary;
+                      return Expanded(
+                        child: Semantics(
+                          key: ValueKey('nav-${_names[index]}'),
+                          label: labels[index],
+                          button: true,
+                          selected: selected,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => onTap(index),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 56),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: Dimens.space8,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Badge(
+                                      isLabelVisible:
+                                          index == 2 && unreadCount > 0,
+                                      label: Text(
+                                        unreadCount > 99
+                                            ? '99+'
+                                            : '$unreadCount',
+                                      ),
+                                      child: AnimatedScale(
+                                        duration: AppMotion.resolve(
+                                          context,
+                                          AppMotion.fast,
+                                        ),
+                                        curve: AppMotion.curve,
+                                        scale: selected ? 1.1 : 1,
+                                        child: Icon(
+                                          selected
+                                              ? _activeIcons[index]
+                                              : _icons[index],
+                                          size: 20,
+                                          color: foreground,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    AnimatedDefaultTextStyle(
+                                      duration: AppMotion.resolve(
+                                        context,
+                                        AppMotion.fast,
+                                      ),
+                                      style: context.textStyles.navLabel
+                                          .copyWith(
+                                            fontWeight: selected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: foreground,
+                                          ),
+                                      child: Text(
+                                        labels[index],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
               );
-            }),
+            },
           ),
         ),
       ),

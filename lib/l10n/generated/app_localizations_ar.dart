@@ -2072,6 +2072,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportSubtitle => 'إحنا هنا عشان نساعدك';
 
   @override
+  String get supportHeroBody =>
+      'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.';
+
+  @override
+  String supportCaseNumber(Object code) {
+    return 'رقم الحالة $code';
+  }
+
+  @override
   String get supportMyCases => 'حالاتي';
 
   @override
@@ -2403,6 +2412,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prefsSaveFailed => 'مقدرناش نحفظ التغيير';
 
   @override
+  String get prefsUnavailable =>
+      'إعدادات الإشعارات مش متاحة دلوقتي. جرّب تاني بعد شوية';
+
+  @override
   String get notifCategoryBooking => 'الحجوزات';
 
   @override
@@ -2416,6 +2429,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notifCategoryReview => 'التقييمات';
+
+  @override
+  String get notifCategoryRefund => 'المبالغ المستردة';
 
   @override
   String get notifCategoryAccount => 'أمان الحساب';
@@ -2475,4 +2491,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get accountHasActiveBookings =>
       'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال';
+
+  @override
+  String get exitConfirmHint => 'اضغط مرة أخرى للخروج';
 }

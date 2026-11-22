@@ -13,6 +13,8 @@ import 'package:on_air/design_system/components/section_header.dart' as shared;
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
+import 'package:on_air/design_system/motion/app_motion.dart';
+import 'package:on_air/design_system/motion/entrance_animation.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
@@ -311,12 +313,8 @@ final class HomeScreen extends StatelessWidget {
                   title: tile.name,
                   countLabel: l10n.areaListingCount(tile.listingCount),
                   imageVariants: tile.image?.variants ?? const [],
-                  onTap: () => context.go(
-                    Uri(
-                      path: AppRoutes.searchResults,
-                      queryParameters: {'loc': tile.locationId},
-                    ).toString(),
-                  ),
+                  onTap: () =>
+                      context.push(AppRoutes.areaResultsFor(tile.locationId)),
                 ),
               );
             },
@@ -337,13 +335,18 @@ final class HomeScreen extends StatelessWidget {
       skeleton: const PropertyCardSkeleton(),
       child: Column(
         children: [
-          for (final card in (switch (state.availableToday) {
+          for (final (index, card) in (switch (state.availableToday) {
             FeedSectionReady<List<ListingCard>>(:final value) => value,
             _ => const <ListingCard>[],
-          }).take(5))
+          }).take(5).toList().indexed)
             Padding(
               padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
-              child: _propertyCard(context, card, availableToday: true),
+              child: _propertyCard(
+                context,
+                card,
+                availableToday: true,
+                index: index,
+              ),
             ),
         ],
       ),
@@ -430,7 +433,7 @@ final class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   bottom: Dimens.space16,
                 ),
-                child: _propertyCard(context, cards[index]),
+                child: _propertyCard(context, cards[index], index: index),
               );
             },
           ),
@@ -442,47 +445,61 @@ final class HomeScreen extends StatelessWidget {
     BuildContext context,
     ListingCard card, {
     bool availableToday = false,
+    int index = 0,
   }) {
     final l10n = AppLocalizations.of(context);
-    return BlocBuilder<FavoritesCubit, FavoritesState>(
-      builder: (context, favorites) => PropertyCard(
-        availabilityLabel: availableToday ? l10n.propertyAvailableBadge : null,
-        isFavorite: favorites.contains(card.id),
-        favoriteBusy: favorites.loading || favorites.isBusy(card.id),
-        onFavoriteTap: () => toggleFavorite(context, card),
-        title: card.title,
-        subtitle: '${card.areaName} • ${card.cityName}',
-        imageVariants: card.cover?.variants ?? const [],
-        priceText: l10n.nightlyPrice(
-          MoneyFormatter().format(card.nightlyPrice),
-        ),
-        ratingText: card.ratingAvg?.toStringAsFixed(1),
-        ratingSemantics: card.ratingAvg == null
-            ? null
-            : l10n.ratingSemantics(
-                card.ratingAvg!.toStringAsFixed(1),
-                card.reviewCount,
+    // The section namespaces the tag so the same apartment appearing in both
+    // «available today» and «newest» never shares a Hero tag within the one
+    // retained shell branch.
+    final heroTag =
+        'listing-home-${availableToday ? 'today' : 'new'}-${card.id}';
+    return EntranceAnimation(
+      delay: AppMotion.stagger * (index % 6),
+      child: BlocBuilder<FavoritesCubit, FavoritesState>(
+        builder: (context, favorites) => PropertyCard(
+          availabilityLabel: availableToday
+              ? l10n.propertyAvailableBadge
+              : null,
+          isFavorite: favorites.contains(card.id),
+          favoriteBusy: favorites.loading || favorites.isBusy(card.id),
+          onFavoriteTap: () => toggleFavorite(context, card),
+          title: card.title,
+          subtitle: '${card.areaName} • ${card.cityName}',
+          imageVariants: card.cover?.variants ?? const [],
+          priceText: l10n.nightlyPrice(
+            MoneyFormatter().format(card.nightlyPrice),
+          ),
+          ratingText: card.ratingAvg?.toStringAsFixed(1),
+          ratingSemantics: card.ratingAvg == null
+              ? null
+              : l10n.ratingSemantics(
+                  card.ratingAvg!.toStringAsFixed(1),
+                  card.reviewCount,
+                ),
+          // A section-namespaced Hero tag lets the photo fly from the card into
+          // the details header (SC-006) without colliding with the same
+          // apartment in another retained shell branch.
+          heroTag: heroTag,
+          onTap: () {
+            final today = CairoTime.today();
+            openPropertyDetails(
+              context,
+              availableToday
+                  ? Uri(
+                      path: AppRoutes.property(card.id),
+                      queryParameters: {
+                        'checkIn': today.toString(),
+                        'checkOut': today.addDays(1).toString(),
+                      },
+                    ).toString()
+                  : AppRoutes.property(card.id),
+              extra: PropertyHeroArg(
+                variants: card.cover?.variants,
+                heroTag: heroTag,
               ),
-        // No Hero on Home cards: the shell's indexed stack keeps every branch
-        // alive, so the same apartment can carry the tag twice across the
-        // route subtree. The instant photo on details still comes through
-        // `extra` (SC-006); the Hero flight stays between results and details.
-        onTap: () {
-          final today = CairoTime.today();
-          openPropertyDetails(
-            context,
-            availableToday
-                ? Uri(
-                    path: AppRoutes.property(card.id),
-                    queryParameters: {
-                      'checkIn': today.toString(),
-                      'checkOut': today.addDays(1).toString(),
-                    },
-                  ).toString()
-                : AppRoutes.property(card.id),
-            extra: card.cover?.variants,
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

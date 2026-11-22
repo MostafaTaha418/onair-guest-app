@@ -180,7 +180,7 @@ void main() {
           ),
         ),
         GoRoute(
-          path: AppRoutes.searchResults,
+          path: AppRoutes.areaResults,
           builder: (_, state) =>
               Text('results:${state.uri.queryParameters['loc']}'),
         ),

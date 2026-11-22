@@ -12,6 +12,7 @@ import 'package:on_air/l10n/generated/app_localizations.dart';
 Future<void> showLanguageSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       backgroundColor: context.colors.surface,
       shape: const RoundedRectangleBorder(
@@ -28,6 +29,7 @@ Future<void> showLanguageSheet(BuildContext context) =>
 Future<void> showAppearanceSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       backgroundColor: context.colors.surface,
       shape: const RoundedRectangleBorder(
