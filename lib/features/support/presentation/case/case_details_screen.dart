@@ -12,6 +12,7 @@ import 'package:on_air/core/files/image_sanitizer.dart';
 import 'package:on_air/core/files/private_file_uploader.dart';
 import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/design_system/components/attachment_tile.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/message_bubble.dart' as design;
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
@@ -369,9 +370,11 @@ final class _CaseTag extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              style: flowText(
+                context,
+                base: Theme.of(context).textTheme.labelMedium,
                 color: foreground,
-                fontWeight: FontWeight.w600,
+                weight: FontWeight.w600,
               ),
             ),
           ),
@@ -382,7 +385,7 @@ final class _CaseTag extends StatelessWidget {
     return Semantics(
       button: true,
       child: Material(
-        color: Colors.transparent,
+        color: colors.transparent,
         borderRadius: BorderRadius.circular(999),
         clipBehavior: Clip.antiAlias,
         child: InkWell(onTap: onTap, child: content),

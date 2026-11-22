@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
 import 'package:on_air/core/errors/error_message.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
@@ -322,9 +323,11 @@ final class _ActionCard extends StatelessWidget {
                 const SizedBox(height: Dimens.space8),
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  style: flowText(
+                    context,
+                    base: Theme.of(context).textTheme.bodyLarge,
                     color: foreground,
-                    fontWeight: FontWeight.w700,
+                    weight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -396,9 +399,11 @@ final class _CountPill extends StatelessWidget {
       ),
       child: Text(
         '$count',
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+        style: flowText(
+          context,
+          base: Theme.of(context).textTheme.labelMedium,
           color: foreground,
-          fontWeight: FontWeight.w700,
+          weight: FontWeight.w700,
         ),
       ),
     );
@@ -515,7 +520,9 @@ final class _CaseCard extends StatelessWidget {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (item.bookingCode case final code?)
-                            _BookingChip(label: l10n.supportLinkedBooking(code)),
+                            _BookingChip(
+                              label: l10n.supportLinkedBooking(code),
+                            ),
                           _MetaLine(
                             icon: Icons.schedule,
                             text: l10n.supportLastUpdate(
@@ -566,9 +573,11 @@ final class _BookingChip extends StatelessWidget {
           const SizedBox(width: Dimens.space4),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            style: flowText(
+              context,
+              base: Theme.of(context).textTheme.labelSmall,
               color: foreground,
-              fontWeight: FontWeight.w600,
+              weight: FontWeight.w600,
             ),
           ),
         ],

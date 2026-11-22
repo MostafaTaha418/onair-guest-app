@@ -48,74 +48,74 @@ final class MessageBubble extends StatelessWidget {
         border: isGuest ? null : Border.all(color: colors.border),
       ),
       child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!isGuest)
-                  Text(
-                    l10n.supportOnAir,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                if (!isGuest) const SizedBox(height: Dimens.space4),
-                Text(
-                  body,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: foreground),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isGuest)
+            Text(
+              l10n.supportOnAir,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          if (!isGuest) const SizedBox(height: Dimens.space4),
+          Text(
+            body,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: foreground),
+          ),
+          if (attachments.isNotEmpty) ...[
+            const SizedBox(height: Dimens.space8),
+            Wrap(
+              spacing: Dimens.space8,
+              runSpacing: Dimens.space8,
+              children: attachments,
+            ),
+          ],
+          const SizedBox(height: Dimens.space4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                timeLabel,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: isGuest
+                      ? colors.onPrimary.withValues(alpha: .78)
+                      : colors.textSecondary,
                 ),
-                if (attachments.isNotEmpty) ...[
-                  const SizedBox(height: Dimens.space8),
-                  Wrap(
-                    spacing: Dimens.space8,
-                    runSpacing: Dimens.space8,
-                    children: attachments,
+              ),
+              if (sendState == MessageSendState.sending) ...[
+                const SizedBox(width: Dimens.space4),
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: foreground,
                   ),
-                ],
-                const SizedBox(height: Dimens.space4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      timeLabel,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: isGuest
-                            ? colors.onPrimary.withValues(alpha: .78)
-                            : colors.textSecondary,
-                      ),
-                    ),
-                    if (sendState == MessageSendState.sending) ...[
-                      const SizedBox(width: Dimens.space4),
-                      SizedBox(
-                        width: 12,
-                        height: 12,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: foreground,
-                        ),
-                      ),
-                    ],
-                    if (sendState == MessageSendState.failed) ...[
-                      const SizedBox(width: Dimens.space4),
-                      Semantics(
-                        button: true,
-                        label: l10n.supportAttachRetry,
-                        child: InkWell(
-                          onTap: onRetry,
-                          child: Icon(
-                            Icons.refresh,
-                            size: 18,
-                            color: foreground,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
                 ),
               ],
-            ),
-          );
+              if (sendState == MessageSendState.failed) ...[
+                const SizedBox(width: Dimens.space4),
+                Semantics(
+                  button: true,
+                  label: l10n.supportAttachRetry,
+                  child: InkWell(
+                    onTap: onRetry,
+                    child: Icon(
+                      Icons.refresh,
+                      size: 18,
+                      color: foreground,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
 
     final content = isGuest
         ? bubble

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/design_system/components/booking_flow_kit.dart';
 import 'package:on_air/design_system/components/on_air_bottom_nav.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
@@ -45,9 +46,11 @@ class _AppShellState extends State<AppShell> {
           content: Text(
             l10n.exitConfirmHint,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: flowText(
+              context,
+              base: Theme.of(context).textTheme.bodyMedium,
               color: colors.onPrimary,
-              fontWeight: FontWeight.w600,
+              weight: FontWeight.w600,
             ),
           ),
           duration: _exitWindow,
