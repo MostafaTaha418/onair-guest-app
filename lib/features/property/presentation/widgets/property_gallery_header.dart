@@ -153,7 +153,7 @@ final class _PropertyGalleryHeaderState extends State<PropertyGalleryHeader> {
                       vertical: Dimens.space8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.28),
+                      color: colors['scrim'].withValues(alpha: 0.28),
                       borderRadius: BorderRadius.circular(Dimens.radiusChip),
                     ),
                     child: _GalleryDots(
