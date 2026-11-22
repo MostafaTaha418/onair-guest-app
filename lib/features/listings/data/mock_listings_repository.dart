@@ -25,12 +25,20 @@ final class MockListingsRepository implements ListingsRepository {
   MockListingsRepository({
     Future<String> Function(String path)? loader,
     Duration latency = const Duration(milliseconds: 300),
-  }) : this._(loader ?? rootBundle.loadString, latency);
+    DateTime Function()? now,
+  }) : this._(loader ?? rootBundle.loadString, latency, now ?? _defaultNow);
 
-  MockListingsRepository._(this._loader, this._latency);
+  MockListingsRepository._(this._loader, this._latency, this._now);
+
+  static DateTime _defaultNow() => DateTime.now().toUtc();
 
   final Future<String> Function(String path) _loader;
   final Duration _latency;
+
+  /// The clock the past-night rules read, so a test that pins the booking
+  /// server's clock can pin availability to the same day (otherwise the real
+  /// clock drifts past fixed fixture dates and marks them unavailable).
+  final DateTime Function() _now;
 
   List<Map<String, dynamic>>? _properties;
   Map<String, List<Map<String, dynamic>>>? _reviews;
@@ -181,7 +189,7 @@ final class MockListingsRepository implements ListingsRepository {
     for (final json in all) {
       if (json['id'] == id && json['_published'] == true) {
         final busy = _busyDates(json);
-        final today = CairoTime.today();
+        final today = CairoTime.today(now: _now());
         return {
           for (final night in busy)
             if (!night.isBefore(from) && night.isBefore(to)) night,
@@ -367,7 +375,7 @@ final class MockListingsRepository implements ListingsRepository {
   Set<DateOnly> _busyDates(Map<String, dynamic> json) {
     final offsets = json['_busy_offsets'] as Map?;
     if (offsets == null) return {};
-    final today = CairoTime.today();
+    final today = CairoTime.today(now: _now());
     return {
       for (final list in offsets.values)
         for (final offset in list as List) today.addDays(offset as int),

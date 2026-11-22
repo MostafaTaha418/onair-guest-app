@@ -14,13 +14,14 @@ import 'package:on_air/core/connectivity/connectivity_cubit.dart';
 import 'package:on_air/core/logging/app_logger.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
+import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/bookings/data/bookings_cache.dart';
 import 'package:on_air/features/bookings/domain/booking_action.dart';
-import 'package:on_air/features/bookings/domain/booking_details.dart';
 import 'package:on_air/features/bookings/domain/bookings_repository.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_cubit.dart';
 import 'package:on_air/features/bookings/presentation/booking_details_screen.dart';
 import 'package:on_air/features/stay/domain/stay_repository.dart';
+import 'package:on_air/features/stay/presentation/stay_ack/stay_ack_cubit.dart';
 import 'package:on_air/features/stay/presentation/stay_ack/stay_ack_sheets.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
 
@@ -119,70 +120,38 @@ Widget _detailsChild({
   );
 }
 
-/// Opens the check-in sheet over an empty page.
-class _CheckinSheetOpener extends StatefulWidget {
-  const _CheckinSheetOpener({required this.detailsJson});
-
-  final Map<String, dynamic> detailsJson;
-
-  @override
-  State<_CheckinSheetOpener> createState() => _CheckinSheetOpenerState();
+/// Renders the check-in sheet body directly inside the sheet shape. The sheet
+/// opens on the root navigator, which a golden's isolated harness cannot host,
+/// so — like the account sheet goldens — the body is pumped on its own rather
+/// than through [showCheckInSheet].
+Widget _checkinSheet() {
+  final backend = FakeBookingBackend(
+    includeG3Fixtures: true,
+    actionRegistry: BookingActionRegistry.g3(),
+  );
+  return Builder(
+    builder: (context) => Scaffold(
+      body: Align(
+        alignment: Alignment.bottomCenter,
+        child: Material(
+          color: context.colors.surface,
+          borderRadius: const BorderRadiusDirectional.vertical(
+            top: Radius.circular(Dimens.radiusSheet),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: BlocProvider<StayAckCubit>(
+            create: (_) => StayAckCubit(
+              stay: backend.stay,
+              logger: AppLogger(sink: (_) {}),
+              bookingId: _booking21,
+            ),
+            child: const AckSheetBody(checkIn: true, bookingId: _booking21),
+          ),
+        ),
+      ),
+    ),
+  );
 }
-
-class _CheckinSheetOpenerState extends State<_CheckinSheetOpener> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(
-        showCheckInSheet(context, _detailsOf(widget.detailsJson)),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: SizedBox.shrink());
-}
-
-BookingDetails _detailsOf(Map<String, dynamic> json) =>
-    BookingDetails.fromJson(json);
-
-Map<String, dynamic> _booking21Json() => const {
-  'id': _booking21,
-  'code': 'OA-G3021',
-  'status': 'confirmed',
-  'property': {
-    'id': '00000000-0000-4000-8000-00000000001f',
-    'title': 'شقة على البحر',
-    'cover_image': null,
-    'area_name': 'رأس البر',
-    'city_name': 'دمياط',
-    'address_text': 'شارع النيل، رأس البر',
-    'check_in_time': '14:00',
-    'check_out_time': '12:00',
-  },
-  'check_in': '2026-11-01',
-  'check_out': '2026-11-04',
-  'nights': 3,
-  'guests_count': 2,
-  'nightly_minor': 120000,
-  'total_minor': 360000,
-  'pay_now_minor': 360000,
-  'paid_minor': 360000,
-  'remaining_minor': 0,
-  'remaining_due_at': null,
-  'currency': 'EGP',
-  'owner_response_deadline': null,
-  'payment_state': 'succeeded',
-  'payments': <Object>[],
-  'refund': null,
-  'terms_snapshot': null,
-  'access_instructions': 'المفتاح مع حارس العمارة.',
-  'available_actions': ['confirm_checkin', 'contact_support'],
-  'events': <Object>[],
-  'created_at': '2026-10-20T08:00:00Z',
-};
 
 Future<void> _pumpUntilSettled(WidgetTester tester) async {
   for (var i = 0; i < 5; i++) {
@@ -211,10 +180,7 @@ void main() {
   ];
 
   final scenarios = <String, Widget Function()>{
-    'checkin_sheet': () => _detailsChild(
-      bookingId: _booking21,
-      instead: _CheckinSheetOpener(detailsJson: _booking21Json()),
-    ),
+    'checkin_sheet': _checkinSheet,
     'waiting_handover': () => _detailsChild(
       bookingId: _booking21,
       mutate: (backend) => backend.stay.confirmCheckIn(_booking21),

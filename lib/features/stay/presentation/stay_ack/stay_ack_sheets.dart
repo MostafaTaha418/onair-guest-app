@@ -37,14 +37,23 @@ Future<bool> _showAckSheet(
         builder: (_) => BlocProvider<StayAckCubit>(
           create: (_) =>
               StayAckCubit(stay: stay, logger: logger, bookingId: details.id),
-          child: _AckSheetBody(checkIn: checkIn, bookingId: details.id),
+          child: AckSheetBody(checkIn: checkIn, bookingId: details.id),
         ),
       ) ??
       false;
 }
 
-final class _AckSheetBody extends StatelessWidget {
-  const _AckSheetBody({required this.checkIn, required this.bookingId});
+/// The check-in / check-out sheet's body. Public only so a golden can render
+/// it directly (the modal opens on the root navigator, which a golden's
+/// isolated harness cannot host); production always reaches it through
+/// [showCheckInSheet] / [showCheckOutSheet].
+@visibleForTesting
+final class AckSheetBody extends StatelessWidget {
+  const AckSheetBody({
+    required this.checkIn,
+    required this.bookingId,
+    super.key,
+  });
 
   final bool checkIn;
   final String bookingId;
