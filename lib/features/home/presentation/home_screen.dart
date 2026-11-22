@@ -13,6 +13,8 @@ import 'package:on_air/design_system/components/section_header.dart' as shared;
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
+import 'package:on_air/design_system/motion/app_motion.dart';
+import 'package:on_air/design_system/motion/entrance_animation.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/account/presentation/delete/account_deleted_notice.dart';
@@ -337,13 +339,18 @@ final class HomeScreen extends StatelessWidget {
       skeleton: const PropertyCardSkeleton(),
       child: Column(
         children: [
-          for (final card in (switch (state.availableToday) {
+          for (final (index, card) in (switch (state.availableToday) {
             FeedSectionReady<List<ListingCard>>(:final value) => value,
             _ => const <ListingCard>[],
-          }).take(5))
+          }).take(5).toList().indexed)
             Padding(
               padding: const EdgeInsetsDirectional.only(bottom: Dimens.space16),
-              child: _propertyCard(context, card, availableToday: true),
+              child: _propertyCard(
+                context,
+                card,
+                availableToday: true,
+                index: index,
+              ),
             ),
         ],
       ),
@@ -430,7 +437,7 @@ final class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(
                   bottom: Dimens.space16,
                 ),
-                child: _propertyCard(context, cards[index]),
+                child: _propertyCard(context, cards[index], index: index),
               );
             },
           ),
@@ -442,10 +449,13 @@ final class HomeScreen extends StatelessWidget {
     BuildContext context,
     ListingCard card, {
     bool availableToday = false,
+    int index = 0,
   }) {
     final l10n = AppLocalizations.of(context);
-    return BlocBuilder<FavoritesCubit, FavoritesState>(
-      builder: (context, favorites) => PropertyCard(
+    return EntranceAnimation(
+      delay: AppMotion.stagger * (index % 6),
+      child: BlocBuilder<FavoritesCubit, FavoritesState>(
+        builder: (context, favorites) => PropertyCard(
         availabilityLabel: availableToday ? l10n.propertyAvailableBadge : null,
         isFavorite: favorites.contains(card.id),
         favoriteBusy: favorites.loading || favorites.isBusy(card.id),
@@ -483,6 +493,7 @@ final class HomeScreen extends StatelessWidget {
             extra: card.cover?.variants,
           );
         },
+        ),
       ),
     );
   }

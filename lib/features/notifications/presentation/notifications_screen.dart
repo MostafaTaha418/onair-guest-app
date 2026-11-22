@@ -10,6 +10,8 @@ import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/skeletons.dart';
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/icons/app_icons.dart';
+import 'package:on_air/design_system/motion/app_motion.dart';
+import 'package:on_air/design_system/motion/entrance_animation.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
 import 'package:on_air/features/notifications/domain/app_notification.dart';
@@ -317,10 +319,13 @@ final class _NotificationsScreenState extends State<NotificationsScreen> {
         separatorBuilder: (_, _) => const SizedBox(height: Dimens.space12),
         itemBuilder: (context, index) => index == filtered.length
             ? const Center(child: CircularProgressIndicator())
-            : _NotificationCard(
-                item: filtered[index],
-                onTap: () => _open(filtered[index]),
-                now: widget.now?.call() ?? DateTime.now(),
+            : EntranceAnimation(
+                delay: AppMotion.stagger * (index % 6),
+                child: _NotificationCard(
+                  item: filtered[index],
+                  onTap: () => _open(filtered[index]),
+                  now: widget.now?.call() ?? DateTime.now(),
+                ),
               ),
       ),
     );
