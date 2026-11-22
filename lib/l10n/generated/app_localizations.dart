@@ -3722,6 +3722,12 @@ abstract class AppLocalizations {
   /// **'إحنا هنا عشان نساعدك'**
   String get supportSubtitle;
 
+  /// Support screen hero supporting line under the headline
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.'**
+  String get supportHeroBody;
+
   /// No description provided for @supportMyCases.
   ///
   /// In ar, this message translates to:

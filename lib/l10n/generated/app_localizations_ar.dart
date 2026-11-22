@@ -2072,6 +2072,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportSubtitle => 'إحنا هنا عشان نساعدك';
 
   @override
+  String get supportHeroBody =>
+      'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.';
+
+  @override
   String get supportMyCases => 'حالاتي';
 
   @override

@@ -892,6 +892,7 @@
   "verifyPhoneOnWhatsApp": "Confirm your number on WhatsApp",
   "supportTitle": "Support",
   "supportSubtitle": "We're here to help",
+  "supportHeroBody": "Open a new case or follow your existing ones — the OnAir team will reply shortly.",
   "supportMyCases": "My cases",
   "supportFinishedCases": "Finished cases",
   "supportNewCase": "New case",

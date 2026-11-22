@@ -1140,6 +1140,10 @@
   "verifyPhoneOnWhatsApp": "أكّد رقمك على واتساب",
   "supportTitle": "الدعم",
   "supportSubtitle": "إحنا هنا عشان نساعدك",
+  "supportHeroBody": "افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.",
+  "@supportHeroBody": {
+    "description": "Support screen hero supporting line under the headline"
+  },
   "supportMyCases": "حالاتي",
   "supportFinishedCases": "حالات منتهية",
   "supportNewCase": "حالة جديدة",

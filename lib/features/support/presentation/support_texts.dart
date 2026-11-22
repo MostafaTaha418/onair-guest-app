@@ -1,6 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/l10n/generated/app_localizations.dart';
+
+/// The leading glyph for a case card, picked from the case type so a guest can
+/// scan the list by subject (booking, payment, …) at a glance.
+IconData supportTypeIcon(CaseType type) => switch (type) {
+  CaseType.booking => Icons.event_outlined,
+  CaseType.payment => Icons.credit_card_outlined,
+  CaseType.refund => Icons.replay,
+  CaseType.propertyIssue => Icons.home_outlined,
+  CaseType.other => Icons.chat_bubble_outline,
+  CaseType.damageDispute => Icons.gavel_outlined,
+  CaseType.complaint => Icons.report_problem_outlined,
+  CaseType.stayException => Icons.event_busy_outlined,
+  _ => Icons.help_outline,
+};
 
 String supportTypeLabel(CaseType type, AppLocalizations l10n) => switch (type) {
   CaseType.booking => l10n.supportTypeBooking,

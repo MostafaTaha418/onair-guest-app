@@ -2091,6 +2091,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportSubtitle => 'We\'re here to help';
 
   @override
+  String get supportHeroBody =>
+      'Open a new case or follow your existing ones — the OnAir team will reply shortly.';
+
+  @override
   String get supportMyCases => 'My cases';
 
   @override
