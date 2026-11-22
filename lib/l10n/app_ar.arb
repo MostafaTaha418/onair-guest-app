@@ -1339,5 +1339,6 @@
   },
   "deleteConfirm": "تأكيد الحذف",
   "deleteDone": "حسابك اتحذف",
-  "accountHasActiveBookings": "مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال"
+  "accountHasActiveBookings": "مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال",
+  "exitConfirmHint": "اضغط مرة أخرى للخروج"
 }

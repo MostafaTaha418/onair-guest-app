@@ -2491,4 +2491,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get accountHasActiveBookings =>
       'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال';
+
+  @override
+  String get exitConfirmHint => 'اضغط مرة أخرى للخروج';
 }

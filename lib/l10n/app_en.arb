@@ -1084,5 +1084,6 @@
   },
   "deleteConfirm": "Confirm deletion",
   "deleteDone": "Your account was deleted",
-  "accountHasActiveBookings": "You can't delete your account while a booking or refund is still active"
+  "accountHasActiveBookings": "You can't delete your account while a booking or refund is still active",
+  "exitConfirmHint": "Press back again to exit"
 }

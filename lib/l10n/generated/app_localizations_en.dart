@@ -2513,4 +2513,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountHasActiveBookings =>
       'You can\'t delete your account while a booking or refund is still active';
+
+  @override
+  String get exitConfirmHint => 'Press back again to exit';
 }

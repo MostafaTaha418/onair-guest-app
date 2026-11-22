@@ -87,9 +87,9 @@ final class OnAirBottomNav extends StatelessWidget {
                           label: labels[index],
                           button: true,
                           selected: selected,
-                          child: InkWell(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => onTap(index),
-                            customBorder: const StadiumBorder(),
                             child: ConstrainedBox(
                               constraints: const BoxConstraints(minHeight: 56),
                               child: Padding(

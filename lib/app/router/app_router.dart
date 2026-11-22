@@ -697,6 +697,22 @@ GoRouter createAppRouter({
         ),
       ),
     ),
+    // One area's listings, opened from Home. A top-level route (above the
+    // shell) with its own SearchCubit, so Back returns to Home instead of
+    // landing on the Search tab (contracts/app-routes-g2.md §2).
+    GoRoute(
+      path: AppRoutes.areaResults,
+      name: 'area-results',
+      builder: (context, state) => BlocProvider<SearchCubit>(
+        create: (context) => SearchCubit(
+          repo: context.read<ListingsRepository>(),
+          lastSearch: context.read<LastSearchStore>(),
+          connectivity: context.read<ConnectivityCubit>(),
+          rememberLastSearch: false,
+        ),
+        child: _ResultsQueryOpener(query: state.uri.queryParameters),
+      ),
+    ),
     for (final collection in HomeCollection.values)
       GoRoute(
         path: switch (collection) {

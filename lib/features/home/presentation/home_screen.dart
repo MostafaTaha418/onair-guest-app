@@ -313,12 +313,8 @@ final class HomeScreen extends StatelessWidget {
                   title: tile.name,
                   countLabel: l10n.areaListingCount(tile.listingCount),
                   imageVariants: tile.image?.variants ?? const [],
-                  onTap: () => context.go(
-                    Uri(
-                      path: AppRoutes.searchResults,
-                      queryParameters: {'loc': tile.locationId},
-                    ).toString(),
-                  ),
+                  onTap: () =>
+                      context.push(AppRoutes.areaResultsFor(tile.locationId)),
                 ),
               );
             },

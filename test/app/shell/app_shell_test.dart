@@ -1,11 +1,13 @@
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_air/core/money/money.dart';
 import 'package:on_air/core/time/cairo_time.dart';
 import 'package:on_air/design_system/components/area_card.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
+import 'package:on_air/features/home/presentation/home_screen.dart';
 import 'package:on_air/features/listings/domain/home_feed.dart';
 import 'package:on_air/features/listings/domain/listing_card.dart';
 import 'package:on_air/features/listings/domain/results_page.dart';
@@ -132,6 +134,67 @@ void main() {
       2,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tapping an area opens its results and Back returns to Home', (
+    tester,
+  ) async {
+    final listings = FakeListingsRepository()
+      ..homeFeedResponses.addAll([_areasFeed(), _areasFeed()])
+      ..searchResponses.add(
+        const ResultsPage(items: [], nextCursor: null, totalCount: 0),
+      );
+    await pumpVisitorApp(tester, listingsRepository: listings);
+
+    await tester.tap(find.text('منطقة 0'));
+    await tester.pumpAndSettle();
+    // The area browse sits above the shell, so the tab bar is gone.
+    expect(find.byType(ResultsScreen), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-home')), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    // Back lands on Home, not on the Search tab.
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(SearchScreen), findsNothing);
+    expect(
+      tester
+          .getSemantics(find.byKey(const ValueKey('nav-home')))
+          .flagsCollection
+          .isSelected,
+      Tristate.isTrue,
+    );
+  });
+
+  testWidgets('a first back press at Home asks again before exiting', (
+    tester,
+  ) async {
+    final exitCalls = <MethodCall>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemNavigator.pop') exitCalls.add(call);
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await pumpVisitorApp(tester);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('اضغط مرة أخرى للخروج'), findsOneWidget);
+    expect(exitCalls, isEmpty);
+    expect(find.byType(HomeScreen), findsOneWidget);
+
+    // A second press inside the window actually leaves the app.
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(exitCalls, isNotEmpty);
   });
 
   testWidgets('home search and filters open separate destinations', (

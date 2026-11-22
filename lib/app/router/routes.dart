@@ -31,6 +31,10 @@ abstract final class AppRoutes {
   static const propertyReviewsPattern = '/property/:id/reviews';
   static const searchResults = '/search/results';
   static const filterResults = '/filter-results';
+
+  /// Browsing one area's listings from Home. It lives above the shell so Back
+  /// returns to Home, unlike `/search/results`, which stays on the Search tab.
+  static const areaResults = '/area-results';
   static const homeAreas = '/home/areas';
   static const homeToday = '/home/today';
   static const homeNewest = '/home/newest';
@@ -113,6 +117,7 @@ abstract final class AppRoutes {
       updateRequired,
       searchResults,
       filterResults,
+      areaResults,
       homeAreas,
       homeToday,
       homeNewest,
@@ -225,6 +230,8 @@ abstract final class AppRoutes {
       ? paymentReturnPath
       : '$paymentReturnPath?booking=$bookingId';
   static String bookingsTab(String tab) => '/bookings?tab=$tab';
+  static String areaResultsFor(String locationId) =>
+      Uri(path: areaResults, queryParameters: {'loc': locationId}).toString();
   static String supportCase(String id) => '/support/$id';
 
   static bool _validMatch(RegExp pattern, String path, {int idCount = 1}) {

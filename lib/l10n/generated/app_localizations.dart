@@ -4489,6 +4489,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مينفعش تحذف الحساب وعندك حجز أو استرداد لسه شغال'**
   String get accountHasActiveBookings;
+
+  /// No description provided for @exitConfirmHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط مرة أخرى للخروج'**
+  String get exitConfirmHint;
 }
 
 class _AppLocalizationsDelegate
