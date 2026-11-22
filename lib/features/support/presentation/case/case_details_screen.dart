@@ -10,12 +10,14 @@ import 'package:on_air/core/errors/error_message.dart';
 import 'package:on_air/core/files/attachment_picker.dart';
 import 'package:on_air/core/files/image_sanitizer.dart';
 import 'package:on_air/core/files/private_file_uploader.dart';
+import 'package:on_air/core/time/cairo_date_time_formatter.dart';
 import 'package:on_air/design_system/components/attachment_tile.dart';
 import 'package:on_air/design_system/components/message_bubble.dart' as design;
 import 'package:on_air/design_system/components/state_views.dart';
 import 'package:on_air/design_system/components/status_chip.dart';
 import 'package:on_air/design_system/theme/on_air_theme.dart';
 import 'package:on_air/design_system/tokens/dimens.dart';
+import 'package:on_air/design_system/typography/on_air_text_styles.dart';
 import 'package:on_air/features/support/data/mock_support_server.dart';
 import 'package:on_air/features/support/domain/support_case.dart';
 import 'package:on_air/features/support/presentation/case/case_details_cubit.dart';
@@ -121,6 +123,8 @@ final class _CaseDetailsScreenState extends State<CaseDetailsScreen> {
       );
     }
     final ready = state as CaseDetailsReady;
+    final messages = ready.details.messages;
+    final locale = l10n.localeName;
     return RefreshIndicator(
       onRefresh: context.read<CaseDetailsCubit>().refresh,
       child: ListView(
@@ -132,20 +136,32 @@ final class _CaseDetailsScreenState extends State<CaseDetailsScreen> {
             const Center(child: CircularProgressIndicator()),
           _CaseInfoCard(supportCase: ready.details.supportCase),
           const SizedBox(height: Dimens.space16),
-          for (final message in ready.details.messages)
+          for (var i = 0; i < messages.length; i++) ...[
+            if (i == 0 ||
+                formatCairoDayMonth(messages[i].createdAt, locale: locale) !=
+                    formatCairoDayMonth(
+                      messages[i - 1].createdAt,
+                      locale: locale,
+                    ))
+              _DaySeparator(
+                label: formatCairoDayMonth(
+                  messages[i].createdAt,
+                  locale: locale,
+                ),
+              ),
             design.MessageBubble(
-              author: message.author == MessageAuthor.guest
+              author: messages[i].author == MessageAuthor.guest
                   ? design.MessageAuthor.guest
                   : design.MessageAuthor.onAir,
-              body: message.body,
-              time: message.createdAt,
-              sendState: switch (message.sendState) {
+              body: messages[i].body,
+              time: messages[i].createdAt,
+              sendState: switch (messages[i].sendState) {
                 MessageSendState.sent => design.MessageSendState.sent,
                 MessageSendState.sending => design.MessageSendState.sending,
                 MessageSendState.failed => design.MessageSendState.failed,
               },
               attachments: [
-                for (final attachment in message.attachments)
+                for (final attachment in messages[i].attachments)
                   AttachmentTile(
                     kind: attachment.kind.name == 'pdf'
                         ? AttachmentTileKind.pdf
@@ -155,6 +171,7 @@ final class _CaseDetailsScreenState extends State<CaseDetailsScreen> {
                   ),
               ],
             ),
+          ],
           const SizedBox(height: Dimens.space16),
         ],
       ),
@@ -225,6 +242,9 @@ final class _CaseDetailsScreenState extends State<CaseDetailsScreen> {
   }
 }
 
+/// The case summary at the top of the conversation: the type with its glyph
+/// and the case number, then the linked booking (tappable) and property as
+/// quiet tags. Replaces the old expansion tile with a flat, scannable card.
 final class _CaseInfoCard extends StatelessWidget {
   const _CaseInfoCard({required this.supportCase});
   final SupportCase supportCase;
@@ -232,37 +252,171 @@ final class _CaseInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      child: ExpansionTile(
-        initiallyExpanded: true,
-        leading: const Icon(Icons.info_outline),
-        title: Text(supportTypeLabel(supportCase.type, l10n)),
-        childrenPadding: const EdgeInsetsDirectional.fromSTEB(
-          Dimens.space16,
-          0,
-          Dimens.space16,
-          Dimens.space16,
-        ),
+    final colors = context.colors;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final hasBooking =
+        supportCase.bookingId != null && supportCase.bookingCode != null;
+    final hasProperty = supportCase.propertyTitle != null;
+    return Container(
+      padding: const EdgeInsetsDirectional.all(Dimens.space16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(Dimens.radiusCard),
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (supportCase.bookingId != null && supportCase.bookingCode != null)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_month_outlined),
-              title: Text(
-                l10n.supportLinkedBooking(supportCase.bookingCode!),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors['badgeNavActive'],
+                  borderRadius: BorderRadius.circular(Dimens.radiusField),
+                ),
+                child: Icon(
+                  supportTypeIcon(supportCase.type),
+                  size: 22,
+                  color: dark ? colors['textAccent'] : colors.primary,
+                ),
               ),
-              onTap: () => context.push(
-                AppRoutes.bookingDetails(supportCase.bookingId!),
+              const SizedBox(width: Dimens.space12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      supportTypeLabel(supportCase.type, l10n),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.onAirExtraBold,
+                    ),
+                    Text(
+                      l10n.supportCaseNumber(supportCase.code),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+          if (hasBooking || hasProperty) ...[
+            const SizedBox(height: Dimens.space12),
+            Wrap(
+              spacing: Dimens.space8,
+              runSpacing: Dimens.space8,
+              children: [
+                if (hasBooking)
+                  _CaseTag(
+                    icon: Icons.link,
+                    label: l10n.supportLinkedBooking(supportCase.bookingCode!),
+                    onTap: () => context.push(
+                      AppRoutes.bookingDetails(supportCase.bookingId!),
+                    ),
+                  ),
+                if (supportCase.propertyTitle case final title?)
+                  _CaseTag(
+                    icon: Icons.apartment_outlined,
+                    label: l10n.supportLinkedProperty(title),
+                  ),
+              ],
             ),
-          if (supportCase.propertyTitle case final title?)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.apartment_outlined),
-              title: Text(l10n.supportLinkedProperty(title)),
-            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+/// One tag on the summary card: a pill with an icon, optionally tappable.
+final class _CaseTag extends StatelessWidget {
+  const _CaseTag({required this.icon, required this.label, this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final linked = onTap != null;
+    final background = linked ? colors['badgeNavActive'] : colors['socialFill'];
+    final foreground = linked
+        ? (dark ? colors['textAccent'] : colors.primary)
+        : colors.textSecondary;
+    final content = Container(
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: Dimens.space12,
+        vertical: Dimens.space8,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        border: linked ? null : Border.all(color: colors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: foreground),
+          const SizedBox(width: Dimens.space4),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!linked) return content;
+    return Semantics(
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(onTap: onTap, child: content),
+      ),
+    );
+  }
+}
+
+/// A centered day divider between messages sent on different Cairo days.
+final class _DaySeparator extends StatelessWidget {
+  const _DaySeparator({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Center(
+      child: Container(
+        margin: const EdgeInsetsDirectional.symmetric(vertical: Dimens.space8),
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: Dimens.space12,
+          vertical: Dimens.space4,
+        ),
+        decoration: BoxDecoration(
+          color: colors['socialFill'],
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: colors.border),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: colors.textSecondary),
+        ),
       ),
     );
   }

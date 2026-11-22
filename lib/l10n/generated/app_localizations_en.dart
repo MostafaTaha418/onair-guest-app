@@ -2095,6 +2095,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open a new case or follow your existing ones — the OnAir team will reply shortly.';
 
   @override
+  String supportCaseNumber(Object code) {
+    return 'Case $code';
+  }
+
+  @override
   String get supportMyCases => 'My cases';
 
   @override

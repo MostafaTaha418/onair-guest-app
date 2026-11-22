@@ -34,24 +34,20 @@ final class MessageBubble extends StatelessWidget {
     final authorLabel = isGuest ? l10n.ackYou : l10n.supportOnAir;
     final timeLabel = formatCairoTime(time);
     final foreground = isGuest ? colors.onPrimary : colors.textPrimary;
-    return Semantics(
-      container: true,
-      label: '$authorLabel، $timeLabel: $body',
-      child: Align(
-        alignment: isGuest
-            ? AlignmentDirectional.centerEnd
-            : AlignmentDirectional.centerStart,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Container(
-            margin: const EdgeInsetsDirectional.only(bottom: Dimens.space8),
-            padding: const EdgeInsetsDirectional.all(Dimens.space12),
-            decoration: BoxDecoration(
-              color: isGuest ? colors.primary : colors.surface,
-              borderRadius: BorderRadius.circular(Dimens.radiusCard),
-              border: isGuest ? null : Border.all(color: colors.border),
-            ),
-            child: Column(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final bubble = Container(
+      padding: const EdgeInsetsDirectional.all(Dimens.space12),
+      decoration: BoxDecoration(
+        color: isGuest ? colors.primary : colors.surface,
+        borderRadius: BorderRadiusDirectional.only(
+          topStart: const Radius.circular(Dimens.radiusCard),
+          topEnd: const Radius.circular(Dimens.radiusCard),
+          bottomStart: Radius.circular(isGuest ? Dimens.radiusCard : 6),
+          bottomEnd: Radius.circular(isGuest ? 6 : Dimens.radiusCard),
+        ),
+        border: isGuest ? null : Border.all(color: colors.border),
+      ),
+      child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!isGuest)
@@ -119,6 +115,45 @@ final class MessageBubble extends StatelessWidget {
                 ),
               ],
             ),
+          );
+
+    final content = isGuest
+        ? bubble
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors['badgeNavActive'],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.support_agent,
+                  size: 17,
+                  color: dark ? colors['textAccent'] : colors.primary,
+                ),
+              ),
+              const SizedBox(width: Dimens.space8),
+              Flexible(child: bubble),
+            ],
+          );
+
+    return Semantics(
+      container: true,
+      label: '$authorLabel، $timeLabel: $body',
+      child: Align(
+        alignment: isGuest
+            ? AlignmentDirectional.centerEnd
+            : AlignmentDirectional.centerStart,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: Dimens.space8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: content,
           ),
         ),
       ),

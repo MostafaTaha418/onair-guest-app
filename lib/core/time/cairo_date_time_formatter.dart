@@ -18,3 +18,10 @@ String formatCairoDayMonthTime(DateTime utc, {String locale = 'ar'}) {
 
 /// «14:00»
 String formatCairoTime(DateTime utc) => _clock(CairoTime.inCairo(utc));
+
+/// «16 نوفمبر» — the day a message was sent, on the Cairo wall clock, for the
+/// conversation's day separators. [locale] is the screen's language.
+String formatCairoDayMonth(DateTime utc, {String locale = 'ar'}) {
+  final cairo = CairoTime.inCairo(utc);
+  return '${cairo.day} ${_monthName(cairo, locale)}';
+}

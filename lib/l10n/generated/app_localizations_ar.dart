@@ -2076,6 +2076,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.';
 
   @override
+  String supportCaseNumber(Object code) {
+    return 'رقم الحالة $code';
+  }
+
+  @override
   String get supportMyCases => 'حالاتي';
 
   @override

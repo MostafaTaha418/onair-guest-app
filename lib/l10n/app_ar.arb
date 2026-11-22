@@ -1144,6 +1144,11 @@
   "@supportHeroBody": {
     "description": "Support screen hero supporting line under the headline"
   },
+  "supportCaseNumber": "رقم الحالة {code}",
+  "@supportCaseNumber": {
+    "description": "Case number line on the case details summary card",
+    "placeholders": { "code": {} }
+  },
   "supportMyCases": "حالاتي",
   "supportFinishedCases": "حالات منتهية",
   "supportNewCase": "حالة جديدة",

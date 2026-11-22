@@ -3728,6 +3728,12 @@ abstract class AppLocalizations {
   /// **'افتح حالة جديدة أو تابع حالاتك، وفريق OnAir هيرد عليك بأسرع وقت.'**
   String get supportHeroBody;
 
+  /// Case number line on the case details summary card
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحالة {code}'**
+  String supportCaseNumber(Object code);
+
   /// No description provided for @supportMyCases.
   ///
   /// In ar, this message translates to:
