@@ -25,6 +25,8 @@
 > ملاحظة: دي قيم **رقم الاختبار** المجاني (للتطوير). رقم الإنتاج الحقيقي ليه IDs مختلفة تتعمل في Step 2 بعد التوثيق.
 
 - **تجربة الإرسال:** ✅ **ناجحة** — اتبعتت رسالة واتساب حقيقية من رقم الاختبار على `01014867684` ووصلت. (المستلم اتضاف لقايمة الـ 5 أرقام التجريبية.)
+- **System User + توكن دائم:** ✅ اتعمل `onair-api-system` (Admin) مربوط بالـ App والـ WABA (Full control)، وتوكن **دائم (Never expire)** بصلاحيتَي `whatsapp_business_messaging` + `whatsapp_business_management`. (التوكن نفسه محفوظ عند المالك، مش في Git = `WHATSAPP_ACCESS_TOKEN`.)
+- **قالب Authentication:** ⛔ **اتبلوك** — رقم الاختبار المجاني (الـ WABA التجريبي "Test Messaging Account") **مش بيسمح بإنشاء قوالب مخصّصة** ("This WhatsApp business account does not have permission to create message template"). القالب `otp_verification` (عربي/إنجليزي، Copy code، ينتهي 10 دقايق) جاهز الإعداد بس مش هيتعمل إلا على **WABA حقيقي** بعد إضافة رقم إنتاج (Step 2 / Production setup).
 
 **الباقي:** توليد Access token (مؤقت 24 ساعة للتجربة، ودائم عبر System User للسيرفر)، إنشاء قالب Authentication (عربي/إنجليزي)، إعداد الـ Webhook، وFirebase App Check.
 
