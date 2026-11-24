@@ -30,6 +30,17 @@
 
 **الباقي:** توليد Access token (مؤقت 24 ساعة للتجربة، ودائم عبر System User للسيرفر)، إنشاء قالب Authentication (عربي/إنجليزي)، إعداد الـ Webhook، وFirebase App Check.
 
+### 🔍 حالة Firebase (فُحصت 24 نوفمبر 2026)
+
+مشروعان موجودان على حساب المالك:
+
+| المشروع | Project ID | Project Number | تطبيقات المستأجر | تطبيق الشركاء | App Check | SHA-256 |
+|---|---|---|---|---|---|---|
+| **OnAir Staging** | `onair-guest-staging` | `1093743526436` | ✅ `com.onair.guest.staging` (Android+iOS) | ❌ ناقص (`com.onair.partners.stg`) | ❌ مش متفعّل | ❌ ناقصة |
+| **OnAir Production** | `onair-guest-production` | `463823071401` | ✅ `com.onair.guest` (Android+iOS) | ❌ ناقص (`com.onair.partners`) | ❌ (غالبًا مش متفعّل) | ❌ ناقصة |
+
+**المطلوب لإكمال App Check** (مطلوب من المالك/البناء): إضافة تطبيق الشركاء لكل مشروع، بصمة **SHA-256** من keystore المستأجر (Play Integrity)، و**Apple Team ID** (App Attest)، وتفعيل App Check في الكونسول، ثم ربط `firebase_app_check` في التطبيق. `FIREBASE_PROJECT_NUMBER` للـ Worker (استيدجينج) = `1093743526436`.
+
 ---
 
 ## القسم 0 — تجهيز حسابك الشخصي (مرة واحدة)
