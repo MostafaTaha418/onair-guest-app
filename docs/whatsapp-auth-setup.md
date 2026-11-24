@@ -199,3 +199,27 @@
 2. **بالتوازي:** حسم الـ 6 قرارات في الإيشو.
 3. **بعد كده:** أبدأ كود الباك اند (A1–A9) على Staging، نربطه بالتطبيق ونختبر على رقم الاختبار.
 4. **قبل الإطلاق:** تسجيل الشركة → Business Verification → رقم حقيقي → رفع الحدود → الإنتاج.
+
+---
+
+## 📥 المطلوب منك للنشر والتيست — مصدر كل قيمة
+
+### 🟢 معانا خلاص (Staging)
+`WHATSAPP_PHONE_NUMBER_ID=1481681208356379` · `WHATSAPP_WABA_ID=1500161248643618` · `FIREBASE_PROJECT_NUMBER=1093743526436` · `WHATSAPP_GRAPH_VERSION=v21.0`
+
+### 🔵 اتولّدت تلقائيًا (محفوظة في `onair-backend/.env.whatsapp`، متجاهَلة من git)
+`OTP_HASH_KEY` · `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
+
+### 🟠 تجيبها إنت — بالخطوات
+| القيمة | المصدر بالخطوات |
+|---|---|
+| `WHATSAPP_ACCESS_TOKEN` | محفوظ عندك. أو: business.facebook.com → Business Settings → System Users → `onair-api-system` → Generate New Token (Never + الصلاحيتين). |
+| `WHATSAPP_APP_SECRET` | developers.facebook.com → App **OnAir API** → App Settings → **Basic** → App Secret → Show. |
+| **Apple Team ID** | developer.apple.com → Account → Membership details → Team ID (10 خانات). |
+| **رقم واتساب طارق** | اسأل طارق — نضيفه كمستلم تجريبي (max 5). |
+| **كلمة سر قاعدة بيانات Supabase** | supabase.com/dashboard → مشروع **On Air** → Project Settings → **Database** → Database password (أو Reset). للنشر `supabase db push`. |
+| **Cloudflare login** | `npx wrangler login` على جهازك → توافق في المتصفح → بعدها الأسرار بـ `wrangler secret put`. |
+| **SHA-256** (Android App Check) | من keystore التطبيق: `keytool -list -v -keystore <path> -alias <alias>`. (أقدر أجيبها لك لو ديتني المسار.) |
+| **Google/Apple Sign-in (A1)** | Google Client IDs: Firebase Console → Authentication → Google. Apple: developer.apple.com → Services ID + Key ID + ملف `.p8`. |
+
+> 🔒 الأسرار متتكتبش في Git. تتحط Cloudflare secrets / GitHub Secrets.
