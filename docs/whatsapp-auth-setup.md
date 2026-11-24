@@ -30,16 +30,18 @@
 
 **الباقي:** توليد Access token (مؤقت 24 ساعة للتجربة، ودائم عبر System User للسيرفر)، إنشاء قالب Authentication (عربي/إنجليزي)، إعداد الـ Webhook، وFirebase App Check.
 
-### 🔍 حالة Firebase (فُحصت 24 نوفمبر 2026)
+### 🔍 حالة Firebase (مصحّحة 24 نوفمبر 2026)
 
-مشروعان موجودان على حساب المالك:
+⚠️ **تصحيح مهم:** المشروع الفعلي للتطبيق تحت حساب **`onair3team@gmail.com`** (المسجّل في firebase CLI)، مش حساب البراوزر. التطبيق مضبوط عليه بالفعل:
 
-| المشروع | Project ID | Project Number | تطبيقات المستأجر | تطبيق الشركاء | App Check | SHA-256 |
-|---|---|---|---|---|---|---|
-| **OnAir Staging** | `onair-guest-staging` | `1093743526436` | ✅ `com.onair.guest.staging` (Android+iOS) | ❌ ناقص (`com.onair.partners.stg`) | ❌ مش متفعّل | ❌ ناقصة |
-| **OnAir Production** | `onair-guest-production` | `463823071401` | ✅ `com.onair.guest` (Android+iOS) | ❌ ناقص (`com.onair.partners`) | ❌ (غالبًا مش متفعّل) | ❌ ناقصة |
+| المشروع | Project ID | Project Number | الحالة |
+|---|---|---|---|
+| **OnAir Staging** | `onair-staging-5579e` | **`33057694373`** | ✅ مضبوط في التطبيق (`firebase_options_staging.dart` + `android/app/src/staging/google-services.json` + `ios/config/staging`) |
+| **OnAir Production** | `onair-production-3team` | `1060101512327` | ✅ ملفات موجودة في flavor الإنتاج |
 
-**المطلوب لإكمال App Check** (مطلوب من المالك/البناء): إضافة تطبيق الشركاء لكل مشروع، بصمة **SHA-256** من keystore المستأجر (Play Integrity)، و**Apple Team ID** (App Attest)، وتفعيل App Check في الكونسول، ثم ربط `firebase_app_check` في التطبيق. `FIREBASE_PROJECT_NUMBER` للـ Worker (استيدجينج) = `1093743526436`.
+- **`FIREBASE_PROJECT_NUMBER` للـ Worker (استيدجينج) = `33057694373`** (مصحّح في `onair-backend/.env.whatsapp`).
+- **الناقص:** تفعيل App Check على `onair-staging-5579e` (SHA-256 للأندرويد + App Attest للـ iOS)، وإعداد OAuth client للـ Google sign-in (لملء `GOOGLE_SERVER_CLIENT_ID`/`GOOGLE_IOS_CLIENT_ID`).
+- ملاحظة: حساب البراوزر التاني كان فيه مشاريع مختلفة (`onair-guest-staging` 1093743526436) — **مش بتاعة التطبيق**، تجاهلها.
 
 ---
 
@@ -205,7 +207,7 @@
 ## 📥 المطلوب منك للنشر والتيست — مصدر كل قيمة
 
 ### 🟢 معانا خلاص (Staging)
-`WHATSAPP_PHONE_NUMBER_ID=1481681208356379` · `WHATSAPP_WABA_ID=1500161248643618` · `FIREBASE_PROJECT_NUMBER=1093743526436` · `WHATSAPP_GRAPH_VERSION=v21.0`
+`WHATSAPP_PHONE_NUMBER_ID=1481681208356379` · `WHATSAPP_WABA_ID=1500161248643618` · `FIREBASE_PROJECT_NUMBER=33057694373` (onair-staging-5579e) · `WHATSAPP_GRAPH_VERSION=v21.0`
 
 ### 🔵 اتولّدت تلقائيًا (محفوظة في `onair-backend/.env.whatsapp`، متجاهَلة من git)
 `OTP_HASH_KEY` · `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
