@@ -327,8 +327,15 @@ Future<void> pickThreeNights(WidgetTester tester, AppLocalizations l10n) async {
   }
   expect(find.byType(RangeCalendar), findsOneWidget);
   final today = CairoTime.today();
-  final checkIn = today.addDays(3);
-  final checkOut = today.addDays(6);
+  var checkIn = today.addDays(3);
+  var checkOut = today.addDays(6);
+  // Keep the stay inside one calendar month (see mock_journey): the calendar
+  // shows a single month, so the day-cell taps are ambiguous when the range
+  // crosses a month boundary. Fall back to the start of checkOut's month.
+  if (checkIn.month != checkOut.month) {
+    checkIn = DateOnly(checkOut.year, checkOut.month, 1);
+    checkOut = checkIn.addDays(3);
+  }
   var displayedMonth = DateOnly(today.year, today.month, 1);
   while (displayedMonth.year != checkIn.year ||
       displayedMonth.month != checkIn.month) {
