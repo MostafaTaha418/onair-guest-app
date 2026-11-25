@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:on_air/app/router/routes.dart';
+import 'package:on_air/core/network/otp_echo_debug.dart';
 import 'package:on_air/design_system/components/notice_card.dart';
 import 'package:on_air/design_system/components/on_air_otp_field.dart';
 import 'package:on_air/design_system/components/on_air_primary_button.dart';
@@ -132,6 +134,26 @@ class _WhatsAppCodeStepState extends State<WhatsAppCodeStep> {
               ),
             ),
             const SizedBox(height: Dimens.space32),
+            // Staging only: when the Worker echoes the code (no real WhatsApp
+            // delivery on the test number), show it so the tester can enter it.
+            // Never renders in release builds or when the server omits it.
+            if (kDebugMode)
+              ValueListenableBuilder<String?>(
+                valueListenable: otpEchoCode,
+                builder: (context, echo, _) => echo == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          bottom: Dimens.space16,
+                        ),
+                        child: NoticeCard(
+                          key: const ValueKey('whatsapp-echo-code'),
+                          icon: AppIcons.errorOutline,
+                          tone: NoticeTone.warning,
+                          message: 'كود الاختبار (staging): $echo',
+                        ),
+                      ),
+              ),
             if (noticeMessage != null) ...[
               NoticeCard(
                 icon: AppIcons.errorOutline,
