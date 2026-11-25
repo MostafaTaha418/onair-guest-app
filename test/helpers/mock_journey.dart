@@ -32,8 +32,16 @@ Future<void> runVisitorBookingJourney(WidgetTester tester) async {
 
   // 3. Choose dates three nights from today.
   final today = CairoTime.today();
-  final checkIn = today.addDays(3);
-  final checkOut = today.addDays(6);
+  var checkIn = today.addDays(3);
+  var checkOut = today.addDays(6);
+  // Keep the whole stay inside one calendar month: the search date sheet shows
+  // a single month, so the day-cell taps below are ambiguous when the range
+  // crosses a month boundary (e.g. near month-end). Fall back to the start of
+  // checkOut's month, which is still in the future.
+  if (checkIn.month != checkOut.month) {
+    checkIn = DateOnly(checkOut.year, checkOut.month, 1);
+    checkOut = checkIn.addDays(3);
+  }
   await tester.tap(find.text(l10n.searchDatesHint));
   await tester.pumpAndSettle();
   var displayedMonth = DateOnly(today.year, today.month, 1);

@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:on_air/core/device/app_attestation.dart';
 import 'package:on_air/core/device/device_identity.dart';
+import 'package:on_air/core/network/otp_echo_debug.dart';
 
 /// Adds the abuse-protection headers to the WhatsApp OTP send route only
 /// (research R3/R4, data-model §6): `X-Device-Id` and the limited-use
@@ -31,5 +33,26 @@ final class OtpSendInterceptor extends Interceptor {
       }
     }
     handler.next(options);
+  }
+
+  @override
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    // Staging echo: the test number can't deliver a real template, so the
+    // staging Worker (OTP_ECHO=1) returns the code in the send response. In
+    // debug builds surface it so the code step can show it. Production never
+    // returns `echo_code`, and this is skipped entirely in release builds.
+    if (kDebugMode) {
+      final request = response.requestOptions;
+      if (request.method == 'POST' && request.path.endsWith('/v1/otp/send')) {
+        final data = response.data;
+        otpEchoCode.value = data is Map && data['echo_code'] is String
+            ? data['echo_code'] as String
+            : null;
+      }
+    }
+    handler.next(response);
   }
 }
