@@ -46,11 +46,9 @@ final class OtpSendInterceptor extends Interceptor {
     // returns `echo_code`, and this is skipped entirely in release builds.
     if (kDebugMode) {
       final request = response.requestOptions;
-      if (request.method == 'POST' &&
-          request.path.endsWith('/v1/otp/send')) {
+      if (request.method == 'POST' && request.path.endsWith('/v1/otp/send')) {
         final data = response.data;
-        otpEchoCode.value =
-            data is Map && data['echo_code'] is String
+        otpEchoCode.value = data is Map && data['echo_code'] is String
             ? data['echo_code'] as String
             : null;
       }
